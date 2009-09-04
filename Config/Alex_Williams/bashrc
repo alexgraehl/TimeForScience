@@ -1,0 +1,7 @@
+# .bashrc: Loaded when the shell is non-interactively started up
+
+echo "Loading from ~/.bashrc..."
+#source ~/.bashrc
+source ~/.bash_profile
+
+
