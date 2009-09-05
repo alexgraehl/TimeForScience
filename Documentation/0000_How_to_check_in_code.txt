@@ -1,0 +1,22 @@
+Procedure for getting updated code:
+
+Do this BEFORE you edit things or check things in.
+
+   hg update
+
+
+Procedure for checking in code using Mercurial, with our google code repository at http://code.google.com/p/timeforscience/:
+
+  If the file "YOURFILE" is new:
+      hg update
+      hg add YOURFILE
+      hg commit -m "Fixed the long-standing bug"
+      hg push
+
+
+To start:
+
+	This will make a "TimeForScience" folder in your home directory. You can
+move it to any location, or rename it, as you see fit.
+	
+	hg clone https://timeforscience.googlecode.com/hg/ ~/TimeForScience
