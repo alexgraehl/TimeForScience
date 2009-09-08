@@ -110,7 +110,14 @@ export TERM=xterm-color
 #export CLASSPATH=$CLASSPATH:/System/Library/Frameworks/JavaVM.framework/Versions/1.4.2/Classes/classes.jar:/usr/local/jakarta-tomcat-5.0.28/common/lib/servlet-api.jar:.
 
 export MYSRC=$HOME/cvs-local
-export MYPERLDIR=$MYSRC/perl
+#export MYPERLDIR=$MYSRC/perl
+export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience
+export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$PATH
+export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$PATH
+export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$PATH
+export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$PATH
+export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/R:$PATH
+
 export PATH=/usr/local/bin/:$PATH  ## <-- for the newer emacs version
 export PATH=$MYSRC/alexgw:$PATH
 export PATH=$PATH:$MYSRC/lab_apps/python/Tools
@@ -195,7 +202,7 @@ function  ltab {
     # Use sheet.py to view a file or list of files. These files cannot be gzipped, however.
     python `which sheet.py` $*
 }
-alias     v='ltab'
+alias v='ltab'
 
 alias invisible='SetFile -a V'
 alias visible='SetFile -a v'
