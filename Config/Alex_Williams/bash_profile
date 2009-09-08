@@ -73,6 +73,7 @@ alias fgrep='fgrep --color=auto'
 # Aliases related to CVS
 alias commit="cvs commit -m 'AGW CVS Commit'"
 alias gitcom="git commit -a -m 'Changes committed by alexgw'"
+alias hgcom="hg commit -m 'Changes committed by alexgw' ; hg push"
 
 alias gitdiff="git difftool"
 
