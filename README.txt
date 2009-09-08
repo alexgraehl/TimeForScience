@@ -1,4 +1,7 @@
 
+Check the Documentation folder for more detailed instructions!
+
+====
 
 Quick procedure for checking in code:
 
@@ -8,4 +11,4 @@ Quick procedure for checking in code:
       hg commit -m "Fixed the long-standing bug"
       hg push
 
-Check the Documentation folder for more detailed instructions!
+
