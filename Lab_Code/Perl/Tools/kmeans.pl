@@ -2,9 +2,9 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/load_args.pl";
-require "$ENV{MYPERLDIR}/lib/bio_system.pl";
-require "$ENV{MYPERLDIR}/lib/libstats.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "load_args.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_system.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstats.pl";
 
 my $k_null_value = "K___NULL___K";
 

@@ -36,9 +36,9 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/bio_load_settings.pl";
-require "$ENV{MYPERLDIR}/lib/bio_execute.pl";
-require "$ENV{MYPERLDIR}/lib/bio_str.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_load_settings.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_execute.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_str.pl";
 
 my $settings_file;
 if (length($ARGV[0]) == 0) { $settings_file = "settings"; } else { $settings_file = $ARGV[0]; }

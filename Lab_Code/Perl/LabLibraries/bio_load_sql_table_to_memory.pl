@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 
-require "$ENV{MYPERLDIR}/lib/bio_execute.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_execute.pl";
 
 sub load_sql_table_to_memory
 {

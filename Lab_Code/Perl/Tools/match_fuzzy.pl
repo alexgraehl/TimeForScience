@@ -19,10 +19,10 @@ use String::Approx qw(adistr adist amatch); # <-- from CPAN
 # "This module implements the Levenshtein edit distance. The Levenshtein edit distance is a measure of the degree of proximity between two strings. This distance is the number of substitutions, deletions or insertions ("edits") needed to transform one string into the other one (and vice versa). When two strings have distance 0, they are the same."
 }
 
-require "$ENV{MYPERLDIR}/lib/libfile.pl";
-require "$ENV{MYPERLDIR}/lib/libstats.pl";
-require "$ENV{MYPERLDIR}/lib/libstring.pl";
-require "$ENV{MYPERLDIR}/lib/libsystem.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstats.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstring.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libsystem.pl";
 
 use POSIX qw(ceil floor); # import the ceil(ing) and floor functions for handling fractions/integers
 use List::Util qw(max min); # import the max and min functions

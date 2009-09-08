@@ -70,9 +70,9 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/bio_load_settings.pl";
-require "$ENV{MYPERLDIR}/lib/bio_execute.pl";
-require "$ENV{MYPERLDIR}/lib/bio_system.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_load_settings.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_execute.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_system.pl";
 
 my %settings = load_settings($ARGV[0]);
 

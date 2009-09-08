@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-require "$ENV{MYPERLDIR}/lib/libset.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libset.pl";
 
 use strict;
 

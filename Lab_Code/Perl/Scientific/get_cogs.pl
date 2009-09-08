@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-require "$ENV{MYPERLDIR}/lib/libmap_data.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libmap_data.pl";
 
 use strict;
 

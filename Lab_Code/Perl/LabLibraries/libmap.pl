@@ -5,15 +5,15 @@
 ################################################################################
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/libfile.pl";
-require "$ENV{MYPERLDIR}/lib/libmap_ecoli.pl";
-require "$ENV{MYPERLDIR}/lib/libmap_fly.pl";
-require "$ENV{MYPERLDIR}/lib/libmap_human.pl";
-require "$ENV{MYPERLDIR}/lib/libmap_mouse.pl";
-require "$ENV{MYPERLDIR}/lib/libmap_ncbi.pl";
-require "$ENV{MYPERLDIR}/lib/libmap_rat.pl";
-require "$ENV{MYPERLDIR}/lib/libmap_worm.pl";
-require "$ENV{MYPERLDIR}/lib/libmap_yeast.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libmap_ecoli.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libmap_fly.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libmap_human.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libmap_mouse.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libmap_ncbi.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libmap_rat.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libmap_worm.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libmap_yeast.pl";
 
 ##------------------------------------------------------------------------------
 ## The root of the whole MAP hierarchy

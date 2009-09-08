@@ -2,9 +2,9 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/libset.pl";
-require "$ENV{MYPERLDIR}/lib/liblist.pl";
-require "$ENV{MYPERLDIR}/lib/libfile.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libset.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "liblist.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
 
 my $verbose    = 1;
 my @files;

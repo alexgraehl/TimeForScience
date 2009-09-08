@@ -2,11 +2,11 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/bio_load_file_to_memory.pl";
-require "$ENV{MYPERLDIR}/lib/load_args.pl";
-require "$ENV{MYPERLDIR}/lib/file_to_hash.pl";
-require "$ENV{MYPERLDIR}/lib/bio_system.pl";
-require "$ENV{MYPERLDIR}/lib/libstats.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_load_file_to_memory.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "load_args.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "file_to_hash.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_system.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstats.pl";
 
 my $MUTUAL_INFORMATION = "mi";
 my $DOT_PRODUCT = "dot";

@@ -1,8 +1,8 @@
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/libfile.pl";
-require "$ENV{MYPERLDIR}/lib/liblist.pl";
-require "$ENV{MYPERLDIR}/lib/libset.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "liblist.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libset.pl";
 
 ##------------------------------------------------------------------------
 #  \%translated attribTranslate ( \%target, \%attrib translator, $int only_translated=1 )

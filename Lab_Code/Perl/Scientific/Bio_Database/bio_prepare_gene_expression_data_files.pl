@@ -32,11 +32,11 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/bio_load_settings.pl";
-require "$ENV{MYPERLDIR}/lib/bio_execute.pl";
-require "$ENV{MYPERLDIR}/lib/bio_get_file_dsc.pl";
-require "$ENV{MYPERLDIR}/lib/bio_system.pl";
-require "$ENV{MYPERLDIR}/lib/bio_name_to_sql_legal_column_name.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_load_settings.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_execute.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_get_file_dsc.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_system.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_name_to_sql_legal_column_name.pl";
 
 my %settings = load_settings($ARGV[0]);
 

@@ -31,8 +31,8 @@
 
 ## Support for MEDIAN calculation added by Alex Williams, 2007
 
-require "$ENV{MYPERLDIR}/lib/libfile.pl";
-require "$ENV{MYPERLDIR}/lib/libstats.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstats.pl";
 
 use strict;
 use warnings;

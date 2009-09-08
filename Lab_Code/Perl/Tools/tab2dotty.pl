@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-require "$ENV{MYPERLDIR}/lib/libattrib.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libattrib.pl";
 
 use lib "$ENV{MYPERLDIR}/xlib"; # <-- this is where GraphViz.pm is found
 

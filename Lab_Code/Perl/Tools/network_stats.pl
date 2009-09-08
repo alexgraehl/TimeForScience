@@ -15,8 +15,8 @@ use strict;
 use Getopt::Long;
 use List::Util;
 
-require "$ENV{MYPERLDIR}/lib/libstats.pl"; # Note that this defines "max" and "min" as vector operations! This overloads the ones found in List::Util
-require "$ENV{MYPERLDIR}/lib/libset.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstats.pl"; # Note that this defines "max" and "min" as vector operations! This overloads the ones found in List::Util
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libset.pl";
 
 
 sub arrayUnion {

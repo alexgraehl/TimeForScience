@@ -10,10 +10,10 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/bio_load_file_to_memory.pl";
-require "$ENV{MYPERLDIR}/lib/bio_get_file_dsc.pl";
-require "$ENV{MYPERLDIR}/lib/bio_load_settings.pl";
-require "$ENV{MYPERLDIR}/lib/bio_name_to_sql_legal_column_name.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_load_file_to_memory.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_get_file_dsc.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_load_settings.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_name_to_sql_legal_column_name.pl";
 
 my %settings = load_settings($ARGV[0]);
 

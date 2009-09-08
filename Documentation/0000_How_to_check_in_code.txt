@@ -13,6 +13,10 @@ Procedure for checking in code using Mercurial, with our google code repository 
       hg commit -m "Fixed the long-standing bug"
       hg push
 
+Or, in one line:
+	hg update ; hg commit -m "Committing without a proper comment!" ;
+And then:
+	hg push
 
 To start:
 

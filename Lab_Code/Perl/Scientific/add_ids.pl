@@ -6,7 +6,7 @@ if ($ARGV[0] eq "--help")
   exit(0);
 }
 
-require "$ENV{MYPERLDIR}/lib/load_args.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "load_args.pl";
 
 my %args = load_args(\@ARGV);
 

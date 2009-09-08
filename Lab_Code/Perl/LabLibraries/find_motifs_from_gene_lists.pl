@@ -2,9 +2,9 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/load_args.pl";
-require "$ENV{MYPERLDIR}/lib/bio_system.pl";
-require "$ENV{MYPERLDIR}/lib/bio_get_file_names_for_dir.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "load_args.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_system.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_get_file_names_for_dir.pl";
 
 my $fmfgl_null = "FMFGL____NULL___FMFGL";
 

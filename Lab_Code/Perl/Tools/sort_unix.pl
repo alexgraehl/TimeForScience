@@ -12,7 +12,7 @@ use List::Util qw(max min);
 use Term::ANSIColor;
 use File::Basename;
 use Getopt::Long;
-require "$ENV{MYPERLDIR}/lib/libsystem.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libsystem.pl";
 use strict;
 use warnings;
 use diagnostics;

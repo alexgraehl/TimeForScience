@@ -28,7 +28,7 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/libfile.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
 
 # Given one directory.  Assumes each has a list of files where each
 # file contains a list of genes belonging to a single cluster (or layer).
