@@ -48,9 +48,6 @@ set mypath=( \
 	$HOME/bin \
 	$MYPERLDIR/Tools $MYPERLDIR/Map $MYPERLDIR/Db $MYPERLDIR/web $MYSRC/cvaske/perl \
 	$MYSRC/alexgw \
-	$MYSRC/lab_apps/python/Tools  \
-	$MYSRC/lab_apps/R_shell       \
-	$MYSRC/lab_apps/shell_scripts \
 	$MYSRC/cvaske/R/Commands      \
 	$SYSBIODIR/users/cvaske/sw/genie/Programs/x86_64-redhat-linux-gnu\
 	/projects/sysbio/apps/$MACHTYPE/bin \
@@ -60,12 +57,24 @@ set mypath=( \
 
 #	     /projects/sysbio/apps/x86_64/R-project-2.6.1/bin \
 
-# Now we actually set the path.
-if(! $?path) then
-   set path=($mypath)
-else
-   set path=($mypath $path)
+
+## Everything here makes the "TimeForScience" mercurial directory
+## take precedence over the basic CVS stuff.
+
+if(! $?path) then ## Set the path if it wasn't already defined
+    set path=""
 endif
+
+set path=($mypath $path)
+
+setenv TIME_FOR_SCIENCE_DIR $HOME/TimeForScience
+
+set path=($TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools \
+    $TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific \
+    $TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools \
+    $TIME_FOR_SCIENCE_DIR/Lab_Code/Shell \
+    $TIME_FOR_SCIENCE_DIR/Lab_Code/R \
+    $path)
 
 
 #setenv MANPATH `/usr/local/bin/setpaths -man`
