@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 
-require "$ENV{MYPERLDIR}/lib/bio_execute.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_execute.pl";
 
 sub get_sql_database_dsc
 {

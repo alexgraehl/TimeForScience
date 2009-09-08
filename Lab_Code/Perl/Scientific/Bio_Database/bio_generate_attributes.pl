@@ -11,13 +11,13 @@ use strict;
 #---------
 # Includes
 #---------
-require "$ENV{MYPERLDIR}/lib/bio_load_settings.pl";
-require "$ENV{MYPERLDIR}/lib/bio_get_sql_table_dsc.pl";
-require "$ENV{MYPERLDIR}/lib/bio_get_file_dsc.pl";
-require "$ENV{MYPERLDIR}/lib/bio_load_sql_table_to_memory.pl";
-require "$ENV{MYPERLDIR}/lib/bio_load_file_to_memory.pl";
-require "$ENV{MYPERLDIR}/lib/bio_str.pl";
-require "$ENV{MYPERLDIR}/lib/bio_assert.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_load_settings.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_get_sql_table_dsc.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_get_file_dsc.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_load_sql_table_to_memory.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_load_file_to_memory.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_str.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_assert.pl";
 
 #---------
 # Settings

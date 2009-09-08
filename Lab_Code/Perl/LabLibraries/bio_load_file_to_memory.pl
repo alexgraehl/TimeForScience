@@ -1,6 +1,6 @@
 #! /usr/bin/perl
 
-require "$ENV{MYPERLDIR}/lib/bio_system.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_system.pl";
 
 #--------------------------------------------------------------------------------
 # load_file_to_memory

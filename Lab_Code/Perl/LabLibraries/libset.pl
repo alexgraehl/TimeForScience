@@ -61,9 +61,12 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/libfile.pl";
-require "$ENV{MYPERLDIR}/lib/libstats.pl";
-require "$ENV{MYPERLDIR}/lib/liblist.pl";
+use lib "$ENV{MYPERLDIR}/lib";
+use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries";
+
+require "libfile.pl";
+require "libstats.pl";
+require "liblist.pl";
 
 ##---------------------------------------------------------------------------##
 ## public:

@@ -2,7 +2,7 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/libmap.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libmap.pl";
 
 my $runs_mak = &getMapDir('Templates') . '/Make/runs.mak';
 my $makefile = './Makefile';

@@ -2,8 +2,8 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/file.pl";
-require "$ENV{MYPERLDIR}/lib/smd.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "file.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "smd.pl";
 
 # Files containing information about SMD publications.  This includes which
 # experiment sets (and thus which experiments) are logically grouped with

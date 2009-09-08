@@ -1,7 +1,7 @@
 #! /usr/bin/perl
 
-require "$ENV{MYPERLDIR}/lib/load_args.pl";
-require "$ENV{MYPERLDIR}/lib/bio_system.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "load_args.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_system.pl";
 
 my $atx_null_value = "ATX___NULL___ATX";
 

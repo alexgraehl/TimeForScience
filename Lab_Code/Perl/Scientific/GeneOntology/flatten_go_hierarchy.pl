@@ -2,7 +2,7 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/bio_str.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_str.pl";
 
 open (OUTFILE, ">go.hierarchy.flat");
 

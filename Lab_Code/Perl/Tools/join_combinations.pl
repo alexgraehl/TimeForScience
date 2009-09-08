@@ -2,7 +2,7 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/libstats.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstats.pl";
 
 my $verbose       = 1;
 my @combinations;

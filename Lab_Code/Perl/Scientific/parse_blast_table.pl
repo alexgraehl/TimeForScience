@@ -2,8 +2,8 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/libmap.pl";
-require "$ENV{MYPERLDIR}/lib/libblast.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libmap.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libblast.pl";
 
 my $delim = "\t";
 

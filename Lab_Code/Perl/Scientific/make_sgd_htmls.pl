@@ -2,10 +2,10 @@
 
 use strict;
 
-require "$ENV{MYPERLDIR}/lib/load_args.pl";
-require "$ENV{MYPERLDIR}/lib/html_utils.pl";
-require "$ENV{MYPERLDIR}/lib/gifinfo.pl";
-require "$ENV{MYPERLDIR}/lib/libfile.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "load_args.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "html_utils.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "gifinfo.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
 
 if ($ARGV[0] eq "--help")
 {

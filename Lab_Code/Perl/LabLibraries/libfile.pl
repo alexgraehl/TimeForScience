@@ -1,4 +1,6 @@
-require "$ENV{MYPERLDIR}/lib/libstd.pl";
+use lib "$ENV{MYPERLDIR}/lib";
+use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries";
+require "libstd.pl";
 
 use strict;
 
