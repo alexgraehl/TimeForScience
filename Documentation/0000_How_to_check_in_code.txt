@@ -1,26 +1,62 @@
-Procedure for getting updated code:
+========================================================
 
-Do this BEFORE you edit things or check things in.
+For the VERY FIRST TIME you want a Mercurial repository:
 
-   hg update
-
-
-Procedure for checking in code using Mercurial, with our google code repository at http://code.google.com/p/timeforscience/:
-
-  If the file "YOURFILE" is new:
-      hg update
-      hg add YOURFILE
-      hg commit -m "Fixed the long-standing bug"
-      hg push
-
-Or, in one line:
-	hg update ; hg commit -m "Committing without a proper comment!" ;
-And then:
-	hg push
-
-To start:
-
-	This will make a "TimeForScience" folder in your home directory. You can
-move it to any location, or rename it, as you see fit.
+This will make a "TimeForScience" folder in your home directory. You can
+move it to any location, or rename it, as you see fit. Note that later instructions
+assume that you did in fact name your repository "TimeForScience" and put it in your
+home directory. If you did not, you will have to remember what you call it and change
+the later instructions accordingly!
 	
-	hg clone https://timeforscience.googlecode.com/hg/ ~/TimeForScience
+  hg clone https://timeforscience.googlecode.com/hg/ ~/TimeForScience
+    This creates a new directory named "TimeForScience" in the base level of your home directory.
+
+Now you will need to read "0005_How_to_set_up_your_path.txt" to see how to set up your shell's path.
+
+========================================================
+
+Procedure for getting updated code. You will want to do this every so often to get bug fixes!
+
+First command:
+   cd ~/TimeForScience
+     You must be in the source code repository for this to work!
+
+Second command:
+   hg pull
+     This checks the google code server to find out what has been changed.
+
+Third and last command:
+   hg update
+     This actually overwrites the local files with the updated ones.
+
+
+========================================================
+Procedure for uploadint your changes to the google code repository:
+
+First command:
+   cd ~/TimeForScience
+     You must be in the source code repository for this to work!
+
+Second command:
+   hg pull
+     This checks the google code server to find out what has been changed.
+
+Third command:
+   hg update
+     This actually overwrites the local files with the updated ones.
+
+Fourth command, which is only for new files:
+   hg add MY_NEW_FILE
+   This tells Mercurial that you have a totally new file that you made. Make sure to put it in a sensible location!)
+   You can skip this step if you aren't creating a totally new file.
+
+Fifth command:
+   hg commit -m "Fixed the bug in this file, so I am uploading it"
+     This tells your local computer that you have a change to make, but it does NOT
+     send it to the server yet!! (it is NOT like CVS commit!)
+
+Last command:
+   hg push
+     This sends your updated file's changes to the server.
+
+
