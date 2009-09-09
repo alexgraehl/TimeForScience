@@ -522,6 +522,8 @@
 (add-hook 'ess-mode-hook
 	  (lambda () (define-key ess-mode-map "\M-\t" 'dabbrev-expand))) ;; Make meta-tab do the normal expansion even in ESS mode
 
+(add-hook 'makefile-mode-hook
+	  (lambda () (define-key makefile-mode-map "\M-\t" 'dabbrev-expand))) ;; Make meta-tab do the normal expansion even in Make mode
 
 
 (font-lock-add-keywords
@@ -537,9 +539,9 @@
  '(
    ("\\<\\([0-9]+.tmp\\)" 1 agwTempFilenameFace prepend)
    ("\\<\\(DEBUG\\|Debug\\|debug\\|DEBUGGING\\|Debugging\\|debugging\\)\\>" 1 font-lock-warning-face prepend)
-   ("\\<\\([-0-9A-Za-z_]+.tmp\\)" 1 agwTempFilenameFace append)
+   ("\\<\\([-0-9A-Za-z_]+.tmp\\)" 1 agwTempFilenameFace keep)
    ("\\<\\(arg_[-0-9A-Za-z_]+\\)" 1 font-lock-builtin-face append)
-   ("\\<\\(and\\|or\\|not\\)\\>"  1 font-lock-keyword-face append)
+   ("\\<\\(and\\|or\\|not\\)\\>"  1 font-lock-keyword-face keep)
    )
  )
 
@@ -547,7 +549,7 @@
  'python-mode
  '(
    ("\\<\\(pass\\|return\\|raise\\)\\>" 1 agwPythonPassFace keep)
-   ("\\<\\(DEBUG\\|Debug\\|debug\\|DEBUGGING\\|Debugging\\|debugging\\)\\>" 1 font-lock-warning-face prepend)
+   ("\\<\\(DEBUG\\|Debug\\|debug\\|DEBUGGING\\|Debugging\\|debugging\\)\\>" 1 font-lock-warning-face keep)
    )
  )
 
@@ -563,15 +565,12 @@
 
 ;; R mode special things (requires the ESS stuff to be loaded!)
 
-
 					;(defvar zom "\"[abcdefghijV]\"")
-
 					;(message "OK YOU SET THE VARIABLE TO:")
 					;(message zom)
 					;(message "YEP THAT WAS IT")
 
-
-;; Keyword indent options: t (OVERRIDE) / keep / prepend / append
+;; Keyword highlight options: t (OVERRIDE) /  prepend (prioritize) / append / keep (keep existing coloring, if any)
 (font-lock-add-keywords
  'ess-mode
  '(
