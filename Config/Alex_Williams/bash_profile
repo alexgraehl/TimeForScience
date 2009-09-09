@@ -111,6 +111,12 @@ export TERM=xterm-color
 #export CLASSPATH=$CLASSPATH:/System/Library/Frameworks/JavaVM.framework/Versions/1.4.2/Classes/classes.jar:/usr/local/jakarta-tomcat-5.0.28/common/lib/servlet-api.jar:.
 
 export MYSRC=$HOME/cvs-local
+
+export PATH=$MYSRC/perl/Tools:$PATH # These come BEFORE other things found on the path
+export PATH=$MYSRC/perl/web:$PATH
+export PATH=$MYSRC/perl/Map:$PATH
+export PATH=$MYSRC/alexgw:$PATH
+
 #export MYPERLDIR=$MYSRC/perl
 export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$PATH
@@ -120,13 +126,10 @@ export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$PATH
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/R:$PATH
 
 export PATH=/usr/local/bin/:$PATH  ## <-- for the newer emacs version
-export PATH=$MYSRC/alexgw:$PATH
+
 export PATH=$PATH:$MYSRC/lab_apps/python/Tools
 export PATH=$PATH:$MYSRC/lab_apps/R_shell
 export PATH=$PATH:$MYSRC/lab_apps/shell_scripts
-export PATH=$MYSRC/perl/Tools:$PATH # These come BEFORE other things found on the path
-export PATH=$MYSRC/perl/web:$PATH
-export PATH=$MYSRC/perl/Map:$PATH
 export PATH=$PATH:$MYSRC/cvaske/R/Commands
 export PATH=$PATH:$HOME/bin  # Alex's random executables
 export PATH=$PATH:/sw/bin  # Fink-installed unix-y things
