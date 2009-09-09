@@ -48,7 +48,7 @@ if ( scalar @ARGV == 0) {
     die "trash.pl needs at least one argument. It works in a similar fashion to *rm*.\nUsage: trash.pl thing1 thing2 thing3 ...\n\n";
 }
 
-my $MAX_INDEX = 10000; # <-- number of duplicate-named files allowed in a directory
+my $MAX_INDEX = 1000; # <-- number of duplicate-named files allowed in a directory
 
 my $username = `whoami`;
 chomp($username);
@@ -130,24 +130,37 @@ foreach my $itemToDelete (@ARGV) {
     my $trashedDirLoc  = "$trash/$dirname";
 
     if (! -d $trashedDirLoc) {
-	print qq{trash.pl: Making new trash subdirectory "$trashedDirLoc"\n};
+	print qq{trash.pl: Making a new trash subdirectory at $trashedDirLoc\n};
 	system(qq{mkdir -p "$trashedDirLoc"});
     }
 
-    my $trashedFileLoc = "$trash/$thepath";
+    my $tab = "     ";
+
+    my $trashedFileLoc =
+	($thepath =~ m{^\/})
+	? "${trash}${thepath}"
+	: "${trash}/${thepath}";
+    
     while (-e $trashedFileLoc) {
-	print "trash.pl: There was already a file in the trash named $trashedFileLoc, so we are trying to rename it before throwing it away...\n";
-	$trashedFileLoc = "$trash/$thepath" . "-->$index";
+	print STDOUT "trash.pl: There was already a file in the trash named\n";
+	print STDOUT "${tab}${tab}" . qq{"$trashedFileLoc"} . "\n";
+	print STDOUT "${tab}so we are trying to rename the file before trashing it...\n";
+
+	$trashedFileLoc =
+	    ($thepath =~ m{^\/})
+	    ? "${trash}${thepath}_${index}"
+	    : "${trash}/${thepath}_${index}";
+	
 	$index++;
 	if ($index >= $MAX_INDEX) {
-	    die "Error trying to rename file to avoid overwrite (too many files with the same name).\nYou should empty the trash.";
+	    die qq{Error trying to rename \"$itemToDelete\" to avoid overwriting an existing file with the same name that is already in the trash (there are too many files with the same name).\nYou should probably empty the trash.};
 	}
     }
 
     if (-l $itemToDelete) {
-	print qq{trash.pl: Trashing the symbolic link "$thepath" -> "$trashedFileLoc"\n};
+	print STDOUT qq{trash.pl: Trashing the symbolic link $itemToDelete -> $trashedFileLoc\n};
     } else {
-	print qq{trash.pl: Trashing "$thepath" -> "$trashedFileLoc"\n};
+	print STDOUT qq{trash.pl: $itemToDelete -> $trashedFileLoc\n};
     }
 
     system(qq{mv "$thepath" "$trashedFileLoc"});
