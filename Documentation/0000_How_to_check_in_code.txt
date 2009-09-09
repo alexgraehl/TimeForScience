@@ -31,7 +31,7 @@ Third and last command:
 
 
 ========================================================
-Procedure for uploadint your changes to the google code repository:
+Procedure for uploading your changes to the google code repository:
 
 First command:
    cd ~/TimeForScience
@@ -58,5 +58,13 @@ Fifth command:
 Last command:
    hg push
      This sends your updated file's changes to the server.
+     Note: you will have to type your username and password here, UNLESS
+     you put your password in your config file. Read on for instructions on how to do that.
 
+========================================================
 
+To avoid having to type in the annoying auto-generated password every time, you can save your password in a local file. Note that anyone can read this file, so don't use a password you care about!
+
+[paths]
+default = https://YOUR_USERNAME_HERE:YOUR_PASSWORD_GOES_HERE@timeforscience.googlecode.com/hg/
+                  ^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^
