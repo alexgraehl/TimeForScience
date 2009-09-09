@@ -63,8 +63,23 @@ Last command:
 
 ========================================================
 
-To avoid having to type in the annoying auto-generated password every time, you can save your password in a local file. Note that anyone can read this file, so don't use a password you care about!
+To avoid having to type in the annoying auto-generated password every time, you can save your password in a local file. Note that anyone on the filesystem can read this file, so don't use a password you care about! The password is stored as plaintext! Anyone can read it!
+
+There are two steps:
+
+1. Here are the two important lines that should be in the file ~/TimeForScience/.hg/hgrc :
 
 [paths]
 default = https://YOUR_USERNAME_HERE:YOUR_PASSWORD_GOES_HERE@timeforscience.googlecode.com/hg/
                   ^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^
+              Put your username here         and password here
+              (note that anybody can read these!)
+
+2. For a tiny bit of additional security, now run:
+        chmod -R og-rx ~/TimeForScience/.hg/
+    to make it only "very easy to read your password" instead of "incredibly easy."
+
+
+========================================================
+
+
