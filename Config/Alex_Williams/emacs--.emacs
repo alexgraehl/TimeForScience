@@ -236,13 +236,16 @@
  kept-new-versions         6 ; BACKUPS
  kept-old-versions         2 ; BACKUPS
  backup-by-copying         t ; BACKUPS don't clobber symlinks (?)
- vc-make-backup-files      t ; BACKUPS
+ vc-handled-backend      nil
+ vc-make-backup-files    nil ; BACKUPS
  make-backup-files         t ; BACKUPS
  auto-save-mode            t ; BACKUPS: Don't auto-save
- version-control           t ; BACKUPS: use versioned backups
+ version-control         nil ; BACKUPS: use versioned backups
 
  ;; - http://users.tkk.fi/~rsaikkon/conf/dot.emacs
  )
+
+(setq vc-handled-backends nil) ;; <-- don't load the incredibly slow "vc-hg" mercurial module
 
 ;; More about backups
 (setq auto-save-mode t)
@@ -672,3 +675,34 @@
 (kill-buffer "*scratch*") ;; Kill the hated scratch buffer!
 
 (global-set-key (kbd "RET") 'newline) ;; Make sure RET inserts a newline!
+
+
+
+
+(defun acount(string)
+  "Counts the number of occurences of STRING in the buffer."
+  (interactive (list (read-string "Count: ")))
+  (let ((point (point))
+	(counter 0)
+	(myStr   nil)
+	(mat nil)
+	)
+    (beginning-of-buffer)
+    (while (re-search-forward string (point-max) t)
+      (setq ps (match-beginning 0))
+      (setq pe (match-end 0))
+      (setq counter (+ 1 counter))
+      (setq myStr (concat myStr (match-string 0) "\n"))
+      ;(setq myStr (concat myStr "<" (thing-at-point 'symbol) ">=" (format "<%d," ps) (format " %d>  " pe) (match-string 0) "   :: " ))
+      )
+    (goto-char point)
+    (message (format "%d occurences" counter))
+    (message myStr)
+    ))
+
+(defun am()
+  "Fun!"
+  (interactive)
+  (acount "^[^# 	]+.*\\(=\\|<-\\)[ ]*function[ ]*(")
+  ;(acount "^.*\\(=\\|<-\\)[ ]*function[ ]*(")
+  ) ;(count-occurences "alias"))
