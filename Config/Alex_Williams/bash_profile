@@ -160,6 +160,7 @@ bind "\C-s:history-search-forward"
 # Things related to "LESS"
 export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Everyone/lesspipe_basic.sh %s"
 # lesspipe_basic.sh casues less to transparently decompress gzipped files before showing them
+# Old:  '|/usr/bin/lesspipe.sh %s'
 
 alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Everyone/lesspipe_advanced.sh %s" /usr/bin/less -S -f'
 # It's less, but it "magically" handles gzipped files and automatically runs ".tab" files through sheet.pl
@@ -167,18 +168,16 @@ alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Everyone/lesspi
 # to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
 # sheet.pl unless you say "cat something | ssf"
 
-# Plain "s" doesn't run anything through sheet.pl, but it *does* handle gzipped files
-alias  s='/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case -R -f'
+# Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
+alias  sn='/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case -R -f'
 
-function ss {
-    # LESSes a file, with some amenities to auto-decompress gzips and to auto-format tab-delimited files
-    # No restrictions on column widths
+function s {
+    # "s" uses "magicless" to run files through sheet.pl
     magicless --LINE-NUMBERS --status-column --ignore-case -R $*
 }
 
 function ssf {
-    # Forces sheet.pl to be called ("SS Force sheet.pl")
-    # Can only view ONE file, unlike "ss"
+    # Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
     /usr/bin/less $1 | sheet.pl | ss
 }
 

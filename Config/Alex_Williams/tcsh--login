@@ -130,26 +130,28 @@ alias tattle "echo -n '\033[45m\033[33m'; ps aux | tail -n +2 | sort --reverse -
 
 
 # Things related to "LESS"
-setenv LESSOPEN '|/usr/bin/lesspipe.sh %s'
+setenv LESSOPEN LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Everyone/lesspipe_basic.sh %s"
 
-alias magicless 'env LESSOPEN="|${MYSRC}/lab_apps/shell_scripts/lesspipe_advanced.sh %s" /usr/bin/less -S -f'
+# Old:  '|/usr/bin/lesspipe.sh %s'
+
+alias magicless 'env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Everyone/lesspipe_advanced.sh %s" /usr/bin/less -S -f'
 # It's less, but it "magically" handles gzipped files and automatically runs ".tab" files through sheet.pl
 # Note that this only magically happens if the files are passed in on the command line--otherwise you have
 # to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
 # sheet.pl unless you say "cat something | ssf"
 
+# Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
+alias  sn '/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case -R -f'
 
-alias ss  "magicless --LINE-NUMBERS --status-column --ignore-case -R \!*"
-# ss runs things through sheet.pl unless they are passed in by
+# "s" uses "magicless" to run files through sheet.pl
+alias s  "magicless --LINE-NUMBERS --status-column --ignore-case -R \!*"
 
-alias s   "/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case -R -f"
-# Plain "s" doesn't run things through sheet.pl.
-
+# Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
 alias ssf "/usr/bin/less \!* | sheet.pl | ss"
 alias ss1 "/usr/bin/less \!* | sheet.pl --trunc=15 | ss"
 alias ss2  "/usr/bin/less \!* | sheet.pl --trunc=35 | ss"
 
-alias ltab "sheet.py"
+alias ltab 'python `which sheet.py`'
 alias v   'ltab'   # ltab is defined as sheet.py in the stuartlab init file
 
 
