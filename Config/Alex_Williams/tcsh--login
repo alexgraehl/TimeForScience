@@ -147,12 +147,12 @@ alias  sn '/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case -R -f'
 alias s  "magicless --LINE-NUMBERS --status-column --ignore-case -R \!*"
 
 # Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
-alias ssf "/usr/bin/less \!* | sheet.pl | ss"
-alias ss1 "/usr/bin/less \!* | sheet.pl --trunc=15 | ss"
-alias ss2  "/usr/bin/less \!* | sheet.pl --trunc=35 | ss"
+alias ssf "/usr/bin/less \!* | sheet.pl | s"
+alias ss1 "/usr/bin/less \!* | sheet.pl --trunc=15 | s"
+alias ss2 "/usr/bin/less \!* | sheet.pl --trunc=35 | s"
 
 alias ltab 'python `which sheet.py`'
-alias v   'ltab'   # ltab is defined as sheet.py in the stuartlab init file
+alias v    'ltab'   # ltab is defined as sheet.py in the stuartlab init file
 
 
 
@@ -169,8 +169,8 @@ alias mcm     'MAKE_WITH_PARAMS clean && MAKE_WITH_PARAMS \!*'
 alias pmake 'premake.pl -Z --warn-undefined-variables --print-directory \!*'
 alias remake '/bin/rm -f \!\!:1 && MAKE_WITH_PARAMS \!\!:1'
 alias re remake   # re: remake a file (rm it, then make it)
-alias rel 're \!\!:1 && ss \!\!:1'  # rel: "re look" -- remakes a file, then looks at it with "vv"
-alias rell 're \!\!:1 && vv \!\!:1'  # rel: "re look" -- remakes a file, then looks at it with "vv"
+alias rel 're \!\!:1 && s \!\!:1'  # rel: "re look" -- remakes a file, then looks at it with "vv"
+alias rell 're \!\!:1 && ltab \!\!:1'  # rel: "re look" -- remakes a file, then looks at it with "vv"
 alias rep 're \!\!:1 && ltab \!\!:1'   # remake a file, load it in "p"
 # show_unsafe_chars: Shows any characters that might mess up
 # a makefile. Good for checking for safety in source data

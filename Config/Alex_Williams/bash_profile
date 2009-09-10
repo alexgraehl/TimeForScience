@@ -153,10 +153,6 @@ bind "\C-s:history-search-forward"
 
 
 
-# LESS and Tab-delimited file viewing
-#alias    ss='less -S --LINE-NUMBERS --status-column --ignore-case -R -f --CLEAR-SCREEN'
-
-
 # Things related to "LESS"
 export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Everyone/lesspipe_basic.sh %s"
 # lesspipe_basic.sh casues less to transparently decompress gzipped files before showing them
@@ -176,19 +172,19 @@ function s {
     magicless --LINE-NUMBERS --status-column --ignore-case -R $*
 }
 
-function ssf {
+function sf {
     # Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
     /usr/bin/less $1 | sheet.pl | ss
 }
 
-function ss1 {
+function s1 {
     # like ssf, but shorter columns
     # More-restrictive column widths (can only be 15 max)
     # Can only view ONE file, unlike "ss"
     /usr/bin/less $1 | sheet.pl --trunc=15 | ss
 }
 
-function ss2 {
+function s2 {
     # like ssf, but shorter columns
     # Moderately-restrictive column widths (can only be 35 max)
     # Can only view ONE file, unlike "ss"
@@ -201,8 +197,8 @@ function  ltab {
 }
 alias v='ltab'
 
-alias invisible='SetFile -a V'
-alias visible='SetFile -a v'
+alias invisible='SetFile -a V' ## <-- Only works on Mac OS X
+alias visible='SetFile -a v'   ## <-- Only works on Mac OS X
 
 set -o ignoreeof  # Prevent Ctrl-D from exiting!
 
@@ -215,4 +211,6 @@ set -o ignoreeof  # Prevent Ctrl-D from exiting!
 export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 # Finished adapting your PATH environment variable for use with MacPorts.
 
+# Save the local ethernet "en0" MAC address into the variable LOCAL_EN0_MAC. Note the zero.
+# Allows per-machine settinsg.
 export LOCAL_EN0_MAC=`ifconfig en0 | grep -i ether | sed 's/.*ether //' | sed 's/[ ]*$//'`
