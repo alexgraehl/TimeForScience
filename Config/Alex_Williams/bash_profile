@@ -59,9 +59,10 @@ alias tattle="echo -n '\033[45m\033[33m'; ps aux | tail -n +2 | sort --reverse -
 alias  make='make --warn-undefined-variables --print-directory'
 alias     m='make'
 alias   mcm='make clean && make'
-#function remake {
-#	rm -f "$*" && make "$*"
-#}
+function remake {
+    ## Lets you type "remake" to remove a file and then use GNU make to try to re-generate it
+	trash.pl "$1" && make --warn-undefined-variables --print-directory "$1"
+}
 
 
 
