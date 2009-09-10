@@ -107,10 +107,6 @@ export     EDITOR=emacs
 export TERM=xterm-color
 #256color
 
-
-
-#export CLASSPATH=$CLASSPATH:/System/Library/Frameworks/JavaVM.framework/Versions/1.4.2/Classes/classes.jar:/usr/local/jakarta-tomcat-5.0.28/common/lib/servlet-api.jar:.
-
 export MYSRC=$HOME/cvs-local
 
 export PATH=$MYSRC/perl/Tools:$PATH # These come BEFORE other things found on the path
@@ -118,13 +114,14 @@ export PATH=$MYSRC/perl/web:$PATH
 export PATH=$MYSRC/perl/Map:$PATH
 export PATH=$MYSRC/alexgw:$PATH
 
-#export MYPERLDIR=$MYSRC/perl
+
 export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$PATH
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$PATH
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$PATH
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$PATH
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/R:$PATH
+
 
 export PATH=/usr/local/bin/:$PATH  ## <-- for the newer emacs version
 
@@ -134,11 +131,8 @@ export PATH=$PATH:$MYSRC/lab_apps/shell_scripts
 export PATH=$PATH:$MYSRC/cvaske/R/Commands
 export PATH=$PATH:$HOME/bin  # Alex's random executables
 export PATH=$PATH:/sw/bin  # Fink-installed unix-y things
-export PATH=/Charcoal/Trolltech/Qt-4.3.4/bin:$PATH
 
-
-
-HISTSIZE=32767
+HISTSIZE=10000
 HISTCONTROL=ignoreboth
 # this causes any lines matching the previous history entry not to be saved.
 
@@ -163,12 +157,11 @@ bind "\C-s:history-search-forward"
 #alias    ss='less -S --LINE-NUMBERS --status-column --ignore-case -R -f --CLEAR-SCREEN'
 
 
-
 # Things related to "LESS"
-export LESSOPEN="|${MYSRC}/lab_apps/shell_scripts/lesspipe_basic.sh %s"
+export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Everyone/lesspipe_basic.sh %s"
 # lesspipe_basic.sh casues less to transparently decompress gzipped files before showing them
 
-alias magicless='env LESSOPEN="|${MYSRC}/lab_apps/shell_scripts/lesspipe_advanced.sh %s" /usr/bin/less -S -f'
+alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Everyone/lesspipe_advanced.sh %s" /usr/bin/less -S -f'
 # It's less, but it "magically" handles gzipped files and automatically runs ".tab" files through sheet.pl
 # Note that this only magically happens if the files are passed in on the command line--otherwise you have
 # to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through

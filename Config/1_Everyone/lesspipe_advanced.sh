@@ -30,15 +30,15 @@ lesspipe() {
 	fi ;;
 
   # Alex:
-  # CHANGE from default lesspipe: Now we load any files ending in
+  # CHANGED from default lesspipe: Now we load any files ending in
   # .tab or .matrix (including gzipped files) and run them through
   # "sheet.pl", which will format them as a quasi-spreadsheet with
   # columns aligned.   .csv files could be added in a similar fashion
   # by just changing the delimiter used by sheet.pl
-  *.tab.gz|*.matrix.gz) zcat "$1" | sheet.pl --notify ;;
+  # For a faster but less feature-filled
+  #  UNIX-tool-only version of this, instead of "sheet.pl", use "column -t -s '	'"
+  *.tab.gz|*.matrix.gz) gunzip -c "$1" | sheet.pl --notify ;;
   *.tab|*.matrix) sheet.pl --notify "$1" ;;
-
-
 
   *.tar) tar tvvf "$1" ;;
   *.tgz|*.tar.gz|*.tar.[zZ]) tar tzvvf "$1" ;;
@@ -56,13 +56,6 @@ lesspipe() {
      echo "Install ImageMagick to browse images"
    fi ;;
   *)
-	case "$1" in
-		*.gz)	DECOMPRESSOR="gunzip -c" ;;
-		*.bz2)	DECOMPRESSOR="bunzip2 -c" ;;
-	esac
-	if [ ! -z $DECOMPRESSOR ] ; then
-	    $DECOMPRESSOR -- "$1" ;
-	fi
   esac
 }
 
