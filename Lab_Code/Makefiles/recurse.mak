@@ -121,6 +121,7 @@ url_ndx  = $(shell seq 1 $(words $(URL)))
 
 # Make the early_targets first, THEN the children, THEN finally the targets
 all: vars
+	@perl -e 'if (qq{} !~ qq{$(URL)}) { system(qq{$(MAKE) remote}); }'
 	@perl -e 'if (qq{} !~ qq{$(early_targets)}) { system(qq{$(MAKE) $(early_targets)}); }'
 	$(call RUN_RECURSIVELY,all)
 	@perl -e 'if (qq{} !~ qq{$(targets)}) { system(qq{$(MAKE) $(targets)}); }'

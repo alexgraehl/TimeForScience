@@ -1,3 +1,6 @@
+
+
+
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
 # .bash_profile: Loaded when the shell is interactively started up
@@ -82,7 +85,7 @@ alias hgcom="hg commit -m 'Changes committed by alexgw' && hg push"
 alias hgup="hg pull && hg update"
 
 alias sciencecom='hg commit --cwd ${TIME_FOR_SCIENCE_DIR} -m "Changes committed by alexgw" && hg push --cwd ${TIME_FOR_SCIENCE_DIR}'
-alias scienceup='hg --cwd ${TIME_FOR_SCIENCE_DIR} update'
+alias scienceup='hg --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SCIENCE_DIR} update'
 
 alias gitdiff="git difftool"
 
@@ -181,21 +184,14 @@ function s {
 
 function sf {
     # Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
-    /usr/bin/less $1 | sheet.pl | ss
+    /usr/bin/less $1 | sheet.pl | s
 }
 
 function s1 {
     # like ssf, but shorter columns
     # More-restrictive column widths (can only be 15 max)
     # Can only view ONE file, unlike "ss"
-    /usr/bin/less $1 | sheet.pl --trunc=15 | ss
-}
-
-function s2 {
-    # like ssf, but shorter columns
-    # Moderately-restrictive column widths (can only be 35 max)
-    # Can only view ONE file, unlike "ss"
-    /usr/bin/less $1 | sheet.pl --trunc=35 | ss
+    /usr/bin/less $1 | sheet.pl --trunc=15 | s
 }
 
 function  ltab {
