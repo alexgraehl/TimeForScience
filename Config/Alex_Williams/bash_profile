@@ -46,7 +46,11 @@ alias emptytrash='mkdir -p /tmp/alexgw/Trash/ && /bin/rm -rf /tmp/alexgw/Trash/ 
 alias topcpu='top -o cpu' # top, sorted by CPU usage
 alias    kpk='exit'
 
-# Utility commands
+## Mac-specific commands:
+alias invisible='SetFile -a V' ## Make a file/folder invisible to the Finder
+alias visible='SetFile -a v' ## opposite of "invisible"
+
+## Utility commands
 alias   wcl='wc -l'
 alias sortt='sort -t "	"' # sort with tab as separator
 alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
@@ -76,11 +80,15 @@ alias commit="cvs commit -m 'AGW CVS Commit'"
 alias gitcom="git commit -a -m 'Changes committed by alexgw'"
 alias hgcom="hg commit -m 'Changes committed by alexgw' && hg push"
 alias hgup="hg pull && hg update"
+
+alias sciencecom="hg --cwd ${TIME_FOR_SCIENCE_DIR} commit -m 'Changes committed by alexgw' && hg --cwd ${TIME_FOR_SCIENCE_DIR} push"
+alias scienceup="hg --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SCIENCE_DIR} update" # 
+
 alias gitdiff="git difftool"
 
 #export LSCOLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;31'
 export LSCOLORS=FxgxCxDxBxegedabagacad
-#The order of the attributes are as follows:
+#The order of the attributes for LSCOLORS is as follows:
 #
 #                           1.   directory
 #                           2.   symbolic link
@@ -113,7 +121,6 @@ export PATH=$MYSRC/perl/Tools:$PATH # These come BEFORE other things found on th
 export PATH=$MYSRC/perl/web:$PATH
 export PATH=$MYSRC/perl/Map:$PATH
 export PATH=$MYSRC/alexgw:$PATH
-
 
 export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$PATH
@@ -154,11 +161,11 @@ bind "\C-s:history-search-forward"
 
 
 # Things related to "LESS"
-export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Everyone/lesspipe_basic.sh %s"
+export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
 # lesspipe_basic.sh casues less to transparently decompress gzipped files before showing them
 # Old:  '|/usr/bin/lesspipe.sh %s'
 
-alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Everyone/lesspipe_advanced.sh %s" /usr/bin/less -S -f'
+alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_advanced.sh %s" /usr/bin/less -S -f'
 # It's less, but it "magically" handles gzipped files and automatically runs ".tab" files through sheet.pl
 # Note that this only magically happens if the files are passed in on the command line--otherwise you have
 # to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
@@ -197,19 +204,8 @@ function  ltab {
 }
 alias v='ltab'
 
-alias invisible='SetFile -a V' ## <-- Only works on Mac OS X
-alias visible='SetFile -a v'   ## <-- Only works on Mac OS X
 
 set -o ignoreeof  # Prevent Ctrl-D from exiting!
-
-
-##
-# Your previous /Users/alexgw/.bash_profile file was backed up as /Users/alexgw/.bash_profile.macports-saved_2009-08-30_at_16:49:56
-##
-
-# MacPorts Installer addition on 2009-08-30_at_16:49:56: adding an appropriate PATH variable for use with MacPorts.
-export PATH=/opt/local/bin:/opt/local/sbin:$PATH
-# Finished adapting your PATH environment variable for use with MacPorts.
 
 # Save the local ethernet "en0" MAC address into the variable LOCAL_EN0_MAC. Note the zero.
 # Allows per-machine settinsg.
