@@ -81,8 +81,8 @@ alias gitcom="git commit -a -m 'Changes committed by alexgw'"
 alias hgcom="hg commit -m 'Changes committed by alexgw' && hg push"
 alias hgup="hg pull && hg update"
 
-alias sciencecom="hg --cwd ${TIME_FOR_SCIENCE_DIR} commit -m 'Changes committed by alexgw' && hg --cwd ${TIME_FOR_SCIENCE_DIR} push"
-alias scienceup="hg --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SCIENCE_DIR} update" # 
+alias sciencecom='hg commit --cwd ${TIME_FOR_SCIENCE_DIR} -m 'Changes committed by alexgw' && hg push --cwd ${TIME_FOR_SCIENCE_DIR}'
+alias scienceup='hg --cwd ${TIME_FOR_SCIENCE_DIR} update'
 
 alias gitdiff="git difftool"
 
