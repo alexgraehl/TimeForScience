@@ -120,7 +120,7 @@
 
 (defface agwMakeGlobalVarFace
   '((t ( ;; inherit some-other-face
-	:bold nil :foreground "magenta")) ;; :background "magenta"))
+	:bold nil :foreground "black" :background "magenta" :underline nil))
     )
   "Indicates which variables are GLOBAL variables, assuming they start with 'gv'"
   :group 'agwFaces)
