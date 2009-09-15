@@ -61,8 +61,8 @@
 
 (defconst VARIABLE_BG   "blue")
 
-(defconst FUNCTION_TEXT "black")
-(defconst FUNCTION_BG   "magenta")
+(defconst FUNCTION_TEXT "cyan")
+(defconst FUNCTION_BG   "blue")
 
 (defconst TYPE_TEXT     "yellow")
 (defconst TYPE_BG       nil)       ;"orange4")
@@ -269,13 +269,11 @@
 (global-set-key (kbd "M-\'")
 		'(lambda () "Start keyboard macro" (interactive)
 		   (if (equal agw-defining-macro nil)
-		       (progn (setq agw-defining-macro t)
-			      (start-kbd-macro nil)
-			      (message "Now recording a temporary keyboard macro..."))
+		       (progn (setq agw-defining-macro (not agw-defining-macro))
+			      (start-kbd-macro nil))
 		     ;; else
-		     (progn (end-kbd-macro)
-			    (setq agw-defining-macro nil)
-			    (message "Done recording a keyboard macro--repeat it with M-;")))))
+		     (progn (setq agw-defining-macro (not agw-defining-macro))
+			    (end-kbd-macro)))))
 
 (global-set-key (kbd "M-;") '(lambda () "Run keyboard macro"   (interactive) (call-last-kbd-macro) (message "Repeated the last macro defined with M-[...")))
 
@@ -579,11 +577,11 @@
  '(
    ;;   ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 font-lock-constant-face append) ; anything that starts in kv
    ("\\<\\(stop\\|stopifnot\\|browser\\|options\\)\\>" 1 font-lock-warning-face keep)
-   ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 font-lock-constant-face append) ; anything that starts in kv
-   ("\\<\\(gv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwMakeGlobalVarFace append) ; anything that starts in gv
-   ("\\<\\([a-zA-Z0-9\\.]*Vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace append) ; anything that ends in Vec
-   ("\\<\\([a-zA-Z0-9\\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace append) ; anything that ends in List
-   ("\\<\\([a-zA-Z0-9\\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace append) ; anything that ends in Hash
+   ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 font-lock-constant-face keep) ; anything that starts in kv
+   ("\\<\\(gv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwMakeGlobalVarFace keep) ; anything that starts in gv
+   ("\\<\\([a-zA-Z0-9\\.]*Vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
+   ("\\<\\([a-zA-Z0-9\\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
+   ("\\<\\([a-zA-Z0-9\\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
    )
  )
 
