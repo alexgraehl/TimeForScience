@@ -86,14 +86,14 @@
 (defconst KEYWORD_BG   nil)
 
 (defface agwCustomDoubleLineFace
-  '((t (:foreground "magenta" :background "blue"))) "To highlight === rows")
+  '((t (:foreground "magenta" :background "blue" :underline t))) "To highlight === rows")
 
 
 (defface agwPositiveNumberFace
   '((t (:foreground "green"))) "To highlight positive numbers")
 
 (defface agwZeroNumberFace
-  '((t (:foreground "yellow")))
+  '((t (:foreground "cyan")))
   "To highlight zeros")
 
 (defface agwNegativeNumberFace
@@ -111,11 +111,11 @@
 
 (defface agwArrayFace
   '((t ( ;;:inherit font-lock-warning-face
-	:bold nil :background nil :foreground "yellow"))) "Indicates arrays/vectors." :group 'agwFaces)
+	:bold nil :background nil :foreground "green"))) "Indicates arrays/vectors." :group 'agwFaces)
 
 (defface agwListFace
   '((t ( ;; inherit some-other-face
-	:bold nil :foreground "yellow"))) "Indicates which variables are an R list, based on the name." :group 'agwFaces)
+	:bold nil :foreground "green"))) "Indicates which variables are an R list, based on the name." :group 'agwFaces)
 
 
 (defface agwMakeGlobalVarFace
@@ -521,11 +521,13 @@
 (add-hook 'ess-mode-hook        'hs-minor-mode)
 
 (add-hook 'ess-mode-hook
-	  (lambda () (define-key ess-mode-map "\M-\t" 'dabbrev-expand))) ;; Make meta-tab do the normal expansion even in ESS mode
+	  (progn (define-key ess-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in ESS mode
+		 (define-key ess-mode-map "_" nil)          ;; no smart underscores!
+		 (define-key inferior-ess-mode-map "_" nil) ;; no smart underscores!
+		 ))
 
-(add-hook 'makefile-mode-hook
-	  (lambda () (define-key makefile-mode-map "\M-\t" 'dabbrev-expand))) ;; Make meta-tab do the normal expansion even in Make mode
-
+;(add-hook 'makefile-mode-hook
+;	  (progn (define-key makefile-mode-map "\M-\t" 'dabbrev-expand))) ;; Make meta-tab do the normal expansion even in Make mode
 
 (font-lock-add-keywords
  'perl-mode
@@ -594,7 +596,7 @@
        ("\\<\\([+]?[0-9\\.]+\\(?:\\.[0-9]+\\)?\\(?:[eE][-+]?[0-9]+\\)?\\)\\>" 1 'agwPositiveNumberFace keep)
        ("\\(-[0-9\\.]+\\(?:\\.[0-9]+\\)?\\(?:[eE][-+]?[0-9]+\\)?\\)" 1 'agwNegativeNumberFace keep)
        ("\\<\\(NaN\\|NA\\|ND+\\)\\>" 1 font-lock-warning-face keep)
-       ("\\(.*[=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- 8 '=' in a row!
+       ("\\(.*[=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
        ))))
 
 ;; FUNCTIONS
