@@ -130,11 +130,11 @@ alias tattle "echo -n '\033[45m\033[33m'; ps aux | tail -n +2 | sort --reverse -
 
 
 # Things related to "LESS"
-setenv LESSOPEN LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Everyone/lesspipe_basic.sh %s"
+setenv LESSOPEN LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
 
 # Old:  '|/usr/bin/lesspipe.sh %s'
 
-alias magicless 'env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Everyone/lesspipe_advanced.sh %s" /usr/bin/less -S -f'
+alias magicless 'env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_advanced.sh %s" /usr/bin/less -S -f'
 # It's less, but it "magically" handles gzipped files and automatically runs ".tab" files through sheet.pl
 # Note that this only magically happens if the files are passed in on the command line--otherwise you have
 # to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
