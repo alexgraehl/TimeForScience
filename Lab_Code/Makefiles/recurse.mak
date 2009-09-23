@@ -122,6 +122,10 @@ url_ndx  = $(shell seq 1 $(words $(URL)))
 # Make the early_targets first, THEN the children, THEN finally the targets
 all: vars
 	@perl -e 'if (qq{} !~ qq{$(URL)}) { system(qq{$(MAKE) remote}); }'
+<<<<<<< local
+	@perl -e 'if (qq{} !~ qq{$(URL)}) { print(qq{RUNNING REMOTE!!!\n\n}); }'
+=======
+>>>>>>> other
 	@perl -e 'if (qq{} !~ qq{$(early_targets)}) { system(qq{$(MAKE) $(early_targets)}); }'
 	$(call RUN_RECURSIVELY,all)
 	@perl -e 'if (qq{} !~ qq{$(targets)}) { system(qq{$(MAKE) $(targets)}); }'
@@ -223,6 +227,7 @@ back:
 	cp $(things_to_back_up) $(wildcard Makefile*) $(wildcard *.mak)    $(BACKUP_FOLDER) ;
 
 remote:
+	@echo 'Running remote with URL $(URL)...'
 	$(call RUN_RECURSIVELY,remote)
 	mkdir -p $(REMOTE_FOLDER); \
 	$(foreach u, $(URL), \
@@ -264,6 +269,7 @@ vars:
 	@echo '        CHILDREN: ' $(CHILDREN)
 	@echo '    side_effects: ' $(side_effects)
 	@echo '  CHILD_MAKEFILE: ' $(CHILD_MAKEFILE)
+	@echo '             URL: ' $(URL)
 
 #.cvsignore:
 #	echo $(files_to_clean) | transpose.pl -d ' ' > $@;
