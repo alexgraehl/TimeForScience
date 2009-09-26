@@ -2,7 +2,6 @@
 
 ;; -*-Lisp-*-  <-- Tells emacs what syntax highlighting to use ; Important if the line ending does not indicate the file type.
 
-
 ;; How to set a keybinding interactively:
 ;; 1. M-x: global-set-key
 ;; 2. Type the key combination you want
@@ -154,7 +153,6 @@
 ;;    (load (expand-file-name "~/.emacs.d/ess/lisp/ess-site")))
 ;; Parameters to load that will make it not complain/warn: 'nomessage 'noerror
 ;; NB: loading the ess-module slows down emacs' load time a lot, even if ESS is compiled.
-;;(require 'ess-site)
 (if (system-type-is-darwin)
     (require 'ess-site)) ;; <-- this is super slow!!!
 ;; ##########################################################################
@@ -206,6 +204,7 @@
  scroll-conservatively     1
  show-trailing-whitespace  t
  tab-width                 4
+ indent-tabs-mode          t
  default-fill-column       80 ;; <-- when you "meta-q" to fit text, what line widths are used for wrapping?
  transient-mark-mode       t ; show when we mark text for copying/selection, BUT also makes the selection disappear after one use. (if unset, we can use ctrl-space ctrl-space)
 
@@ -279,8 +278,6 @@
 
 
 
-(global-set-key (kbd "M-0") '(lambda () "Close this window"   (interactive) (delete-window) (message "Just ran delete-window (M-0)! (Note: the buffer is still active. Use <C-x b> to find it)")))
-
 (global-set-key (kbd "M-1") '(lambda () "Close other windows"   (interactive) (delete-other-windows) (message "delete-other-windows: Closed all windows besides the active one.")))
 
 (global-set-key (kbd "M-2") '(lambda () "Split window vertically"   (interactive) (split-window-vertically) (message "split-window-vertically: Split the window into top/bottom panes.")))
@@ -290,12 +287,16 @@
 (global-set-key (kbd "M-%") '(lambda () "Adds a shell to the bottom quarter of this window."
 			       (interactive) (split-window-vertically) (other-window 1) (split-window-vertically) (delete-window) (shell) (rename-buffer "Shell-primary-buffer") (other-window 1) (message "Set up this window with a shell at the bottom.")))
 
+(global-set-key (kbd "M-%") 'set-variable)
+(global-set-key (kbd "M-5") 'describe-variable)
 (global-set-key (kbd "M-6") 'describe-key)
 
 (global-set-key (kbd "M-7") '(lambda () "Delete Trailing Whitespace"   (interactive) (delete-trailing-whitespace) (message "delete-trailing-whitespace: Deleted trailing whitespace (if any)")))
 
-(global-set-key (kbd "M-8") 'previous-buffer)
-(global-set-key (kbd "M-9") 'next-buffer)
+(global-set-key (kbd "M-9") 'previous-buffer)
+(global-set-key (kbd "M-0") 'next-buffer)
+
+(global-set-key (kbd "M--") '(lambda () "Close this window"   (interactive) (delete-window) (message "Just ran delete-window (M-0)! (Note: the buffer is still active. Use <C-x b> to find it)")))
 
 
 (global-set-key [(meta m)] 'other-window)
@@ -520,11 +521,23 @@
 (add-hook 'sh-mode-hook         'hs-minor-mode)
 (add-hook 'ess-mode-hook        'hs-minor-mode)
 
-(add-hook 'ess-mode-hook
+(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
+
+(add-hook 'ess-mode-hook  ;; R-mode-hook r-mode-hook r mode <-- should be ess-mode-hook
 	  (progn (define-key ess-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in ESS mode
 		 (define-key ess-mode-map "_" nil)          ;; no smart underscores!
 		 (define-key inferior-ess-mode-map "_" nil) ;; no smart underscores!
+;;		 (define-key ess-mode-map "\t" 'self-insert-command)
 		 ))
+
+;; note: lambda and progn are different somehow!!!
+(add-hook 'ess-mode-hook
+	  (lambda ()
+	    (ess-set-style 'BSD)
+	    (setq ess-indent-level 5)
+	    (setq ess-fancy-comments 'nil)
+		))
+
 
 ;(add-hook 'makefile-mode-hook
 ;	  (progn (define-key makefile-mode-map "\M-\t" 'dabbrev-expand))) ;; Make meta-tab do the normal expansion even in Make mode
@@ -584,6 +597,7 @@
    ("\\<\\([a-zA-Z0-9\\.]*Vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
    ("\\<\\([a-zA-Z0-9\\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
    ("\\<\\([a-zA-Z0-9\\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+   ("\\(.*[=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
    )
  )
 
@@ -636,7 +650,6 @@
 
 ;;(message "My .emacs loaded in %ds" (destructuring-bind (hi lo ms) (current-time) (- (+ hi lo) (+ (first *emacs-load-start*) (second *emacs-load-start*)))))
 
-(add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
 ;;(defun CustomMoveByWord(X)
 ;;  "AGW: Move the cursor by X words horizontally."
@@ -706,3 +719,9 @@
   (acount "^[^# 	]+.*\\(=\\|<-\\)[ ]*function[ ]*(")
   ;(acount "^.*\\(=\\|<-\\)[ ]*function[ ]*(")
   ) ;(count-occurences "alias"))
+
+
+(defun reload-config () 
+  "Runs load-file on ~/.emacs" 
+  (interactive)
+  (load-file "~/.emacs"))
