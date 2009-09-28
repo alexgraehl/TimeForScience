@@ -138,10 +138,14 @@
 (defun system-type-is-darwin () (string-equal system-type "darwin"))
 (defun system-type-is-gnu () (string-equal system-type "gnu/linux"))
 
+(setq should-load-ess nil) ;; <-- if we haven't loaded ess, then this remains "nil"
 
 (setq load-path (cons "~/.emacs.d" load-path))
 (if (system-type-is-darwin)
-    (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path)))
+    (progn
+      (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
+      (setq should-load-ess t)
+      ))
 
 ;;(autoload 'ruby-mode "ruby-mode" "Major mode for editing ruby scripts." t)
 ;;(load (expand-file-name "~/.emacs.d/cperl-mode.el.6.2")) ; <-- note: compiled version!
@@ -523,21 +527,23 @@
 
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
-(add-hook 'ess-mode-hook  ;; R-mode-hook r-mode-hook r mode <-- should be ess-mode-hook
-	  (progn (define-key ess-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in ESS mode
-		 (define-key ess-mode-map "_" nil)          ;; no smart underscores!
-		 (define-key inferior-ess-mode-map "_" nil) ;; no smart underscores!
-;;		 (define-key ess-mode-map "\t" 'self-insert-command)
-		 ))
-
-;; note: lambda and progn are different somehow!!!
-(add-hook 'ess-mode-hook
-	  (lambda ()
-	    (ess-set-style 'BSD)
-	    (setq ess-indent-level 5)
-	    (setq ess-fancy-comments 'nil)
-		))
-
+(if should-load-ess
+    (progn
+      (add-hook 'ess-mode-hook  ;; R-mode-hook r-mode-hook r mode <-- should be ess-mode-hook
+		(progn (define-key ess-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in ESS mode
+		       (define-key ess-mode-map "_" nil)          ;; no smart underscores!
+		       (define-key inferior-ess-mode-map "_" nil) ;; no smart underscores!
+		       ;;		 (define-key ess-mode-map "\t" 'self-insert-command)
+		       ))
+      
+      ;; note: lambda and progn are different somehow!!!
+      (add-hook 'ess-mode-hook
+		(lambda ()
+		  (ess-set-style 'BSD)
+		  (setq ess-indent-level 5)
+		  (setq ess-fancy-comments 'nil)
+	      ))
+      ))
 
 ;(add-hook 'makefile-mode-hook
 ;	  (progn (define-key makefile-mode-map "\M-\t" 'dabbrev-expand))) ;; Make meta-tab do the normal expansion even in Make mode
