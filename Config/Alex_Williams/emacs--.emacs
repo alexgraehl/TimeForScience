@@ -28,61 +28,61 @@
 
 ;; List of all emacs colors: http://www.geocities.com/kensanata/colors.html
 
-(defconst ACTIVE_MODELINE       "blue")   ;; Background for the active modeline
-(defconst ACTIVE_MODELINE_TEXT  "yellow") ;; Text in the currently-active modeline
+(defvar ACTIVE_MODELINE       "blue")   ;; Background for the active modeline
+(defvar ACTIVE_MODELINE_TEXT  "yellow") ;; Text in the currently-active modeline
 
-(defconst INACTIVE_MODELINE       "black") ;; Background for the inactive modeline
-(defconst INACTIVE_MODELINE_TEXT  "white") ;; Text in the inactive modelines
+(defvar INACTIVE_MODELINE       "black") ;; Background for the inactive modeline
+(defvar INACTIVE_MODELINE_TEXT  "white") ;; Text in the inactive modelines
 
-(defconst BUFFER_FILENAME_TEXT "blue")   ;; colors for the filename
-(defconst BUFFER_FILENAME_BG   "yellow")
+(defvar BUFFER_FILENAME_TEXT "blue")   ;; colors for the filename
+(defvar BUFFER_FILENAME_BG   "yellow")
 
-(defconst CURSOR_TEXT  "yellow")
-(defconst CURSOR_BG    "red")
+(defvar CURSOR_TEXT  "yellow")
+(defvar CURSOR_BG    "red")
 
-(defconst BACKGROUND   "black")
+(defvar BACKGROUND   "black")
 
-(defconst SEARCH_RESULT_HIGHLIGHT_TEXT "red")
-(defconst SEARCH_RESULT_HIGHLIGHT_BG   "yellow")
+(defvar SEARCH_RESULT_HIGHLIGHT_TEXT "red")
+(defvar SEARCH_RESULT_HIGHLIGHT_BG   "yellow")
 
-(defconst SEARCH_RESULT_OTHER_TEXT SEARCH_RESULT_HIGHLIGHT_BG)
-(defconst SEARCH_RESULT_OTHER_BG   SEARCH_RESULT_HIGHLIGHT_TEXT)
+(defvar SEARCH_RESULT_OTHER_TEXT SEARCH_RESULT_HIGHLIGHT_BG)
+(defvar SEARCH_RESULT_OTHER_BG   SEARCH_RESULT_HIGHLIGHT_TEXT)
 
-(defconst COMMENT_FOREGROUND "blue") ;"dark slate gray") ; was dark red before
-(defconst COMMENT_BACKGROUND nil)
+(defvar COMMENT_FOREGROUND "blue") ;"dark slate gray") ; was dark red before
+(defvar COMMENT_BACKGROUND nil)
 
-(defconst STRING_TEXT "green") ;;"black")
-(defconst STRING_BG   "blue")  ;;"green")
+(defvar STRING_TEXT "green") ;;"black")
+(defvar STRING_BG   "blue")  ;;"green")
 
-(defconst HASH_TEXT     "yellow") ; only usable in cperl mode
-(defconst ARRAY_TEXT    "yellow") ; only usable in ceperl mode
-(defconst VARIABLE_TEXT "cyan")
+(defvar HASH_TEXT     "yellow") ; only usable in cperl mode
+(defvar ARRAY_TEXT    "yellow") ; only usable in ceperl mode
+(defvar VARIABLE_TEXT "cyan")
 
-(defconst VARIABLE_BG   "blue")
+(defvar VARIABLE_BG   "blue")
 
-(defconst FUNCTION_TEXT "cyan")
-(defconst FUNCTION_BG   "blue")
+(defvar FUNCTION_TEXT "cyan")
+(defvar FUNCTION_BG   "blue")
 
-(defconst TYPE_TEXT     "yellow")
-(defconst TYPE_BG       nil)       ;"orange4")
+(defvar TYPE_TEXT     "yellow")
+(defvar TYPE_BG       nil)       ;"orange4")
 
-(defconst SELECTED_TEXT "yellow") ; Highlighted region / selection
-(defconst SELECTED_BG   "red")
+(defvar SELECTED_TEXT "yellow") ; Highlighted region / selection
+(defvar SELECTED_BG   "red")
 
-(defconst ERR_TEXT "black")
-(defconst ERR_BG   "yellow")
+(defvar ERR_TEXT "black")
+(defvar ERR_BG   "yellow")
 
-(defconst BUILTIN_TEXT "black")
-(defconst BUILTIN_BG   "magenta")
+(defvar BUILTIN_TEXT "black")
+(defvar BUILTIN_BG   "magenta")
 
-(defconst DOC_TEXT "red")
-(defconst DOC_BG   STRING_BG)
+(defvar DOC_TEXT "red")
+(defvar DOC_BG   STRING_BG)
 
-(defconst MINIBUFFER_TEXT "yellow")
-(defconst MINIBUFFER_BG   "red")
+(defvar MINIBUFFER_TEXT "yellow")
+(defvar MINIBUFFER_BG   "red")
 
-(defconst KEYWORD_TEXT "violet")
-(defconst KEYWORD_BG   nil)
+(defvar KEYWORD_TEXT "violet")
+(defvar KEYWORD_BG   nil)
 
 (defface agwCustomDoubleLineFace
   '((t (:foreground "magenta" :background "blue" :underline t))) "To highlight === rows")
@@ -321,6 +321,8 @@
   )
 
 (define-key text-mode-map (kbd "TAB") 'self-insert-command) ; tab inserts ONE TAB ONLY AND DOES NOT INDENT in text mode
+
+(define-key text-mode-map (kbd "M-s") 'save-buffer) ; tab inserts ONE TAB ONLY AND DOES NOT INDENT in text mode
 
 
 ;; FIX THE BACKSPACE AND DELETE KEYS
@@ -576,7 +578,7 @@
  )
 
 
-;;(defconst ALLOWED_R_VARIABLE_CHARS "[a-zA-Z0-9\\.]")
+;;(defvar ALLOWED_R_VARIABLE_CHARS "[a-zA-Z0-9\\.]")
 
 ;;(defun testff () "test" (interactive)  (insert (concat "a" "b" ALLOWED_R_VARIABLE_CHARS)))
 
@@ -670,6 +672,7 @@
 
 ;;(define-key minibuffer-local-map (kbd "C-<tab>") 'dabbrev-expand)
 
+;; Hide lines that don't match a given search string
 (if (system-type-is-darwin)
     (progn (autoload 'hide-lines "hide-lines" "Hide lines based on a regexp" t) ;; ~/.emacs.d/hide-lines.el
 	   (require 'hide-lines)
@@ -690,8 +693,6 @@
 ;;(shell)                       ;; start a shell
 ;;(rename-buffer "shell-first") ;; rename it
 ;;(other-window 1)              ;; move back to first window
-
-(kill-buffer "*scratch*") ;; Kill the hated scratch buffer!
 
 (global-set-key (kbd "RET") 'newline) ;; Make sure RET inserts a newline!
 
@@ -731,3 +732,8 @@
   "Runs load-file on ~/.emacs" 
   (interactive)
   (load-file "~/.emacs"))
+
+
+
+(kill-buffer "*scratch*") ;; Close the hated scratch buffer!
+
