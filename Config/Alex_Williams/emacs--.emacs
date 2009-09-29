@@ -529,23 +529,7 @@
 
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
-<<<<<<< local
-(add-hook 'ess-mode-hook  ;; R-mode-hook r-mode-hook r mode <-- should be ess-mode-hook
-	  (progn (define-key ess-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in ESS mode
-		 (define-key ess-mode-map "_" nil)          ;; no smart underscores!
-		 (define-key inferior-ess-mode-map "_" nil) ;; no smart underscores!
-;;		 (define-key ess-mode-map "\t" 'self-insert-command)
-		 ))
 
-;; note: lambda and progn are different somehow!!!
-(add-hook 'ess-mode-hook
-	  (lambda ()
-	    (ess-set-style 'BSD)
-	    (setq ess-indent-level 8) ;; <-- tab amount!
-	    (setq ess-fancy-comments 'nil)
-		))
-
-=======
 (if should-load-ess
     (progn
       (add-hook 'ess-mode-hook  ;; R-mode-hook r-mode-hook r mode <-- should be ess-mode-hook
@@ -563,7 +547,6 @@
 		  (setq ess-fancy-comments 'nil)
 	      ))
       ))
->>>>>>> other
 
 (add-hook 'makefile-mode-hook
 	  (lambda ()

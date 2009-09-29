@@ -141,7 +141,7 @@ alias magicless 'env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/le
 # sheet.pl unless you say "cat something | ssf"
 
 # Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
-alias  sn '/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case -R -f'
+alias sn '/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case -R -f'
 
 # "s" uses "magicless" to run files through sheet.pl
 alias s  "magicless --LINE-NUMBERS --status-column --ignore-case -R \!*"
