@@ -207,7 +207,7 @@
  scroll-step               1 ; Scroll only this many lines when we hit the bottom
  scroll-conservatively     1
  show-trailing-whitespace  t
- tab-width                 4
+ tab-width                 8 ;; <-- tab indent width!
  indent-tabs-mode          t
  default-fill-column       80 ;; <-- when you "meta-q" to fit text, what line widths are used for wrapping?
  transient-mark-mode       t ; show when we mark text for copying/selection, BUT also makes the selection disappear after one use. (if unset, we can use ctrl-space ctrl-space)
@@ -513,7 +513,7 @@
 (agwColor 'font-lock-doc-face DOC_TEXT DOC_BG) ; Face name to use for documentation.
 
 (add-hook 'font-lock-mode-hook 'highlight-hard-spaces)
-(add-hook 'font-lock-mode-hook 'highlight-tabs)
+;; (add-hook 'font-lock-mode-hook 'highlight-tabs) ;; <-- uncomment if you want tabs ALWAYS highlighted
 (add-hook 'font-lock-mode-hook 'highlight-trailing-whitespace)
 
 
@@ -527,6 +527,23 @@
 
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
+<<<<<<< local
+(add-hook 'ess-mode-hook  ;; R-mode-hook r-mode-hook r mode <-- should be ess-mode-hook
+	  (progn (define-key ess-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in ESS mode
+		 (define-key ess-mode-map "_" nil)          ;; no smart underscores!
+		 (define-key inferior-ess-mode-map "_" nil) ;; no smart underscores!
+;;		 (define-key ess-mode-map "\t" 'self-insert-command)
+		 ))
+
+;; note: lambda and progn are different somehow!!!
+(add-hook 'ess-mode-hook
+	  (lambda ()
+	    (ess-set-style 'BSD)
+	    (setq ess-indent-level 8) ;; <-- tab amount!
+	    (setq ess-fancy-comments 'nil)
+		))
+
+=======
 (if should-load-ess
     (progn
       (add-hook 'ess-mode-hook  ;; R-mode-hook r-mode-hook r mode <-- should be ess-mode-hook
@@ -544,9 +561,14 @@
 		  (setq ess-fancy-comments 'nil)
 	      ))
       ))
+>>>>>>> other
 
-;(add-hook 'makefile-mode-hook
-;	  (progn (define-key makefile-mode-map "\M-\t" 'dabbrev-expand))) ;; Make meta-tab do the normal expansion even in Make mode
+(add-hook 'makefile-mode-hook
+	  (lambda ()
+	    (define-key makefile-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in Make mode
+	    ))
+
+(add-hook 'makefile-mode-hook 'highlight-tabs)
 
 (font-lock-add-keywords
  'perl-mode

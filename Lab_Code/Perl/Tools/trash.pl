@@ -67,6 +67,14 @@ while ( $ARGV[0] =~ m|^-|i) { # if the option starts with a hyphen...
     shift @ARGV;
 }
 
+
+
+my $tab = " " x length("trash.pl: "); # "tab" is just the number of spaces in the program name
+
+print STDOUT (qq{-} x 80) . "\n";
+
+
+my $numItemsDeleted = 0;
 foreach my $itemToDelete (@ARGV) {
 
     if (not (-e $itemToDelete)) {
@@ -125,7 +133,7 @@ foreach my $itemToDelete (@ARGV) {
 	die "Uh oh, trash.pl has no idea how to deal with filenames with any of these " . length($UNSAFE_CHARS) . " unusual characters in them: $UNSAFE_CHARS . That might be bad news, so we are just going to abort. Try using the real /bin/rm in this case.";
     }
 
-    my $index = 2;
+    my $index = 1;
 
     my $trashedDirLoc  = "$trash/$dirname";
 
@@ -134,27 +142,27 @@ foreach my $itemToDelete (@ARGV) {
 	system(qq{mkdir -p "$trashedDirLoc"});
     }
 
-    my $tab = "     ";
-
     my $trashedFileLoc =
 	($thepath =~ m{^\/})
 	? "${trash}${thepath}"
 	: "${trash}/${thepath}";
-    
-    while (-e $trashedFileLoc) {
-	print STDOUT "trash.pl: There was already a file in the trash named\n";
-	print STDOUT "${tab}${tab}" . qq{"$trashedFileLoc"} . "\n";
-	print STDOUT "${tab}so we are trying to rename the file before trashing it...\n";
 
-	$trashedFileLoc =
-	    ($thepath =~ m{^\/})
-	    ? "${trash}${thepath}_${index}"
-	    : "${trash}/${thepath}_${index}";
-	
-	$index++;
-	if ($index >= $MAX_INDEX) {
-	    die qq{Error trying to rename \"$itemToDelete\" to avoid overwriting an existing file with the same name that is already in the trash (there are too many files with the same name).\nYou should probably empty the trash.};
+    if (-e $trashedFileLoc) {
+	my $firstFailedAttempt = $trashedFileLoc;
+	while (-e $trashedFileLoc) {
+	    $index++;
+	    $trashedFileLoc =
+		($thepath =~ m{^\/})
+		? "${trash}${thepath}.${index}"
+		: "${trash}/${thepath}.${index}";
+	    
+	    if ($index >= $MAX_INDEX) {
+		die qq{Error trying to rename \"$itemToDelete\" to avoid overwriting an existing file with the same name that is already in the trash (there are too many files with the same name).\nYou should probably empty the trash.};
+	    }
 	}
+	print STDOUT "trash.pl: There was already a file in the trash named\n";
+	print STDOUT "${tab}${firstFailedAttempt}\n";
+	print STDOUT "${tab}so \".${index}\" was appended to this filename before it was trashed.\n";
     }
 
     if (-l $itemToDelete) {
@@ -164,4 +172,12 @@ foreach my $itemToDelete (@ARGV) {
     }
 
     system(qq{mv "$thepath" "$trashedFileLoc"});
+    $numItemsDeleted++;
+}
+
+if ($numItemsDeleted > 0) {
+    print STDOUT qq{trash.pl: Note that the trash directory in may be automatically\n};
+    print STDOUT qq{${tab}deleted when the machine is restarted, so be aware that\n};
+    print STDOUT qq{${tab}the trash directory is only *temporary*.\n};
+    print STDOUT (qq{-} x 80) . "\n";
 }
