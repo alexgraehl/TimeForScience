@@ -137,7 +137,7 @@ setenv LESSOPEN LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspip
 alias magicless 'env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_advanced.sh %s" /usr/bin/less -S -f'
 # It's less, but it "magically" handles gzipped files and automatically runs ".tab" files through sheet.pl
 # Note that this only magically happens if the files are passed in on the command line--otherwise you have
-# to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
+# to use "sf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
 # sheet.pl unless you say "cat something | ssf"
 
 # Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
@@ -147,9 +147,9 @@ alias sn '/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case -R -f'
 alias s  "magicless --LINE-NUMBERS --status-column --ignore-case -R \!*"
 
 # Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
-alias ssf "/usr/bin/less \!* | sheet.pl | s"
-alias ss1 "/usr/bin/less \!* | sheet.pl --trunc=15 | s"
-alias ss2 "/usr/bin/less \!* | sheet.pl --trunc=35 | s"
+alias sf "/usr/bin/less \!* | sheet.pl | s"
+alias s1 "/usr/bin/less \!* | sheet.pl --trunc=15 | s"
+alias s2 "/usr/bin/less \!* | sheet.pl --trunc=35 | s"
 
 alias ltab 'python `which sheet.py`'
 alias v    'ltab'   # ltab is defined as sheet.py in the stuartlab init file
