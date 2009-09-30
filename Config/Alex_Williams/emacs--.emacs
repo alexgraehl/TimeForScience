@@ -288,14 +288,14 @@
 
 (global-set-key (kbd "M-3") '(lambda () "Split window horizontally"   (interactive) (split-window-horizontally) (message "split-window-horizontally: Split the window into left/right panes.")))
 
-(global-set-key (kbd "M-%") '(lambda () "Adds a shell to the bottom quarter of this window."
-			       (interactive) (split-window-vertically) (other-window 1) (split-window-vertically) (delete-window) (shell) (rename-buffer "Shell-primary-buffer") (other-window 1) (message "Set up this window with a shell at the bottom.")))
-
 (global-set-key (kbd "M-%") 'set-variable)
 (global-set-key (kbd "M-5") 'describe-variable)
 (global-set-key (kbd "M-6") 'describe-key)
 
 (global-set-key (kbd "M-7") '(lambda () "Delete Trailing Whitespace"   (interactive) (delete-trailing-whitespace) (message "delete-trailing-whitespace: Deleted trailing whitespace (if any)")))
+
+(global-set-key (kbd "M-8") '(lambda () "Adds a shell to the bottom quarter of this window."
+			       (interactive) (split-window-vertically) (other-window 1) (split-window-vertically) (delete-window) (shell) (rename-buffer "Shell-primary-buffer") (other-window 1) (message "Set up this window with a shell at the bottom.")))
 
 (global-set-key (kbd "M-9") 'previous-buffer)
 (global-set-key (kbd "M-0") 'next-buffer)
