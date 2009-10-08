@@ -31,8 +31,13 @@ alias sundance='ssh sundance.cse.ucsc.edu'
 alias treeviewmemory='java -Xmx999m -jar TreeView.jar'
 
 
-function mac2unix { cat "$1" | tr '\r' '\n' }
-function dos2unix { cat "$1" | tr -d '\r' }
+function mac2unix {
+    cat "$1" | tr '\r' '\n'
+}
+
+function dos2unix {
+    cat "$1" | tr -d '\r'
+}
 
 # Shell navigation / commands
 alias      l='/bin/ls -GF'
