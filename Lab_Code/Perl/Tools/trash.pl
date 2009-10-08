@@ -44,6 +44,13 @@ use warnings;
 use Cwd ('abs_path', 'getcwd');
 use File::Basename;
 
+sub trim($) {
+    my $string = shift;
+    $string =~ s/^\s+//;
+    $string =~ s/\s+$//;
+    return $string;
+}
+
 if ( scalar @ARGV == 0) {
     die "trash.pl needs at least one argument. It works in a similar fashion to *rm*.\nUsage: trash.pl thing1 thing2 thing3 ...\n\n";
 }
@@ -77,6 +84,8 @@ print STDOUT (qq{-} x 80) . "\n";
 my $numItemsDeleted = 0;
 foreach my $itemToDelete (@ARGV) {
 
+    $itemToDelete = trim($itemToDelete);
+    
     if (not (-e $itemToDelete)) {
 	# the item doesn't even exist, so skip it with no warnings
 	print "trash.pl: Not deleting \"$itemToDelete\", because it did either not exist or could not be read. Check that this file actually exists!\n";
@@ -87,6 +96,15 @@ foreach my $itemToDelete (@ARGV) {
 	# The thing to delete has to be either a file (-f), a directory (-d), or a symlink (-l).
 	print "trash.pl: Not deleting \"$itemToDelete\": it was not a file, directory, or symlink.\n";
 	next;
+    }
+
+    if (($itemToDelete eq "/")
+	or ($itemToDelete eq "~/")	or ($itemToDelete eq "~")
+	or ($itemToDelete eq ".")	or ($itemToDelete eq "..")
+	or ($itemToDelete eq "./")	or ($itemToDelete eq "../")
+	) {
+	print "trash.pl: Removing \"$itemToDelete\" is unsafe! Trash.pl will not peform this operation! Quitting.\n";
+	exit(1);
     }
 
     my $thepath = undef;

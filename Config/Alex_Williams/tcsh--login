@@ -185,8 +185,8 @@ alias fgrep 'fgrep --color=auto'
 
 # Aliases related to CVS
 alias commit 'cvs ci -m "CVS Commit by Alex Williams"'
-alias gitcom "git commit -a -m 'Changes committed by alexgw'"
-alias hgcom  "hg commit -m 'Changes committed by alexgw' && hg push"
+alias gitcom "git commit -a -m 'Changes committed by alexgw' ; git push"
+alias hgcom  "hg commit -m 'Changes committed by alexgw' ; hg push"
 alias hgup   "hg pull && hg update"
 alias sciencecom 'hg commit --cwd ${TIME_FOR_SCIENCE_DIR} -m "Changes committed by alexgw" && hg push --cwd ${TIME_FOR_SCIENCE_DIR}'
 alias scienceup  'hg --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SCIENCE_DIR} update'
