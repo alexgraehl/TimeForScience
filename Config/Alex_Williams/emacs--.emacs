@@ -555,6 +555,12 @@
 
 (add-hook 'makefile-mode-hook 'highlight-tabs)
 
+(add-hook 'text-mode-hook
+	  (lambda ()
+	    (define-key text-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in text mode (default is the terrible ispell mode)
+	    ))
+
+
 (font-lock-add-keywords
  'perl-mode
  '(
@@ -678,17 +684,19 @@
 ;;(define-key minibuffer-local-map (kbd "C-<tab>") 'dabbrev-expand)
 
 ;; Hide lines that don't match a given search string
+(setq has-hidelines nil)
 (if (system-type-is-darwin)
     (progn (autoload 'hide-lines "hide-lines" "Hide lines based on a regexp" t) ;; ~/.emacs.d/hide-lines.el
 	   (require 'hide-lines)
-	   (require 'hidesearch)))
+	   (require 'hidesearch)
+	   (setq has-hidelines t)))
 
 (global-set-key [(control meta l)] '(lambda () (interactive) (hidesearch) (message "Only showing matching lines: use Ctrl-G to show all lines again."))) ;; control g now shows the invisibles, as well as generally cancelling
 
 
 (global-set-key [(control g)] '(lambda () "Cancels normal operations, and also cancels out of search-and-hide-lines mode."
 				 (interactive)
-				 (progn (show-all-invisible)
+				 (progn (if has-hidelines (show-all-invisible))
 					(message "Super cancel!")
 					(keyboard-quit)
 					)))
