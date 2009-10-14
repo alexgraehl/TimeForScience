@@ -20,8 +20,6 @@
 ;;(setq tags-file-name "~/cvs-local/TAGS")
 ;;(visit-tags-table "~/cvs-local/TAGS")
 
-
-
 ;; http://chumsley.org/download/markdown.el NA ND
 
 ;; Emacs regexp: http://www.cs.utah.edu/dept/old/texinfo/emacs18/emacs_17.html
@@ -245,6 +243,8 @@
  auto-save-mode            t ; BACKUPS: Don't auto-save
  version-control         nil ; BACKUPS: use versioned backups
 
+ cache-long-line-scans     t ; Makes emacs less slow when scrolling when there are very long lines
+ show-paren-style  'expression ; highlight entire expression when a paren is selected
  ;; - http://users.tkk.fi/~rsaikkon/conf/dot.emacs
  )
 
@@ -262,9 +262,8 @@
 (global-set-key "\M-o" 'scroll-up)   (global-set-key (kbd "ESC <down>") 'scroll-up)
 (global-set-key "\M-u" 'scroll-down) (global-set-key (kbd "ESC <up>") 'scroll-down)
 
-
-					;(global-set-key "\M-o" 'forward-word)
-					;(global-set-key "\M-u" 'backward-word)
+;;(global-set-key "\M-o" 'forward-word)
+;;(global-set-key "\M-u" 'backward-word)
 
 (global-unset-key "\M-c")
 
@@ -342,7 +341,6 @@
 (global-set-key "\M-s" 'save-buffer)
 (global-set-key "\M-z" 'undo)
 (global-set-key "\M-e" 'recentf-open-files)
-
 
 ;;         ^  Navigation Keys (ijkl)
 ;;         |  (Inverted-T navigation)
@@ -616,6 +614,7 @@
    ("\\<\\([a-zA-Z0-9\\.]*Vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
    ("\\<\\([a-zA-Z0-9\\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
    ("\\<\\([a-zA-Z0-9\\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+   ("\\<\\([a-zA-Z0-9\\.]*Mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
    ("\\(.*[=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
    )
  )
@@ -636,9 +635,7 @@
 (defun dos-to-unix-convert-line-endings () (interactive) (goto-char (point-min))
   (while (search-forward "\r" nil t) (replace-match "")))
 (defun mac-to-unix-convert-line-endings () (interactive) (goto-char (point-min))
-  (while (search-forward "\r" nil t) (replace-match "")))
-(defun unix-to-dos-convert-line-endings () (interactive) (goto-char (point-min))
-  (while (search-forward "\n" nil t) (replace-match "\r\n")))
+  (while (search-forward "\r" nil t) (replace-match "\n")))
 
 ;;make-comment-invisible
 (defun hide-comments ()
@@ -710,16 +707,13 @@
 (global-set-key (kbd "RET") 'newline) ;; Make sure RET inserts a newline!
 
 
-
-
 (defun acount(string)
   "Counts the number of occurences of STRING in the buffer."
   (interactive (list (read-string "Count: ")))
   (let ((point (point))
 	(counter 0)
 	(myStr   nil)
-	(mat nil)
-	)
+	(mat nil))
     (beginning-of-buffer)
     (while (re-search-forward string (point-max) t)
       (setq ps (match-beginning 0))
@@ -747,6 +741,7 @@
   (load-file "~/.emacs"))
 
 
+(kill-buffer "*scratch*") ;; Close the scratch buffer!
 
-(kill-buffer "*scratch*") ;; Close the hated scratch buffer!
 
+;; ##
