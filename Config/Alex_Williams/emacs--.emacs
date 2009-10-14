@@ -512,9 +512,10 @@
 
 (agwColor 'font-lock-doc-face DOC_TEXT DOC_BG) ; Face name to use for documentation.
 
-(add-hook 'font-lock-mode-hook 'highlight-hard-spaces)
+;(add-hook 'font-lock-mode-hook 'highlight-hard-spaces)
 ;; (add-hook 'font-lock-mode-hook 'highlight-tabs) ;; <-- uncomment if you want tabs ALWAYS highlighted
-(add-hook 'font-lock-mode-hook 'highlight-trailing-whitespace)
+;font-lock-mode-hook
+(add-hook 'makefile-mode 'highlight-trailing-whitespace) ;; <-- show trailing whitespaces in Makefile mode
 
 
 (add-hook 'c-mode-common-hook   'hs-minor-mode)
