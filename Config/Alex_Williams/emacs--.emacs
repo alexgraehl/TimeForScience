@@ -216,7 +216,7 @@
  abbrev-case-fold-search   t
 
  blink-matching-paren      t
- blink-matching-paren-distance 11000
+ blink-matching-paren-distance 999000
  line-number-mode          t ; Show current line number in status bar
  column-number-mode        t ; Show current column number in status bar
  which-func-mode           t
@@ -515,7 +515,7 @@
 ;(add-hook 'font-lock-mode-hook 'highlight-hard-spaces)
 ;; (add-hook 'font-lock-mode-hook 'highlight-tabs) ;; <-- uncomment if you want tabs ALWAYS highlighted
 ;font-lock-mode-hook
-(add-hook 'makefile-mode 'highlight-trailing-whitespace) ;; <-- show trailing whitespaces in Makefile mode
+;(add-hook 'makefile-mode-hook 'highlight-trailing-whitespace) ;; <-- show trailing whitespaces in Makefile mode
 
 
 (add-hook 'c-mode-common-hook   'hs-minor-mode)
@@ -746,3 +746,4 @@
 
 
 ;; ##
+
