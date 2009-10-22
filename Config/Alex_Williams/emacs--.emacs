@@ -124,6 +124,28 @@
 
 
 
+(defface agwIndent1Face
+  '((t ( ;; inherit some-other-face
+	:bold nil :foreground "black" :background "red" :underline nil))
+    )  ""  :group 'agwFaces)
+
+(defface agwIndent2Face
+  '((t ( ;; inherit some-other-face
+	:bold nil :foreground "black" :background "magenta" :underline nil))
+    )  ""  :group 'agwFaces)
+
+(defface agwIndent3Face
+  '((t ( ;; inherit some-other-face
+	:bold nil :foreground "black" :background "yellow" :underline nil))
+    )  ""  :group 'agwFaces)
+
+(defface agwIndent4Face
+  '((t ( ;; inherit some-other-face
+	:bold nil :foreground "black" :background "green" :underline nil))
+    )  ""   :group 'agwFaces)
+
+
+
 
 
 
@@ -612,6 +634,14 @@
    ("\\<\\(stop\\|stopifnot\\|browser\\|options\\)\\>" 1 font-lock-warning-face keep)
    ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 font-lock-constant-face keep) ; anything that starts in kv
    ("\\<\\(gv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwMakeGlobalVarFace keep) ; anything that starts in gv
+
+   ("^\\(     \\)"      1 'agwIndent1Face t) ; line-starting tab
+   ("^     \\(     \\)" 1 'agwIndent2Face t) ; line-starting tab
+   ("^          \\(     \\)" 1 'agwIndent3Face t) ; line-starting tab
+   ("^               \\(     \\)" 1 'agwIndent4Face t) ; line-starting tab
+
+   ("\\(\<\<-\\)" 1 'agwMakeGlobalVarFace keep) ; the <<- global assignment operator
+   ("\\(\<-\\)" 1 'agwPositiveNumberFace keep) ; the <- regular assignment operator
    ("\\<\\([a-zA-Z0-9\\.]*Vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
    ("\\<\\([a-zA-Z0-9\\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
    ("\\<\\([a-zA-Z0-9\\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
