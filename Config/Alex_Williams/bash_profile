@@ -90,7 +90,7 @@ alias fgrep='fgrep --color=auto'
 # Aliases related to CVS
 alias commit="cvs commit -m 'AGW CVS Commit'"
 alias gitcom="git commit -a -m 'Changes committed by alexgw'"
-alias gits="git ls-files --modified --deleted"
+alias gitstat="git ls-files --modified --deleted"
 alias gitdiff="git difftool"
 
 alias hgcom="hg commit -m 'Changes committed by alexgw' && hg push"
