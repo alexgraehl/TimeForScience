@@ -126,22 +126,22 @@
 
 (defface agwIndent1Face
   '((t ( ;; inherit some-other-face
-	:bold nil :foreground "black" :background "red" :underline nil))
+	:bold nil :background "red" :foreground nil :underline nil))
     )  ""  :group 'agwFaces)
 
 (defface agwIndent2Face
   '((t ( ;; inherit some-other-face
-	:bold nil :foreground "black" :background "magenta" :underline nil))
+	:bold nil :background "blue" :foreground nil :underline nil))
     )  ""  :group 'agwFaces)
 
 (defface agwIndent3Face
   '((t ( ;; inherit some-other-face
-	:bold nil :foreground "black" :background "yellow" :underline nil))
+	:bold nil :background "red" :foreground nil :underline nil))
     )  ""  :group 'agwFaces)
 
 (defface agwIndent4Face
   '((t ( ;; inherit some-other-face
-	:bold nil :foreground "black" :background "green" :underline nil))
+	:bold nil :background "blue" :foreground nil :underline nil))
     )  ""   :group 'agwFaces)
 
 
@@ -635,10 +635,13 @@
    ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 font-lock-constant-face keep) ; anything that starts in kv
    ("\\<\\(gv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwMakeGlobalVarFace keep) ; anything that starts in gv
 
-   ("^\\(     \\)"      1 'agwIndent1Face t) ; line-starting tab
-   ("^     \\(     \\)" 1 'agwIndent2Face t) ; line-starting tab
-   ("^          \\(     \\)" 1 'agwIndent3Face t) ; line-starting tab
-   ("^               \\(     \\)" 1 'agwIndent4Face t) ; line-starting tab
+   ;;("^\\([}].*\\)"      1 'agwIndent1Face t) ; function-ending (line-starting) brace
+   
+   ("^\\([ ]\\{1,1\\}\\)"      1 'agwIndent1Face t) ; line-starting tab
+   ("^    \\([ ]\\{1,1\\}\\)" 1 'agwIndent2Face t) ; line-starting tab
+   ("^         \\([ ]\\{1,1\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
+   ("^              \\([ ]\\{1,1\\}\\)" 1 'agwIndent4Face t) ; line-starting tab
+   ("^                   \\([ ]\\{1,1\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
 
    ("\\(\<\<-\\)" 1 'agwMakeGlobalVarFace keep) ; the <<- global assignment operator
    ("\\(\<-\\)" 1 'agwPositiveNumberFace keep) ; the <- regular assignment operator
@@ -646,7 +649,7 @@
    ("\\<\\([a-zA-Z0-9\\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
    ("\\<\\([a-zA-Z0-9\\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
    ("\\<\\([a-zA-Z0-9\\.]*Mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-   ("\\(.*[=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
+   ("\\([=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
    )
  )
 
