@@ -152,11 +152,12 @@ foreach my $itemToDelete (@ARGV) {
     }
 
     my $index = 1;
+    my $trashDupeSuffix = ".trash_duplicate";
 
     my $trashedDirLoc  = "$trash/$dirname";
 
     if (! -d $trashedDirLoc) {
-	print qq{trash.pl: Making a new trash subdirectory at $trashedDirLoc\n};
+	#print qq{trash.pl: Making a new trash subdirectory at $trashedDirLoc\n};
 	system(qq{mkdir -p "$trashedDirLoc"});
     }
 
@@ -171,8 +172,8 @@ foreach my $itemToDelete (@ARGV) {
 	    $index++;
 	    $trashedFileLoc =
 		($thepath =~ m{^\/})
-		? "${trash}${thepath}.${index}"
-		: "${trash}/${thepath}.${index}";
+		? "${trash}${thepath}${trashDupeSuffix}.${index}"
+		: "${trash}/${thepath}${trashDupeSuffix}.${index}";
 	    
 	    if ($index >= $MAX_INDEX) {
 		die qq{Error trying to rename \"$itemToDelete\" to avoid overwriting an existing file with the same name that is already in the trash (there are too many files with the same name).\nYou should probably empty the trash.};
@@ -180,7 +181,7 @@ foreach my $itemToDelete (@ARGV) {
 	}
 	print STDOUT "trash.pl: There was already a file in the trash named\n";
 	print STDOUT "${tab}${firstFailedAttempt}\n";
-	print STDOUT "${tab}so \".${index}\" was appended to this filename before it was trashed.\n";
+	print STDOUT "${tab}so \"${trashDupeSuffix}.${index}\" was appended to this filename before it was trashed.\n";
     }
 
     if (-l $itemToDelete) {
@@ -194,8 +195,7 @@ foreach my $itemToDelete (@ARGV) {
 }
 
 if ($numItemsDeleted > 0) {
-    print STDOUT qq{trash.pl: Note that the trash directory in may be automatically\n};
-    print STDOUT qq{${tab}deleted when the machine is restarted, so be aware that\n};
-    print STDOUT qq{${tab}the trash directory is only *temporary*.\n};
+    print STDOUT qq{trash.pl: Keep in mind that the trash directory may be\n};
+    print STDOUT qq{${tab}automatically deleted when this machine is restarted.\n};
     print STDOUT (qq{-} x 80) . "\n";
 }
