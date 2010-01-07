@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 use File::Temp qw/ tempfile tempdir /;
 
