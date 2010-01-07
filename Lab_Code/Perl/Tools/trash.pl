@@ -8,14 +8,12 @@
 # Any slashes will be replaced with __PATH__, which means that restoring
 # any directory structure will be exceedingly annoying. So be careful!
 
-
-
 #
 # Use and abuse as much as you want.
-# Put it in /usr/local/bin/ or $HOME/bin/
-# Daniel Cote a.k.a Novajo, dccote@novajo.ca
+# Put it in /usr/bin/ or $HOME/bin/
+# Original by Daniel Cote
 #
-# Modified later!
+# Modified by Alex Williams
 #
 # Most recent version of this file available at
 # http://www.novajo.ca/trash.html

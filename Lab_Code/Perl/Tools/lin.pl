@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 # Numbers lines in a file.
 # Equivalent to:   awk '{ print FNR "\t" $0 }' FILENAME
