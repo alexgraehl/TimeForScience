@@ -1,6 +1,6 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
-echo ">>> BASH: Loading ~/.config/bash_path_setup..."
+echo ">>> BASH: Loading bash_path_setup..."
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/X11/bin:
 # UCSF: MEME
