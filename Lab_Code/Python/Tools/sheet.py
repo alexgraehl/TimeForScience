@@ -289,7 +289,7 @@ class AGW_File_Data_Collection:
 
     def addFileInfo(self, fileInfoObj):
         if (not isinstance(fileInfoObj, AGW_File_Data)):
-            print "Uh oh, someone tried to add some random object into the file info collection."
+            print("Uh oh, someone tried to add some random object into the file info collection.")
             raise
         else:
             self.collection.append(fileInfoObj)
@@ -414,9 +414,9 @@ class AGW_Win:
         try:
             self.win.addch(y, x, argChar, attr)
             pass
-        except curses.error, err:
+        except(curses.error):
             #1, "safeAddCh is messed up: " + err.message)
-            print "ERROR: Unable to print a character at", y, x, "with window dimensions (in chars): ", self.windowHeight, self.windowWidth
+            print("ERROR: Unable to print a character at", y, x, "with window dimensions (in chars): ", self.windowHeight, self.windowWidth)
             raise
         except:
             raise
@@ -439,8 +439,8 @@ class AGW_Win:
             if (len(string) > 0):
                 self.win.addstr(y, x, string, attr)
 
-        except curses.error, err:
-            print "safeAddStr is messed up!", err.message
+        except(curses.error):
+            print("safeAddStr is messed up!")
             raise
         except:
             raise
@@ -458,7 +458,7 @@ class AGW_DataWin(AGW_Win):
 
     def setInfo(self, whichInfo):
         if (not isinstance(whichInfo, AGW_File_Data)):
-            print "### Someone passed in a not-an-AGW_File_Data object to AGW_DataWin--->setInfo()\n"
+            print("### Someone passed in a not-an-AGW_File_Data object to AGW_DataWin--->setInfo()\n")
             raise
 
         self.info = whichInfo
@@ -585,7 +585,7 @@ class AGW_DataWin(AGW_Win):
                         self.win.hline(cellTextPos.y-1, cellTextPos.x, curses.ACS_HLINE, hLineLength)
                         pass
                     except:
-                        print "problem when cellTextPos is y=" + str(cellTextPos.y) + ", x=" + str(cellTextPos.x) + " and also the rows and cols are " + str(r) + " and " + str(c) + " and terminal width is " + str(gTermSize.width) + " and height is " + str(gTermSize.height)
+                        print("problem when cellTextPos is y=" + str(cellTextPos.y) + ", x=" + str(cellTextPos.x) + " and also the rows and cols are " + str(r) + " and " + str(c) + " and terminal width is " + str(gTermSize.width) + " and height is " + str(gTermSize.height))
                         raise
 
                     pass
@@ -596,7 +596,7 @@ class AGW_DataWin(AGW_Win):
                         self.win.vline(cellTextPos.y, cellTextPos.x-1, curses.ACS_VLINE, vLineLength)
                         pass
                     except:
-                        print "problem when cellTextPos is y=" + str(cellTextPos.y) + ", x=" + str(cellTextPos.x) + " and also the rows and cols are " + str(r) + " and " + str(c) + " and terminal width is " + str(gTermSize.width) + " and height is " + str(gTermSize.height)
+                        print("problem when cellTextPos is y=" + str(cellTextPos.y) + ", x=" + str(cellTextPos.x) + " and also the rows and cols are " + str(r) + " and " + str(c) + " and terminal width is " + str(gTermSize.width) + " and height is " + str(gTermSize.height))
                         raise
                     pass
 
@@ -638,7 +638,7 @@ class AGW_Table:
 
         try: return self.colWidth[colIdx]
         except:
-            print "### Someone passed in an invalid column index, " + str(colIdx) + ". Max was " + str(self.getNumCols()) + ".\n"
+            print("### Someone passed in an invalid column index, " + str(colIdx) + ". Max was " + str(self.getNumCols()) + ".\n")
             raise #return 0 #raise #return 0
 
     def getNumCols(self):
@@ -664,7 +664,7 @@ class AGW_Table:
             pass
 
         try:    return self.__cells[row][col] # problem is with the number of rows...
-        except IndexError, err:
+        except(IndexError):
             return None # <-- dubious... ? maybe we should actually just fail here
         except:
             raise
@@ -710,7 +710,7 @@ class AGW_Table:
 
     def readFromFileInfo(self, singleFileInfo, maxLines):
         if (not isinstance(singleFileInfo, AGW_File_Data)):
-            print "### Someone passed in a not-an-AGW_File_Data object to readFromFileInfo\n"
+            print("### Someone passed in a not-an-AGW_File_Data object to readFromFileInfo\n")
             raise
 
         try:
@@ -738,7 +738,7 @@ class AGW_Table:
                 #GLOB = str(GLOB) + " " + str(numLinesRead)
                 pass
         except:
-            print "Cannot read from the file <" + singleFileInfo.filename + ">. Sorry!"
+            print("Cannot read from the file <" + singleFileInfo.filename + ">. Sorry!")
             raise
         finally:
             if (singleFileInfo.filename is kSTDIN_HYPHEN):
@@ -848,30 +848,30 @@ def usageAndQuit(exitCode, message=None):
     fillWidth = 80
     message = textwrap.fill(message, fillWidth)
     if (message is not None):
-        print ""
-        print "sheet.py: "
-        print message
-        print "sheet.py: Printing usage information below."
-        print "*"*fillWidth ; print "*"*fillWidth ;
+        print("")
+        print("sheet.py: ")
+        print(message)
+        print("sheet.py: Printing usage information below.")
+        print("*"*fillWidth) ; print("*"*fillWidth) ;
         pass
-    print ALEX_PROGRAM_USAGE_TEXT # at the very bottom of this file
+    print(ALEX_PROGRAM_USAGE_TEXT) # at the very bottom of this file
     if (message is not None):
-        print "(End of usage information for sheet.py.)"
-        print "*"*fillWidth ; print "*"*fillWidth ;
-        print "sheet.py: "
-        print message
+        print("(End of usage information for sheet.py.)")
+        print("*"*fillWidth) ; print("*"*fillWidth) ;
+        print("sheet.py: ")
+        print(message)
         pass
     sys.exit(exitCode)
     return
 
 
-def initializeWindowSettings(fileInfoToReadFrom):
+def initializeWindowSettings(aScreen, fileInfoToReadFrom):
     #if (fileInfoToReadFrom is None):
     #    usageAndQuit(1, "Missing a command-line argument: We did not have at least one file passed in as an argument on the command line! Pass in at least one valid file on the command line. Maybe you passed in a file that could not be read for some reason, or passed in a directory name.\n")
     #    raise
 
     if (not isinstance(fileInfoToReadFrom, AGW_File_Data)):
-        print "### Init window: Someone passed in a not-an-AGW_File_Data object to initializeWindowSettings\n"
+        print("### Init window: Someone passed in a not-an-AGW_File_Data object to initializeWindowSettings\n")
         raise
 
     global sheetWin
@@ -879,8 +879,7 @@ def initializeWindowSettings(fileInfoToReadFrom):
     global colHeaderWin
     global rowHeaderWin
 
-    gTermSize.width=80
-    gTermSize.height=40 #gTermSize.resizeYX(gStandardScreen.getmaxyx())
+    gTermSize.resizeYX(aScreen.getmaxyx()) # Resize the curses window to use the whole available screen
 
     INFO_PANEL_HEIGHT = 6
 
@@ -950,13 +949,13 @@ def initializeWindowSettings(fileInfoToReadFrom):
 
 
 
-def main(argv):
+def processCommandLineArgs(argv):
 
     try:
         opts, args = getopt.gnu_getopt(argv, "hwi:d", ["help", "warn", "input="])
     # Docs for getopt: http://docs.python.org/library/getopt.html
-    except getopt.GetoptError, err:
-        usageAndQuit(1, "Encountered an unknown command line option!\n" + "sheet.py: Please remember that long names must have double-dashes!\n" + "sheet.py: (i.e. -warn generates an error, but --warn is correct)\n" + "sheet.py: The specific error was \"" + err.msg + "\"") # err.opt
+    except (getopt.GetoptError):
+        #usageAndQuit(1, "Encountered an unknown command line option!\n" + "sheet.py: Please remember that long names must have double-dashes!\n" + "sheet.py: (i.e. -warn generates an error, but --warn is correct)\n")
         raise
 
     for opt, arg in opts:
@@ -972,8 +971,8 @@ def main(argv):
     # End of function
 
     if (_DEBUG):
-        print "Unprocessed arguments:" , args
-        print "Unprocessed options:" , opts
+        print("Unprocessed arguments:" , args)
+        print("Unprocessed options:" , opts)
         pass
 
     arrFilenamesToRead = []
@@ -991,7 +990,7 @@ def main(argv):
         arrFilenamesToRead.extend(args) # Add the unread files... AFTER handling stdin.
         pass
 
-    #print "Files to read = <" , arrFilenamesToRead , ">" ; sys.exit(1)
+    #print("Files to read = <" , arrFilenamesToRead , ">") ; sys.exit(1)
 
     if (0 == len(arrFilenamesToRead)):
         usageAndQuit(0, "ARGUMENT ERROR: You must specify at least one filename on the command line!")
@@ -1007,20 +1006,15 @@ def main(argv):
             mainInfo.addFileInfo(singleFileInfo)
             pass
         else:
-            print "Tried to read <" + filename + ">, which is not a file!"
+            print("Tried to read <" + filename + ">, which is not a file!")
             pass
         pass
-
-    #global gStandardScreen
-    #gStandardScreen = setUpCurses()
 
     mainInfo.currentFileIdx = 0
 
     if (mainInfo.size() == 0):
         usageAndQuit(0, "sheet.py: No files that were specified on the command line could be read. Maybe you specified a directory (instead of a list of files). If you want to list all the files in a directory, try:\tsheet.py your_directory/*\n")
         pass
-
-    curses.wrapper(inputHandlingLoop) # Passes in the initialized screen as the first argument to inputHandlingLoop. Automatically restores normal terminal operation upon program termination.
 
     return
 
@@ -1131,42 +1125,49 @@ def drawInfoWin(theScreen, theInfo, inTab):
     return
 
 def drawEverything(theScreen):
-    activeFI = mainInfo.getCurrent()
-    activeCellPos = activeFI.cursorPos
 
+    activeFI = mainInfo.getCurrent()   # get the current meta-info storage thing for the main window
+    activeCellPos = activeFI.cursorPos # Ask where the cursor is...
+
+    theScreen.refresh() # Refresh it first...
+
+    # The "info" pane at the top...
     drawInfoWin(theScreen, activeFI, sheetWin.getTable())
+
+    # The main table...
     sheetWin.drawTable(activeFI, activeCellPos.y, activeCellPos.x)
+
+    # Row header...
     rowHeaderWin.drawTable(activeFI, activeCellPos.y, 0, nColsToDraw=1, boolPrependRowCoordinate=True)
 
+    # Column header...
     colHeaderWin.drawTable(activeFI, 0, activeCellPos.x, nRowsToDraw=1, boolPrependColCoordinate=True)
 
-    lineAttr = curses.color_pair(BOX_COLOR_ID)
-    colHeaderWin.win.attron(lineAttr)
-    colHeaderWin.win.hline(colHeaderWin.windowHeight-1, 0, curses.ACS_CKBOARD, colHeaderWin.windowWidth)
-    colHeaderWin.win.attroff(lineAttr)
+    lineAttr = curses.color_pair(BOX_COLOR_ID) # <-- set the border color
+    colHeaderWin.win.attron(lineAttr) # "start drawing lines"
+    colHeaderWin.win.hline(colHeaderWin.windowHeight-1, 0, curses.ACS_CKBOARD, colHeaderWin.windowWidth) # Draw a horizontal line below the column header...
+    colHeaderWin.win.attroff(lineAttr) # "stop drawing lines"
     colHeaderWin.win.refresh()
 
-    theScreen.refresh()
     return
 
-def inputHandlingLoop(theScreen):
+def mainScreenHandlingLoop(theScreen):
 
     setUpCurses()
-    initializeWindowSettings(mainInfo.getCurrent()) # load the first file...
+    initializeWindowSettings(theScreen, mainInfo.getCurrent()) # load the first file...
 
+    # theScreen.nodelay(True) # <-- makes "getch" non-blocking
     ch = None
-    while True:
+    while (not gWantToQuit):
         try:
-            if (ch is None):
-                ch = '' # this is a horrible hack, but for some reason we
-                pass
-            else: # need to run this loop at least once before things draw.
-                ch = theScreen.getch()
-                # DebugPrint(str(ch))
-                global GLOB
-                #infoWin.win.addstr(0, 0, "Read char <" + str(ch) + ">" + str(GLOB), curses.color_pair(COL_HEADER_ID))
-                #GLOB += 1
-                pass
+            drawEverything(theScreen) # Draw the screen...
+
+            ch = theScreen.getch()    # Now get input from the user...
+            #theScreen.nodelay(False)  # <-- makes "getch" *blocking*
+
+            # DebugPrint(str(ch))
+            #global GLOB ; GLOB = (GLOB + 1)
+            #infoWin.win.addstr(0, 0, "Read char <" + str(ch) + ">" + str(GLOB), curses.color_pair(COL_HEADER_ID))
 
             if (gCurrentMode == KEY_MODE_SEARCH_INPUT):
                 handleKeysForSearchMode(ch, sheetWin.getTable(), theScreen)
@@ -1175,12 +1176,6 @@ def inputHandlingLoop(theScreen):
                 handleKeysForNormalMode(ch, sheetWin.getTable(), theScreen)
                 pass
 
-            if (gWantToQuit): break
-
-            drawEverything(theScreen)
-
-            pass
-
         except KeyboardInterrupt:
             break # Exit the program on a Ctrl-C as well. Regular terminal printing is automatically restored by "curses.wrapper"
         except:
@@ -1188,12 +1183,12 @@ def inputHandlingLoop(theScreen):
 
         pass
     
-    return # end of inputHandlingLoop
+    return # end of mainScreenHandlingLoop
 
 
 def setUpCurses(): # initialize the curses environment
     if (not curses.has_colors()):
-        print "UH OH, this terminal does not support color! We might crash. Quitting now anyway until I figure out what to do. Sorry. This might not actually be a problem, but I will need to test it to see what happens in a non-color terminal!"
+        print("UH OH, this terminal does not support color! We might crash. Quitting now anyway until I figure out what to do. Sorry. This might not actually be a problem, but I will need to test it to see what happens in a non-color terminal!")
         sys.exit(1)
         pass
     curses.start_color()
@@ -1215,7 +1210,7 @@ def setUpCurses(): # initialize the curses environment
     CURSES_HIGHLIGHTED_CURSOR = 2
     try:
         curses.curs_set(CURSES_INVISIBLE_CURSOR) # Don't show a blinking cursor
-    except curses.error, err:
+    except(curses.error):
         print("Unable to set cursor state to \"invisible\"")
         pass
     
@@ -1306,7 +1301,7 @@ def handleKeysForSearchMode(argCh, currentTable, theScreen):
             mainInfo.getCurrent().appendToCurrentSearchTerm(charToAdd)
             currentTable.regTab.clear()
             pass
-        except ValueError, err:
+        except(ValueError):
             # we don't care if "charToAdd" is not in the range of add-able chars
             pass
         # ----------------------------------
@@ -1539,11 +1534,6 @@ BUGS:
 
 
 
-# Must come at the VERY END!
-#if __name__ == "__main__":
-#    main(sys.argv[1:])
-#    pass
-
 
 
 
@@ -1610,19 +1600,19 @@ BUGS:
 # b = BitBoard(row=3, col=5)
 
 # b.board[1][1] = None
-# print b.board[1][1]
+# print( b.board[1][1])
 
 # b.board[0][1] = False
-# print b.board[0][1]
+# print( b.board[0][1])
 
 # b.board[1][0] = True
-# print b.board[1][0]
+# print( b.board[1][0])
 
 #sys.exit(1)
 #b.set(row=2,col=1)
-#print b.at(2,3)
-#print b.sizeX()
-#print b.board
+#print( b.at(2,3))
+#print( b.sizeX())
+#print( b.board)
 #sys.exit(1)
 
 
@@ -1655,5 +1645,13 @@ BUGS:
 
 # and the same (plus color activating) with the wrapper:
 
-if __name__=='__main__':
-     curses.wrapper(main)
+#if __name__=='__main__':
+#     curses.wrapper(main)
+
+
+# Must come at the VERY END!
+if __name__ == "__main__":
+    processCommandLineArgs(sys.argv[1:])
+    curses.wrapper(mainScreenHandlingLoop)
+    pass
+
