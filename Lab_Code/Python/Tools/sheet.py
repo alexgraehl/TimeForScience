@@ -289,7 +289,6 @@ class AGW_File_Data_Collection:
 
     def addFileInfo(self, fileInfoObj):
         if (not isinstance(fileInfoObj, AGW_File_Data)):
-            cleanup()
             print "Uh oh, someone tried to add some random object into the file info collection."
             raise
         else:
@@ -416,7 +415,7 @@ class AGW_Win:
             self.win.addch(y, x, argChar, attr)
             pass
         except curses.error, err:
-            cleanup() #1, "safeAddCh is messed up: " + err.message)
+            #1, "safeAddCh is messed up: " + err.message)
             print "ERROR: Unable to print a character at", y, x, "with window dimensions (in chars): ", self.windowHeight, self.windowWidth
             raise
         except:
@@ -441,7 +440,6 @@ class AGW_Win:
                 self.win.addstr(y, x, string, attr)
 
         except curses.error, err:
-            #cleanup()
             print "safeAddStr is messed up!", err.message
             raise
         except:
@@ -460,7 +458,6 @@ class AGW_DataWin(AGW_Win):
 
     def setInfo(self, whichInfo):
         if (not isinstance(whichInfo, AGW_File_Data)):
-            cleanup()
             print "### Someone passed in a not-an-AGW_File_Data object to AGW_DataWin--->setInfo()\n"
             raise
 
@@ -588,7 +585,6 @@ class AGW_DataWin(AGW_Win):
                         self.win.hline(cellTextPos.y-1, cellTextPos.x, curses.ACS_HLINE, hLineLength)
                         pass
                     except:
-                        cleanup()
                         print "problem when cellTextPos is y=" + str(cellTextPos.y) + ", x=" + str(cellTextPos.x) + " and also the rows and cols are " + str(r) + " and " + str(c) + " and terminal width is " + str(gTermSize.width) + " and height is " + str(gTermSize.height)
                         raise
 
@@ -600,7 +596,6 @@ class AGW_DataWin(AGW_Win):
                         self.win.vline(cellTextPos.y, cellTextPos.x-1, curses.ACS_VLINE, vLineLength)
                         pass
                     except:
-                        cleanup()
                         print "problem when cellTextPos is y=" + str(cellTextPos.y) + ", x=" + str(cellTextPos.x) + " and also the rows and cols are " + str(r) + " and " + str(c) + " and terminal width is " + str(gTermSize.width) + " and height is " + str(gTermSize.height)
                         raise
                     pass
@@ -643,7 +638,6 @@ class AGW_Table:
 
         try: return self.colWidth[colIdx]
         except:
-            cleanup()
             print "### Someone passed in an invalid column index, " + str(colIdx) + ". Max was " + str(self.getNumCols()) + ".\n"
             raise #return 0 #raise #return 0
 
@@ -716,7 +710,6 @@ class AGW_Table:
 
     def readFromFileInfo(self, singleFileInfo, maxLines):
         if (not isinstance(singleFileInfo, AGW_File_Data)):
-            cleanup()
             print "### Someone passed in a not-an-AGW_File_Data object to readFromFileInfo\n"
             raise
 
@@ -745,7 +738,6 @@ class AGW_Table:
                 #GLOB = str(GLOB) + " " + str(numLinesRead)
                 pass
         except:
-            cleanup()
             print "Cannot read from the file <" + singleFileInfo.filename + ">. Sorry!"
             raise
         finally:
@@ -853,7 +845,6 @@ def setCommandStr(string): global gCommandStr ; gCommandStr = string
 def clearCommandStr():     global gCommandStr ; gCommandStr = None
 
 def usageAndQuit(exitCode, message=None):
-    cleanup()
     fillWidth = 80
     message = textwrap.fill(message, fillWidth)
     if (message is not None):
@@ -880,7 +871,6 @@ def initializeWindowSettings(fileInfoToReadFrom):
     #    raise
 
     if (not isinstance(fileInfoToReadFrom, AGW_File_Data)):
-        cleanup()
         print "### Init window: Someone passed in a not-an-AGW_File_Data object to initializeWindowSettings\n"
         raise
 
@@ -889,7 +879,8 @@ def initializeWindowSettings(fileInfoToReadFrom):
     global colHeaderWin
     global rowHeaderWin
 
-    gTermSize.resizeYX(gStandardScreen.getmaxyx())
+    gTermSize.width=80
+    gTermSize.height=40 #gTermSize.resizeYX(gStandardScreen.getmaxyx())
 
     INFO_PANEL_HEIGHT = 6
 
@@ -1020,23 +1011,14 @@ def main(argv):
             pass
         pass
 
-    global gStandardScreen
-    gStandardScreen = setUpCurses()
+    #global gStandardScreen
+    #gStandardScreen = setUpCurses()
 
     mainInfo.currentFileIdx = 0
 
     if (mainInfo.size() == 0):
         usageAndQuit(0, "sheet.py: No files that were specified on the command line could be read. Maybe you specified a directory (instead of a list of files). If you want to list all the files in a directory, try:\tsheet.py your_directory/*\n")
         pass
-
-    initializeWindowSettings(mainInfo.getCurrent()) # load the first file...
-
-    #cleanup()
-    #print str(len(mainInfo.getCurrent().table.colWidth))
-    #print "is the thing."
-    #global GLOB
-    #print str(GLOB)
-    #sys.exit(1)
 
     curses.wrapper(inputHandlingLoop) # Passes in the initialized screen as the first argument to inputHandlingLoop. Automatically restores normal terminal operation upon program termination.
 
@@ -1169,6 +1151,9 @@ def drawEverything(theScreen):
 
 def inputHandlingLoop(theScreen):
 
+    setUpCurses()
+    initializeWindowSettings(mainInfo.getCurrent()) # load the first file...
+
     ch = None
     while True:
         try:
@@ -1202,16 +1187,14 @@ def inputHandlingLoop(theScreen):
             raise # Something unexpected has happened. Better report it!
 
         pass
-
+    
     return # end of inputHandlingLoop
 
 
 def setUpCurses(): # initialize the curses environment
-    newlyMadeScreen = curses.initscr()
-    newlyMadeScreen.keypad(0) # <-- somehow important for it to be 0...
-
     if (not curses.has_colors()):
-        cleanupAndExit(1, "UH OH, this terminal does not support color! We might crash. Quitting now anyway until I figure out what to do. Sorry. This might not actually be a problem, but I will need to test it to see what happens in a non-color terminal!")
+        print "UH OH, this terminal does not support color! We might crash. Quitting now anyway until I figure out what to do. Sorry. This might not actually be a problem, but I will need to test it to see what happens in a non-color terminal!"
+        sys.exit(1)
         pass
     curses.start_color()
 
@@ -1237,30 +1220,8 @@ def setUpCurses(): # initialize the curses environment
         pass
     
     curses.meta(1)  # Allow 8-bit chars
-    curses.noecho() # Don't echo keyboard input
-    curses.cbreak() # Don't require ENTER to be pressed before keys are read
-
-    return newlyMadeScreen
-
-
-def cleanup():
-    if (gStandardScreen is not None):
-        gStandardScreen.erase()
-        gStandardScreen.refresh()
-        gStandardScreen.keypad(0)
-        curses.echo()
-        curses.nocbreak()
-        curses.endwin()
-        pass
-
-    return # end of "cleanup"
-
-def cleanupAndExit(exitCode, message=None):
-    cleanup()
-    if (message is not None):
-        print "sheet.py: " + message
-    sys.exit(exitCode)
     return
+
 
 def truncateLongCell(argString, argMaxlen, argTruncString):
     if (len(argString) > argMaxlen):
@@ -1443,7 +1404,6 @@ def handleKeysForNormalMode(argCh, currentTable, theScreen):
         setCommandStr("Sorry! Not implemented yet.")
         pass
 
-
     if (wantToMove.x != 0 or wantToMove.y != 0):
         activeCellPos.y = max(0, min(currentTable.getNumRows()-1, (activeCellPos.y+wantToMove.y)))
         activeCellPos.x = max(0, min(currentTable.getNumCols()-1 , (activeCellPos.x+wantToMove.x)))
@@ -1580,9 +1540,9 @@ BUGS:
 
 
 # Must come at the VERY END!
-if __name__ == "__main__":
-    main(sys.argv[1:])
-    pass
+#if __name__ == "__main__":
+#    main(sys.argv[1:])
+#    pass
 
 
 
@@ -1664,3 +1624,36 @@ if __name__ == "__main__":
 #print b.sizeX()
 #print b.board
 #sys.exit(1)
+
+
+
+# How to use Curses.wrapper:
+# From http://mail.python.org/pipermail/tutor/2003-July/024075.html
+# curses.wrapper is now simply used this way:
+# curses.wrapper(main)
+
+# Here I've got a piece of code that shows the non-wrapper way but with use
+# of a "main" function (The "if __name__=='__main__':" part asures that the
+# code is only excecuted when the file is excecuted as a script (not
+# imported as a modul). You can ignore this when you can't see the
+# benefit. try-finally asures the the finally-block is executed even if an
+# exception occurs in main. You shouldn't ignore this ;-):
+
+# if __name__=='__main__':
+#     try:
+# stdscr=curses.initscr()
+# curses.noecho() ; curses.cbreak()
+# stdscr.keypad(1)
+# main(stdscr)# Enter the main loop
+#     finally:
+#         stdscr.erase()
+#         stdscr.refresh()
+# stdscr.keypad(0)
+# curses.echo() ; curses.nocbreak()
+# curses.endwin()# Terminate curses
+
+
+# and the same (plus color activating) with the wrapper:
+
+if __name__=='__main__':
+     curses.wrapper(main)

@@ -131,49 +131,49 @@ while(@ARGV)
     }
     elsif($arg eq '-m')
     {
-		$merge = 1;
+	$merge = 1;
     }
     elsif($arg eq '-num')
-	{
+    {
         $numeric = 1;
-	}
+    }
     elsif($arg eq '-neg')
-	{
+    {
         $negate = 1;
-	}
+    }
     elsif($arg eq '-t' or $arg eq '-d')
-	{
+    {
         $arg = shift @ARGV;
         $delim_in1 = $delim_in2 = $arg;
-	}
+    }
     elsif($arg eq '-di1')
-	{
+    {
         $delim_in1 = shift @ARGV;
-	}
+    }
     elsif($arg eq '-di2')
-	{
+    {
         $delim_in2 = shift @ARGV;
-	}
-    elsif($arg eq '-di')
-	{
+    }
+    elsif(($arg eq '-di') or ($arg eq '-d'))
+    {
         $delim_in1 = shift @ARGV;
         $delim_in2 = $delim_in1;
-	}
+    }
     elsif($arg eq '-do')
-	{
+    {
         $delim_out = shift @ARGV;
-	}
+    }
     elsif($arg eq '-ds')
     {
-		$delim_syn = shift @ARGV;
+	$delim_syn = shift @ARGV;
     }
     elsif($arg eq '-syn')
     {
-		$syn_file = shift @ARGV;
+	$syn_file = shift @ARGV;
     }
     elsif($arg eq '-nosyn')
     {
-		$syn_file = '';
+	$syn_file = '';
     }
     # Suppress printing of values from table 1 (key will be printed however).
     elsif($arg eq '-s1')
@@ -182,28 +182,30 @@ while(@ARGV)
     }
     # Suppress printing of values from table 2 (key will be printed however).
     elsif($arg eq '-s2')
-	{
+    {
         $suppress2 = 1;
-	}
+    }
     elsif($arg eq '-sk')
-	{
+    {
         $suppressk = 1;
-	}
+    }
     elsif($arg eq '-r' or $arg eq '--reverse' or $arg eq '-rev')
-	{
+    {
         $reverse = 1;
-	}
+    }
     elsif($arg eq '-u')
-	{ $uppercase = 1; }
+    { $uppercase = 1; }
 
     elsif(length($file1)<1)
-	{
+    {
         $file1 = $arg;
-	}
+    }
     elsif(length($file2)<1)
-	{
+    {
         $file2 = $arg;
-	}
+    } else {
+	print STDERR "join.pl: UNRECOGNIZED COMMAND LINE ARGUMENT: $arg\n\n";
+    }
 }
 
 # open(SYN,">/tmp/syns");
