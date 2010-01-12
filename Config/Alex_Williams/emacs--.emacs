@@ -158,13 +158,25 @@
 (defun system-type-is-darwin () (string-equal system-type "darwin"))
 (defun system-type-is-gnu () (string-equal system-type "gnu/linux"))
 
-(setq should-load-ess nil) ;; <-- if we haven't loaded ess, then this remains "nil"
+(defun show-system-type() (interactive) (message (insert-system-type)))
+
+(setq should-load-ess nil) ;; <-- initialize a new variable if we haven't loaded ess, then this *remains* "nil"
+
 
 (setq load-path (cons "~/.emacs.d" load-path))
+
 (if (system-type-is-darwin)
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
       (setq should-load-ess t)
+      (require 'ess-site) ;; <-- this is super slow!!!
+      ))
+
+(if (system-type-is-gnu)
+    (progn
+      (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
+      (setq should-load-ess t)
+      (require 'ess-site) ;; <-- this is super slow!!!
       ))
 
 ;;(autoload 'ruby-mode "ruby-mode" "Major mode for editing ruby scripts." t)
@@ -177,8 +189,7 @@
 ;;    (load (expand-file-name "~/.emacs.d/ess/lisp/ess-site")))
 ;; Parameters to load that will make it not complain/warn: 'nomessage 'noerror
 ;; NB: loading the ess-module slows down emacs' load time a lot, even if ESS is compiled.
-(if (system-type-is-darwin)
-    (require 'ess-site)) ;; <-- this is super slow!!!
+
 ;; ##########################################################################
 
 (require 'show-wspace)			; Show whitespace!
@@ -324,7 +335,9 @@
 (global-set-key (kbd "M--") '(lambda () "Close this window"   (interactive) (delete-window) (message "Just ran delete-window (M-0)! (Note: the buffer is still active. Use <C-x b> to find it)")))
 
 
-(global-set-key [(meta m)] 'other-window)
+(global-set-key [(meta m)] '(lambda () "Next pane..." (interactive) (other-window 1)))
+
+(global-set-key [(shift meta m)] '(lambda () "Previous pane..." (interactive) (other-window -1)))
 
 ;;(global-unset-key "\C-v")
 ;;(global-unset-key "\M-v") ;; now it's meta-u and meta-o
@@ -407,7 +420,9 @@
 
 
 (global-unset-key (kbd "M-g"))
-(global-set-key (kbd "M-G") '(lambda () "Git commit" (interactive) (shell-command "git commit -a -m \"Commit from within emacs\"")))
+(global-set-key (kbd "M-G") '(lambda () "Mercurial commit" (interactive) (shell-command "hg commit -m \"Commit from within emacs\"")))
+
+;;(global-set-key (kbd "M-G") '(lambda () "Git commit" (interactive) (shell-command "git commit -a -m \"Commit from within emacs\"")))
 
 
 ;;;  Bind my-command to f1
@@ -772,11 +787,13 @@
 (defun reload-config () 
   "Runs load-file on ~/.emacs" 
   (interactive)
-  (load-file "~/.emacs"))
+  (load-file "~/.emacs")
+  (message "Loaded the config file again..."))
 
+(defun buffer-exists (bufname)   (not (eq nil (get-buffer bufname))))
 
-(kill-buffer "*scratch*") ;; Close the scratch buffer!
-
+;; Close the loathsome scratch buffer!
+(if (buffer-exists "*scratch*")  (kill-buffer "*scratch*"))
 
 ;; ##
 
