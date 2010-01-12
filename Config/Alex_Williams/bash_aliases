@@ -28,7 +28,7 @@ alias sundance='ssh sundance.cse.ucsc.edu'
 
 alias treeviewmemory='java -Xmx999m -jar TreeView.jar'
 
-
+alias z='echo $USER'
 
 # Shell navigation / commands
 alias      l='/bin/ls -F --color=auto'
@@ -42,22 +42,15 @@ alias     ..='cd ..'
 alias    res='source ~/.bashrc ; source ~/.bash_profile'
 alias     mv='mv -i'
 alias     cp='cp -i'
-alias    rrm='/bin/rm -f'
+alias    rrm='/bin/rm --verbose --preserve-root --interactive=once'
 alias     rm='trash.pl'
-alias checktrash='mkdir -p /tmp/alexgw/Trash/ && echo "Contents of /tmp/alexgw/Trash:" && ls /tmp/alexgw/Trash/'
-alias emptytrash='mkdir -p /tmp/alexgw/Trash/ && /bin/rm -rf /tmp/alexgw/Trash/ && echo "Emptied the trash directory (/tmp/alexgw/Trash)" ;'
-alias topcpu='top -o cpu' # top, sorted by CPU usage
+alias checktrash='mkdir -p /tmp/$USER/Trash/ && echo "Contents of /tmp/$USER/Trash:" && ls /tmp/$USER/Trash/'
+alias emptytrash='mkdir -p /tmp/$USER/Trash/ && /bin/rm -rf --preserve-root /tmp/$USER/Trash/ && echo "Emptied the trash directory (/tmp/$USER/Trash)" ;'
 alias    kpk='exit'
 
 
 
 #alias s='less -S --LINE-NUMBERS'
-#alias e='emacs -nw'
-#alias ls='ls --color=auto'
-#alias ll='ls -hal'
-#alias la='ls -hA'
-#alias l='ls -hCF'
-
 
 alias version="lsb_release -a" # Tells you which version of Ubuntu you are running!
 
@@ -115,8 +108,10 @@ alias gitcom="git commit -a -m 'Changes committed by alexgw'"
 alias gitstat="git ls-files --modified --deleted"
 alias gitdiff="git difftool"
 
-alias hgcom="hg commit -m 'Changes committed by alexgw' && hg push"
-alias hgup="hg pull && hg update"
+alias hgcom="hg commit -m 'Changes committed by alexgw'"
+alias hgpush="hg commit -m 'Changes committed by alexgw' && hg push"
+alias hgpull="hg pull && hg update"
+alias hgup="hg update"
 alias hgs="hg status"
 
 alias sciencecom='hg commit --cwd ${TIME_FOR_SCIENCE_DIR} -m "Changes committed by alexgw" && hg push --cwd ${TIME_FOR_SCIENCE_DIR}'
@@ -162,6 +157,7 @@ function s2 {
 
 function  ltab {
     # Use sheet.py to view a file or list of files. These files cannot be gzipped, however.
+    # Must be python2.6, and not python 3, currently
     python `which sheet.py` $*
 }
 
