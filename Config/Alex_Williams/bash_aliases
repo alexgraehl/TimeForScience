@@ -1,6 +1,8 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
-echo ">>> BASH: Loading bash_aliases file..."
+
+
+echo -e $agw_bash_echo_color">>> BASH: Loading bash_aliases..."$agw_end_color
 
 alias tunes="lsof | grep -i mp3"
 alias viewlog='tail -f /var/log/httpd/access_log'
