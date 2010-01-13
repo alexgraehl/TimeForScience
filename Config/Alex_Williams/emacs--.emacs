@@ -420,7 +420,15 @@
 
 
 (global-unset-key (kbd "M-g"))
-(global-set-key (kbd "M-G") '(lambda () "Mercurial commit" (interactive) (shell-command "hg commit -m \"Commit from within emacs\"")))
+
+
+(global-set-key (kbd "M-G") '(lambda () "Mercurial commit" 
+			       (interactive) 
+			       (shell-command
+				(concat 
+				 "hg commit -u "
+				 "'" (getenv "USER") "'"
+				 " -m \"Commit from within emacs\""))))
 
 ;;(global-set-key (kbd "M-G") '(lambda () "Git commit" (interactive) (shell-command "git commit -a -m \"Commit from within emacs\"")))
 
