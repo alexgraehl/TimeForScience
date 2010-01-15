@@ -4,6 +4,21 @@
 
 echo -e $agw_bash_echo_color">>> BASH: Loading bash_aliases..."$agw_end_color
 
+## Searches both the R source and the current directory (and any subdirectories!)
+function ff {
+    /bin/grep --color=always -T \
+	--ignore-case \
+	--recursive \
+	--line-number \
+	--exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="CVS" --exclude-dir="[bB]ackup*"\
+	--binary-files=without-match \
+	$1 \
+	/work/Common/Code/R_Binf_Core \
+	./ \
+	| s
+}
+
+
 alias tunes="lsof | grep -i mp3"
 alias viewlog='tail -f /var/log/httpd/access_log'
 
