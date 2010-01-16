@@ -138,7 +138,7 @@ alias hgup="hg update"
 alias hgs="hg status"
 
 alias sciencecom='hg commit --user ${USER} --cwd ${TIME_FOR_SCIENCE_DIR} -m "Changes committed by alexgw" && hg push --cwd ${TIME_FOR_SCIENCE_DIR}'
-alias scienceup='hg --user ${USER} --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SCIENCE_DIR} update'
+alias scienceup='hg --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SCIENCE_DIR} update'
 alias sciencestat='hg --cwd ${TIME_FOR_SCIENCE_DIR} status'
 
 
