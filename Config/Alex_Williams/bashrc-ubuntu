@@ -1,8 +1,6 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
 
-
-
 # .bashrc: Loaded when the shell is non-interactively started up
 
 # [ -z "$PS1" ] && return <-- If not running interactively, don't do anything
@@ -41,9 +39,10 @@ fi
 
 # don't put duplicate lines in the history. See bash(1) for more options
 # don't overwrite GNU Midnight Commander's setting of `ignorespace'.
+export HISTSIZE=9999
 export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoredups
 # ... or force ignoredups and ignorespace
-export HISTCONTROL=ignoreboth
+export HISTCONTROL=ignoreboth  # this causes any lines matching the previous history entry not to be saved.
 
 # append to the history file, don't overwrite it
 shopt -s histappend
@@ -237,4 +236,50 @@ function n {
 # The order of colors is BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE
 # echo -e '\E[30m black \E[31mred \E[32mgreen \E[33myellow \E[34mblue \E[35mmagenta \E[36mcyan \E[37mwhite'
 # echo -e '\E[30;41mblack on red'
+
+
+
+
+# Add IJKL navigation to supplement/replace the arrow keys
+bind "\M-J:backward-word"
+bind "\M-L:forward-word"
+bind "\M-j:backward-char"
+bind "\M-l:forward-char"
+
+bind "\M-i:previous-history"
+bind "\M-I:previous-history"
+
+bind "\M-k:next-history"
+bind "\M-K:next-history"
+
+bind "\C-s:history-search-forward"
+
+
+
+
+
+#export TERM=xterm-color
+#export CVSROOT=:ext:alexgw@tap.cse.ucsc.edu:/projects/compbio/cvsroot/stuartlab
+
+
+
+
+#export LSCOLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;31'
+#export LSCOLORS=FxgxCxDxBxegedabagacad
+#The order of the attributes for LSCOLORS is as follows:
+#
+#                           1.   directory
+#                           2.   symbolic link
+#                           3.   socket
+#                           4.   pipe
+#                           5.   executable
+#                           6.   block special
+#                           7.   character special
+#                           8.   executable with setuid bit set
+#                           9.   executable with setgid bit set
+#                           10.  directory writable to others, with sticky bit
+#                           11.  directory writable to others, without sticky
+#                                bit
+#:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.ogg=01;35:*.mp3=01;35:*.wav=01;35:'
+
 
