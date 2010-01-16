@@ -1,25 +1,44 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
 
+hasBashColor=1
 
 if [[ "darwin10.0" == $OSTYPE ]]
 then
-# The mac doesn't seem to like the same color strings...
-agw_bash_echo_color=''
-agw_bash_status_color=''
-agw_bash_warning_color=''
-agw_end_color=''
+    color_prefix='\033' ## <-- for the mac
 else
-agw_bash_echo_color='\E[32;40m'
-agw_bash_status_color='\E[33;40m'
-agw_bash_warning_color='\E[31;40m'
-agw_end_color='\033[0m'
+    color_prefix='\E' ## <-- for ubuntu
+fi
+
+if [[ 1 == $hasBashColor ]]
+then
+    agw_bash_echo_color="$color_prefix[32;40m" ## green  ## can also be: 1;33
+    agw_bash_status_color="$color_prefix[1;33m" ## yellow
+    agw_bash_warning_color="$color_prefix[1;31m" ## red
+    agw_end_color="$color_prefix[1;37m"
+else
+    agw_bash_echo_color=''
+    agw_bash_status_color=''
+    agw_bash_warning_color=''
+    agw_end_color=''
 fi
 
 
 if [[ "darwin10.0" == $OSTYPE ]]
 then
-export AGW_LS_COLOR_OPTION=' -G '  ## -G means "color" on the mac
+    AGW_LS_COLOR_OPTION=' -G '  ## -G means "color" on the mac
 else
-export AGW_LS_COLOR_OPTION=' --color=auto ' ## -G means "no group" on Linux
+    AGW_LS_COLOR_OPTION=' --color=auto ' ## -G means "no group" on Linux
 fi
+
+
+if [[ 'Alex' == $USER ]]
+then
+    ## Change 'Alex' to 'alexgw', since that's what all the remote servers at UCSF expect
+    UCSF_USER='alexgw'
+else
+    UCSF_USER=$USER
+fi
+
+
+
