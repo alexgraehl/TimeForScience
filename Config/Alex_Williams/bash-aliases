@@ -55,23 +55,28 @@ alias diffdir='diff -rq' ## diff on directories
 
 
 
-alias      l='/bin/ls -F $AGW_LS_COLOR_OPTION'
-alias     ls='/bin/ls -F $AGW_LS_COLOR_OPTION'
-alias     ll='/bin/ls -lh -A -F $AGW_LS_COLOR_OPTION'
-alias      h='history'
-alias      p='pwd'
-alias     tc='randomize_terminal_color.pl -cycle'
-alias      b='cd ..'
-alias     ..='cd ..'
-alias    res='source ~/.bashrc ; source ~/.bash_profile'
-alias     mv='mv -i'
-alias     cp='cp -i'
-alias    rrm='/bin/rm --verbose --preserve-root --interactive=once'
-alias     rm='trash.pl'
+alias l='/bin/ls -F $AGW_LS_COLOR_OPTION'
+alias ls='/bin/ls -F $AGW_LS_COLOR_OPTION'
+alias ll='/bin/ls -lh -A -F $AGW_LS_COLOR_OPTION'
+alias h='history'
+alias p='pwd'
+alias tc='randomize_terminal_color.pl -cycle'
+alias b='cd ..'
+alias ..='cd ..'
+alias res='source ~/.bashrc ; source ~/.bash_profile'
+alias mv='mv -i'
+alias cp='cp -i'
+alias rrm='/bin/rm --verbose --preserve-root --interactive=once'
+alias rm='trash.pl'
 alias checktrash='mkdir -p /tmp/$USER/Trash/ && echo "Contents of /tmp/$USER/Trash:" && ls /tmp/$USER/Trash/'
 alias emptytrash='mkdir -p /tmp/$USER/Trash/ && /bin/rm -rf --preserve-root /tmp/$USER/Trash/ && echo "Emptied the trash directory (/tmp/$USER/Trash)" ;'
-alias    kpk='exit'
+alias kpk='exit'
 
+
+
+## Mac-specific commands:
+alias invisible='SetFile -a V' ## Make a file/folder invisible to the Finder
+alias visible='SetFile -a v' ## opposite of "invisible"
 
 
 #alias s='less -S --LINE-NUMBERS'
@@ -210,3 +215,17 @@ function  ltab {
 
 alias v='ltab'
 
+
+
+
+## Convert line endings mac-style --> UNIX
+## Useful for loading Excel-generated .txt files
+function mac2unix {
+    cat "$1" | tr '\r' '\n'
+}
+
+## Convert line endings dos-style --> UNIX
+## Useful for loading Excel-generated .txt files
+function dos2unix {
+    cat "$1" | tr -d '\r'
+}
