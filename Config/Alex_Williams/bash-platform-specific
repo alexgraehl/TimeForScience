@@ -1,0 +1,25 @@
+# -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
+
+
+
+if [[ "darwin10.0" == $OSTYPE ]]
+then
+# The mac doesn't seem to like the same color strings...
+agw_bash_echo_color=''
+agw_bash_status_color=''
+agw_bash_warning_color=''
+agw_end_color=''
+else
+agw_bash_echo_color='\E[32;40m'
+agw_bash_status_color='\E[33;40m'
+agw_bash_warning_color='\E[31;40m'
+agw_end_color='\033[0m'
+fi
+
+
+if [[ "darwin10.0" == $OSTYPE ]]
+then
+export AGW_LS_COLOR_OPTION=' -G '  ## -G means "color" on the mac
+else
+export AGW_LS_COLOR_OPTION=' --color=auto ' ## -G means "no group" on Linux
+fi
