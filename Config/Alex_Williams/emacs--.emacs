@@ -165,18 +165,19 @@
 
 (setq load-path (cons "~/.emacs.d" load-path))
 
-(if (system-type-is-darwin)
-    (progn
-      (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
-      (setq should-load-ess t)
-      (require 'ess-site) ;; <-- this is super slow!!!
-      ))
+;(if (system-type-is-darwin)
+;    (progn
+;      (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
+;      (setq should-load-ess t)
+;      (require 'ess-site) ;; <-- this is super slow!!!
+;      ))
 
 (if (system-type-is-gnu)
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
       (setq should-load-ess t)
       (require 'ess-site) ;; <-- this is super slow!!!
+      (require 'show-wspace)			; Show whitespace!
       ))
 
 ;;(autoload 'ruby-mode "ruby-mode" "Major mode for editing ruby scripts." t)
@@ -192,7 +193,7 @@
 
 ;; ##########################################################################
 
-(require 'show-wspace)			; Show whitespace!
+
 
 (when window-system
   (mwheel-install) ;; enable wheelmouse
@@ -741,11 +742,11 @@
 
 ;; Hide lines that don't match a given search string
 (setq has-hidelines nil)
-(if (system-type-is-darwin)
-    (progn (autoload 'hide-lines "hide-lines" "Hide lines based on a regexp" t) ;; ~/.emacs.d/hide-lines.el
-	   (require 'hide-lines)
-	   (require 'hidesearch)
-	   (setq has-hidelines t)))
+;(if (system-type-is-darwin)
+;    (progn (autoload 'hide-lines "hide-lines" "Hide lines based on a regexp" t) ;; ~/.emacs.d/hide-lines.el
+;	   (require 'hide-lines)
+;	   (require 'hidesearch)
+;	   (setq has-hidelines t)))
 
 (global-set-key [(control meta l)] '(lambda () (interactive) (hidesearch) (message "Only showing matching lines: use Ctrl-G to show all lines again."))) ;; control g now shows the invisibles, as well as generally cancelling
 
