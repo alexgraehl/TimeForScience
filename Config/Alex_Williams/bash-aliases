@@ -49,6 +49,7 @@ alias treeviewmemory='java -Xmx999m -jar TreeView.jar'
 
 alias z='echo $USER'
 
+alias diffdir='diff -rq' ## diff on directories
 
 # Shell navigation / commands
 
@@ -107,7 +108,7 @@ alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
 alias     e='emacs -nw'
 alias     t='transpose.pl -q'
 alias tattle="echo -e -n '$agw_bash_status_color'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl \
---ht=75 --trunc=60 | tail -n +2 ; echo -e '$agw_end_color'"
+--ht=75 --trunc=60 | tail -n +2 ; echo -e -n '$agw_end_color'"
 
 # GNU Make-related
 alias  make='make --warn-undefined-variables --print-directory'
@@ -142,7 +143,30 @@ alias scienceup='hg --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SC
 alias sciencestat='hg --cwd ${TIME_FOR_SCIENCE_DIR} status'
 
 
+if [[ $USER == alexgw ]]
+then
+    alias alexcom='ssh alexcom@alexwilliams.com'
+    alias jig='ssh jig.cse.ucsc.edu'
+    alias hustle='ssh  hustle.cse.ucsc.edu'
+    alias disco='ssh  disco.cse.ucsc.edu' # -X
+    
+    alias chacha='ssh -X chacha.cse.ucsc.edu'
+    alias jive='ssh -X   jive.cse.ucsc.edu'
+    alias tap='ssh       tap.cse.ucsc.edu'
+    alias bop='ssh       bop.cse.ucsc.edu'
+    
+    alias moondance='ssh moondance.cse.ucsc.edu'
+    alias riverdance='ssh waterdance.cse.ucsc.edu'
+    alias waterdance='ssh waterdance.cse.ucsc.edu'
+    alias sundance='ssh sundance.cse.ucsc.edu'
+fi
 
+if [[ 'nausicaa' == $HOSTNAME ]]
+then
+    alias nau="echo -e -n '$agw_bash_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$agw_end_color'"
+else
+    alias nau='ssh -X $UCSF_USER@nausicaa.ucsf.edu'
+fi
 
 # Things related to "LESS"
 export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
