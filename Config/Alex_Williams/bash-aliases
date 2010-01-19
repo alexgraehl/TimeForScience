@@ -234,3 +234,6 @@ function mac2unix {
 function dos2unix {
     cat "$1" | tr -d '\r'
 }
+
+
+alias huh='cat <(declare -f) <(alias)' ## uses bash subshells to show everything that is defined
