@@ -1,0 +1,285 @@
+# -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
+
+
+# .bashrc: Loaded when the shell is non-interactively started up
+
+# [ -z "$PS1" ] && return <-- If not running interactively, don't do anything
+# Printing any output breaks ssh and various things. This is why this line is important at the very top!
+[ -z "$PS1" ] && return
+
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
+
+# Set up the path whether or not this shell is interactive
+
+if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
+    source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
+fi
+
+echo -e $agw_bash_echo_color">>> BASH: Loading .bashrc..."$agw_end_color
+
+if [ -f ~/TimeForScience/Config/Alex_Williams/bash-path-setup ]; then
+    source ~/TimeForScience/Config/Alex_Williams/bash-path-setup
+fi
+
+
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+# Sets up the aliases whether or not this shell is interactive
+if [ -f ~/TimeForScience/Config/Alex_Williams/bash-aliases ]; then
+    source ~/TimeForScience/Config/Alex_Williams/bash-aliases
+fi
+
+
+
+
+# don't put duplicate lines in the history. See bash(1) for more options
+# don't overwrite GNU Midnight Commander's setting of `ignorespace'.
+export HISTSIZE=9999
+export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoredups
+# ... or force ignoredups and ignorespace
+export HISTCONTROL=ignoreboth  # this causes any lines matching the previous history entry not to be saved.
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+#force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+	color_prompt=yes
+    else
+	color_prompt=
+    fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    eval "`dircolors -b`"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    #alias grep='grep --color=auto'
+    #alias fgrep='fgrep --color=auto'
+    #alias egrep='egrep --color=auto'
+fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+fi
+
+######## AKH added
+
+#--- ssh stuff
+## lets you know if you're local or on server---
+## make sure to put this in server shell file too
+SSH_FLAG=0
+SSH_IP=`echo $SSH_CLIENT | awk '{ print $1 }'`
+if [ $SSH_IP ] ; then
+  SSH_FLAG=1
+fi
+SSH2_IP=`echo $SSH2_CLIENT | awk '{ print $1 }'`
+if [ $SSH2_IP ] ; then
+  SSH_FLAG=1
+fi
+if [ $SSH_FLAG -eq 1 ] ; then
+  CONN=ssh
+
+elif [ -z $SESS_SRC ] ; then
+  CONN=lcl
+elif [ $SESS_SRC = "(:0.0)" -o $SESS_SRC = "" ] ; then
+  CONN=lcl
+else
+  CONN=tel
+fi
+
+
+## Changes the prompt if you are sshed to another machine!
+if [ $CONN = ssh ] ; then
+        PS1="\[\033[01;35m\][\h \W]\\$\[\033[00m\] "
+        export PS1
+fi
+
+
+
+
+#export LSCOLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;31'
+export LSCOLORS=FxgxCxDxBxegedabagacad
+#The order of the attributes for LSCOLORS is as follows:
+#
+#    1.   directory
+#    2.   symbolic link
+#    3.   socket
+#    4.   pipe
+#    5.   executable
+#    6.   block special
+#    7.   character special
+#    8.   executable with setuid bit set
+#    9.   executable with setgid bit set
+#    10.  directory writable to others--with sticky bit
+#    11.  directory writable to others--no sticky bit
+#:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.ogg=01;35:*.mp3=01;35:*.wav=01;35:'
+
+#export CVSROOT=:ext:alexgw@hoot.cse.ucsc.edu:/cse/grads/cchen/cvsroot
+export CVSROOT=:ext:alexgw@tap.cse.ucsc.edu:/projects/compbio/cvsroot/stuartlab
+export CVS_RSH=ssh
+export CVSEDITOR="emacs -nw"
+export SVN_EDITOR="emacs -nw"
+
+export PAGER=less
+export EDITOR="emacs -nw"
+export TERM=xterm-color
+#256color
+
+
+# =========== BIOINFORMATICS CORE VARIABLES ================
+export BINF_CORE_WORK_DIR="/work"  # <-- set the BINF CORE work directory. Required by scripts that use any common data.
+export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"  # <-- set the "R scripts library directory" for the Bioinformatics Core R scripts. Required by many R scripts.
+# =========== BIOINFORMATICS CORE VARIABLES ================
+
+
+set -o ignoreeof  # Prevent Ctrl-D from exiting!
+
+HISTSIZE=10000
+HISTCONTROL=ignoreboth
+# this causes any lines matching the previous history entry not to be saved.
+
+# Keybindings
+# Add IJKL navigation to supplement/replace the arrow keys
+bind "\M-J:backward-word"
+bind "\M-L:forward-word"
+bind "\M-j:backward-char"
+bind "\M-l:forward-char"
+bind "\M-i:previous-history"
+bind "\M-I:previous-history"
+bind "\M-k:next-history"
+bind "\M-K:next-history"
+bind "\C-s:history-search-forward"
+
+
+
+
+# Save the local ethernet "en0" MAC address into the variable LOCAL_EN0_MAC. Note the zero.
+# Allows per-machine settinsg.
+#export LOCAL_EN0_MAC=`ifconfig en0 | grep -i ether | sed 's/.*ether //' | sed 's/[ ]*$//'`
+
+
+
+umask 0007 # <-- give users and groups full access to 
+# files I create, but give no access to other users.
+# 0 = "full access", 7 = "no access"
+
+
+function n {
+    echo -e  '\E[30m black \E[31mred \E[32mgreen \E[33myellow \E[34mblue \E[35mmagenta \E[36mcyan \E[37mwhite'
+}
+
+black='\E[31;47m'
+end='\033[0m'
+
+function n {
+    echo -e $black "Hello" $end
+}
+
+# 30 through 37 are the FOREGROUND
+# 40 through 47 are the BACKGROUND
+# The order of colors is BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE
+# echo -e '\E[30m black \E[31mred \E[32mgreen \E[33myellow \E[34mblue \E[35mmagenta \E[36mcyan \E[37mwhite'
+# echo -e '\E[30;41mblack on red'
+
+
+
+
+# Add IJKL navigation to supplement/replace the arrow keys
+bind "\M-J:backward-word"
+bind "\M-L:forward-word"
+bind "\M-j:backward-char"
+bind "\M-l:forward-char"
+
+bind "\M-i:previous-history"
+bind "\M-I:previous-history"
+
+bind "\M-k:next-history"
+bind "\M-K:next-history"
+
+bind "\C-s:history-search-forward"
+
+
+
+
+
+#export TERM=xterm-color
+#export CVSROOT=:ext:alexgw@tap.cse.ucsc.edu:/projects/compbio/cvsroot/stuartlab
+
+
+
+
+#export LSCOLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;31'
+#export LSCOLORS=FxgxCxDxBxegedabagacad
+#The order of the attributes for LSCOLORS is as follows:
+#
+#                           1.   directory
+#                           2.   symbolic link
+#                           3.   socket
+#                           4.   pipe
+#                           5.   executable
+#                           6.   block special
+#                           7.   character special
+#                           8.   executable with setuid bit set
+#                           9.   executable with setgid bit set
+#                           10.  directory writable to others, with sticky bit
+#                           11.  directory writable to others, without sticky
+#                                bit
+#:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.ogg=01;35:*.mp3=01;35:*.wav=01;35:'
+
+
