@@ -56,91 +56,91 @@ sub printUsage() {
 }
 
 sub isNonNegativeInt($) {
-  return ($_[0] =~ /[0-9]+/);
+    return ($_[0] =~ /[0-9]+/);
 }
 
 
 sub readInputFile($$$) {
-	# Note: reads GZipped and regular files
-	# transparently (based on file extension)
-	my ($filename) = @_;
-	my $reader = undef;
-	if ($filename =~ /\.gz$/) {
-		$reader = 'zcat';
-	} else {
-		$reader = 'cat';
-	}
-	my $dat = `$reader $filename`; # <-- might be gzipped, hence $reader
-	my @arr = split(/\n/, $dat);
-	my @matrix = [];
-	for (my $i = 0; $i < scalar(@arr); $i++) {
-		my $lineStr = $arr[$i];
-		chomp($lineStr);
-	}
+    # Note: reads GZipped and regular files
+    # transparently (based on file extension)
+    my ($filename) = @_;
+    my $reader = undef;
+    if ($filename =~ /\.gz$/) {
+	$reader = 'zcat';
+    } else {
+	$reader = 'cat';
+    }
+    my $dat = `$reader $filename`; # <-- might be gzipped, hence $reader
+    my @arr = split(/\n/, $dat);
+    my @matrix = [];
+    for (my $i = 0; $i < scalar(@arr); $i++) {
+	my $lineStr = $arr[$i];
+	chomp($lineStr);
+    }
 }
 
 
 sub printColorIfOutputIsTerminal($) {
-	my ($theColor) = @_;
-	if (!$neverColorNoMatterWhat && $outputIsColorTerminal) {  #   -t STDOUT
-		print color($theColor);
-	}
+    my ($theColor) = @_;
+    if (!$neverColorNoMatterWhat && $outputIsColorTerminal) {  #   -t STDOUT
+	print color($theColor);
+    }
 }
 
 sub truncatedVersion($) { # returns a COPY of the truncated-length item
-  # Parameter "item": a string to truncate to fewer characters, based on
-  # the global variable $truncLen. This is used to fit text inside properly-sized boxes.
-  my ($item) = @_;
-  my ($ret);
+    # Parameter "item": a string to truncate to fewer characters, based on
+    # the global variable $truncLen. This is used to fit text inside properly-sized boxes.
+    my ($item) = @_;
+    my ($ret);
 
-  if (defined($truncLen)) {
+    if (defined($truncLen)) {
 	if (($truncLen - length($truncationIndicationSuffix) > 0) && (length($item) >= $truncLen)) {
-	  my $lenWithSuffix = $truncLen - length($truncationIndicationSuffix);
-	  $ret = substr($item, 0, $lenWithSuffix) . $truncationIndicationSuffix;
+	    my $lenWithSuffix = $truncLen - length($truncationIndicationSuffix);
+	    $ret = substr($item, 0, $lenWithSuffix) . $truncationIndicationSuffix;
 	} else {
-	  $ret = substr($item, 0, $truncLen);
+	    $ret = substr($item, 0, $truncLen);
 	}
-  } else {
+    } else {
 	$ret = $item;
-  }
+    }
 
-  if (defined($highlightThreshold)) {
+    if (defined($highlightThreshold)) {
 	if (Scalar::Util::looks_like_number($item)) {
-	  my $x = sub($$) { my ($val, $thresh) = @_; return ($val >= $thresh); };
-	  if ($x->($item, $highlightThreshold)) { # show things greater than or equal to a certain amount as "interesting"
+	    my $x = sub($$) { my ($val, $thresh) = @_; return ($val >= $thresh); };
+	    if ($x->($item, $highlightThreshold)) { # show things greater than or equal to a certain amount as "interesting"
 		$ret = "** " . $item . " **";
-	  }
+	    }
 	}
-  }
-  return $ret;
+    }
+    return $ret;
 }
 
 
 #sub isNumeric($) {  # use Scalar::Util::looks_like_number($var) instead!
 
 sub isStarred($) {
-  return ($_[0] =~ /^[*]/); # does the arg begin with a star...
+    return ($_[0] =~ /^[*]/); # does the arg begin with a star...
 }
 
 sub printSingleArrayLine($$$$) {
-  my ($ptrToSingleDimentionalArray, $ptrToMaxLenArray, $alignment, $colorToPrint) = @_;
-  for (my $col = 0; $col < scalar(@$ptrToMaxLenArray); $col++) {
+    my ($ptrToSingleDimentionalArray, $ptrToMaxLenArray, $alignment, $colorToPrint) = @_;
+    for (my $col = 0; $col < scalar(@$ptrToMaxLenArray); $col++) {
 	my $item = (defined(${$ptrToSingleDimentionalArray}[$col])) ?    ${$ptrToSingleDimentionalArray}[$col]   : '';
 	if (defined($truncLen)) { $item = truncatedVersion($item); }
 
 	my $howToAlign;
 	if (AUTO_ALIGN == $alignment) {
-	  if (Scalar::Util::looks_like_number($item) || isStarred($item)) {
+	    if (Scalar::Util::looks_like_number($item) || isStarred($item)) {
 		$howToAlign = RIGHT_ALIGN; # it's a number! let's right-align it
-	  } elsif ($item =~ /^N[DA]/i) {
+	    } elsif ($item =~ /^N[DA]/i) {
 		$howToAlign = $previousLineAlignment; # align NA and ND like the previous line--this way we take care of NA values (except at the very top)
-	  } else {
+	    } else {
 		$howToAlign = LEFT_ALIGN; # not a number, and not ND or NA! let's left-align it
-	  }
+	    }
 	} else {
-	  $howToAlign = $alignment;
+	    $howToAlign = $alignment;
 	}
-		
+	
 	$previousLineAlignment = $howToAlign;
 
 
@@ -150,187 +150,206 @@ sub printSingleArrayLine($$$$) {
 	#print "Need to pad with $numSpacesToPad spaces for column $col.\n";
 
 	if (defined($colorToPrint) && $colorToPrint) {
-	  printColorIfOutputIsTerminal($colorToPrint);
+	    printColorIfOutputIsTerminal($colorToPrint);
 	}
 
 	if (LEFT_ALIGN == $howToAlign) {
-	  print ("$item" . (' ' x $numSpacesToPad));
+	    print ("$item" . (' ' x $numSpacesToPad));
 	} elsif (RIGHT_ALIGN == $howToAlign) {
-	  print ((' ' x $numSpacesToPad) . "$item");
+	    print ((' ' x $numSpacesToPad) . "$item");
 	} elsif (CENTER_ALIGN == $howToAlign) {
-	  my $beforeSpaces = int($numSpacesToPad / 2);
-	  my $afterSpaces  = $numSpacesToPad - $beforeSpaces;
-	  print ((' ' x $beforeSpaces) . $item . (' ' x $afterSpaces));
+	    my $beforeSpaces = int($numSpacesToPad / 2);
+	    my $afterSpaces  = $numSpacesToPad - $beforeSpaces;
+	    print ((' ' x $beforeSpaces) . $item . (' ' x $afterSpaces));
 	} else {
-	  die "Invalid howToAlign parameter passed into printBuffer!\n";
+	    die "Invalid howToAlign parameter passed into printBuffer!\n";
 	}
 	print $HORIZONTAL_DELIMITER;
 
 	if (defined($colorToPrint) && $colorToPrint) {
-	  printColorIfOutputIsTerminal("reset");
+	    printColorIfOutputIsTerminal("reset");
 	}
 
-  }
-  print STDOUT "\n";
+    }
+    print STDOUT "\n";
 }
 
 # Prints this "buffer"--prints the current table.
 sub printBuffer($$$) {
-	my ($bufferArrayPtr, $ptrToMaxLenArray, $alignment) = @_;
-	for (my $row = 0; $row < scalar(@{$bufferArrayPtr}); $row++) {
-		printSingleArrayLine(\@{${$bufferArrayPtr}[$row]}, $ptrToMaxLenArray, $alignment, "reset");
-	}
+    my ($bufferArrayPtr, $ptrToMaxLenArray, $alignment) = @_;
+    for (my $row = 0; $row < scalar(@{$bufferArrayPtr}); $row++) {
+	printSingleArrayLine(\@{${$bufferArrayPtr}[$row]}, $ptrToMaxLenArray, $alignment, "reset");
+    }
 }
 
 sub printHorizontalLine($$) {
-  my ($char, $lineLength) = @_;
-  print(($char x $lineLength) . "\n");
+    my ($char, $lineLength) = @_;
+    print(($char x $lineLength) . "\n");
 }
 
 sub printHeader {
-  # headerPtr: pointer to an array (@) of header values
-  # maxLenPtr: pointer to an array of the maximum allowed lengths for this column
-  my ($headerPtr, $maxLenPtr) = @_;
+    # headerPtr: pointer to an array (@) of header values
+    # maxLenPtr: pointer to an array of the maximum allowed lengths for this column
+    my ($headerPtr, $maxLenPtr) = @_;
 
-  my $headerLen = 0;
-  foreach my $len (@$maxLenPtr) {
-    $headerLen += $len;
-    $headerLen += length($HORIZONTAL_DELIMITER);
-  }
+    my $headerLen = 0;
+    foreach my $len (@$maxLenPtr) {
+	$headerLen += $len;
+	$headerLen += length($HORIZONTAL_DELIMITER);
+    }
 
-  if (!$outputIsColorTerminal || $neverColorNoMatterWhat) {
+    if (!$outputIsColorTerminal || $neverColorNoMatterWhat) {
 	# If we can't color the header output, then at least draw a line to distinguish it
 	printHorizontalLine("=", $headerLen);
-  }
+    }
 
-  # Print the header text here
-  printSingleArrayLine($headerPtr, $maxLenPtr, AUTO_ALIGN, "white on_blue underline");
-  
-  if (!$outputIsColorTerminal || $neverColorNoMatterWhat) {
+    # Print the header text here
+    printSingleArrayLine($headerPtr, $maxLenPtr, AUTO_ALIGN, "white on_blue underline");
+    
+    if (!$outputIsColorTerminal || $neverColorNoMatterWhat) {
 	printHorizontalLine("=", $headerLen);
-  }
+    }
 }
 
 sub printAndClearOutputSoFar($$$) {
-	my ($headerPtr, $bufferPtr, $maxLenPtr) = @_;
-	# Every so often, print a new header, then whatever we've read into the buffer
+    my ($headerPtr, $bufferPtr, $maxLenPtr) = @_;
+    # Every so often, print a new header, then whatever we've read into the buffer
 
-	if (defined($headerPtr) && defined(@$headerPtr) && (scalar(@$headerPtr) > 0)) {
-	  printHeader($headerPtr, $maxLenPtr);
-	}
-	printBuffer($bufferPtr, $maxLenPtr, AUTO_ALIGN);
-	@$bufferPtr = ();
-	@$maxLenPtr = (); # clear out the maximum lengths
-	for (my $col = 0; $col < scalar(@$headerPtr); $col++) {
-		# now set the maximum lengths to whatever was in the header (to start with)
-		$$maxLenPtr[$col] = defined($$headerPtr[$col]) ? length($$headerPtr[$col])  :  0;
-	}
+    if (defined($headerPtr) && defined(@$headerPtr) && (scalar(@$headerPtr) > 0)) {
+	printHeader($headerPtr, $maxLenPtr);
+    }
+    printBuffer($bufferPtr, $maxLenPtr, AUTO_ALIGN);
+    @$bufferPtr = ();
+    @$maxLenPtr = (); # clear out the maximum lengths
+    for (my $col = 0; $col < scalar(@$headerPtr); $col++) {
+	# now set the maximum lengths to whatever was in the header (to start with)
+	$$maxLenPtr[$col] = defined($$headerPtr[$col]) ? length($$headerPtr[$col])  :  0;
+    }
 }
 
 sub main() {
-	my $inputDelim = "\t";
-	my $hasHeader = 1; # by default, we expect a header line
-	my $printStartupMessage = 1;
+    my $inputDelim = undef;
+    my $hasHeader = 1; # by default, we expect a header line
+    my $printStartupMessage = 1;
     GetOptions("help|?|man" => sub { printUsage(); }
-			   , "ht=f"    => \$highlightThreshold
-			   , "input_delim|d=s" => \$inputDelim
-			   , "no_color|nc" => sub { $neverColorNoMatterWhat = 1; }
-			   , "no_header|nh" => sub { $hasHeader = 0; }
-			   , "n=i" => \$headerReprintInterval
-			   , "all|a!" => \$printHeaderOnlyOnce
-			   , "trunc|t=i" => \$truncLen
-			   , "notify!" => \$printStartupMessage
-			   ) or printUsage();
-	
-	if (defined($headerReprintInterval)) {
-	  if ($headerReprintInterval < 1 || !isNonNegativeInt($headerReprintInterval)) {
-		die "Error! You cannot specify printing the header more frequently than once every line! (i.e., 1 is the minimum). The value you passed in was \"$headerReprintInterval\".\n";
-	  }
+	       , "ht=f"    => \$highlightThreshold
+	       , "input_delim|d=s" => \$inputDelim
+	       , "no_color|nc" => sub { $neverColorNoMatterWhat = 1; }
+	       , "no_header|nh" => sub { $hasHeader = 0; }
+	       , "n=i" => \$headerReprintInterval
+	       , "all|a!" => \$printHeaderOnlyOnce
+	       , "trunc|t=i" => \$truncLen
+	       , "notify!" => \$printStartupMessage
+	) or printUsage();
+    
+    if (!defined($inputDelim)) {
+	foreach my $arg (@ARGV) {
+	    if (-f $arg) {
+		# this argument is a valid file... let's try to auto-detect the delimiter type based on the filename
+		if ($arg =~ /\.tab$/) { ## <-- tab-delimited file
+		    $inputDelim = "\t";
+		} elsif ($arg =~ /\.csv$/) { ## <-- comma-separated value file
+		    $inputDelim = ',';
+		} else {
+		    $inputDelim = "\t"; ## undef for now... we will set it below though to a tab, which will be the default
+		}
+	    }
+	}
+	if (!defined($inputDelim)) {
+	    $inputDelim = "\t"; ## If we didn't auto-detect it from the file type, set it as a tab. Fall back to the tab as the delimiter, if nothing else was found...
+	}
+    }
+    
+
+    if (defined($headerReprintInterval)) {
+	if ($headerReprintInterval < 1 || !isNonNegativeInt($headerReprintInterval)) {
+	    die "Error! You cannot specify printing the header more frequently than once every line! (i.e., 1 is the minimum). The value you passed in was \"$headerReprintInterval\".\n";
+	}
+    } else {
+	# If the reprint interval wasn't explicitly set, then we set it here
+	# Print the header again every THIS many lines. The -7 is because we want to show the header at both the bottom and the top. (if it's less than 7, then the whole header won't show up at the bottom)
+	$headerReprintInterval = max(1, $terminal_height_in_lines - 7);
+    }
+
+    if (defined($truncLen) && ($truncLen <= 0 || !isNonNegativeInt($truncLen))) {
+	die "Error! Max column length to display must be at least 1, and it must be an integer. You specified it to be $truncLen.\n";
+    }
+
+    if ($printStartupMessage) {
+	# Just so people know they are not looking at the original file! sheet can do some weird things, like truncating output and aligning columns.
+	print "(This file has been processed by sheet.pl.";
+	if (defined($truncLen)) {
+	    print " Columns were truncated to $truncLen chars.)\n";
 	} else {
-	  # If the reprint interval wasn't explicitly set, then we set it here
-	  # Print the header again every THIS many lines. The -7 is because we want to show the header at both the bottom and the top. (if it's less than 7, then the whole header won't show up at the bottom)
-	  $headerReprintInterval = max(1, $terminal_height_in_lines - 7);
+	    print ")\n";
+	}
+    }
+
+    #print "Unprocessed by Getopt::Long\n" if $ARGV[0];
+    #foreach (@ARGV) {
+#	print "$_\n";
+#    }    
+
+    my $linesRead = 0;
+    my $numNonHeaderLinesPrinted = 0;
+    while (my $line = <>) {
+	chomp($line);
+	my @thisLine = split($inputDelim, $line);
+
+	my $thisIsTheHeaderLine = $hasHeader && (0 == $linesRead);
+	if ($thisIsTheHeaderLine) {
+	    for (my $i = 0; $i < scalar(@thisLine); $i++) {
+		$thisLine[$i] = ($i+1) . ": " . truncatedVersion($thisLine[$i]);
+	    }
+	    @header = @thisLine;
 	}
 
-	if (defined($truncLen) && ($truncLen <= 0 || !isNonNegativeInt($truncLen))) {
-	  die "Error! Max column length to display must be at least 1, and it must be an integer. You specified it to be $truncLen.\n";
+	# Figure out how long the MAXIMUM line length is
+	for (my $c = 0; $c < scalar(@thisLine); $c++) {
+	    if (!$thisIsTheHeaderLine && @header && $c >= scalar(@header)) {
+		# This row has more columns than the header did,
+		# so we need to add some column headers to the header...
+		$header[$c] = ($c+1) . ": ";
+	    }
+
+	    my $item;
+	    if ($thisIsTheHeaderLine || !defined($truncLen)) {
+		$item = $thisLine[$c];  # <-- don't truncate this, it is handled specially for the header!
+	    } else {
+		$item = truncatedVersion($thisLine[$c]); # Truncate regular data items if necessary
+	    }
+
+	    if (!defined($maxLen[$c]) || length($item) > $maxLen[$c]) {
+		my $itemLen = (defined($item)) ? length($item) : 0;
+		my $headerLen = (defined($c) && defined($header[$c])) ? length($header[$c]) : 0;
+		$maxLen[$c] = max($itemLen, $headerLen);
+		#print "Max length of column $c is " . $maxLen[$c] . "\n";
+	    }
+	    if (!$thisIsTheHeaderLine) {
+		# The header was already initialized, so this is a regular data line.
+		my $r = ($printHeaderOnlyOnce) ? $numNonHeaderLinesPrinted : ($numNonHeaderLinesPrinted % $headerReprintInterval);
+		$buffer[$r][$c] = $item;
+	    }
 	}
 
-	if ($printStartupMessage) {
-	  # Just so people know they are not looking at the original file! sheet can do some weird things, like truncating output and aligning columns.
-	  print "(This file has been processed by sheet.pl.";
-	  if (defined($truncLen)) {
-		print " Columns were truncated to $truncLen chars.)\n";
-	  } else {
-		print ")\n";
-	  }
+	if (not $thisIsTheHeaderLine) {
+	    $numNonHeaderLinesPrinted++;		# Ok, so we've read in the header line already
+
+	    if (!$printHeaderOnlyOnce
+		&& (0 == ($numNonHeaderLinesPrinted % $headerReprintInterval))) {
+		printAndClearOutputSoFar(\@header, \@buffer, \@maxLen);
+	    }
 	}
 
-	#print "Unprocessed by Getopt::Long\n" if $ARGV[0];
-	#foreach (@ARGV) {
-	#	print "$_\n";
-	#}
+	$linesRead++;
+    }
 
-	my $linesRead = 0;
-	my $numNonHeaderLinesPrinted = 0;
-	while (my $line = <>) {
-		chomp($line);
-		my @thisLine = split($inputDelim, $line);
+    if ($linesRead == 0) {
+	print "*** Note: sheet.pl did not get any lines to read! ***\n*** Note: Maybe the file you passed in was empty? ***\n";
+    }
 
-		my $thisIsTheHeaderLine = $hasHeader && (0 == $linesRead);
-		if ($thisIsTheHeaderLine) {
-			for (my $i = 0; $i < scalar(@thisLine); $i++) {
-			  $thisLine[$i] = ($i+1) . ": " . truncatedVersion($thisLine[$i]);
-			}
-			@header = @thisLine;
-		}
-
-		# Figure out how long the MAXIMUM line length is
-		for (my $c = 0; $c < scalar(@thisLine); $c++) {
-			if (!$thisIsTheHeaderLine && @header && $c >= scalar(@header)) {
-				# This row has more columns than the header did,
-				# so we need to add some column headers to the header...
-				$header[$c] = ($c+1) . ": ";
-			}
-
-			my $item;
-			if ($thisIsTheHeaderLine || !defined($truncLen)) {
-			  $item = $thisLine[$c];  # <-- don't truncate this, it is handled specially for the header!
-			} else {
-			  $item = truncatedVersion($thisLine[$c]); # Truncate regular data items if necessary
-			}
-
-			if (!defined($maxLen[$c]) || length($item) > $maxLen[$c]) {
-				my $itemLen = (defined($item)) ? length($item) : 0;
-				my $headerLen = (defined($c) && defined($header[$c])) ? length($header[$c]) : 0;
-				$maxLen[$c] = max($itemLen, $headerLen);
-				#print "Max length of column $c is " . $maxLen[$c] . "\n";
-			}
-			if (!$thisIsTheHeaderLine) {
-				# The header was already initialized, so this is a regular data line.
-				my $r = ($printHeaderOnlyOnce) ? $numNonHeaderLinesPrinted : ($numNonHeaderLinesPrinted % $headerReprintInterval);
-				$buffer[$r][$c] = $item;
-			}
-		}
-
-		if (not $thisIsTheHeaderLine) {
-			$numNonHeaderLinesPrinted++;		# Ok, so we've read in the header line already
-
-			if (!$printHeaderOnlyOnce
-				&& (0 == ($numNonHeaderLinesPrinted % $headerReprintInterval))) {
-				printAndClearOutputSoFar(\@header, \@buffer, \@maxLen);
-			}
-		}
-
-		$linesRead++;
-	}
-
-	if ($linesRead == 0) {
-	  print "*** Note: sheet.pl did not get any lines to read! ***\n*** Note: Maybe the file you passed in was empty? ***\n";
-	}
-
-	# Print whatever remains that we haven't printed yet
-	printAndClearOutputSoFar(\@header, \@buffer, \@maxLen);
+    # Print whatever remains that we haven't printed yet
+    printAndClearOutputSoFar(\@header, \@buffer, \@maxLen);
 
 } # end main;
 
@@ -338,7 +357,7 @@ sub main() {
 main();
 
 END {
-	printColorIfOutputIsTerminal("reset");
+    printColorIfOutputIsTerminal("reset");
 }
 
 exit(0);
