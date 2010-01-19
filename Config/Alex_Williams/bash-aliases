@@ -202,6 +202,11 @@ function s1 {
     /usr/bin/less $1 | sheet.pl --trunc=15 | s
 }
 
+function csv {
+    # For viewing a CSV file specifically
+    /usr/bin/less $1 | sheet.pl -d ',' | s
+}
+
 function s2 {
     # like sf, but shorter columns # Can only view ONE file, unlike "ss"
     /usr/bin/less $1 | sheet.pl --trunc=25 | s
