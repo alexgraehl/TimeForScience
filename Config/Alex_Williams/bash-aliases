@@ -187,7 +187,7 @@ alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/le
 # Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
 alias  sn='/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case -R -f'
 
-function s {
+function s { ## <-- this needs to come BEFORE the other things that use less!
     # "s" uses "magicless" to run files through sheet.pl
     magicless --LINE-NUMBERS --status-column --ignore-case -R $*
 }
@@ -202,25 +202,21 @@ function s1 {
     /usr/bin/less $1 | sheet.pl --trunc=15 | s
 }
 
-function csv {
-    # For viewing a CSV file specifically
-    /usr/bin/less $1 | sheet.pl -d ',' | s
-}
-
 function s2 {
     # like sf, but shorter columns # Can only view ONE file, unlike "ss"
     /usr/bin/less $1 | sheet.pl --trunc=25 | s
 }
 
-function  ltab {
+function csv {
+    # For viewing a CSV file specifically
+    magicless $1 | sheet.pl -d ',' | s
+}
+
+function v {
     # Use sheet.py to view a file or list of files. These files cannot be gzipped, however.
     # Must be python2.6, and not python 3, currently
     python `which sheet.py` $*
 }
-
-alias v='ltab'
-
-
 
 
 ## Convert line endings mac-style --> UNIX
