@@ -7,7 +7,7 @@ if [[ "darwin10.0" == $OSTYPE ]]
 then
     color_prefix='\033' ## <-- for the mac
 else
-    color_prefix='\E' ## <-- for ubuntu
+    color_prefix='\033' ## actually, \033 works fine too! '\E' ## <-- for ubuntu
 fi
 
 if [[ 1 == $hasBashColor ]]

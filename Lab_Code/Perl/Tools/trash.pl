@@ -42,6 +42,27 @@ use warnings;
 use Cwd ('abs_path', 'getcwd');
 use File::Basename;
 
+use Term::ANSIColor;
+
+my $outputIsColorTerminal = (-t STDOUT);
+
+# sub hasBashColor() {
+#     {
+# 	## Check that the TERM is a color one...
+# 	my $theTerm = $ENV{'TERM'};
+# 	if (!defined($theTerm)) { return 0; }
+# 	if (!(($theTerm eq 'xterm-color') || ($theTerm eq 'xterm-256color'))) { return 0; }
+#     }
+
+#     ## Check that ths shell is BASH, because nothing else will understand these escape sequences...
+#     my $theShell = $ENV{'SHELL'};
+#     if (!defined($theShell)) { return 0; }
+    
+#     if ($theShell =~ /.*bash$/) { return 1; }
+#     else { return 0; }
+
+# }
+
 sub trim($) {
     my $string = shift;
     $string =~ s/^\s+//;
@@ -89,7 +110,7 @@ foreach my $itemToDelete (@ARGV) {
 	print "trash.pl: Not deleting \"$itemToDelete\", because it did either not exist or could not be read. Check that this file actually exists!\n";
 	next;
     }
-
+    
     if (not (-f $itemToDelete || -d $itemToDelete || -l $itemToDelete)) {
 	# The thing to delete has to be either a file (-f), a directory (-d), or a symlink (-l).
 	print "trash.pl: Not deleting \"$itemToDelete\": it was not a file, directory, or symlink.\n";
@@ -178,14 +199,31 @@ foreach my $itemToDelete (@ARGV) {
 	    }
 	}
 	print STDOUT "trash.pl: There was already a file in the trash named\n";
-	print STDOUT "${tab}${firstFailedAttempt}\n";
-	print STDOUT "${tab}so \"${trashDupeSuffix}.${index}\" was appended to this filename before it was trashed.\n";
+	
+	if ($outputIsColorTerminal) { print STDOUT color("yellow"); }
+	print STDOUT qq{${tab}${firstFailedAttempt}\n};
+	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+
+	print STDOUT qq{${tab}so \"};
+
+	if ($outputIsColorTerminal) { print STDOUT color("yellow"); }
+	print STDOUT qq{${trashDupeSuffix}.${index}};
+	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+
+	print STDOUT qq{\" was appended to this filename before it was trashed.\n};
     }
 
     if (-l $itemToDelete) {
 	print STDOUT qq{trash.pl: Trashing the symbolic link $itemToDelete -> $trashedFileLoc\n};
     } else {
-	print STDOUT qq{trash.pl: $itemToDelete -> $trashedFileLoc\n};
+	print STDOUT qq{trash.pl: };
+	if ($outputIsColorTerminal) { print STDOUT color("green"); }
+	print STDOUT qq{$itemToDelete};
+	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+	print STDOUT qq{ -> };
+	if ($outputIsColorTerminal) { print STDOUT color("green"); }
+	print STDOUT qq{$trashedFileLoc\n};
+	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
     }
 
     system(qq{mv "$thepath" "$trashedFileLoc"});
@@ -193,7 +231,10 @@ foreach my $itemToDelete (@ARGV) {
 }
 
 if ($numItemsDeleted > 0) {
+
     print STDOUT qq{trash.pl: Keep in mind that the trash directory may be\n};
     print STDOUT qq{${tab}automatically deleted when this machine is restarted.\n};
+
     print STDOUT (qq{-} x 80) . "\n";
+
 }

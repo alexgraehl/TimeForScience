@@ -207,11 +207,6 @@ function s2 {
     /usr/bin/less $1 | sheet.pl --trunc=25 | s
 }
 
-function csv {
-    # For viewing a CSV file specifically
-    magicless $1 | sheet.pl -d ',' | s
-}
-
 function v {
     # Use sheet.py to view a file or list of files. These files cannot be gzipped, however.
     # Must be python2.6, and not python 3, currently
