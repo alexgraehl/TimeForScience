@@ -1,10 +1,8 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
-
 hasBashColor=0
 
 color_prefix=''
-
 
 ######## AKH added
 
@@ -12,24 +10,15 @@ color_prefix=''
 ## lets you know if you're local or on server---
 ## make sure to put this in server shell file too
 
-#SSH_IP=`echo $SSH_CLIENT | awk '{ print $1 }'`
-#if [ $SSH_IP ] ; then
-#  SSH_FLAG=1
-#fi
-#SSH2_IP=`echo $SSH2_CLIENT | awk '{ print $1 }'`
-#if [ $SSH2_IP ] ; then
-#  SSH_FLAG=1
-#fi
-
-SSH_FLAG=0
-
-if [[ -z $SSH_CLIENT || -z $SSH2_CLIENT ]] ; then
-    SSH_FLAG=0
+IS_SSHING=0
+## SSH_CLIENT and SSH2_CLIENT are set automatically by SSH if you are connected to a machine by SSH
+if [[ -z $SSH_CLIENT && -z $SSH2_CLIENT ]] ; then
+    IS_SSHING=0
 else
-    SSH_FLAG=1
+    IS_SSHING=1
 fi
 
-if [ $SSH_FLAG -eq 1 ] ; then
+if [ $IS_SSHING -eq 1 ] ; then
   CONN=ssh
 elif [ -z $SESS_SRC ] ; then
   CONN=lcl
@@ -42,6 +31,7 @@ fi
 
 
 ## Changes the prompt if you are sshed to another machine!
+## this now happens in the .bashrc, but the color of the font is set below
 #if [ $CONN = ssh ] ; then
 #        PS1="\[$color_prefix[01;35m\][\h \W]\\$\[$color_prefix[00m\] "
 #        export PS1
@@ -75,7 +65,7 @@ if [ $hasBashColor -eq 1 ] ; then
     a_end_color="$color_prefix[0m"
 
 
-    if [ $SSH_FLAG -eq 0 ] ; then
+    if [ $IS_SSHING -eq 0 ] ; then
 	## local machine...
 	a_machine_prompt_main_color="$color_prefix[44m$color_prefix[3;33m" ## Blue background, white foreground
     else
@@ -83,7 +73,7 @@ if [ $hasBashColor -eq 1 ] ; then
 	if [[ $HOSTNAME = "nausicaa" ]] ; then
 	    a_machine_prompt_main_color="$color_prefix[45m$color_prefix[1;30m" ## Magenta back, bold black foreground
 	else
-	    a_machine_prompt_main_color="$color_prefix[41m$color_prefix[3;37m" ## Blue background, white foreground
+	    a_machine_prompt_main_color="$color_prefix[41m$color_prefix[3;37m"
 	fi
     fi
 
