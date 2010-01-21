@@ -1,0 +1,111 @@
+# -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
+
+hasBashColor=0
+
+color_prefix=''
+
+######## AKH added
+
+#--- ssh stuff
+## lets you know if you're local or on server---
+## make sure to put this in server shell file too
+
+## SSH_CLIENT and SSH2_CLIENT are set automatically by SSH if you are connected to a machine by SSH
+if [[ -z $SSH_CLIENT || -z $SSH2_CLIENT ]] ; then
+    is_sshing=1
+else
+    is_sshing=0
+fi
+
+if [ $is_sshing -eq 1 ] ; then
+    CONN=ssh
+elif [ -z $SESS_SRC ] ; then
+    CONN=lcl
+elif [ $SESS_SRC = "(:0.0)" -o $SESS_SRC = "" ] ; then
+    CONN=lcl
+else
+    CONN=tel
+fi
+
+
+## Changes the prompt if you are sshed to another machine!
+## this now happens in the .bashrc, but the color of the font is set below
+#if [ $CONN = ssh ] ; then
+#        PS1="\[$color_prefix[01;35m\][\h \W]\\$\[$color_prefix[00m\] "
+#        export PS1
+#fi
+
+
+color_prefix='' ## The prefix for bash's colors
+
+isMac=0
+hasBashColor=0
+
+case "$TERM" in
+    xterm-color|xterm-256color) color_prompt=1;
+	;;
+    *)
+	echo "Non-color terminal"
+	;;
+esac
+
+case "$OSTYPE" in
+    darwin10.0)
+	## Mac-specific things
+	AGW_LS_COLOR_OPTION=" -G "  ## -G means "color" on the mac
+	isMac=1
+	;;
+    *)
+	## General linux-y things
+	AGW_LS_COLOR_OPTION=' --color=auto ' ## -G means "no group" on Linux
+	;;
+esac
+
+a_echo_color=''
+a_status_color=''
+a_warning_color=''
+a_end_color=''
+
+a_machine_prompt_main_color=''
+
+if [ $color_prompt -eq 1 ] ; then
+    color_prefix='\033' ## <-- for the mac
+    a_echo_color="$color_prefix[32;40m" ## green  ## can also be: 1;33 ## was [3;40m before
+    a_status_color="$color_prefix[3;33m" ## yellow
+    a_warning_color="$color_prefix[3;31m" ## red
+    a_end_color="$color_prefix[0m"
+
+    if [ $is_sshing -eq 0 ] ; then
+	## local machine...
+	#a_machine_prompt_main_color="$color_prefix[44m$color_prefix[3;33m" ## Blue background, white foreground
+	a_machine_prompt_main_color="$color_prefix[1;32m" ## Bold green text
+    else
+	## remote machine...
+	if [[ $HOSTNAME = "nausicaa" ]] ; then
+	    a_machine_prompt_main_color="$color_prefix[1;35m" ## Bold magenta text
+	    #a_machine_prompt_main_color="$color_prefix[45m$color_prefix[1;30m" ## Magenta back, bold black foreground
+	else
+	    a_machine_prompt_main_color="$color_prefix[41m$color_prefix[3;37m"
+	fi
+    fi
+
+    #if [[ "darwin10.0" == $OSTYPE
+
+    #a_nau_color="$color_prefix"
+    # Background foreground
+    #\033[47m\033[3;31m      ## <-- For the second part, where it says [3;31m 1=bold, 2=light, 3=regular
+else
+    emptyThing_agw_filler=1
+    # Sadly, we do not have color on this terminal.
+fi
+
+
+if [ 'Alex' == $USER ] ; then
+    ## Change 'Alex' to 'alexgw', since that's what all the remote servers at UCSF expect
+    UCSF_USER='alexgw'
+else
+    UCSF_USER=$USER
+fi
+
+
+
