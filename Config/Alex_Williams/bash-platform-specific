@@ -11,10 +11,10 @@ color_prefix=''
 ## make sure to put this in server shell file too
 
 ## SSH_CLIENT and SSH2_CLIENT are set automatically by SSH if you are connected to a machine by SSH
-if [[ -z $SSH_CLIENT || -z $SSH2_CLIENT ]] ; then
-    is_sshing=1
+if [[ -z $SSH_CLIENT && -z $SSH2_CLIENT ]] ; then
+    is_sshing=0 ## We aren't connected to any other server...
 else
-    is_sshing=0
+    is_sshing=1 ## We are connected via SSH or SSH2...
 fi
 
 if [ $is_sshing -eq 1 ] ; then
