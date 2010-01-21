@@ -13,6 +13,14 @@
 
 # Set up the path whether or not this shell is interactive
 
+
+if [ -z $STY ] ; then
+    echo "Hey! You should remember to resume the screen!!!"
+else
+    echo "New screen shell..."
+fi
+
+
 if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ] ; then
     source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
