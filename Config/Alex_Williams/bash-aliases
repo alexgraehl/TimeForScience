@@ -107,19 +107,22 @@ alias invisible='SetFile -a V' ## Make a file/folder invisible to the Finder
 alias visible='SetFile -a v' ## opposite of "invisible"
 
 ## Utility commands
-alias    rr='screen -xR'
-alias   wcl='wc -l'
+
+## -U: "screen understands UTF8"
+alias rr="screen -xR -U"
+
+alias wcl='wc -l'
 alias sortt='sort -t "	"' # sort with tab as separator
 alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
-alias     e='emacs -nw'
-alias     t='transpose.pl -q'
+alias e='emacs -nw'
+alias t='transpose.pl -q'
 alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl \
 --ht=75 --trunc=60 | tail -n +2 ; echo -e -n '$a_end_color'"
 
 # GNU Make-related
-alias  make='make --warn-undefined-variables --print-directory'
-alias     m='make'
-alias   mcm='make clean && make'
+alias make='make --warn-undefined-variables --print-directory'
+alias m='make'
+alias mcm='make clean && make'
 function remake {
     ## Lets you type "remake" to remove a file and then use GNU make to try to re-generate it
 	trash.pl "$1" && make --warn-undefined-variables --print-directory "$1"
