@@ -10,24 +10,22 @@ color_prefix=''
 ## lets you know if you're local or on server---
 ## make sure to put this in server shell file too
 
-IS_SSHING=0
 ## SSH_CLIENT and SSH2_CLIENT are set automatically by SSH if you are connected to a machine by SSH
-if [[ -z $SSH_CLIENT && -z $SSH2_CLIENT ]] ; then
-    IS_SSHING=0
+if [[ -z $SSH_CLIENT || -z $SSH2_CLIENT ]] ; then
+    is_sshing=1
 else
-    IS_SSHING=1
+    is_sshing=0
 fi
 
-if [ $IS_SSHING -eq 1 ] ; then
-  CONN=ssh
+if [ $is_sshing -eq 1 ] ; then
+    CONN=ssh
 elif [ -z $SESS_SRC ] ; then
-  CONN=lcl
+    CONN=lcl
 elif [ $SESS_SRC = "(:0.0)" -o $SESS_SRC = "" ] ; then
-  CONN=lcl
+    CONN=lcl
 else
-  CONN=tel
+    CONN=tel
 fi
-
 
 
 ## Changes the prompt if you are sshed to another machine!
@@ -38,18 +36,30 @@ fi
 #fi
 
 
+color_prefix='' ## The prefix for bash's colors
 
+isMac=0
+hasBashColor=0
 
-if [ "darwin10.0" == $OSTYPE ]
-then
-    AGW_LS_COLOR_OPTION=' -G '  ## -G means "color" on the mac
-    color_prefix='\033' ## <-- for the mac
-    hasBashColor=1
-else
-    AGW_LS_COLOR_OPTION=' --color=auto ' ## -G means "no group" on Linux
-    color_prefix='\033' ## <-- for the mac
-    hasBashColor=1
-fi
+case "$TERM" in
+    xterm-color|xterm-256color) color_prompt=1;
+	;;
+    *)
+	echo "Non-color terminal"
+	;;
+esac
+
+case "$OSTYPE" in
+    darwin10.0)
+	## Mac-specific things
+	AGW_LS_COLOR_OPTION=" -G "  ## -G means "color" on the mac
+	isMac=1
+	;;
+    *)
+	## General linux-y things
+	AGW_LS_COLOR_OPTION=' --color=auto ' ## -G means "no group" on Linux
+	;;
+esac
 
 a_echo_color=''
 a_status_color=''
@@ -58,14 +68,14 @@ a_end_color=''
 
 a_machine_prompt_main_color=''
 
-if [ $hasBashColor -eq 1 ] ; then
-    a_echo_color="$color_prefix[3;32m" ## green  ## can also be: 1;33
+if [ $color_prompt -eq 1 ] ; then
+    color_prefix='\033' ## <-- for the mac
+    a_echo_color="$color_prefix[32;40m" ## green  ## can also be: 1;33 ## was [3;40m before
     a_status_color="$color_prefix[3;33m" ## yellow
     a_warning_color="$color_prefix[3;31m" ## red
     a_end_color="$color_prefix[0m"
 
-
-    if [ $IS_SSHING -eq 0 ] ; then
+    if [ $is_sshing -eq 0 ] ; then
 	## local machine...
 	#a_machine_prompt_main_color="$color_prefix[44m$color_prefix[3;33m" ## Blue background, white foreground
 	a_machine_prompt_main_color="$color_prefix[1;32m" ## Bold green text
@@ -86,7 +96,7 @@ if [ $hasBashColor -eq 1 ] ; then
     #\033[47m\033[3;31m      ## <-- For the second part, where it says [3;31m 1=bold, 2=light, 3=regular
 else
     emptyThing_agw_filler=1
-    # Nothin' to do
+    # Sadly, we do not have color on this terminal.
 fi
 
 
