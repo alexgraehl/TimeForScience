@@ -179,7 +179,7 @@ fi
 
 
 alias lighthouse='ssh -X $UCSF_USER@lighthouse.ucsf.edu' ## Database machine
-alias bueno='ssh -X $UCSF_USER@bueno.ucsf.edu' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
+alias bueno='ssh -X $UCSF_USER@bueno.gladstone.internal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
 
 # Things related to "LESS"
 export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
