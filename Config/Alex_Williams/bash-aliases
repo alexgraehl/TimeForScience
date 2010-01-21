@@ -4,7 +4,8 @@ if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
     source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
 
-echo -e $agw_bash_echo_color">>> BASH: Loading bash_aliases..."$agw_end_color
+echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
+
 
 ## Searches both the R source and the current directory (and any subdirectories!)
 function ff {
@@ -112,8 +113,8 @@ alias sortt='sort -t "	"' # sort with tab as separator
 alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
 alias     e='emacs -nw'
 alias     t='transpose.pl -q'
-alias tattle="echo -e -n '$agw_bash_status_color'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl \
---ht=75 --trunc=60 | tail -n +2 ; echo -e -n '$agw_end_color'"
+alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl \
+--ht=75 --trunc=60 | tail -n +2 ; echo -e -n '$a_end_color'"
 
 # GNU Make-related
 alias  make='make --warn-undefined-variables --print-directory'
@@ -168,10 +169,14 @@ fi
 
 if [[ 'nausicaa' == $HOSTNAME ]]
 then
-    alias nau="echo -e -n '$agw_bash_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$agw_end_color'"
+    alias nau="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
 else
     alias nau='ssh -X $UCSF_USER@nausicaa.ucsf.edu'
 fi
+
+
+alias lighthouse='ssh -X $UCSF_USER@lighthouse.ucsf.edu' ## Database machine
+alias bueno='ssh -X $UCSF_USER@bueno.ucsf.edu' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
 
 # Things related to "LESS"
 export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"

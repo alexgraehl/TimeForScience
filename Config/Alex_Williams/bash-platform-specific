@@ -1,39 +1,104 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
 
-hasBashColor=1
+hasBashColor=0
 
-if [[ "darwin10.0" == $OSTYPE ]]
-then
-    color_prefix='\033' ## <-- for the mac
+color_prefix=''
+
+
+######## AKH added
+
+#--- ssh stuff
+## lets you know if you're local or on server---
+## make sure to put this in server shell file too
+
+#SSH_IP=`echo $SSH_CLIENT | awk '{ print $1 }'`
+#if [ $SSH_IP ] ; then
+#  SSH_FLAG=1
+#fi
+#SSH2_IP=`echo $SSH2_CLIENT | awk '{ print $1 }'`
+#if [ $SSH2_IP ] ; then
+#  SSH_FLAG=1
+#fi
+
+SSH_FLAG=0
+
+if [[ -z $SSH_CLIENT || -z $SSH2_CLIENT ]] ; then
+    SSH_FLAG=0
 else
-    color_prefix='\033' ## actually, \033 works fine too! '\E' ## <-- for ubuntu
+    SSH_FLAG=1
 fi
 
-if [[ 1 == $hasBashColor ]]
-then
-    agw_bash_echo_color="$color_prefix[32;40m" ## green  ## can also be: 1;33
-    agw_bash_status_color="$color_prefix[1;33m" ## yellow
-    agw_bash_warning_color="$color_prefix[1;31m" ## red
-    agw_end_color="$color_prefix[1;37m"
+if [ $SSH_FLAG -eq 1 ] ; then
+  CONN=ssh
+elif [ -z $SESS_SRC ] ; then
+  CONN=lcl
+elif [ $SESS_SRC = "(:0.0)" -o $SESS_SRC = "" ] ; then
+  CONN=lcl
 else
-    agw_bash_echo_color=''
-    agw_bash_status_color=''
-    agw_bash_warning_color=''
-    agw_end_color=''
+  CONN=tel
 fi
 
 
-if [[ "darwin10.0" == $OSTYPE ]]
+
+## Changes the prompt if you are sshed to another machine!
+#if [ $CONN = ssh ] ; then
+#        PS1="\[$color_prefix[01;35m\][\h \W]\\$\[$color_prefix[00m\] "
+#        export PS1
+#fi
+
+
+
+
+if [ "darwin10.0" == $OSTYPE ]
 then
     AGW_LS_COLOR_OPTION=' -G '  ## -G means "color" on the mac
+    color_prefix='\033' ## <-- for the mac
+    hasBashColor=1
 else
     AGW_LS_COLOR_OPTION=' --color=auto ' ## -G means "no group" on Linux
+    color_prefix='\033' ## <-- for the mac
+    hasBashColor=1
+fi
+
+a_echo_color=''
+a_status_color=''
+a_warning_color=''
+a_end_color=''
+
+a_machine_prompt_main_color=''
+
+if [ $hasBashColor -eq 1 ] ; then
+    a_echo_color="$color_prefix[3;32m" ## green  ## can also be: 1;33
+    a_status_color="$color_prefix[3;33m" ## yellow
+    a_warning_color="$color_prefix[3;31m" ## red
+    a_end_color="$color_prefix[0m"
+
+
+    if [ $SSH_FLAG -eq 0 ] ; then
+	## local machine...
+	a_machine_prompt_main_color="$color_prefix[44m$color_prefix[3;33m" ## Blue background, white foreground
+    else
+	## remote machine...
+	if [[ $HOSTNAME = "nausicaa" ]] ; then
+	    a_machine_prompt_main_color="$color_prefix[45m$color_prefix[1;30m" ## Magenta back, bold black foreground
+	else
+	    a_machine_prompt_main_color="$color_prefix[41m$color_prefix[3;37m" ## Blue background, white foreground
+	fi
+    fi
+
+    #if [[ "darwin10.0" == $OSTYPE
+
+    #a_nau_color="$color_prefix"
+    # Background foreground
+    #\033[47m\033[3;31m      ## <-- For the second part, where it says [3;31m 1=bold, 2=light, 3=regular
+else
+    emptyThing_agw_filler=1
+    # Nothin' to do
 fi
 
 
-if [[ 'Alex' == $USER ]]
-then
+if [ 'Alex' == $USER ] ; then
     ## Change 'Alex' to 'alexgw', since that's what all the remote servers at UCSF expect
     UCSF_USER='alexgw'
 else

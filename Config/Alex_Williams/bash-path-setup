@@ -4,7 +4,7 @@ if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
     source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
 
-echo -e $agw_bash_echo_color">>> BASH: Loading bash_path_setup..."$agw_end_color
+echo -e "${a_echo_color}>>> BASH: Loading bash-path-setup...${a_end_color}"
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/X11/bin:
 # UCSF: MEME
