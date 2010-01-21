@@ -67,11 +67,13 @@ if [ $hasBashColor -eq 1 ] ; then
 
     if [ $IS_SSHING -eq 0 ] ; then
 	## local machine...
-	a_machine_prompt_main_color="$color_prefix[44m$color_prefix[3;33m" ## Blue background, white foreground
+	#a_machine_prompt_main_color="$color_prefix[44m$color_prefix[3;33m" ## Blue background, white foreground
+	a_machine_prompt_main_color="$color_prefix[1;32m" ## Bold green text
     else
 	## remote machine...
 	if [[ $HOSTNAME = "nausicaa" ]] ; then
-	    a_machine_prompt_main_color="$color_prefix[45m$color_prefix[1;30m" ## Magenta back, bold black foreground
+	    a_machine_prompt_main_color="$color_prefix[1;35m" ## Bold magenta text
+	    #a_machine_prompt_main_color="$color_prefix[45m$color_prefix[1;30m" ## Magenta back, bold black foreground
 	else
 	    a_machine_prompt_main_color="$color_prefix[41m$color_prefix[3;37m"
 	fi
