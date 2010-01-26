@@ -73,5 +73,5 @@ export PATH=$PATH:/sw/bin    # programs installed by Fink, on the Mac
 
 if [[ -n isAgwHomeMachine ]]; then
     # Add things to Alex's home machine's path
-    isAgwHomeMachine=1 ## doesn't do anything... since it's already set
+    export PATH=$PATH:/Alex/Programming/android-sdk-mac_86/tools
 fi
