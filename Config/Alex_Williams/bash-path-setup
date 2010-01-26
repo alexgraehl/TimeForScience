@@ -70,3 +70,8 @@ export PATH=$PATH:$MYSRC/cvaske/R/Commands
 export PATH=$PATH:$HOME/bin  # programs in your own home directory
 export PATH=$PATH:/sw/bin    # programs installed by Fink, on the Mac
 
+
+if [[ -n isAgwHomeMachine ]]; then
+    # Add things to Alex's home machine's path
+    isAgwHomeMachine=1 ## doesn't do anything... since it's already set
+fi
