@@ -61,6 +61,10 @@ case "$OSTYPE" in
 	;;
 esac
 
+if [[ $OSTYPE = "darwin10.0" && $HOSTNAME = "Z.local" ]]; then
+    isAGWHomeMachine=1
+fi
+
 a_echo_color=''
 a_status_color=''
 a_warning_color=''
