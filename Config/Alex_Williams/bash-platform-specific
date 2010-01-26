@@ -74,15 +74,15 @@ a_machine_prompt_main_color=''
 
 if [ $color_prompt -eq 1 ] ; then
     color_prefix='\033' ## <-- for the mac
-    a_echo_color="$color_prefix[32;40m" ## green  ## can also be: 1;33 ## was [3;40m before
-    a_status_color="$color_prefix[3;33m" ## yellow
-    a_warning_color="$color_prefix[3;31m" ## red
-    a_end_color="$color_prefix[0m"
+    a_echo_color="${color_prefix}[1;32m" ## green  ## can also be: 1;33 ## was [3;40m before
+    a_status_color="${color_prefix}[1;33m"
+    a_warning_color="${color_prefix}[1;31m"
+    a_end_color="${color_prefix}[0m"
 
     if [ $is_sshing -eq 0 ] ; then
 	## local machine...
 	#a_machine_prompt_main_color="$color_prefix[44m$color_prefix[3;33m" ## Blue background, white foreground
-	a_machine_prompt_main_color="$color_prefix[1;32m" ## Bold green text
+	a_machine_prompt_main_color="${color_prefix}[1;32m" ## Bold green text
     else
 	## remote machine...
 	if [[ $HOSTNAME = "nausicaa" ]] ; then
