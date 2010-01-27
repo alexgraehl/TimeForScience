@@ -6,19 +6,20 @@ fi
 
 echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
 
-
 ## Searches both the R source and the current directory (and any subdirectories!)
+## Note that it only looks for files with a ".R" ending!!!!!!!
 function ff {
     /bin/grep --color=always -T \
 	--ignore-case \
 	--recursive \
+	--extended-regexp \
 	--line-number \
-	--exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="CVS" --exclude-dir="[bB]ackup*"\
+	--exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="CVS" --exclude-dir="[bB]ackup*" \
 	--binary-files=without-match \
+	--include=*.R \
 	$1 \
 	/work/Common/Code/R_Binf_Core \
-	./ \
-	| s
+	./
 }
 
 
@@ -26,7 +27,6 @@ alias tunes="lsof | grep -i mp3"
 alias viewlog='tail -f /var/log/httpd/access_log'
 
 alias diffdir='diff -rq'
-
 
 #alias vista='ssh alexcom@apollo.vistapages.com'
 alias alexcom='ssh alexcom@alexwilliams.com'
