@@ -758,6 +758,9 @@
 					(keyboard-quit)
 					)))
 
+(global-set-key [(shift meta f)] 'grep-find)
+(global-set-key [(meta control s)] 'grep-find)
+
 ;;(split-window-horizontally)   ;; want two windows at startup
 ;;(other-window 1)              ;; move to other window
 ;;(shell)                       ;; start a shell
