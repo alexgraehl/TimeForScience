@@ -17,7 +17,7 @@ function ff {
 	--exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="CVS" --exclude-dir="[bB]ackup*" \
 	--binary-files=without-match \
 	--include=*.R \
-	$1 \
+	"$*" \
 	/work/Common/Code/R_Binf_Core \
 	./
 }

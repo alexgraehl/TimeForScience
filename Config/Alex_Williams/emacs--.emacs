@@ -81,8 +81,11 @@
 (defvar KEYWORD_BG   nil)
 
 (defface agwCustomDoubleLineFace
-  '((t (:foreground "magenta" :background "blue" :underline t))) "To highlight === rows")
+  '((t (:foreground "magenta" :background "blue" :underline t))) "To highlight linebreak-style rows of == characters.")
 
+(defface agwLineNumberFace
+  '((t (:foreground "black" :background "blue" :inverse-video nil)))
+  "Face for the line numbers at the beginning of each line")
 
 (defface agwPositiveNumberFace
   '((t (:foreground "green"))) "To highlight positive numbers")
@@ -533,7 +536,6 @@
 ;(agwColor 'font-lock-comment-face COMMENT_FOREGROUND COMMENT_BACKGROUND)
 (set-default 'font-lock-comment-delimiter-face 'font-lock-comment-face)
 
-
 (agwColor 'region SELECTED_TEXT SELECTED_BG) ; For a selected region
 
 ;; Programming Syntax Styles
@@ -693,7 +695,8 @@
     (font-lock-add-keywords
      nil
      '(
-       ("\\<\\([+]?[0-9\\.]+\\(?:\\.[0-9]+\\)?\\(?:[eE][-+]?[0-9]+\\)?\\)\\>" 1 'agwPositiveNumberFace keep)
+;;       ("\\([0-9]+\\)" 1 'agwLineNumberFace t) ; the <- regular assignment operator
+ ;      ("\\<\\([+]?[0-9\\.]+\\(?:\\.[0-9]+\\)?\\(?:[eE][-+]?[0-9]+\\)?\\)\\>" 1 'agwPositiveNumberFace keep)
        ("\\(-[0-9\\.]+\\(?:\\.[0-9]+\\)?\\(?:[eE][-+]?[0-9]+\\)?\\)" 1 'agwNegativeNumberFace keep)
        ("\\<\\(NaN\\|NA\\|ND+\\)\\>" 1 font-lock-warning-face keep)
        ("\\(.*[=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
