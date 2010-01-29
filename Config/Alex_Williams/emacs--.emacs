@@ -8,8 +8,6 @@
 ;; 3. Use C-x ESC ESC (repeat-complex-command) to see the apropiate command. Example:
 ;;     (global-set-key (quote [C-tab]) (quote my-func))
 
-
-;; Useful commands: M-x describe-mode  <-- Describes the current major/minor modes in this buffer
 ;; M-x apropos: searches command documentation (very limited and unreliable)
 ;; M-x command-apropos: searches for the literal text of a command
 
@@ -231,6 +229,10 @@
 (auto-compression-mode    1) ;; transparently reads  .gz files
 (global-font-lock-mode    t) ;; turn on syntax highlighting
 
+(delete-selection-mode 1) ; delete seleted text when typing
+(global-linum-mode 1) ; always show line numbers
+(global-visual-line-mode 1) ; wrap lines at word boundaries instead of by characters
+
 (setq
  inhibit-startup-message   t
  frame-title-format        (list "Emacs: %f") ;; Set titles: %f = filename, %b = buffer name
@@ -242,7 +244,7 @@
  tab-width                 8 ;; <-- tab indent width!
  indent-tabs-mode          t
  default-fill-column       80 ;; <-- when you "meta-q" to fit text, what line widths are used for wrapping?
- transient-mark-mode       t ; show when we mark text for copying/selection, BUT also makes the selection disappear after one use. (if unset, we can use ctrl-space ctrl-space)
+ transient-mark-mode       t ;; show when we mark text for copying/selection, BUT also makes the selection disappear after one use. (if unset, we can use ctrl-space ctrl-space)
 
  search-highlight          t
  isearch-lazy-highlight    t ;; t = "show all search results"
@@ -377,6 +379,7 @@
 (global-set-key "\M-s" 'save-buffer)
 (global-set-key "\M-z" 'undo)
 (global-set-key "\M-e" 'recentf-open-files)
+(recentf-mode 1)
 
 ;;         ^  Navigation Keys (ijkl)
 ;;         |  (Inverted-T navigation)
@@ -590,6 +593,11 @@
 		  (setq ess-fancy-comments 'nil)
 	      ))
       ))
+
+(add-hook 'linum-before-numbering-hook
+	  (lambda ()
+	    (let ((numDigitsInTotalNumLines (length (number-to-string (count-lines (point-min) (point-max)))))) 
+	      (setq linum-format (concat "%" (number-to-string numDigitsInTotalNumLines) "d "))))) ;; makes a result like "%5d " or "%4d " for formatting, which then is passed to the command (setq linum-format "%5d ")))
 
 (add-hook 'makefile-mode-hook
 	  (lambda ()
