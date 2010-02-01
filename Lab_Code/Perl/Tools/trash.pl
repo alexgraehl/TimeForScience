@@ -79,7 +79,7 @@ my $MAX_INDEX = 1000; # <-- number of duplicate-named files allowed in a directo
 my $username = `whoami`;
 chomp($username);
 if (!(length($username) > 0)) {
-    die qq{We could not get your username! We need it to make the trash can!\n};
+    die qq{We could not get your username! We need it to make the trash directory in /tmp!\n};
 }
 if (!defined($username) || (length($username) <= 0) || $username =~ /[\/\\"' 	*+]/) {
     die qq{The username is either blank, or it has either a space in it, or a tab, or a star, or a plus, or a quotation mark, or a slash, or a backslash! We cannot reliably create a trash directory without it being dangerous!!!\n};
@@ -107,13 +107,17 @@ foreach my $itemToDelete (@ARGV) {
     
     if (not (-e $itemToDelete)) {
 	# the item doesn't even exist, so skip it with no warnings
+	if ($outputIsColorTerminal) { print STDOUT color("red"); }
 	print "trash.pl: Not deleting \"$itemToDelete\", because it did either not exist or could not be read. Check that this file actually exists!\n";
+	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
 	next;
     }
     
     if (not (-f $itemToDelete || -d $itemToDelete || -l $itemToDelete)) {
 	# The thing to delete has to be either a file (-f), a directory (-d), or a symlink (-l).
+	if ($outputIsColorTerminal) { print STDOUT color("red"); }
 	print "trash.pl: Not deleting \"$itemToDelete\": it was not a file, directory, or symlink.\n";
+	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
 	next;
     }
 
@@ -122,7 +126,9 @@ foreach my $itemToDelete (@ARGV) {
 	or ($itemToDelete eq ".")	or ($itemToDelete eq "..")
 	or ($itemToDelete eq "./")	or ($itemToDelete eq "../")
 	) {
+	if ($outputIsColorTerminal) { print STDOUT color("red"); }
 	print "trash.pl: Removing \"$itemToDelete\" is unsafe! Trash.pl will not peform this operation! Quitting.\n";
+	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
 	exit(1);
     }
 
@@ -167,7 +173,10 @@ foreach my $itemToDelete (@ARGV) {
 
     my $UNSAFE_CHARS = q{"'*+\$;};
     if ($thepath =~ /[$UNSAFE_CHARS]/) {
-	die "Uh oh, trash.pl has no idea how to deal with filenames with any of these " . length($UNSAFE_CHARS) . " unusual characters in them: $UNSAFE_CHARS . That might be bad news, so we are just going to abort. Try using the real /bin/rm in this case.";
+	if ($outputIsColorTerminal) { print STDOUT color("red"); }
+	print STDERR "trash.pl: Uh oh, trash.pl has no idea how to deal with filenames with any of these " . length($UNSAFE_CHARS) . " unusual characters in them: $UNSAFE_CHARS . That might be bad news, so we are just going to abort. Try using the real /bin/rm in this case.";
+	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+	exit(1)
     }
 
     my $index = 1;
@@ -195,33 +204,31 @@ foreach my $itemToDelete (@ARGV) {
 		: "${trash}/${thepath}${trashDupeSuffix}.${index}";
 	    
 	    if ($index >= $MAX_INDEX) {
-		die qq{Error trying to rename \"$itemToDelete\" to avoid overwriting an existing file with the same name that is already in the trash (there are too many files with the same name).\nYou should probably empty the trash.};
+		if ($outputIsColorTerminal) { print STDOUT color("red"); }
+		print STDERR qq{Error trying to rename \"$itemToDelete\" to avoid overwriting an existing file with the same name that is already in the trash (there are too many files with the same name).\nYou should probably empty the trash.};
+		if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+		exit(1)
 	    }
 	}
+
+	if ($outputIsColorTerminal) { print STDOUT color("yellow"); }
 	print STDOUT "trash.pl: There was already a file in the trash named\n";
-	
-	if ($outputIsColorTerminal) { print STDOUT color("yellow"); }
 	print STDOUT qq{${tab}${firstFailedAttempt}\n};
-	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
-
 	print STDOUT qq{${tab}so \"};
-
-	if ($outputIsColorTerminal) { print STDOUT color("yellow"); }
 	print STDOUT qq{${trashDupeSuffix}.${index}};
-	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
-
 	print STDOUT qq{\" was appended to this filename before it was trashed.\n};
+	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
     }
 
     if (-l $itemToDelete) {
+	if ($outputIsColorTerminal) { print STDOUT color("green"); }
 	print STDOUT qq{trash.pl: Trashing the symbolic link $itemToDelete -> $trashedFileLoc\n};
-    } else {
-	print STDOUT qq{trash.pl: };
-	if ($outputIsColorTerminal) { print STDOUT color("green"); }
-	print STDOUT qq{$itemToDelete};
 	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
-	print STDOUT qq{ -> };
+    } else {
 	if ($outputIsColorTerminal) { print STDOUT color("green"); }
+	print STDOUT qq{trash.pl: };
+	print STDOUT qq{$itemToDelete};
+	print STDOUT qq{ -> };
 	print STDOUT qq{$trashedFileLoc\n};
 	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
     }
