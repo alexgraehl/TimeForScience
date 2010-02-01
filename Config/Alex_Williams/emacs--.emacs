@@ -234,7 +234,7 @@
 
 (delete-selection-mode 1) ; delete seleted text when typing
 (global-linum-mode 1) ; always show line numbers
-(global-visual-line-mode 1) ; wrap lines at word boundaries instead of by characters
+;(global-visual-line-mode 1) ; wrap lines at word boundaries instead of by characters
 
 (setq
  inhibit-startup-message   t
@@ -349,6 +349,7 @@
 ;;(global-unset-key "\M-v") ;; now it's meta-u and meta-o
 
 
+(global-unset-key [(control x) (m)])
 
 (global-unset-key [insert])	  ; Disable the "insert" key
 (global-set-key [insert] (function (lambda () (interactive) (message "The insert key was DISABLED in the ~/.emacs file."))))
@@ -758,6 +759,7 @@
 ;	   (require 'hide-lines)
 ;	   (require 'hidesearch)
 ;	   (setq has-hidelines t)))
+
 
 (global-set-key [(control meta l)] '(lambda () (interactive) (hidesearch) (message "Only showing matching lines: use Ctrl-G to show all lines again."))) ;; control g now shows the invisibles, as well as generally cancelling
 
