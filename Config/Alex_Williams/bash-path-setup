@@ -67,9 +67,8 @@ export PATH=$PATH:$MYSRC/lab_apps/python/Tools
 export PATH=$PATH:$MYSRC/lab_apps/R_shell
 export PATH=$PATH:$MYSRC/lab_apps/shell_scripts
 export PATH=$PATH:$MYSRC/cvaske/R/Commands
-export PATH=$PATH:$HOME/bin  # programs in your own home directory
 export PATH=$PATH:/sw/bin    # programs installed by Fink, on the Mac
-
+export PATH=$HOME/bin:$PATH  # programs in your own home directory come FIRST
 
 if [[ -n isAgwHomeMachine ]]; then
     # Add things to Alex's home machine's path
