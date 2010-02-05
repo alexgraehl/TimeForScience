@@ -26,29 +26,7 @@ function ff {
 alias tunes="lsof | grep -i mp3"
 alias viewlog='tail -f /var/log/httpd/access_log'
 
-alias diffdir='diff -rq'
-
-#alias vista='ssh alexcom@apollo.vistapages.com'
-alias alexcom='ssh alexcom@alexwilliams.com'
-#export VP=alexcom@apollo.vistapages.com
-
-alias jig='ssh jig.cse.ucsc.edu'
-alias hustle='ssh  hustle.cse.ucsc.edu'
-alias disco='ssh  disco.cse.ucsc.edu' # -X
-
-alias chacha='ssh -X chacha.cse.ucsc.edu'
-alias jive='ssh -X   jive.cse.ucsc.edu'
-alias tap='ssh       tap.cse.ucsc.edu'
-alias bop='ssh       bop.cse.ucsc.edu'
-
-alias moondance='ssh moondance.cse.ucsc.edu'
-alias riverdance='ssh waterdance.cse.ucsc.edu'
-alias waterdance='ssh waterdance.cse.ucsc.edu'
-alias sundance='ssh sundance.cse.ucsc.edu'
-
 alias treeviewmemory='java -Xmx999m -jar TreeView.jar'
-
-alias z='echo $USER'
 
 alias diffdir='diff -rq' ## diff on directories
 
@@ -59,11 +37,11 @@ alias diffdir='diff -rq' ## diff on directories
 alias l='/bin/ls -F $AGW_LS_COLOR_OPTION'
 alias ls='/bin/ls -F $AGW_LS_COLOR_OPTION'
 alias ll='/bin/ls -lh -A -F $AGW_LS_COLOR_OPTION'
-alias h='history'
 alias p='pwd'
 alias tc='randomize_terminal_color.pl -cycle'
-alias b='cd ..'
-alias ..='cd ..'
+alias cd='pushd'
+alias b='popd'
+alias ..='pushd ..'
 alias res='source ~/.bashrc ; source ~/.bash_profile'
 alias mv='mv -i'
 alias cp='cp -i'
@@ -72,7 +50,6 @@ alias rm='trash.pl'
 alias checktrash='mkdir -p /tmp/$USER/Trash/ && echo "Contents of /tmp/$USER/Trash:" && ls /tmp/$USER/Trash/'
 alias emptytrash='mkdir -p /tmp/$USER/Trash/ && /bin/rm -rf --preserve-root /tmp/$USER/Trash/ && echo "Emptied the trash directory (/tmp/$USER/Trash)" ;'
 alias kpk='exit'
-
 
 
 ## Mac-specific commands:
@@ -98,8 +75,6 @@ function mac2unix {
 function dos2unix {
     cat "$1" | tr -d '\r'
 }
-
-
 
 
 ## Mac-specific commands:
@@ -147,6 +122,14 @@ alias hgpull="hg pull && hg update"
 alias hgup="hg update"
 alias hgs="hg status"
 
+function hglog {
+    hg status
+    if [[ $? == 0 ]] ; then  ## <-- only check the log if there is actually a mercurial repo here!
+	hg log -p --color=always "$*" | s
+    fi
+}
+
+
 
 BINF_CODE=${BINF_CORE_WORK_DIR}/Common/Code
 alias workcom='hg commit --user ${USER} --cwd ${BINF_CODE} -m "Changes committed by alexgw"' # && hg push --cwd ${BINF_CODE}'
@@ -193,33 +176,33 @@ export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.s
 # lesspipe_basic.sh casues less to transparently decompress gzipped files before showing them
 # Old:  '|/usr/bin/lesspipe.sh %s'
 
-alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_advanced.sh %s" /usr/bin/less -S -f'
+alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_advanced.sh %s" /usr/bin/less -S --RAW-CONTROL-CHARS -f'
 # It's less, but it "magically" handles gzipped files and automatically runs ".tab" files through sheet.pl
 # Note that this only magically happens if the files are passed in on the command line--otherwise you have
 # to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
 # sheet.pl unless you say "cat something | ssf"
 
 # Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
-alias  sn='/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case -R -f'
+alias  sn='/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case --RAW-CONTROL-CHARS -f'
 
 function s { ## <-- this needs to come BEFORE the other things that use less!
     # "s" uses "magicless" to run files through sheet.pl
-    magicless --LINE-NUMBERS --status-column --ignore-case -R $*
+    magicless --LINE-NUMBERS --status-column --ignore-case --RAW-CONTROL-CHARS $*
 }
 
 function sf {
     # Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
-    /usr/bin/less $1 | sheet.pl | s
+    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl | s
 }
 
 function s1 {
     # like sf, but shorter columns # Can only view ONE file, unlike "ss"
-    /usr/bin/less $1 | sheet.pl --trunc=15 | s
+    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --trunc=15 | s
 }
 
 function s2 {
     # like sf, but shorter columns # Can only view ONE file, unlike "ss"
-    /usr/bin/less $1 | sheet.pl --trunc=25 | s
+    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --trunc=25 | s
 }
 
 function v {
@@ -243,3 +226,4 @@ function dos2unix {
 
 
 alias huh='cat <(declare -f) <(alias)' ## uses bash subshells to show everything that is defined
+
