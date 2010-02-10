@@ -181,12 +181,12 @@ if [[ 'nausicaa' == $HOSTNAME ]]
 then
     alias nau="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
 else
-    alias nau='ssh -X $UCSF_USER@nausicaa.ucsf.edu'
+    alias nau='ssh  $UCSF_USER@nausicaa.ucsf.edu'
 fi
 
 
-alias lighthouse='ssh -X $UCSF_USER@lighthouse.ucsf.edu' ## Database machine
-alias bueno='ssh -X $UCSF_USER@bueno.gladstone.internal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
+alias lighthouse='ssh  $UCSF_USER@lighthouse.ucsf.edu' ## Database machine
+alias bueno='ssh  $UCSF_USER@bueno.gladstone.internal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
 
 # Things related to "LESS"
 export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
