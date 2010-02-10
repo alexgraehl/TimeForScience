@@ -1,0 +1,561 @@
+#!/usr/bin/env Rgetopt.py
+library(Rgetopt)
+library(CommandLinePlots)
+library(RColorBrewer)
+library(Cairo)
+
+##
+## ORGANIZATION OF THIS SCRIPT
+##  1. High level options
+##  2. Helper functions for all modules
+##  3. Definition of module options and functions
+##  4. Start of execution: argument parsing
+##  5. Component processing
+##  6. Combine parameters
+##  7. Plot
+
+##
+## 1. High level options
+##
+
+global.options <- c("plot.R - create plots using R's facilities
+  Each plot is composed of one or more components, where each component
+  adds one more type of data source to the blot.  For example, a scatterplot
+  would consist of a single component.  A combination scatterplot line plot
+  wolud have two component.
+
+Usage:
+  plot.R [global options] [module1 [module options]] [module2 [options]] ...
+
+By default, the plot will be made to a new x11 window. If you redirect it to a file,
+ it will be output as a PDF.
+
+Example usage (how to make a scatterplot):
+
+   plot.R scatter -x 1 -y 2 TWO-COLUMNS-OF-DATA.tab  >   OUTPUT-SCATTERPLOT.pdf
+
+If you want to label the data points... too bad! (You could use Excel with the free
+ X-Y Chart Labeler plug-in) But this would be a great feature!
+
+Available modules (for details use --help as a module option):
+  bars         - creates barplots
+  scatter      - scatter plot of points
+  heatmap      - matrix of a heatmap
+  pairsscatter - all pairwise scatter plots
+  legend       - a boxed legend
+  abline       - lines by slope/intercept, or horizontal and vertical
+  box          - a rectangle (not a boxplot!)
+
+Global Options:",
+                    "title|t=s             plot title",
+                    "xlab|x=s            x-axis label",
+                    "ylab|y=s            y-axis label",
+                    "xlim=lf             x-axis bounds (2 numbers)",
+                    "ylim=lf             y-axis bounds (2 numbers)",
+                    "dev=s               output device",
+                    "out-file|o=s        output file.  If no device is specifed, then",
+                    "width|w=f           width of plot area (inches)",
+                    "height|h=f          height of plot area (inches)",
+                    "prettyX             use an X11 device that can use transparent colors, but is slower")
+
+# these are common options for all data files
+datafile.options <- c("header|h=i      number of header lines",
+                      "delim=s       field delimiter")
+
+##
+## 2. Helper functions for all modules
+##
+
+readTabFile <- function(filename, options) {
+  delim <- if (is.null(options$delim)) "\t" else options$delim
+  hlines <- if (is.null(options$header)) 1 else options$header
+  skip <- max(0, hlines - 1)
+
+
+  f <- parseReadableFile(filename)
+  d <- read.delim(f, sep=delim,
+                  row.names=NULL,
+                  header=(hlines > 0),
+                  skip=skip,
+                  stringsAsFactors=FALSE)
+#  if ((summary(f)$description != "stdin") && isOpen(f)) close(f)
+  return(d)
+}
+
+checkNumericCols <- function(df, cols, filename) {
+  checkCols(df, cols, filename, is.numeric, "Non-numeric data in column ")
+}
+
+checkColsExist <- function(df, cols, filename) {
+  checkCols(df, cols, filename, function(x) TRUE, "")
+}
+
+checkCols <- function(df, cols, filename, colcheckfun,
+                      errStr="Data does not match expected type in col ") {
+  passcolcheck <- cols %in% 1:ncol(df)
+  if (!all(passcolcheck)) {
+    stop("Specified columns, ", paste(cols[!passcolcheck], collapse=", "),
+         ", are out of bounds for file ", filename, call.=FALSE)
+  }
+  passcolcheck <- sapply(df[cols], colcheckfun)
+  if (!all(passcolcheck)) {
+    stop(errStr, paste(cols[!passcolcheck], collapse=","),
+         " of file ", filename, call.=FALSE)
+  }
+}
+
+##
+## 3. Module Definitions of options and functions
+##
+legend.prepplot <- function(argv) {
+  result <- list()
+  argspec <- c("legend module - adds a legend to the plot.  This can take
+either one or two location arguments, like the R version, and can consist
+of keywords, such as \"top\" or \"bottomright\".  Parameters function
+as they do in the R function.",
+               "text=ls    comma separated list of legend text",
+               "pch=li     plot characters",
+               "col=ls     colors",
+               "lty=ls     line types",
+               "lwd=lf     line widths",
+               "fillcol=ls fill color",
+               "title=s    legend title")
+
+  o <- Rgetopt(argspec=argspec, argv=argv)
+
+  if (length(o$argv) > 2) {
+    usage("Error: at most two location parameters accepted", argspec)
+  } else if (length(o$argv) == 0) {
+    usage("Error, need at least one location parameter")
+  }
+
+  xlocation <- o$argv[1]
+  if (is.numeric(xlocation)) xlocation <- as.numeric(xlocation)
+  ylocation <- if (length(o$argv) > 1) o$argv[2] else NULL
+  if (is.numeric(ylocation)) ylocation <- as.numeric(ylocation)
+
+  lwd <- if (is.null(o$lwd)) par("lwd") else o$lwd
+
+  result$plotFun <- function() {
+    if (!is.null(o$fillcol)) {
+      legend(xlocation,ylocation, legend=o$text, fill=o$fillcol, title=o$title)
+
+    } else if (is.null(o$pch)) {
+      legend(xlocation,ylocation, legend=o$text, title=o$title,
+             col=o$col, lty=o$lty, lwd=lwd)
+    } else if (is.null(o$lty)) {
+      legend(xlocation,ylocation, legend=o$text, title=o$title,
+             pch=o$pch, col=o$col)
+    } else {
+      legend(xlocation,ylocation, legend=o$text, title=o$title,
+             pch=o$pch, col=o$col, lty=o$lty, lwd=lwd)
+    }
+  }
+  
+  return(result)
+}
+
+abline.prepplot <- function(argv) {
+  argspec <- c("Module abline - draw straight lines via formula like R's abline()",
+               "a=lf      intercept locations",
+               "b=lf      slope parameters",
+               "h=lf      horizontal line intercepts",
+               "v=lf      vertical line intercepts",
+               "lty=ls    line types",
+               "lwd=lf    line widths",
+               "col=ls    line colors"
+               )
+  o <- Rgetopt(argspec=argspec, argv=argv)
+
+  if (length(o$argv) > 0) {
+    usage(paste("Unparsed parameters", o$argv), argspec)
+  }
+
+  lty <- if (is.null(o$lty)) par()$lty else o$lty
+  lwd <- if (is.null(o$lwd)) par()$lwd else o$lwd
+  col <- if (is.null(o$col)) par()$col else o$col
+  
+  result <- list()
+  result$plotFun <- function () {
+    abline(a=o$a, b=o$b, h=o$h, v=o$v, lty=lty, lwd=lwd, col=col)
+  }
+  return(result)
+}
+
+pairsscatter.prepplot <- function(argv) {
+  argspec <- c("Module pairsscatter - plot all pairwise scatter plots",
+               "f=li     which columns to use (defaults to 2:nocl(data)",
+               'pch=s    plot character',
+               datafile.options)
+  o <- Rgetopt(argspec=argspec, argv=argv)
+  
+  if (length(o$argv) != 1) {
+    usage(paste("Need a file for input, got", length(o$argv)) , argspec)
+  }
+
+  if (is.null(o$header)) o$header <- 1
+  df <- readTabFile(o$argv, o)
+
+  if (is.null(o$f)) o$f <- 2:ncol(df)
+  if (is.null(o$pch)) o$pch <- '.'
+  if (nchar(o$pch) > 1 && substr(o$pch,1,1) =='s')
+    o$pch <- as.integer(o$pch,2,nchar(o$pch))
+  
+  result <- list()
+  result$xlim <- c(0,ncol(df))
+  result$ylim <- c(0,nrow(df))
+  
+  result$plotFun <- function() {
+    pairs(df[,o$f], pch=o$pch, lower.panel=function(x,y,...) text(0,0,
+                      round(cor(x,y),4), adj=c(0.5,0.5), cex=2))
+  }
+  return(result)
+}
+heatmap.prepplot <- function(argv) {
+  require(plotrix, quietly=TRUE)
+  result <- list()
+
+  argspec <- c(paste(global.options[1], "Module heatmap - make a heatmap
+module options:", sep="\n"),
+               "uncentered     allow an uncentered range",
+               "range=lf       specify the range",
+               "red=lf         points of colorscale for red",
+               "green=lf       points of colorscale for green",
+               "blue=lf        points of colorscale for blue",
+               "norowlabel     suppress row labels and use column 1 as data",
+               "nocollabel     suppress column labels (auto set if header=0)",
+               "nolegend       suppress legend",
+               datafile.options)
+  o <- Rgetopt(argspec=argspec, argv=argv)
+  
+  ## Get Data File
+  if (length(o$argv) != 1) {
+    usage("Need a file for input", argspec)
+  }
+  if (is.null(o$header)) o$header <- 1
+  df <- readTabFile(o$argv, o)
+
+  redrange <- if (is.null(o$red)) c(0,0,1) else o$red
+  bluerange <- if (is.null(o$blue)) c(0,0,0) else o$blue
+  greenrange <- if (is.null(o$green)) c(1,0,0) else o$green
+  stopifnot(redrange >=0, redrange <= 1,
+            bluerange >= 0, bluerange <= 1,
+            greenrange >= 0, greenrange <= 1)
+  stopifnot(length(redrange) == length(bluerange),
+            length(bluerange) == length(greenrange))
+
+  startcol <- if(is.null(o$norowlabel)) 2 else 1
+  x <- as.matrix(df[,startcol:ncol(df)])
+  if(!is.numeric(x)) {
+    stop("Non-numeric data in matrix", call.=FALSE)
+  }
+
+  result$xlim <- c(0,ncol(x))
+  result$ylim <- c(0,nrow(x))
+
+  result$plotAdjust <- list(xaxs="i", yaxs="i")
+
+  rowlbls <- if(is.null(o$norowlabel)) df[,1] else NULL
+  collbls <- if (o$header > 0 && is.null(o$nocollabel)) colnames(x) else NULL
+
+  mai <- rep(NA, 4)
+  if (!is.null(collbls)) {
+    mai[1] <- max(strwidth(collbls, units="inches")) +
+      par("csi")*par("mgp")[2]
+  }
+  if (!is.null(rowlbls)) {
+    mai[2] <- max(strwidth(rowlbls, units="inches")) +
+      par("csi")*par("mgp")[2]
+  }
+  result$plotAdjust[["mai"]] <- mai
+  
+  ## plot parameters
+  extremes <- NA
+  xrange <- if (!is.null(o$range)) {
+    stopifnot(length(o$range)==2)
+    o$range
+  } else if (is.null(o$uncentered)) {
+    range(x[!is.na(x)], -x[!is.na(x)])
+  } else {
+    range(x[!is.na(x)])
+  }
+  legend.text <- round(xrange, 2)
+  
+  if (is.null(o$nolegend)) {
+    legend.width <- 1.5
+    if (result$plotAdjust$mai[2] < legend.width + 2*strwidth("M", units="inches")) {
+      result$plotAdjust$mai[2] <- legend.width + 2*strwidth("M", units="inches")
+    }
+  } else {
+    legend.width <- NULL
+  }
+  nslices <- 10
+  xlab <- ""
+  ylab <- ""
+  axes <- FALSE
+  vcol <- "white"
+  vcex <- 1
+  border=NA
+
+  # Unfortuntaley this function does not include a parameter to balance the
+  # ranges, as we want in microarray heatmaps
+  my.color.scale <- function (x, redrange = c(0, 1),
+                              greenrange = c(0, 1),
+                              bluerange = c(0, 1),
+                              extremes = NA,
+                              xrange=range(x)) {
+    if (!is.na(extremes[1])) {
+      colmat <- col2rgb(extremes)
+      redrange <- colmat[1, ]/255
+      greenrange <- colmat[2, ]/255
+      bluerange <- colmat[3, ]/255
+    }
+    ncolors <- length(x)
+    nreds <- length(redrange)
+    if (nreds > 1) {
+      reds <- rep(redrange[nreds], ncolors)
+      xstart <- xrange[1]
+      xinc <- diff(xrange)/(nreds - 1)
+      for (seg in 1:(nreds - 1)) {
+        segindex <- (x >= xstart) & (x <= (xstart + xinc))
+        reds[segindex] <- rescale(x[segindex], redrange[c(seg, seg + 1)])
+        xstart <- xstart + xinc
+      }
+      if (min(reds) < 0 || max(reds) > 1)
+        reds <- rescale(reds, c(0, 1))
+    }
+    else reds <- rep(redrange, ncolors)
+    ngreens <- length(greenrange)
+    if (ngreens > 1) {
+      greens <- rep(greenrange[ngreens], ncolors)
+      xstart <- xrange[1]
+      xinc <- diff(xrange)/(ngreens - 1)
+      for (seg in 1:(ngreens - 1)) {
+        segindex <- (x >= xstart) & (x <= (xstart + xinc))
+        greens[segindex] <- rescale(x[segindex], greenrange[c(seg, seg + 1)])
+        xstart <- xstart + xinc
+      }
+      if (min(greens) < 0 || max(greens) > 1)
+        greens <- rescale(greens, c(0, 1))
+    }
+    else greens <- rep(greenrange, ncolors)
+    nblues <- length(bluerange)
+    if (length(bluerange) > 1) {
+      blues <- rep(bluerange[nblues], ncolors)
+      xstart <- xrange[1]
+      xinc <- diff(xrange)/(nblues - 1)
+      for (seg in 1:(nblues - 1)) {
+        segindex <- (x >= xstart) & (x <= (xstart + xinc))
+        blues[segindex] <- rescale(x[segindex], bluerange[c(seg, seg + 1)])
+        xstart <- xstart + xinc
+      }
+      if (min(blues) < 0 || max(blues) > 1)
+        blues <- rescale(blues, c(0, 1))
+    }
+    else blues <- rep(bluerange, ncolors)
+    xdim <- dim(x)
+    if (is.null(xdim))
+      colors <- rgb(reds, greens, blues)
+    else colors <- matrix(rgb(reds, greens, blues), nrow = xdim[1])
+    return(colors)
+  }
+  
+  result$plotFun <- function () {
+    xdim <- dim(x)
+    x <- as.vector(x)
+    pos <- -0.3
+    cellcolors <- my.color.scale(x, redrange, greenrange, bluerange,
+                                 extremes, xrange=xrange)
+    rect(sort(rep((1:xdim[2]) - 1, xdim[1])),
+         rep(seq(xdim[1] - 1, 0, by = -1), xdim[2]),
+         sort(rep(1:xdim[2], xdim[1])),
+         rep(seq(xdim[1], 1, by = -1), xdim[2]), 
+         col = cellcolors, border = border)
+    box()
+
+    if (!is.null(collbls))
+      axis(side=1, at=(1:xdim[2]-0.5), labels=collbls, las=2)
+    if (!is.null(rowlbls))
+      axis(side=2, at=(xdim[1]:1-0.5), labels=rowlbls, las=2)
+
+    if (!is.null(legend.width)) {
+      xy <- par("usr")
+      plot.pin <- par("pin")
+      xs <- (xy[2] - xy[1]) / plot.pin[1]
+      grx1 <- xy[1] - xs * legend.width - strwidth("M")
+      grx2 <- xy[1] - strwidth("M")
+      gry1 <- xy[3] - 3.5*strheight("", units="user")
+      gry2 <- xy[3] - 2.5*strheight("", units="user")
+      color.legend(grx1, gry1, grx2, gry2, round(xrange, 2),
+                   color.gradient(redrange, greenrange,
+                                  bluerange, nslices = nslices))
+    }
+  }
+  return(result)
+}
+
+modules <- list(bars=bars.prepplot,
+                scatter=scatter.prepplot,
+                heatmap=heatmap.prepplot,
+                pairsscatter=pairsscatter.prepplot,
+                legend=legend.prepplot,
+                box=box.prepplot,
+                abline=abline.prepplot)
+
+##
+## 4. Parse arguments, load all data, calculate margins, etc.
+##
+a <- RgetArgvEnvironment()
+
+components.argv <- split(a, paste("c", cumsum(a %in% names(modules)), sep=''))
+
+
+globalOpt <- Rgetopt(argspec=global.options, argv=components.argv[[1]][-1])
+
+if (length(components.argv) == 1) usage("No modules specified", global.options)
+
+components.argv <- components.argv[-1] # remove the global options
+
+##
+## 4a. Open device
+##
+
+# The following mess of if-statements sholud represent this table:
+# dev    out-file  isTTY   device  file
+# -----  --------  -----   ------  ----
+# NULL   NULL      TRUE    x11     none
+# NULL   NULL      FALSE   pdf     stdout
+# NULL   f.ext     T/F     ext     f.ext
+# nonx   NULL      FALSE   nonx    stdout
+# nonx   NULL      TRUE    error!!
+# dev    f.ext     T/F     dev     f.ext
+outfile <- globalOpt$`out-file`
+dev <- globalOpt$dev
+res <- if(is.null(globalOpt$res)) 72 else globalOpt$res
+mimic.stdout <- FALSE
+if (is.null(dev)) {
+  if (is.null(outfile)) {
+    if (stdoutIsTTY()) {
+      dev <- "x11"; outfile <- NULL
+    } else {
+      dev <- "pdf"; outfile <- deferredStdOutFile()
+    }
+  } else {
+    dev <- rev(unlist(strsplit(outfile, "\\.")))[1]
+  }  
+} else { # dev is specified
+  if (is.null(outfile)) {
+    if (stdoutIsTTY() && dev != "x11") {
+      stop("Can't use device ", dev,
+           " if no output file specified and stdout is a terminal", call.=F)
+    } else {
+      outfile <- deferredStdOutFile()
+    }
+  } else {
+    # fully specified already
+  }
+}
+
+opendev <- list(x11=function(f,w,h) x11(width=w,height=h),
+                pdf=function(f,w,h) pdf(file=f,width=w,height=h),
+                png=function(f,w,h) CairoPNG(file=f, width=w, height=h,
+                  units="in", dpi=res),
+                jpeg=function(f,w,h) CairoJPEG(file=f, width=w, height=h,
+                  units="in", dpi=res),
+                ps=function(f,w,h) CairoPS(file=f, width=w, height=h),
+                eps=function(f,w,h) CairoPS(file=f, width=w, height=h),
+                svg=function(f,w,h) CairoSVG(file=f, width=w, height=h))
+if (!is.null(globalOpt$prettyX)) opendev[['x11']] <-
+  function(f,w,h) CairoX11(width=w,height=h)
+
+if (!(dev %in% names(opendev))) {
+  usage(reason=paste("No such device", dev), argspec=general.options)
+}
+
+plotWidth <- if(is.null(globalOpt$width)) 7 else globalOpt$width
+plotHeight <- if(is.null(globalOpt$height)) 7 else globalOpt$height
+
+# Need to have an open device so that all the graph components can
+# get their needed information out of par(). In the past I would open
+# the target device prior to it processing the components, but
+# if the device couldn't launch then you couldn't get the
+# component specific device.
+
+opendev[[if(dev=="x11") "ps" else dev]]("/tmp/plot.R.tmp",
+              plotWidth, plotHeight)
+
+##
+## 5. Component Processing
+##
+
+components <- lapply(components.argv, function(argv) {
+  modules[[argv[1]]](argv[-1])
+})
+
+##
+## 6. Combine plot parameters from all modules
+##    (this desperately needs some sort of abstraction)
+##
+
+xlim <- NA
+ylim <- NA
+mai <- par("mai")
+las <- par("las")
+xaxs <- par("xaxs")
+yaxs <- par("yaxs")
+for(c in components) {
+  plotWidth <- max(plotWidth, c$plotWidth, na.rm=T)
+  plotHeight <- max(plotHeight, c$plotHeight, na.rm=T)
+  if (!is.null(c$xlim)) xlim <- range(xlim, c$xlim, na.rm=T)
+  if (!is.null(c$ylim)) ylim <- range(ylim, c$ylim, na.rm=T)
+  mai <- apply(cbind(mai, c$plotAdjust$mai), 1, max, na.rm=T)
+  if (!is.null(c$plotAdjust$las)) las <- c$plotAdjust$las
+  if (!is.null(c$plotAdjust$xaxs)) xaxs <- c$plotAdjust$xaxs
+  if (!is.null(c$plotAdjust$yaxs)) yaxs <- c$plotAdjust$yaxs
+}
+
+outfile <- if(is.character(outfile)) path.expand(outfile) else outfile
+suppressWarnings(devtry <- try(opendev[[dev]](outfile, plotWidth, plotHeight),
+                               silent=TRUE))
+if ("try-error" %in% class(devtry)) {
+  stop("Couldn't open device: ", dev, call.=TRUE)
+}
+
+par(mai=mai, las=las, xaxs=xaxs, yaxs=yaxs)
+
+##
+## 7. Do the plotting!
+##
+
+
+## set bounds
+if (!is.null(globalOpt$xlim)) {
+  xlim <- globalOpt$xlim
+  stopifnot(length(xlim) == 2)
+}
+if (!is.null(globalOpt$ylim)) {
+  ylim <- globalOpt$ylim
+  stopifnot(length(ylim) == 2)
+}
+if (any(is.na(xlim))) {
+  stop("No modules specified bound on the x-axis, use --xlim to specify",
+       call.=TRUE)
+}
+if (any(is.na(ylim))) {
+  stop("No modules specified bound on the y-axis, use --ylim to specify",
+       call.=TRUE)
+}
+
+plot.default(NULL, xlim=xlim, ylim=ylim, type='n', xlab='', ylab='',
+             frame.plot=FALSE, axes=FALSE)
+
+for (c in components) {
+  c$plotFun()
+}
+
+title(main=globalOpt$title, xlab=globalOpt$xlab, ylab=globalOpt$ylab)
+
+if (dev == "x11") {
+  invisible(locator(1))
+}
+invisible(dev.off())
