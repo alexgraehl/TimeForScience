@@ -81,7 +81,7 @@
 (defvar KEYWORD_BG   nil)
 
 (defface agwCustomDoubleLineFace
-  '((t (:foreground "magenta" :background "blue" :underline t))) "To highlight linebreak-style rows of == characters.")
+  '((t (:foreground "magenta" :background "black" :underline t))) "To highlight linebreak-style rows of == characters.")
 
 (defface agwLineNumberFace
   '((t (:foreground "black" :background "blue" :inverse-video nil)))
@@ -115,6 +115,12 @@
   '((t ( ;; inherit some-other-face
 	:bold nil :foreground "green"))) "Indicates which variables are an R list, based on the name." :group 'agwFaces)
 
+(defface agwAssertionFace
+  '((t ( ;; inherit some-other-face
+	:bold nil :foreground "yellow" :background "black" :underline nil))
+    )
+  "Highlights assertions."
+  :group 'agwFaces)
 
 (defface agwMakeGlobalVarFace
   '((t ( ;; inherit some-other-face
@@ -678,6 +684,7 @@
 
    ("\\(\<\<-\\)" 1 'agwMakeGlobalVarFace keep) ; the <<- global assignment operator
    ("\\(\<-\\)" 1 'agwPositiveNumberFace keep) ; the <- regular assignment operator
+   ("\\<\\(assert\.agw.*\\)" 1 'agwAssertionFace t) ; anything that ends in Vec
    ("\\<\\([a-zA-Z0-9_\\.]*Vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
    ("\\<\\([a-zA-Z0-9_\\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
    ("\\<\\([a-zA-Z0-9_\\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash

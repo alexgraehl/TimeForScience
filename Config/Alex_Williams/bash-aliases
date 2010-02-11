@@ -185,6 +185,8 @@ alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/le
 # Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
 alias  sn='/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case --RAW-CONTROL-CHARS -f'
 
+alias sweep='trash.pl *.tmp *.temp'
+
 function s { ## <-- this needs to come BEFORE the other things that use less!
     # "s" uses "magicless" to run files through sheet.pl
     magicless --LINE-NUMBERS --status-column --ignore-case --RAW-CONTROL-CHARS $*
