@@ -1,0 +1,5 @@
+These are projects that are completely self-contained, and aren't really intended for general lab use.
+
+For example, if you were to modify Cytoscape or have a custom version of emacs, that would be a good candidate for a folder here.
+
+Don't put lab perl / python scripts here. They belong in Lab_Code.
