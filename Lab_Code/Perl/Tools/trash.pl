@@ -259,7 +259,7 @@ foreach my $itemToDelete (@ARGV) {
 	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
     }
 
-    #system(qq{mv "$thepath" "$trashedFileLoc"});
+    system(qq{mv "$thepath" "$trashedFileLoc"});
     $numItemsDeleted++;
 }
 
