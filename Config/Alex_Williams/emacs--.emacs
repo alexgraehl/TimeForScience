@@ -469,7 +469,7 @@
 
 
 ;; Redo syntax coloring when it gets screwed up
-(global-set-key (kbd "C-0")
+(global-set-key (kbd "C-4")
 		'(lambda () "Redoes the syntax coloring..." (interactive)
 		   (global-font-lock-mode nil)
 		   (global-font-lock-mode t)
