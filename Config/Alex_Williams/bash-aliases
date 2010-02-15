@@ -81,6 +81,9 @@ function dos2unix {
 alias invisible='SetFile -a V' ## Make a file/folder invisible to the Finder
 alias visible='SetFile -a v' ## opposite of "invisible"
 
+## remember dot_clean to remove annoying ._something files
+
+
 ## Utility commands
 
 ## -U: "screen understands UTF8"
