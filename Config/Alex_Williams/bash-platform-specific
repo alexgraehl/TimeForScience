@@ -80,22 +80,32 @@ if [ $color_prompt -eq 1 ] ; then
     a_end_color="${color_prefix}[0m"
 
     if [ $is_sshing -eq 0 ] ; then
-	## local machine...
+	## LOCAL machine gets a specific color...
 	#a_machine_prompt_main_color="$color_prefix[44m$color_prefix[3;33m" ## Blue background, white foreground
 	a_machine_prompt_main_color="${color_prefix}[1;32m" ## Bold green text
     else
-	## remote machine...
-	if [[ $HOSTNAME = "nausicaa" ]] ; then
-	    a_machine_prompt_main_color="$color_prefix[1;35m" ## Bold magenta text
-	    #a_machine_prompt_main_color="$color_prefix[45m$color_prefix[1;30m" ## Magenta back, bold black foreground
-	else
-	    a_machine_prompt_main_color="$color_prefix[41m$color_prefix[3;37m"
-	fi
+	## Ok, we are SSHed into a remote machine...
+	case "$HOSTNAME"
+	    in
+	    nausicaa)
+		a_machine_prompt_main_color="${color_prefix}[1;35m" ## 1;35m == Bold magenta text
+		;;
+	    bueno)
+		a_machine_prompt_main_color="${color_prefix}[44m${color_prefix}[3;36m" # cyan text / blue background
+		;;
+	    lighthouse)
+		a_machine_prompt_main_color="${color_prefix}[43m${color_prefix}[3;30m" # yellow background
+		;;
+	    --)
+		a_machine_prompt_main_color="${color_prefix}[41m${color_prefix}[3;37m"
+		;;
+	esac
     fi
 
+    #a_machine_prompt_main_color="${color_prefix}[45m${color_prefix}[1;30m" ## Magenta back, bold black foreground
     #if [[ "darwin10.0" == $OSTYPE
 
-    #a_nau_color="$color_prefix"
+    #a_nau_color="${color_prefix}"
     # Background foreground
     #\033[47m\033[3;31m      ## <-- For the second part, where it says [3;31m 1=bold, 2=light, 3=regular
 else

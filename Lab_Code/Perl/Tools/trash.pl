@@ -100,36 +100,62 @@ my $tab = " " x length("trash.pl: "); # "tab" is just the number of spaces in th
 print STDOUT (qq{-} x 80) . "\n";
 
 
+sub fatalComplaint($$) {
+    anyComplaint(@_, "red");
+    exit(1);
+}
+
+sub minorComplaint($$) {
+    return(anyComplaint(@_, "yellow"));
+}
+
+sub anyComplaint($$$) {
+    my ($aboutWhat, $why, $color) = @_;
+    if ($outputIsColorTerminal) { print STDOUT color($color); }
+    print ("trash.pl: Not deleting \"$aboutWhat\": " . $why . "\n");
+    if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+}
+
+
+foreach my $itemToCheck (@ARGV) {
+    ## Go through and CHECK first to see what files are super duper unsafe for deletion, and quit if we find any.
+    $itemToCheck = trim($itemToCheck);
+
+    my $HOME = $ENV{"HOME"};
+    if ($itemToCheck =~ /^[\/]*$HOME[.\/]*$/) {
+	fatalComplaint($itemToCheck, "you cannot remove the home directory! You can use /bin/rm to attempt to remove it if you really must.")
+    }
+
+    if (($itemToCheck =~ /^[.\/]*Applications[.\/]+Utilities[.\/]*$/)
+	or ($itemToCheck =~ /^[.\/]*(System|Developer).*/)  ## protect *any* subdirectory of these
+	or ($itemToCheck =~ /^[.\/]*$HOME[.\/]+System.*/) ## protect *any* subdirectory of these
+	or ($itemToCheck =~ /^[.\/]*$HOME[.\/]+(Desktop|Library|Documents)[.\/]*$/) ## protect only the ROOT level of these
+	or ($itemToCheck =~ /^[.\/]*(Applications|sbin|bin|boot|dev|etc|lib|mnt|opt|sys|usr|var)[.\/]*$/) ## protect only the ROOT level of these
+	) {
+	fatalComplaint($itemToCheck, "removing this system file is unsafe! Trash.pl will not peform this operation! You can use /bin/rm if you REALLY want to remove it. Quitting.");
+    }
+    
+    if (($itemToCheck =~ /^[.\/]+$/) ## any combination of just dots or slashes, and nothing else
+	) {
+	fatalComplaint($itemToCheck, "removing a file that is the current directory or is directly above the current directory is not something that trash.pl thinks is safe! Trash.pl will not peform this operation! You can use /bin/rm if you REALLY want to remove it. Quitting.");
+    }
+}
+
 my $numItemsDeleted = 0;
 foreach my $itemToDelete (@ARGV) {
-
+    #print $itemToDelete . "\n";
     $itemToDelete = trim($itemToDelete);
-    
+
     if (not (-e $itemToDelete)) {
-	# the item doesn't even exist, so skip it with no warnings
-	if ($outputIsColorTerminal) { print STDOUT color("red"); }
-	print "trash.pl: Not deleting \"$itemToDelete\", because it did either not exist or could not be read. Check that this file actually exists!\n";
-	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+	# the item doesn't even exist, so skip it
+	minorComplaint($itemToDelete, "it did either not exist or could not be read. Check that this file actually exists.");
 	next;
     }
-    
+	
     if (not (-f $itemToDelete || -d $itemToDelete || -l $itemToDelete)) {
 	# The thing to delete has to be either a file (-f), a directory (-d), or a symlink (-l).
-	if ($outputIsColorTerminal) { print STDOUT color("red"); }
-	print "trash.pl: Not deleting \"$itemToDelete\": it was not a file, directory, or symlink.\n";
-	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+	minorComplaint($itemToDelete, "it was not a file, directory, or symlink. You can use /bin/rm to remove it if you really want to.");
 	next;
-    }
-
-    if (($itemToDelete eq "/")
-	or ($itemToDelete eq "~/")	or ($itemToDelete eq "~")
-	or ($itemToDelete eq ".")	or ($itemToDelete eq "..")
-	or ($itemToDelete eq "./")	or ($itemToDelete eq "../")
-	) {
-	if ($outputIsColorTerminal) { print STDOUT color("red"); }
-	print "trash.pl: Removing \"$itemToDelete\" is unsafe! Trash.pl will not peform this operation! Quitting.\n";
-	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
-	exit(1);
     }
 
     my $thepath = undef;
