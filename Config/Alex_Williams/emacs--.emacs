@@ -1,5 +1,4 @@
 
-
 ;; -*-Lisp-*-  <-- Tells emacs what syntax highlighting to use ; Important if the line ending does not indicate the file type.
 
 ;; How to set a keybinding interactively:
@@ -304,9 +303,13 @@
 
 ;; <-- Note: Ctrl-Shift-O screws up the arrow keys for some reason!
 
-(global-set-key "\M-o" 'scroll-up)   (global-set-key (kbd "ESC <down>") 'scroll-up)
-(global-set-key "\M-u" 'scroll-down) (global-set-key (kbd "ESC <up>") 'scroll-down)
+(global-set-key [(meta o)] 'move-end-of-line)
+(global-set-key [(meta u)] 'move-beginning-of-line)
 
+(global-set-key (kbd "ESC <down>") 'scroll-up)
+(global-set-key (kbd "ESC <up>") 'scroll-down)
+
+(global-set-key [(meta a)] 'execute-extended-command)
 ;;(global-set-key "\M-o" 'forward-word)
 ;;(global-set-key "\M-u" 'backward-word)
 
@@ -539,7 +542,12 @@
 (agwColor 'escape-glyph ERR_TEXT ERR_BG) ; Highlights the '\' or '^' escape character
 
 
-(custom-set-faces '(font-lock-comment-face ((((class color)) (:bold t :underline nil  :foreground "blue" :background nil)))))
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(font-lock-comment-face ((((class color)) (:bold t :underline nil :foreground "blue" :background nil)))))
 ;(agwColor 'font-lock-comment-face COMMENT_FOREGROUND COMMENT_BACKGROUND)
 (set-default 'font-lock-comment-delimiter-face 'font-lock-comment-face)
 
@@ -781,6 +789,12 @@
 (global-set-key [(shift meta f)] 'grep-find)
 (global-set-key [(meta control s)] 'grep-find)
 
+(global-set-key [(meta c)] 'kill-ring-save)
+(global-set-key [(meta x)] 'kill-region)
+(global-set-key [(meta v)] 'yank)
+(global-set-key [(shift meta v)] 'yank-pop)
+
+
 ;;(split-window-horizontally)   ;; want two windows at startup
 ;;(other-window 1)              ;; move to other window
 ;;(shell)                       ;; start a shell
@@ -830,4 +844,34 @@
 (if (buffer-exists "*scratch*")  (kill-buffer "*scratch*"))
 
 ;; ##
+
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(case-fold-search t)
+ '(read-buffer-completion-ignore-case t)
+ '(read-file-name-completion-ignore-case t)
+ '(completion-ignore-case t)
+ '(apropos-do-all t))
+
+
+;; (when (require 'browse-kill-ring)
+
+;;     ;; string separating entries in the `separated' style
+;;     (setq browse-kill-ring-separator
+;;           "\n--separator------------------------------")
+
+;;     ;; temporarily highlight the inserted `kill-ring' entry
+;;     (setq browse-kill-ring-highlight-inserted-item t)
+
+;;     ;; face in which to highlight the `browse-kill-ring-separator'
+;;     (defface separator-face '((t (:foreground "Blueviolet" :weight bold))) nil)
+;;                                         ; slate gray
+;;     (setq browse-kill-ring-separator-face 'separator-face)
+
+;;     ;; use `M-y' to invoke `browse-kill-ring'
+;;     (browse-kill-ring-default-keybindings))
+
 
