@@ -21,14 +21,25 @@ use constant RIGHT_ALIGN  => 2;
 use constant CENTER_ALIGN => 3;
 use constant AUTO_ALIGN   => 4;
 
-my $outputIsColorTerminal = (-t STDOUT);
+use constant NOT_HEADER => 0;
+use constant IS_HEADER => 1;
 
 my @maxLen = (); # max length we've seen so far in this column
+
+my $commentChar = '#';
+
+
+my $commentColor = "red";
+
+my $mainColor = "white";
+my $altColor  = "yellow";
 
 my $truncLen = undef; # <-- columns can be no longer than this length
 
 my ($truncationIndicationSuffix) = "..."; # Goes on the end of truncated text.
 
+
+my $colorStatus = 0; # whether or not to print in color
 
 my $terminal_height_in_lines = `tput lines`; # <-- not portable to non-UNIX
 #my $terminal_width = `tput cols`; # <-- not portable to non-UNIX
@@ -47,8 +58,6 @@ my @buffer = (); # <-- a 2d array of all the tab-delimited items we read in
 my @header = (); # <-- the header line is special, because it can be printed over and over
 
 my $HORIZONTAL_DELIMITER = " | ";
-
-my $neverColorNoMatterWhat = 0;
 
 sub printUsage() {
     print STDOUT <DATA>;
@@ -82,9 +91,7 @@ sub readInputFile($$$) {
 
 sub printColorIfOutputIsTerminal($) {
     my ($theColor) = @_;
-    if (!$neverColorNoMatterWhat && $outputIsColorTerminal) {  #   -t STDOUT
-	print color($theColor);
-    }
+    if ($colorStatus) {	print color($theColor); }
 }
 
 sub truncatedVersion($) { # returns a COPY of the truncated-length item
@@ -122,10 +129,32 @@ sub isStarred($) {
     return ($_[0] =~ /^[*]/); # does the arg begin with a star...
 }
 
-sub printSingleArrayLine($$$$) {
-    my ($ptrToSingleDimentionalArray, $ptrToMaxLenArray, $alignment, $colorToPrint) = @_;
+sub printSingleArrayLine($$$$$$) {
+    my ($ptrToSingleDimentionalArray, $ptrToMaxLenArray, $alignment, $colorToPrint, $rowNum, $isHeader) = @_;
+    my $lineIsCommentedOut = 0;
+
+    if (!defined($colorToPrint)) { $colorToPrint = 0; }
+    if (!defined($isHeader))     { $isHeader = 0; }
+
     for (my $col = 0; $col < scalar(@$ptrToMaxLenArray); $col++) {
 	my $item = (defined(${$ptrToSingleDimentionalArray}[$col])) ?    ${$ptrToSingleDimentionalArray}[$col]   : '';
+	if (0 == $col) {
+	    $lineIsCommentedOut = ($item =~ /^[ 	]*${commentChar}/);
+	}
+
+	if ($lineIsCommentedOut) { # && $rowNum > 0) {
+	    ## If the line is commented out...
+	    $colorToPrint = $commentColor;
+	}
+
+	if (!$isHeader) {
+	    if ($col % 2 == 1) {
+		$colorToPrint = "yellow";
+	    } else {
+		$colorToPrint = "white";
+	    }
+	}
+
 	if (defined($truncLen)) { $item = truncatedVersion($item); }
 
 	my $howToAlign;
@@ -149,9 +178,7 @@ sub printSingleArrayLine($$$$) {
 	my $numSpacesToPad = $maxLengthThisColumn - $lengthOfThisItem;
 	#print "Need to pad with $numSpacesToPad spaces for column $col.\n";
 
-	if (defined($colorToPrint) && $colorToPrint) {
-	    printColorIfOutputIsTerminal($colorToPrint);
-	}
+	if ($colorStatus && $colorToPrint) { printColorIfOutputIsTerminal($colorToPrint); }
 
 	if (LEFT_ALIGN == $howToAlign) {
 	    print ("$item" . (' ' x $numSpacesToPad));
@@ -166,7 +193,7 @@ sub printSingleArrayLine($$$$) {
 	}
 	print $HORIZONTAL_DELIMITER;
 
-	if (defined($colorToPrint) && $colorToPrint) {
+	if ($colorToPrint) {
 	    printColorIfOutputIsTerminal("reset");
 	}
 
@@ -178,7 +205,7 @@ sub printSingleArrayLine($$$$) {
 sub printBuffer($$$) {
     my ($bufferArrayPtr, $ptrToMaxLenArray, $alignment) = @_;
     for (my $row = 0; $row < scalar(@{$bufferArrayPtr}); $row++) {
-	printSingleArrayLine(\@{${$bufferArrayPtr}[$row]}, $ptrToMaxLenArray, $alignment, "reset");
+	printSingleArrayLine(\@{${$bufferArrayPtr}[$row]}, $ptrToMaxLenArray, $alignment, undef, $row, NOT_HEADER);
     }
 }
 
@@ -198,15 +225,15 @@ sub printHeader {
 	$headerLen += length($HORIZONTAL_DELIMITER);
     }
 
-    if (!$outputIsColorTerminal || $neverColorNoMatterWhat) {
+    if (!$colorStatus) {
 	# If we can't color the header output, then at least draw a line to distinguish it
 	printHorizontalLine("=", $headerLen);
     }
 
-    # Print the header text here
-    printSingleArrayLine($headerPtr, $maxLenPtr, AUTO_ALIGN, "white on_blue underline");
+    # Print the header text here, separately from everything else
+    printSingleArrayLine($headerPtr, $maxLenPtr, AUTO_ALIGN, "white on_blue underline", undef, IS_HEADER);
     
-    if (!$outputIsColorTerminal || $neverColorNoMatterWhat) {
+    if (!$colorStatus) {
 	printHorizontalLine("=", $headerLen);
     }
 }
@@ -231,17 +258,32 @@ sub main() {
     my $inputDelim = undef;
     my $hasHeader = 1; # by default, we expect a header line
     my $printStartupMessage = 1;
-    GetOptions("help|?|man" => sub { printUsage(); }
-	       , "ht=f"    => \$highlightThreshold
-	       , "input_delim|d=s" => \$inputDelim
-	       , "no_color|nc" => sub { $neverColorNoMatterWhat = 1; }
-	       , "no_header|nh" => sub { $hasHeader = 0; }
-	       , "n=i" => \$headerReprintInterval
-	       , "all|a!" => \$printHeaderOnlyOnce
-	       , "trunc|t=i" => \$truncLen
-	       , "notify!" => \$printStartupMessage
+    my $color = "auto";
+    GetOptions("help|?|man"        => sub { printUsage(); }
+	       , "no_header|nh"    => sub { $hasHeader = 0; }
+	       , "ht=f"            => \$highlightThreshold  # can auto-highlight certain cells/rows
+	       , "input_delim|d=s" => \$inputDelim  # set -d ',' for a CSV file.
+	       , "color=s"         => \$color
+	       , "n=i"             => \$headerReprintInterval
+	       , "all|a!"          => \$printHeaderOnlyOnce
+	       , "trunc|t=i"       => \$truncLen
+	       , "notify!"         => \$printStartupMessage
 	) or printUsage();
     
+    $color = lc($color); ## lower-case it!
+    
+    if ($color eq "always") {
+	$colorStatus = 1;
+    } elsif ($color eq "auto") {
+	my $outputIsColorTerminal = (-t STDOUT);
+	$colorStatus = $outputIsColorTerminal;
+    } elsif ($color eq "no" || $color eq "none" || $color eq "never") {
+	$colorStatus = 0;
+    } else {
+	print STDERR ("Incorrect argument specified for --color. Assuming we want --color=auto.");
+	$colorStatus = (-t STDOUT);
+    }
+
     if (!defined($inputDelim)) {
 	foreach my $arg (@ARGV) {
 	    if (-f $arg) {
@@ -404,11 +446,14 @@ Options:
 -d DELIM or --input_delim=DELIM  (default: tab)
 	Set the input file delimiter. Default: tab
 
--nc or --no_color  (default: print in color when outputting to the terminal)
-	Do not color the output. By default, we only print color output
+--color=(auto|always|never)  (default: auto)
+        Either color only when outputting to the shell, *always* color even if we are piping
+        the output to LESS, or never color.
+	By default, we only print color output
 	when the output is a terminal. If you redirect the output to "less"
 	or to a file, then there is no color output. Color output is done with
-	invisible markup characters, and "less" does not handle them elegantly.
+	invisible markup characters, and "less" requires the --RAW-CONTROL-CHARS flag to
+        handle them elegantly.
 
 -nh or --no_header  (default: DO expect a header)
 	Do not treat the header line specially. If this is *NOT* expect a header line.
