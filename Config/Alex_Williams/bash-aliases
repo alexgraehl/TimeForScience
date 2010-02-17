@@ -94,7 +94,7 @@ alias sortt='sort -t "	"' # sort with tab as separator
 alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
 alias e='emacs -nw'
 alias t='transpose.pl -q'
-alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl \
+alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl --color=always \
 --ht=75 --trunc=60 | tail -n +2 ; echo -e -n '$a_end_color'"
 
 # GNU Make-related
@@ -195,17 +195,17 @@ function s { ## <-- this needs to come BEFORE the other things that use less!
 
 function sf {
     # Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
-    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl | s
+    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always | s
 }
 
 function s1 {
     # like sf, but shorter columns # Can only view ONE file, unlike "ss"
-    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --trunc=15 | s
+    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always --trunc=15 | s
 }
 
 function s2 {
     # like sf, but shorter columns # Can only view ONE file, unlike "ss"
-    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --trunc=25 | s
+    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always --trunc=25 | s
 }
 
 function v {
