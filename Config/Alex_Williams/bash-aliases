@@ -134,7 +134,7 @@ function hglog {
 
 
 BINF_CODE=${BINF_CORE_WORK_DIR}/Common/Code
-alias workcom='hg commit --user ${USER} --cwd ${BINF_CODE} -m "Changes committed by alexgw" && echo "[Done] comming changes in Mercurial"' # && hg push --cwd ${BINF_CODE}'
+alias workcom='hg commit --user ${USER} --cwd ${BINF_CODE} -m "Changes committed by alexgw" && echo "[Done] committing work repository"' # && hg push --cwd ${BINF_CODE}'
 alias workup='hg --cwd ${BINF_CODE} pull && hg --cwd ${BINF_CODE} update && echo "[Done] updating work repository"'
 alias workstat='hg --cwd ${BINF_CODE} status'
 
