@@ -182,7 +182,7 @@
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
       (setq should-load-ess t)
-      (require 'ess-site) ;; <-- this is super slow!!!
+      (require 'ess-site) ;; <-- this can be super slow!!!
       (require 'show-wspace)			; Show whitespace!
       ))
 
