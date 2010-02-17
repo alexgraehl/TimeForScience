@@ -109,9 +109,9 @@ function remake {
 
 
 # Aliases related to GREP
-alias grep='grep --color=auto'
-alias egrep='egrep --color=auto'
-alias fgrep='fgrep --color=auto'
+alias grep='grep --color=always'
+alias egrep='egrep --color=always'
+alias fgrep='fgrep --color=always'
 
 # Aliases related to CVS
 alias commit="cvs commit -m 'AGW CVS Commit'"
@@ -135,13 +135,13 @@ function hglog {
 
 
 BINF_CODE=${BINF_CORE_WORK_DIR}/Common/Code
-alias workcom='hg commit --user ${USER} --cwd ${BINF_CODE} -m "Changes committed by alexgw"' # && hg push --cwd ${BINF_CODE}'
-alias workup='hg --cwd ${BINF_CODE} pull && hg --cwd ${BINF_CODE} update'
+alias workcom='hg commit --user ${USER} --cwd ${BINF_CODE} -m "Changes committed by alexgw" && echo "[Done] comming changes in Mercurial"' # && hg push --cwd ${BINF_CODE}'
+alias workup='hg --cwd ${BINF_CODE} pull && hg --cwd ${BINF_CODE} update && echo "[Done] updating work repository"'
 alias workstat='hg --cwd ${BINF_CODE} status'
 
 
-alias sciencecom='hg commit --user ${USER} --cwd ${TIME_FOR_SCIENCE_DIR} -m "Changes committed by alexgw" && hg push --cwd ${TIME_FOR_SCIENCE_DIR}'
-alias scienceup='hg --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SCIENCE_DIR} update'
+alias sciencecom='hg commit --user ${USER} --cwd ${TIME_FOR_SCIENCE_DIR} -m "Changes committed by alexgw" && hg push --cwd ${TIME_FOR_SCIENCE_DIR} && echo "[Done] commiting and pushing TimeForScience repository"'
+alias scienceup='hg --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SCIENCE_DIR} update && echo "[Done] updating TimeForScience repository"'
 alias sciencestat='hg --cwd ${TIME_FOR_SCIENCE_DIR} status'
 
 
