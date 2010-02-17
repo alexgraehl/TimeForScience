@@ -272,7 +272,7 @@ sub main() {
     
     $color = lc($color); ## lower-case it!
     
-    if ($color eq "always") {
+    if ($color eq "always" || $color eq "yes") {
 	$colorStatus = 1;
     } elsif ($color eq "auto") {
 	my $outputIsColorTerminal = (-t STDOUT);
