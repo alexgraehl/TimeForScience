@@ -621,7 +621,7 @@
 	    (define-key makefile-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in Make mode
 	    ))
 
-(add-hook 'makefile-mode-hook 'highlight-tabs)
+;(add-hook 'makefile-mode-hook 'highlight-tabs)
 
 (add-hook 'text-mode-hook
 	  (lambda ()
