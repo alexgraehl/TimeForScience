@@ -37,8 +37,8 @@ lesspipe() {
   # by just changing the delimiter used by sheet.pl
   # For a faster but less feature-filled
   #  UNIX-tool-only version of this, instead of "sheet.pl", use "column -t -s '	'"
-  *.tab.gz|*.matrix.gz) gunzip -c "$1" | sheet.pl --notify ;;
-  *.tab|*.matrix) sheet.pl --notify "$1" ;;
+  *.tab.gz|*.matrix.gz) gunzip -c "$1" | sheet.pl --notify --color="always" ;;
+  *.tab|*.matrix) sheet.pl --notify --color="always" "$1" ;;
 
   *.tar) tar tvvf "$1" ;;
   *.tgz|*.tar.gz|*.tar.[zZ]) tar tzvvf "$1" ;;
