@@ -32,6 +32,7 @@ alias diffdir='diff -rq' ## diff on directories
 
 # Shell navigation / commands
 
+pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
 
 
 alias l='/bin/ls -F $AGW_LS_COLOR_OPTION'
