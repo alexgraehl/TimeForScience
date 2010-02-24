@@ -13,7 +13,7 @@ function ff {
 	--ignore-case \
 	--recursive \
 	--extended-regexp \
-	--line-number \
+	--line-number --with-filename \
 	--exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="CVS" --exclude-dir="[bB]ackup*" \
 	--binary-files=without-match \
 	--include=*.R \
@@ -110,9 +110,9 @@ function remake {
 
 
 # Aliases related to GREP
-alias grep='grep --color=always'
-alias egrep='egrep --color=always'
-alias fgrep='fgrep --color=always'
+alias grep='grep   --color=always --with-filename --line-number'
+alias egrep='egrep --color=always --with-filename --line-number'
+alias fgrep='fgrep --color=always --with-filename --line-number'
 
 # Aliases related to CVS
 alias commit="cvs commit -m 'AGW CVS Commit'"
