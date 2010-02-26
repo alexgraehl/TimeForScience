@@ -178,7 +178,7 @@ export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.s
 # lesspipe_basic.sh casues less to transparently decompress gzipped files before showing them
 # Old:  '|/usr/bin/lesspipe.sh %s'
 
-alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_advanced.sh %s" /usr/bin/less -S --RAW-CONTROL-CHARS -f'
+alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_advanced.sh \"%s\"" /usr/bin/less -S --RAW-CONTROL-CHARS -f'
 # It's less, but it "magically" handles gzipped files and automatically runs ".tab" files through sheet.pl
 # Note that this only magically happens if the files are passed in on the command line--otherwise you have
 # to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
@@ -189,24 +189,21 @@ alias  sn='/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case --RAW-C
 
 alias sweep='trash.pl *.tmp *.temp'
 
-function s { ## <-- this needs to come BEFORE the other things that use less!
-    # "s" uses "magicless" to run files through sheet.pl
-    magicless --LINE-NUMBERS --status-column --ignore-case --RAW-CONTROL-CHARS $*
-}
+alias s='magicless --LINE-NUMBERS --status-column --ignore-case --RAW-CONTROL-CHARS' ## <-- this needs to come BEFORE the other things that use less!
 
 function sf {
     # Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
-    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always | s
+    /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always | magicless
 }
 
 function s1 {
     # like sf, but shorter columns # Can only view ONE file, unlike "ss"
-    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always --trunc=15 | s
+    /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always --trunc=15 | s
 }
 
 function s2 {
     # like sf, but shorter columns # Can only view ONE file, unlike "ss"
-    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always --trunc=25 | s
+    /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always --trunc=25 | s
 }
 
 function v {
