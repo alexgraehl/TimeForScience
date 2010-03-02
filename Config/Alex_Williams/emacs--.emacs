@@ -238,7 +238,7 @@
 (global-font-lock-mode    t) ;; turn on syntax highlighting
 
 (delete-selection-mode 1) ; delete seleted text when typing
-(global-linum-mode 1) ; always show line numbers
+;(global-linum-mode 1) ; always show line numbers
 ;(global-visual-line-mode 1) ; wrap lines at word boundaries instead of by characters
 
 (setq
