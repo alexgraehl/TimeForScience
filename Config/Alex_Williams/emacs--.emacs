@@ -171,19 +171,19 @@
 
 (setq load-path (cons "~/.emacs.d" load-path))
 
-;(if (system-type-is-darwin)
-;    (progn
-;      (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
-;      (setq should-load-ess t)
-;      (require 'ess-site) ;; <-- this is super slow!!!
-;      ))
+(if (system-type-is-darwin)
+    (progn
+      (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
+      (setq should-load-ess t)
+      (require 'ess-site) ;; <-- this is super slow!!!
+      ))
 
 (if (system-type-is-gnu)
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
       (setq should-load-ess t)
       (require 'ess-site) ;; <-- this can be super slow!!!
-      (require 'show-wspace)			; Show whitespace!
+      (when (require 'show-wspace))			; Show whitespace!
       ))
 
 ;;(autoload 'ruby-mode "ruby-mode" "Major mode for editing ruby scripts." t)
@@ -842,6 +842,7 @@
 
 ;; Close the loathsome scratch buffer!
 (if (buffer-exists "*scratch*")  (kill-buffer "*scratch*"))
+(if (buffer-exists "*Messages*")  (kill-buffer "*Messages*"))
 
 ;; ##
 
