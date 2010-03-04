@@ -155,7 +155,7 @@
 
 
 
-;;(require 'cl) ;; a rare necessary use of REQUIRE <-- (no idea what this does)
+;;(require 'cl nil t) ;; a rare necessary use of REQUIRE <-- (no idea what this does)
 ;;(defvar *emacs-load-start* (current-time)) ; <-- uncomment this to figure out how long it took to run this .emacs
 
 ;; Get current system type
@@ -175,15 +175,15 @@
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
       (setq should-load-ess t)
-      (require 'ess-site) ;; <-- this is super slow!!!
+      (require 'ess-site nil t) ;; <-- this is super slow!!!
       ))
 
 (if (system-type-is-gnu)
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
       (setq should-load-ess t)
-      (require 'ess-site) ;; <-- this can be super slow!!!
-      (when (require 'show-wspace))			; Show whitespace!
+      (require 'ess-site nil t) ;; <-- this can be super slow!!!
+      (require 'show-wspace nil t)			; Show whitespace!
       ))
 
 ;;(autoload 'ruby-mode "ruby-mode" "Major mode for editing ruby scripts." t)
@@ -771,8 +771,8 @@
 (setq has-hidelines nil)
 ;(if (system-type-is-darwin)
 ;    (progn (autoload 'hide-lines "hide-lines" "Hide lines based on a regexp" t) ;; ~/.emacs.d/hide-lines.el
-;	   (require 'hide-lines)
-;	   (require 'hidesearch)
+;	   (require 'hide-lines nil t)
+;	   (require 'hidesearch nil t)
 ;	   (setq has-hidelines t)))
 
 
@@ -858,7 +858,7 @@
  '(apropos-do-all t))
 
 
-;; (when (require 'browse-kill-ring)
+;; (when (require 'browse-kill-ring nil t)
 
 ;;     ;; string separating entries in the `separated' style
 ;;     (setq browse-kill-ring-separator
