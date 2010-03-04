@@ -789,10 +789,10 @@
 (global-set-key [(shift meta f)] 'grep-find)
 (global-set-key [(meta control s)] 'grep-find)
 
-(global-set-key [(meta c)] 'kill-ring-save)
-(global-set-key [(meta x)] 'kill-region)
-(global-set-key [(meta v)] 'yank)
-(global-set-key [(shift meta v)] 'yank-pop)
+;(global-set-key [(meta c)] 'kill-ring-save)
+;(global-set-key [(meta x)] 'kill-region)
+;(global-set-key [(meta v)] 'yank)
+;(global-set-key [(shift meta v)] 'yank-pop)
 
 
 ;;(split-window-horizontally)   ;; want two windows at startup
