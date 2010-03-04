@@ -56,7 +56,7 @@ alias kpk='exit'
 ## Mac-specific commands:
 alias invisible='SetFile -a V' ## Make a file/folder invisible to the Finder
 alias visible='SetFile -a v' ## opposite of "invisible"
-
+alias clearicon='SetFile -a c' ## clear mac custom icons. Useful for images that have old custom icons.
 
 #alias s='less -S --LINE-NUMBERS'
 
@@ -94,6 +94,11 @@ alias wcl='wc -l'
 alias sortt='sort -t "	"' # sort with tab as separator
 alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
 alias e='emacs -nw'
+
+if [[ isAGWHomeMachine -eq 1 ]]; then
+    alias e='/Applications/Emacs.app/Contents/MacOS/Emacs -nw'
+fi
+
 alias t='transpose.pl -q'
 alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl --color=always \
 --ht=75 --trunc=60 | tail -n +2 ; echo -e -n '$a_end_color'"
