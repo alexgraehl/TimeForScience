@@ -1,8 +1,11 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
+color_prompt=0
 hasBashColor=0
-
-color_prefix=''
+color_prefix='' ## The prefix for bash's colors
+isAGWHomeMachine=0
+isMac=0
+hasBashColor=0
 
 ######## AKH added
 
@@ -34,12 +37,6 @@ fi
 #        PS1="\[$color_prefix[01;35m\][\h \W]\\$\[$color_prefix[00m\] "
 #        export PS1
 #fi
-
-
-color_prefix='' ## The prefix for bash's colors
-
-isMac=0
-hasBashColor=0
 
 case "$TERM" in
     xterm-color|xterm-256color) color_prompt=1;
@@ -121,5 +118,11 @@ else
     UCSF_USER=$USER
 fi
 
+
+
+# =========== BIOINFORMATICS CORE VARIABLES ================
+export BINF_CORE_WORK_DIR="/work"  # <-- set the BINF CORE work directory. Required by scripts that use any common data.
+export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"  # <-- set the "R scripts library directory" for the Bioinformatics Core R scripts. Required by many R scripts.
+# =========== BIOINFORMATICS CORE VARIABLES ================
 
 
