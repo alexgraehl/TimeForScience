@@ -141,11 +141,6 @@ export TERM=xterm-color
 #256color
 
 
-# =========== BIOINFORMATICS CORE VARIABLES ================
-export BINF_CORE_WORK_DIR="/work"  # <-- set the BINF CORE work directory. Required by scripts that use any common data.
-export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"  # <-- set the "R scripts library directory" for the Bioinformatics Core R scripts. Required by many R scripts.
-# =========== BIOINFORMATICS CORE VARIABLES ================
-
 
 set -o ignoreeof  # Prevent Ctrl-D from exiting!
 
