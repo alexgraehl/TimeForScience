@@ -93,10 +93,11 @@ alias rr="screen -xR -U"
 alias wcl='wc -l'
 alias sortt='sort -t "	"' # sort with tab as separator
 alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
-alias e='emacs -nw'
 
 if [[ isAGWHomeMachine -eq 1 ]]; then
     alias e='/Applications/Emacs.app/Contents/MacOS/Emacs -nw'
+else
+    alias e='emacs -nw'
 fi
 
 alias t='transpose.pl -q'
@@ -105,14 +106,11 @@ alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse
 
 # GNU Make-related
 alias make='make --warn-undefined-variables --print-directory'
-alias m='make'
 alias mcm='make clean && make'
 function remake {
     ## Lets you type "remake" to remove a file and then use GNU make to try to re-generate it
 	trash.pl "$1" && make --warn-undefined-variables --print-directory "$1"
 }
-
-
 
 # Aliases related to GREP
 alias grep='grep   --color=always --with-filename --line-number'
@@ -139,8 +137,7 @@ function hglog {
 }
 
 
-BINF_CODE=${BINF_CORE_WORK_DIR}/Common/Code
-alias workcom='hg commit --user ${USER} --cwd ${BINF_CODE} -m "Changes committed by alexgw" && hg commit --user ${USER} --cwd /work/Common/GICD_ProjectArchives -m "Changes committed" && echo "[Done] committing work repository"' # && hg push --cwd ${BINF_CODE}'
+alias workcom='hg commit --user ${USER} --cwd ${BINF_CORE_WORK_DIR}/Common/Code -m "Changes committed by alexgw" && hg commit --user ${USER} --cwd /work/Common/GICD_ProjectArchives -m "Changes committed" && echo "[Done] committing work repository"' # && hg push --cwd ${BINF_CODE}'
 #alias workup='hg --cwd ${BINF_CODE} pull && hg --cwd ${BINF_CODE} update && echo "[Done] updating work repository"'
 alias workstat='hg --cwd ${BINF_CODE} status ; hg --cwd /work/Common/GICD_ProjectArchives status'
 
