@@ -199,9 +199,9 @@ foreach my $itemToDelete (@ARGV) {
 
     my $UNSAFE_CHARS = q{"'*+\$;};
     if ($thepath =~ /[$UNSAFE_CHARS]/) {
-	if ($outputIsColorTerminal) { print STDOUT color("red"); }
+	if ($outputIsColorTerminal) { print STDERR color("red"); }
 	print STDERR "trash.pl: Uh oh, trash.pl has no idea how to deal with filenames with any of these " . length($UNSAFE_CHARS) . " unusual characters in them: $UNSAFE_CHARS . That might be bad news, so we are just going to abort. Try using the real /bin/rm in this case.";
-	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+	if ($outputIsColorTerminal) { print STDERR color("reset"); }
 	exit(1)
     }
 
@@ -230,9 +230,9 @@ foreach my $itemToDelete (@ARGV) {
 		: "${trash}/${thepath}${trashDupeSuffix}.${index}";
 	    
 	    if ($index >= $MAX_INDEX) {
-		if ($outputIsColorTerminal) { print STDOUT color("red"); }
+		if ($outputIsColorTerminal) { print STDERR color("red"); }
 		print STDERR qq{Error trying to rename \"$itemToDelete\" to avoid overwriting an existing file with the same name that is already in the trash (there are too many files with the same name).\nYou should probably empty the trash.};
-		if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+		if ($outputIsColorTerminal) { print STDERR color("reset"); }
 		exit(1)
 	    }
 	}
@@ -246,20 +246,28 @@ foreach my $itemToDelete (@ARGV) {
 	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
     }
 
-    if (-l $itemToDelete) {
-	if ($outputIsColorTerminal) { print STDOUT color("green"); }
-	print STDOUT qq{trash.pl: Trashing the symbolic link $itemToDelete -> $trashedFileLoc\n};
-	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+    my $mvResult = system(qq{mv "$thepath" "$trashedFileLoc"});
+    
+    if (0 != $mvResult) {
+	## mv operation FAILED for some reason...
+	if ($outputIsColorTerminal) { print STDERR color("red"); }
+	print STDERR "trash.pl: Failed to trash the file $itemToDelete.\n          Probably you do not have the permissions required to move this file.\n";
+	if ($outputIsColorTerminal) { print STDERR color("reset"); }
     } else {
-	if ($outputIsColorTerminal) { print STDOUT color("green"); }
-	print STDOUT qq{trash.pl: };
-	print STDOUT qq{$itemToDelete};
-	print STDOUT qq{ -> };
-	print STDOUT qq{$trashedFileLoc\n};
-	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+	## Move succeeded...
+	if (-l $itemToDelete) {
+	    if ($outputIsColorTerminal) { print STDOUT color("green"); }
+	    print STDOUT qq{trash.pl: Trashing the symbolic link $itemToDelete -> $trashedFileLoc\n};
+	    if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+	} else {
+	    if ($outputIsColorTerminal) { print STDOUT color("green"); }
+	    print STDOUT qq{trash.pl: };
+	    print STDOUT qq{$itemToDelete};
+	    print STDOUT qq{ -> };
+	    print STDOUT qq{$trashedFileLoc\n};
+	    if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+	}
     }
-
-    system(qq{mv "$thepath" "$trashedFileLoc"});
     $numItemsDeleted++;
 }
 
