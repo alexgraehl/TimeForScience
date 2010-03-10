@@ -23,10 +23,10 @@
 
 ;; List of all emacs colors: http://www.geocities.com/kensanata/colors.html
 
-(defvar ACTIVE_MODELINE       "blue")   ;; Background for the active modeline
+(defvar ACTIVE_MODELINE       "red")   ;; Background for the active modeline
 (defvar ACTIVE_MODELINE_TEXT  "yellow") ;; Text in the currently-active modeline
 
-(defvar INACTIVE_MODELINE       "black") ;; Background for the inactive modeline
+(defvar INACTIVE_MODELINE       "blue") ;; Background for the inactive modeline
 (defvar INACTIVE_MODELINE_TEXT  "white") ;; Text in the inactive modelines
 
 (defvar BUFFER_FILENAME_TEXT "blue")   ;; colors for the filename
