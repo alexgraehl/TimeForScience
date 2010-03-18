@@ -54,7 +54,7 @@ case "$OSTYPE" in
 	;;
     *)
 	## General linux-y things
-	AGW_LS_COLOR_OPTION=' --color=auto ' ## -G means "no group" on Linux
+	AGW_LS_COLOR_OPTION=' --color=always ' ## -G means "no group" on Linux
 	;;
 esac
 
