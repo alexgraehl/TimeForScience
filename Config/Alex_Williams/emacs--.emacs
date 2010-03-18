@@ -174,15 +174,13 @@
 (if (system-type-is-darwin)
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
-      (setq should-load-ess t)
-      (require 'ess-site nil t) ;; <-- this is super slow!!!
+;      (setq should-load-ess t)
       ))
 
 (if (system-type-is-gnu)
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
-      (setq should-load-ess t)
-      (require 'ess-site nil t) ;; <-- this can be super slow!!!
+;      (setq should-load-ess t)
       (require 'show-wspace nil t)			; Show whitespace!
       ))
 
@@ -595,6 +593,7 @@
 
 (if should-load-ess
     (progn
+      (require 'ess-site nil t)
       (add-hook 'ess-mode-hook  ;; R-mode-hook r-mode-hook r mode <-- should be ess-mode-hook
 		(progn (define-key ess-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in ESS mode
 		       (define-key ess-mode-map "_" nil)          ;; no smart underscores!
@@ -674,36 +673,36 @@
 					;(message "YEP THAT WAS IT")
 
 ;; Keyword highlight options: t (OVERRIDE) /  prepend (prioritize) / append / keep (keep existing coloring, if any)
-(font-lock-add-keywords
- 'ess-mode
- '(
-   ;;   ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 font-lock-constant-face append) ; anything that starts in kv
-   ("\\<\\(stop\\|stopifnot\\|browser\\|options\\)\\>" 1 font-lock-warning-face keep)
-   ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 font-lock-constant-face keep) ; anything that starts in kv
-   ("\\<\\(gv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwMakeGlobalVarFace keep) ; anything that starts in gv
+(if should-load-ess
+    (font-lock-add-keywords
+     'ess-mode
+     '(
+       ;;   ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 font-lock-constant-face append) ; anything that starts in kv
+       ("\\<\\(stop\\|stopifnot\\|browser\\|options\\)\\>" 1 font-lock-warning-face keep)
+       ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 font-lock-constant-face keep) ; anything that starts in kv
+       ("\\<\\(gv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwMakeGlobalVarFace keep) ; anything that starts in gv
 
-   ;;("^\\([}].*\\)"      1 'agwIndent1Face t) ; function-ending (line-starting) brace
-   
-   ("^\\([ ]\\{1,1\\}\\)"      1 'agwIndent1Face t) ; line-starting tab
-   ("^    \\([ ]\\{1,1\\}\\)" 1 'agwIndent2Face t) ; line-starting tab
-   ("^         \\([ ]\\{1,1\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
-   ("^              \\([ ]\\{1,1\\}\\)" 1 'agwIndent4Face t) ; line-starting tab
-   ("^                   \\([ ]\\{1,1\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
+       ;;("^\\([}].*\\)"      1 'agwIndent1Face t) ; function-ending (line-starting) brace
+       
+       ("^\\([ ]\\{1,1\\}\\)"      1 'agwIndent1Face t) ; line-starting tab
+       ("^    \\([ ]\\{1,1\\}\\)" 1 'agwIndent2Face t) ; line-starting tab
+       ("^         \\([ ]\\{1,1\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
+       ("^              \\([ ]\\{1,1\\}\\)" 1 'agwIndent4Face t) ; line-starting tab
+       ("^                   \\([ ]\\{1,1\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
 
-   ("\\(\<\<-\\)" 1 'agwMakeGlobalVarFace keep) ; the <<- global assignment operator
-   ("\\(\<-\\)" 1 'agwPositiveNumberFace keep) ; the <- regular assignment operator
-   ("\\<\\(assert\.agw.*\\)" 1 'agwAssertionFace t) ; anything that ends in Vec
-   ("\\<\\([a-zA-Z0-9_\\.]*Vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
-   ("\\<\\([a-zA-Z0-9_\\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
-   ("\\<\\([a-zA-Z0-9_\\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-   ("\\<\\([a-zA-Z0-9_\\.]*Mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-   ("\\<\\([a-zA-Z0-9_\\.]*\\.vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
-   ("\\<\\([a-zA-Z0-9_\\.]*\\.list\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
-   ("\\<\\([a-zA-Z0-9_\\.]*\\.hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-   ("\\<\\([a-zA-Z0-9_\\.]*\\.mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-   ("\\([=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
-   )
- )
+       ("\\(\<\<-\\)" 1 'agwMakeGlobalVarFace keep) ; the <<- global assignment operator
+       ("\\(\<-\\)" 1 'agwPositiveNumberFace keep) ; the <- regular assignment operator
+       ("\\<\\(assert\.agw.*\\)" 1 'agwAssertionFace t) ; anything that ends in Vec
+       ("\\<\\([a-zA-Z0-9_\\.]*Vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
+       ("\\<\\([a-zA-Z0-9_\\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
+       ("\\<\\([a-zA-Z0-9_\\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+       ("\\<\\([a-zA-Z0-9_\\.]*Mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+       ("\\<\\([a-zA-Z0-9_\\.]*\\.vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
+       ("\\<\\([a-zA-Z0-9_\\.]*\\.list\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
+       ("\\<\\([a-zA-Z0-9_\\.]*\\.hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+       ("\\<\\([a-zA-Z0-9_\\.]*\\.mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+       ("\\([=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
+       )))
 
 (add-hook
  'after-change-major-mode-hook
