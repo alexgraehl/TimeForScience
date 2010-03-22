@@ -166,7 +166,8 @@
 
 (defun show-system-type() (interactive) (message (insert-system-type)))
 
-(setq should-load-ess nil) ;; <-- initialize a new variable if we haven't loaded ess, then this *remains* "nil"
+(if (not (boundp 'should-load-ess))
+    (setq should-load-ess nil)) ;; <-- if should-load-ess is not already defined, then initialize a new variable if we haven't loaded ess, then this *remains* "nil"
 
 
 (setq load-path (cons "~/.emacs.d" load-path))
@@ -180,7 +181,7 @@
 (if (system-type-is-gnu)
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
-;      (setq should-load-ess t)
+      ;(setq should-load-ess t)
       (require 'show-wspace nil t)			; Show whitespace!
       ))
 
@@ -591,25 +592,6 @@
 (add-hook 'shell-mode-hook 'ansi-color-for-comint-mode-on)
 
 
-(if should-load-ess
-    (progn
-      (require 'ess-site nil t)
-      (add-hook 'ess-mode-hook  ;; R-mode-hook r-mode-hook r mode <-- should be ess-mode-hook
-		(progn (define-key ess-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in ESS mode
-		       (define-key ess-mode-map "_" nil)          ;; no smart underscores!
-		       (define-key inferior-ess-mode-map "_" nil) ;; no smart underscores!
-		       ;;		 (define-key ess-mode-map "\t" 'self-insert-command)
-		       ))
-      
-      ;; note: lambda and progn are different somehow!!!
-      (add-hook 'ess-mode-hook
-		(lambda ()
-		  (ess-set-style 'BSD)
-		  (setq ess-indent-level 5)
-		  (setq ess-fancy-comments 'nil)
-	      ))
-      ))
-
 (add-hook 'linum-before-numbering-hook
 	  (lambda ()
 	    (let ((numDigitsInTotalNumLines (length (number-to-string (count-lines (point-min) (point-max)))))) 
@@ -673,36 +655,56 @@
 					;(message "YEP THAT WAS IT")
 
 ;; Keyword highlight options: t (OVERRIDE) /  prepend (prioritize) / append / keep (keep existing coloring, if any)
+
+(if should-load-ess (message "[AGW]: SHOULD LOAD ESS") (message "[AGW]: SHOULD NOT LOAD ESS"))
+
 (if should-load-ess
-    (font-lock-add-keywords
-     'ess-mode
-     '(
-       ;;   ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 font-lock-constant-face append) ; anything that starts in kv
-       ("\\<\\(stop\\|stopifnot\\|browser\\|options\\)\\>" 1 font-lock-warning-face keep)
-       ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 font-lock-constant-face keep) ; anything that starts in kv
-       ("\\<\\(gv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwMakeGlobalVarFace keep) ; anything that starts in gv
+    (progn
+      (require 'ess-site) ;; nil t)
+      (message "Setting R syntax stuff...")
+      (add-hook 'ess-mode-hook  ;; R-mode-hook r-mode-hook r mode <-- should be ess-mode-hook
+		(progn (define-key ess-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in ESS mode
+		       (define-key ess-mode-map "_" nil)          ;; no smart underscores!
+		       (define-key inferior-ess-mode-map "_" nil) ;; no smart underscores!
+		       ;;		 (define-key ess-mode-map "\t" 'self-insert-command)
+		       ))
+      
+      ;; note: lambda and progn are different somehow!!!
+      (add-hook 'ess-mode-hook
+		(lambda ()
+		  (ess-set-style 'BSD)
+		  (setq ess-indent-level 5)
+		  (setq ess-fancy-comments 'nil)
+		  ))      
+      (font-lock-add-keywords
+       'ess-mode
+       '(
+	 ;;   ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 font-lock-constant-face append) ; anything that starts in kv
+	 ("\\<\\(stop\\|stopifnot\\|browser\\|options\\)\\>" 1 font-lock-warning-face keep)
+	 ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 font-lock-constant-face keep) ; anything that starts in kv
+	 ("\\<\\(gv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwMakeGlobalVarFace keep) ; anything that starts in gv
 
-       ;;("^\\([}].*\\)"      1 'agwIndent1Face t) ; function-ending (line-starting) brace
-       
-       ("^\\([ ]\\{1,1\\}\\)"      1 'agwIndent1Face t) ; line-starting tab
-       ("^    \\([ ]\\{1,1\\}\\)" 1 'agwIndent2Face t) ; line-starting tab
-       ("^         \\([ ]\\{1,1\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
-       ("^              \\([ ]\\{1,1\\}\\)" 1 'agwIndent4Face t) ; line-starting tab
-       ("^                   \\([ ]\\{1,1\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
+	 ;;("^\\([}].*\\)"      1 'agwIndent1Face t) ; function-ending (line-starting) brace
+	 
+	 ("^\\([ ]\\{1,1\\}\\)"      1 'agwIndent1Face t) ; line-starting tab
+	 ("^    \\([ ]\\{1,1\\}\\)" 1 'agwIndent2Face t) ; line-starting tab
+	 ("^         \\([ ]\\{1,1\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
+	 ("^              \\([ ]\\{1,1\\}\\)" 1 'agwIndent4Face t) ; line-starting tab
+	 ("^                   \\([ ]\\{1,1\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
 
-       ("\\(\<\<-\\)" 1 'agwMakeGlobalVarFace keep) ; the <<- global assignment operator
-       ("\\(\<-\\)" 1 'agwPositiveNumberFace keep) ; the <- regular assignment operator
-       ("\\<\\(assert\.agw.*\\)" 1 'agwAssertionFace t) ; anything that ends in Vec
-       ("\\<\\([a-zA-Z0-9_\\.]*Vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
-       ("\\<\\([a-zA-Z0-9_\\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
-       ("\\<\\([a-zA-Z0-9_\\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-       ("\\<\\([a-zA-Z0-9_\\.]*Mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-       ("\\<\\([a-zA-Z0-9_\\.]*\\.vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
-       ("\\<\\([a-zA-Z0-9_\\.]*\\.list\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
-       ("\\<\\([a-zA-Z0-9_\\.]*\\.hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-       ("\\<\\([a-zA-Z0-9_\\.]*\\.mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-       ("\\([=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
-       )))
+	 ("\\(\<\<-\\)" 1 'agwMakeGlobalVarFace keep) ; the <<- global assignment operator
+	 ("\\(\<-\\)" 1 'agwPositiveNumberFace keep) ; the <- regular assignment operator
+	 ("\\<\\(assert\.agw.*\\)" 1 'agwAssertionFace t) ; anything that ends in Vec
+	 ("\\<\\([a-zA-Z0-9_\\.]*Vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
+	 ("\\<\\([a-zA-Z0-9_\\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
+	 ("\\<\\([a-zA-Z0-9_\\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+	 ("\\<\\([a-zA-Z0-9_\\.]*Mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+	 ("\\<\\([a-zA-Z0-9_\\.]*\\.vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
+	 ("\\<\\([a-zA-Z0-9_\\.]*\\.list\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
+	 ("\\<\\([a-zA-Z0-9_\\.]*\\.hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+	 ("\\<\\([a-zA-Z0-9_\\.]*\\.mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+	 ("\\([=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
+	 ))))
 
 (add-hook
  'after-change-major-mode-hook
@@ -835,13 +837,25 @@
   "Runs load-file on ~/.emacs" 
   (interactive)
   (load-file "~/.emacs")
+  (R-mode)
   (message "Loaded the config file again..."))
+
+
+(defun loadr ()
+  "Loads R syntax stuff (the ESS package)"
+  (interactive)
+  (progn
+    (setq should-load-ess t)
+    (reload-config)
+    ))
+
+(global-set-key [(control meta j)] 'loadr) ; less annoying than meta-shift-5
 
 (defun buffer-exists (bufname)   (not (eq nil (get-buffer bufname))))
 
 ;; Close the loathsome scratch buffer!
 (if (buffer-exists "*scratch*")  (kill-buffer "*scratch*"))
-(if (buffer-exists "*Messages*")  (kill-buffer "*Messages*"))
+;;(if (buffer-exists "*Messages*")  (kill-buffer "*Messages*"))
 
 ;; ##
 
