@@ -22,6 +22,7 @@ function ff {
 	./
 }
 
+alias cheat="echo \">>> Here is how you find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \;\" ; echo \">>> Here is how you diff directories:   diff -rq DIR1 DIR2\""
 
 alias tunes="lsof | grep -i mp3"
 alias viewlog='tail -f /var/log/httpd/access_log'
@@ -68,15 +69,11 @@ alias res="source ~/.bashrc"
 
 # Convert a Mac-style line-ending file to a UNIX one
 # Useful for when you save a file in Excel and then UNIX won't read it.
-function mac2unix {
-    cat "$1" | tr '\r' '\n'
-}
+alias mac2unix="tr '\r' '\n'"
 
 # Convert a Windows-style line-ending file to a UNIX one
 # Useful for when you save a file in Excel and then UNIX won't read it.
-function dos2unix {
-    cat "$1" | tr -d '\r'
-}
+alias dos2unix="tr -d '\r'"
 
 
 ## Mac-specific commands:
