@@ -688,7 +688,7 @@
 
 	 ;;("^\\([}].*\\)"      1 'agwIndent1Face t) ; function-ending (line-starting) brace
 
-	 ("\\([$][a-zA-Z_]+\\)" 1 'agwEssClassElementFace t) ;; anything like something$item ($item would be highlighted)
+	 ("\\([$][a-zA-Z_\.]+\\)" 1 'agwEssClassElementFace t) ;; anything like something$item ($item would be highlighted)
 	 
 	 ("^\\([ ]\\{1,1\\}\\)"      1 'agwIndent1Face t) ; line-starting tab
 	 ("^    \\([ ]\\{1,1\\}\\)" 1 'agwIndent2Face t) ; line-starting tab
