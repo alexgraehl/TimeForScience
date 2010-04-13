@@ -152,7 +152,9 @@
 
 
 
-
+(defface agwEssClassElementFace
+  '((t (:bold f  :foreground "cyan"  :background nil  :inverse-video nil)))
+  "Face for properties / class elements in R."  :group 'agwFaces)
 
 
 ;;(require 'cl nil t) ;; a rare necessary use of REQUIRE <-- (no idea what this does)
@@ -685,6 +687,8 @@
 	 ("\\<\\(gv[a-zA-Z0-9\\.]*\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwMakeGlobalVarFace keep) ; anything that starts in gv
 
 	 ;;("^\\([}].*\\)"      1 'agwIndent1Face t) ; function-ending (line-starting) brace
+
+	 ("\\([$][a-zA-Z_]+\\)" 1 'agwEssClassElementFace t) ;; anything like something$item ($item would be highlighted)
 	 
 	 ("^\\([ ]\\{1,1\\}\\)"      1 'agwIndent1Face t) ; line-starting tab
 	 ("^    \\([ ]\\{1,1\\}\\)" 1 'agwIndent2Face t) ; line-starting tab
