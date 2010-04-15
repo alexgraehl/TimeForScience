@@ -135,7 +135,7 @@ function hglog {
 }
 
 
-alias workcom='hg commit --user ${USER} --cwd ${BINF_CORE_WORK_DIR}/Common/Code -m "Changes committed by alexgw" && hg commit --user ${USER} --cwd /work/Common/GICD_ProjectArchives -m "Changes committed" && echo "[Done] committing work repository"' # && hg push --cwd ${BINF_CODE}'
+alias workcom='hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}/Common/Code" -m "Changes committed by alexgw" && hg commit --user ${USER} --cwd /work/Common/GICD_ProjectArchives -m "Changes committed" && echo "[Done] committing work repository"' # && hg push --cwd ${BINF_CODE}'
 #alias workup='hg --cwd ${BINF_CODE} pull && hg --cwd ${BINF_CODE} update && echo "[Done] updating work repository"'
 alias workstat='hg --cwd ${BINF_CODE} status ; hg --cwd /work/Common/GICD_ProjectArchives status'
 
@@ -191,28 +191,28 @@ alias sweep='trash.pl *.tmp *.temp'
 
 function s { ## <-- this needs to come BEFORE the other things that use less!
     # "s" uses "magicless" to run files through sheet.pl
-    magicless --LINE-NUMBERS --status-column --IGNORE-CASE --RAW-CONTROL-CHARS $*
+    magicless --LINE-NUMBERS --status-column --IGNORE-CASE --RAW-CONTROL-CHARS "$*"
 }
 
 function sf {
     # Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
-    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always | s
+    /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always | s
 }
 
 function s1 {
     # like sf, but shorter columns # Can only view ONE file, unlike "ss"
-    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always --trunc=15 | s
+    /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always --trunc=15 | s
 }
 
 function s2 {
     # like sf, but shorter columns # Can only view ONE file, unlike "ss"
-    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always --trunc=25 | s
+    /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always --trunc=25 | s
 }
 
 function v {
     # Use sheet.py to view a file or list of files. These files cannot be gzipped, however.
     # Must be python2.6, and not python 3, currently
-    python `which sheet.py` $*
+    python `which sheet.py` "$*"
 }
 
 
