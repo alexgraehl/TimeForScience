@@ -22,7 +22,10 @@ function ff {
 	./
 }
 
-alias cheat="echo \">>> Here is how you find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \;\" ; echo \">>> Here is how you diff directories:   diff -rq DIR1 DIR2\""
+alias cheat="echo \">>> Here is how you find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \;\" ; \
+echo \">>> Here is how you diff directories:   diff -rq DIR1 DIR2\" \
+echo \">>> Here is hwo you check the version of an apt-gotten package:   dpkg -s <packagename>\" \
+"
 
 alias tunes="lsof | grep -i mp3"
 alias viewlog='tail -f /var/log/httpd/access_log'
