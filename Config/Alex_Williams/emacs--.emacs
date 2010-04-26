@@ -22,7 +22,7 @@
 ;; Emacs regexp: http://www.cs.utah.edu/dept/old/texinfo/emacs18/emacs_17.html
 
 ;; List of all emacs colors: http://www.geocities.com/kensanata/colors.html
-
+;
 (defvar ACTIVE_MODELINE       "red")   ;; Background for the active modeline
 (defvar ACTIVE_MODELINE_TEXT  "yellow") ;; Text in the currently-active modeline
 
