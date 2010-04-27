@@ -195,7 +195,7 @@ alias sweep='trash.pl *.tmp *.temp'
 
 function s { ## <-- this needs to come BEFORE the other things that use less!
     # "s" uses "magicless" to run files through sheet.pl
-    magicless --LINE-NUMBERS --status-column --IGNORE-CASE --RAW-CONTROL-CHARS $1
+    magicless --LINE-NUMBERS --status-column $*
 }
 
 function sf {
