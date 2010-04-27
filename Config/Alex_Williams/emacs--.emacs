@@ -895,3 +895,19 @@
 ;;     (browse-kill-ring-default-keybindings))
 
 
+
+
+(defun iswitchb-local-keys ()
+  (mapc (lambda (K) 
+	  (let* ((key (car K)) (fun (cdr K)))
+	    (define-key iswitchb-mode-map (edmacro-parse-keys key) fun)))
+	'(("<right>" . iswitchb-next-match)
+	  ("\M-l" . iswitchb-next-match)
+	  ("<left>"  . iswitchb-prev-match)
+	  ("\M-j"  . iswitchb-prev-match)
+	  ("<up>"    . ignore             )
+	  ("<down>"  . ignore             ))))
+(add-hook 'iswitchb-define-mode-map-hook 'iswitchb-local-keys)
+
+;(setq iswitchb-buffer-ignore '("^\\*" "^ " "*Buffer"))
+;(setq iswitchb-buffer-ignore '("^\\*")) ;; This one is useful if you want to lose the *…* special buffers from the list. It’s helpful if you’re using the JDEE for editing Java apps, as you end up with buffers named org.whatever.package.Class which you might want to eliminate:
