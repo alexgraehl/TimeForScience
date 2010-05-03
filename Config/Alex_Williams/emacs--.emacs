@@ -683,14 +683,14 @@
       (font-lock-add-keywords
        'ess-mode
        '(
-	 ;;   ("\\<\\(kv[a-zA-Z0-9\\.]*\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 font-lock-constant-face append) ; anything that starts in kv
+	 ;;   ("\\<\\(kv[a-zA-Z0-9\.]*\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 font-lock-constant-face append) ; anything that starts in kv
 	 ("\\<\\(stop\\|stopifnot\\|browser\\|options\\)\\>" 1 font-lock-warning-face keep)
 	 ("\\<\\(kv[a-zA-Z0-9\.]*\\)\\($\\|[^a-zA-Z0-9\.]\\)" 1 font-lock-constant-face keep) ; anything that starts in kv
 	 ("\\<\\(gv[a-zA-Z0-9\.]*\\)\\($\\|[^a-zA-Z0-9\.]\\)" 1 'agwMakeGlobalVarFace keep) ; anything that starts in gv
 
 	 ;;("^\\([}].*\\)"      1 'agwIndent1Face t) ; function-ending (line-starting) brace
 
-	 ("\\([$@][0-9a-zA-Z_\.]+\\)" 1 'agwEssClassElementFace t) ;; anything like something$item ($item would be highlighted)
+	 ("\\([$@][a-zA-Z0-9_\.]+\\)" 1 'agwEssClassElementFace t) ;; anything like something$item ($item would be highlighted)
 	 
 	 ("^\\([ ]\\{1,1\\}\\)"      1 'agwIndent1Face t) ; line-starting tab
 	 ("^    \\([ ]\\{1,1\\}\\)" 1 'agwIndent2Face t) ; line-starting tab
@@ -701,14 +701,14 @@
 	 ("\\(\<\<-\\)" 1 'agwMakeGlobalVarFace keep) ; the <<- global assignment operator
 	 ("\\(\<-\\)" 1 'agwPositiveNumberFace keep) ; the <- regular assignment operator
 	 ("\\<\\(assert\.agw.*\\)" 1 'agwAssertionFace t) ; anything that ends in Vec
-	 ("\\<\\([a-zA-Z0-9_\\.]*Vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
-	 ("\\<\\([a-zA-Z0-9_\\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
-	 ("\\<\\([a-zA-Z0-9_\\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-	 ("\\<\\([a-zA-Z0-9_\\.]*Mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-	 ("\\<\\([a-zA-Z0-9_\\.]*\\.vec\\)\\($\\|[^a-zA-Z0-9\\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
-	 ("\\<\\([a-zA-Z0-9_\\.]*\\.list\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
-	 ("\\<\\([a-zA-Z0-9_\\.]*\\.hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-	 ("\\<\\([a-zA-Z0-9_\\.]*\\.mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+	 ("\\<\\([a-zA-Z0-9_\.]*Vec\\)\\($\\|[^a-zA-Z0-9\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
+	 ("\\<\\([a-zA-Z0-9_\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
+	 ("\\<\\([a-zA-Z0-9_\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+	 ("\\<\\([a-zA-Z0-9_\.]*Mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+	 ("\\<\\([a-zA-Z0-9_\.]*\.vec\\)\\($\\|[^a-zA-Z0-9\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
+	 ("\\<\\([a-zA-Z0-9_\.]*\.list\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
+	 ("\\<\\([a-zA-Z0-9_\.]*\.hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+	 ("\\<\\([a-zA-Z0-9_\.]*\.mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
 	 ("\\([=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
 	 ))))
 
