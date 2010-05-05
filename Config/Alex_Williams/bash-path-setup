@@ -72,5 +72,6 @@ export PATH=$HOME/bin:$PATH  # programs in your own home directory come FIRST
 
 if [[ -n isAgwHomeMachine ]]; then
     # Add things to Alex's home machine's path
-    export PATH=$PATH:/Alex/Programming/android-sdk-mac_86/tools
+    export PATH=${PATH}:/Alex/Programming/android-sdk-mac_86/tools
+    export PATH=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:${PATH}
 fi
