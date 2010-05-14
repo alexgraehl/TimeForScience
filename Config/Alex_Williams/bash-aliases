@@ -25,6 +25,7 @@ function ff {
 alias cheat="echo \">>> Here is how you find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \;\" ; \
 echo \">>> Here is how you diff directories:   diff -rq DIR1 DIR2\" ; \
 echo \">>> Here is how you check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string>\" ; \
+echo \">>> Here is how you install a new package in R from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...))\" \
 "
 
 alias tunes="lsof | grep -i mp3"
