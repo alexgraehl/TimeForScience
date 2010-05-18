@@ -99,7 +99,7 @@ alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
 if [[ isAGWHomeMachine -eq 1 ]]; then
     alias e='/Applications/Emacs.app/Contents/MacOS/Emacs -nw'
 else
-    alias e='emacs -nw --daemon ; emacsclient -nw -c -a ""'
+    alias e='emacs --daemon ; emacsclient -nw -c -a ""'
     #alias e='emacs -nw'
 fi
 
