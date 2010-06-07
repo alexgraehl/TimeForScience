@@ -702,14 +702,14 @@
 	 ("\\(\<-\\)" 1 'agwPositiveNumberFace keep) ; the <- regular assignment operator
 	 ("\\<\\(assert\.agw.*\\)" 1 'agwAssertionFace t) ; anything that starts in assert.agwK ends in Vec
 	 ("\\<\\(stopifnot.*\\)" 1 'agwAssertionFace t) ; anything that starts in stopifnot
-	 ("\\<\\([a-zA-Z0-9_\.]*Vec\\)\\($\\|[^a-zA-Z0-9\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
-	 ("\\<\\([a-zA-Z0-9_\.]*List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
-	 ("\\<\\([a-zA-Z0-9_\.]*Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-	 ("\\<\\([a-zA-Z0-9_\.]*Mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-	 ("\\<\\([a-zA-Z0-9_\.]*\.vec\\)\\($\\|[^a-zA-Z0-9\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
-	 ("\\<\\([a-zA-Z0-9_\.]*\.list\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
-	 ("\\<\\([a-zA-Z0-9_\.]*\.hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-	 ("\\<\\([a-zA-Z0-9_\.]*\.mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+	 ("\\<\\([a-zA-Z0-9_\\.]+Vec\\)\\($\\|[^a-zA-Z0-9\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
+	 ("\\<\\([a-zA-Z0-9_\\.]+List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
+	 ("\\<\\([a-zA-Z0-9_\\.]+Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+	 ("\\<\\([a-zA-Z0-9_\\.]+Mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+	 ("\\<\\([a-zA-Z0-9_\\.]+\.vec\\)\\($\\|[^a-zA-Z0-9\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
+	 ("\\<\\([a-zA-Z0-9_\\.]+\.list\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
+	 ("\\<\\([a-zA-Z0-9_\\.]+\.hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
+	 ("\\<\\([a-zA-Z0-9_\\.]+\.mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
 	 ("\\([=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
 	 ))))
 
