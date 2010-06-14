@@ -238,3 +238,10 @@ function dos2unix {
 
 alias huh='cat <(declare -f) <(alias)' ## uses bash subshells to show everything that is defined
 
+
+alias backoff='echo "Turns off CrashPlan remote backups. Requires you to enter an admin password." ; echo "Use the command <backon> to re-enable backups." ; echo "" ; sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist && echo "CrashPlan remote backups have been disabled for now. Use <backon> to re-enable them. Restarting the computer may also re-enable them."'
+alias backon='sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist && echo "CrashPlan remote backups have been re-enabled."'
+
+
+
+
