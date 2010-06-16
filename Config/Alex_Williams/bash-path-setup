@@ -45,8 +45,7 @@ export BOOST_ROOT=$BOOST_ROOT/usr/local/boost/boost_1_41_0
 export PATH=$PATH:/usr/local/boost
 
 # /opt is where some programs go
-export PATH=/opt/Apps/bin:$PATH   # <-- Installed apps are SYMLINKED here. This should go at the front of the path
-
+export PATH=/opt/Apps/bin:/home/Common/opt/bin:/opt/bin:$PATH  ## <-- goes at the FRONT of the path
 
 
 # More general path-related settings
