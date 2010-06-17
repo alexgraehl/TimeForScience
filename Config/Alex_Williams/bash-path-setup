@@ -6,42 +6,37 @@ fi
 
 echo -e "${a_echo_color}>>> BASH: Loading bash-path-setup...${a_end_color}"
 
-export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/X11/bin:
-# UCSF: MEME
-export PATH=$PATH:/opt/Bio/meme/bin
+## Clear out the initial path
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/X11/bin
 
-# UCSF: PAML
-export PATH=$PATH:/opt/Bio/paml42/bin
 
-# UCSF: MACS
-export PATH=$PATH:/opt/Bio/macs/bin
+export PATH=$PATH:/opt/Bio/meme/bin     # UCSF: MEME
+export PATH=$PATH:/opt/Bio/paml42/bin   # UCSF: PAML
+export PATH=$PATH:/opt/Bio/macs/bin     # UCSF: MACS
 
 # UCSF: BOWTIE
 export PATH=$PATH:/opt/Bio/bowtie/bin
-export BOWTIE_INDEXES=$BOWTIE_INDEXES/opt/Bio/bowtie/bowtie-0.11.3/indexes/
+export BOWTIE_INDEXES=/opt/Bio/bowtie/bowtie-0.11.3/indexes
 
-# UCSF: TOPHAT
-export PATH=$PATH:/opt/Bio/tophat/bin
-
-# UCSF: CUFFLINKS
-export PATH=$PATH:/opt/Bio/cufflinks/bin
+export PATH=$PATH:/opt/Bio/tophat/bin    # UCSF: TOPHAT
+export PATH=$PATH:/opt/Bio/cufflinks/bin # UCSF: CUFFLINKS
 
 # UCSF: SOME DATA
 export PATH=$PATH:$HOME/data
  
 # UCSF: CISTEMATIC
-export CISTEMATIC_ROOT=$CISTEMATIC_ROOT/opt/Bio/cistematic
+export CISTEMATIC_ROOT=/opt/Bio/cistematic
 
 # UCSF: CISTEMATIC PYTHONPATH
-export PYTHONPATH=$PYTHONPATH/opt/Bio/cistematic/core
-export PYTHONPATH=$PYTHONPATH:/opt/Bio/cistematic/db
-export PYTHONPATH=$PYTHONPATH:/opt/Bio/cistematic/experiments
-export PYTHONPATH=$PYTHONPATH:/opt/Bio/cistematic/genomes
-export PYTHONPATH=$PYTHONPATH:/opt/Bio/cistematic/programs
-export PYTHONPATH=$PYTHONPATH:/opt/Bio/cistematic/stat
+export PYTHONPATH=$CISTEMATIC_ROOT/core
+export PYTHONPATH=$CISTEMATIC_ROOT/db
+export PYTHONPATH=$CISTEMATIC_ROOT/experiments
+export PYTHONPATH=$CISTEMATIC_ROOT/genomes
+export PYTHONPATH=$CISTEMATIC_ROOT/programs
+export PYTHONPATH=$CISTEMATIC_ROOT/stat
 
 # UCSF: BOOST
-export BOOST_ROOT=$BOOST_ROOT/usr/local/boost/boost_1_41_0
+export BOOST_ROOT=/usr/local/boost/boost_1_41_0
 export PATH=$PATH:/usr/local/boost
 
 # /opt is where some programs go
@@ -62,12 +57,12 @@ export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$PATH
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$PATH
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/R:$PATH
 
-export PATH=$PATH:$MYSRC/lab_apps/python/Tools
-export PATH=$PATH:$MYSRC/lab_apps/R_shell
-export PATH=$PATH:$MYSRC/lab_apps/shell_scripts
-export PATH=$PATH:$MYSRC/cvaske/R/Commands
-export PATH=$PATH:/sw/bin    # programs installed by Fink, on the Mac
-export PATH=$HOME/bin:$PATH  # programs in your own home directory come FIRST
+export PATH=${PATH}:$MYSRC/lab_apps/python/Tools
+export PATH=${PATH}:$MYSRC/lab_apps/R_shell
+export PATH=${PATH}:$MYSRC/lab_apps/shell_scripts
+export PATH=${PATH}:$MYSRC/cvaske/R/Commands
+export PATH=${PATH}:/sw/bin    # programs installed by Fink, on the Mac
+export PATH=${HOME}/bin:${PATH}  # programs in your own home directory come FIRST
 
 if [[ -n isAgwHomeMachine ]]; then
     # Add things to Alex's home machine's path
