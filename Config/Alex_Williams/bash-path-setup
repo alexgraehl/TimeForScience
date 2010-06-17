@@ -14,10 +14,9 @@ export PATH=$PATH:/opt/Bio/meme/bin     # UCSF: MEME
 export PATH=$PATH:/opt/Bio/paml42/bin   # UCSF: PAML
 export PATH=$PATH:/opt/Bio/macs/bin     # UCSF: MACS
 
-# UCSF: BOWTIE
+# Cole Trapnell's RNASeq suite: BOWTIE, TOPHAT, CUFFLINKS
 export PATH=$PATH:/opt/Bio/bowtie/bin
-export BOWTIE_INDEXES=/opt/Bio/bowtie/bowtie-0.11.3/indexes
-
+export BOWTIE_INDEXES=/opt/Bio/bowtie/current-bowtie/indexes
 export PATH=$PATH:/opt/Bio/tophat/bin    # UCSF: TOPHAT
 export PATH=$PATH:/opt/Bio/cufflinks/bin # UCSF: CUFFLINKS
 
@@ -28,12 +27,12 @@ export PATH=$PATH:$HOME/data
 export CISTEMATIC_ROOT=/opt/Bio/cistematic
 
 # UCSF: CISTEMATIC PYTHONPATH
-export PYTHONPATH=$CISTEMATIC_ROOT/core
-export PYTHONPATH=$CISTEMATIC_ROOT/db
-export PYTHONPATH=$CISTEMATIC_ROOT/experiments
-export PYTHONPATH=$CISTEMATIC_ROOT/genomes
-export PYTHONPATH=$CISTEMATIC_ROOT/programs
-export PYTHONPATH=$CISTEMATIC_ROOT/stat
+export PYTHONPATH=${PYTHONPATH}:$CISTEMATIC_ROOT/core
+export PYTHONPATH=${PYTHONPATH}:$CISTEMATIC_ROOT/db
+export PYTHONPATH=${PYTHONPATH}:$CISTEMATIC_ROOT/experiments
+export PYTHONPATH=${PYTHONPATH}:$CISTEMATIC_ROOT/genomes
+export PYTHONPATH=${PYTHONPATH}:$CISTEMATIC_ROOT/programs
+export PYTHONPATH=${PYTHONPATH}:$CISTEMATIC_ROOT/stat
 
 # UCSF: BOOST
 export BOOST_ROOT=/usr/local/boost/boost_1_41_0
@@ -46,9 +45,7 @@ export PATH=/opt/Apps/bin:/home/Common/opt/bin:/opt/bin:$PATH  ## <-- goes at th
 # More general path-related settings
 
 export MYSRC=$HOME/cvs-local
-
-export PATH=$MYSRC/perl/Tools:$MYSRC/perl/web:$MYSRC/perl/Map:$PATH  # These come BEFORE other things found on the path. Whatever is listed FIRST gets run
-export PATH=$MYSRC/alexgw:$PATH
+export PATH=$MYSRC/alexgw:$MYSRC/perl/Tools:$MYSRC/perl/web:$MYSRC/perl/Map:$PATH  # These come BEFORE other things found on the path. Whatever is listed FIRST gets run
 
 export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$PATH
