@@ -12,7 +12,8 @@ my $EMAIL_USERNAME_FROM = 'binfcore'; ## Do NOT include @gmail.com here!
 my $PLAINTEXT_PASSWORD = undef;
 
 if (!defined($PLAINTEXT_PASSWORD)) {
-    exit("Need to define the password...")
+    print STDERR "Need to define the password...\n";
+    exit(1);
 }
 
 my $HOSTNAME = `hostname`; # or uname-n
