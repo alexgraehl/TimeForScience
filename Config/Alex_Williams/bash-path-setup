@@ -16,7 +16,7 @@ export PATH=$PATH:/opt/Bio/macs/bin     # UCSF: MACS
 
 # Cole Trapnell's RNASeq suite: BOWTIE, TOPHAT, CUFFLINKS
 export PATH=$PATH:/opt/Bio/bowtie/bin
-export BOWTIE_INDEXES=/opt/Bio/bowtie/current-bowtie/indexes
+export BOWTIE_INDEXES=/opt/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
 export PATH=$PATH:/opt/Bio/tophat/bin    # UCSF: TOPHAT
 export PATH=$PATH:/opt/Bio/cufflinks/bin # UCSF: CUFFLINKS
 
