@@ -9,7 +9,11 @@ my $dfTemp = '/tmp/df.tmp';
 my $sendTo = 'alexgraehl+lighthouse+status+update@gmail.com';
 
 my $EMAIL_USERNAME_FROM = 'binfcore'; ## Do NOT include @gmail.com here!
-my $PLAINTEXT_PASSWORD = 'binfopenmessageday';
+my $PLAINTEXT_PASSWORD = undef;
+
+if (!defined($PLAINTEXT_PASSWORD)) {
+    exit("Need to define the password...")
+}
 
 my $HOSTNAME = `hostname`; # or uname-n
 $HOSTNAME =~ s/^\s+//; $HOSTNAME =~ s/\s+$//; # remove trailing spaces, and then remove leading spaces
