@@ -55,7 +55,7 @@ if (!$blanks) {
 my $numRecords = scalar(@lines) / $numLinesPerRecord;
 
 if (scalar(@lines) % $numLinesPerRecord != 0) {
-    die "Uh oh! The number of lines in the file *NOT INCLUDING THE HEADER* was " . scalar(@lines) . ", which is not evenly divisible by the number of rows per record, which you specified with the -r option as being " . $numLinesPerRecord . ". Is each \"record\" in the file really a group of " . $numLinesPerRecord . "? Or maybe you specified the wrong number of header lines, or forgot that this file had a header. (Default number of header lines is 0. Specify a single header line with --headers=1.\n";
+    die "Uh oh! The number of lines in the file *NOT INCLUDING THE HEADER* was " . scalar(@lines) . ", which is not evenly divisible by the number of rows per record, which you specified with the -r option as being " . $numLinesPerRecord . ".\nMaybe you should specify no blank lines (with --noblanks)--there could be a trailing blank line.\nIs each \"record\" in the file really a group of " . $numLinesPerRecord . "?\nOr maybe you specified the wrong number of header lines, or forgot that this file had a header. (Default number of header lines is 0. Specify a single header line with --headers=1.\n\n";
 }
 
 ((!defined($numToPrint) || ($numToPrint >= 0)) or die "The number of lines to obtain cannot be less than 0.");
@@ -107,7 +107,7 @@ if (!$suppressPrintingOfHeaders) {
 }
 
 for (my $i = 0; $i < $numToPrint; $i++) {
-    my $theBaseIndexForThisRecord = $x[$i];
+    my $theBaseIndexForThisRecord = ($x[$i] * $numLinesPerRecord); ## Note that this is counting in LINES, not records.
     for (my $rec = 0; $rec < $numLinesPerRecord; $rec++) {
 	## When a record is multi-lined, we want to go through each of the lines and print it.
 	print STDOUT ($lines[$theBaseIndexForThisRecord + $rec]);
