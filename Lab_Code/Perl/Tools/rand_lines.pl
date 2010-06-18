@@ -1,182 +1,155 @@
 #!/usr/bin/perl
 
-use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "liblist.pl";
+# Randomly choose a certain number of lines from a file.
+# Supports multi-line records, as long as they are always the SAME line.
 
 use strict;
+use Getopt::Long;
+Getopt::Long::Configure(qw(pass_through)); # pass_through: "Don't flag options we don't process as errors"
 
-my $arg;
-my $num           = undef;
-my $replace       = 0;
-my $headers       = 0;
-my $print_header  = 0;
+my $numToPrint = undef;
+my $proportion = undef;
+my $numLinesPerRecord = 1;
+my $allowDupes = 0;
+my $numHeaders    = 0;
 my $blanks        = 1;
 my $verbose       = 1;
-my $file          = \*STDIN;
+my $randSeed      = undef;
+my $suppressPrintingOfHeaders = 0;
 
-my $nums = [];
+GetOptions("help|man|?" => sub { print STDERR <DATA>; exit(0); }
+	   , "n=i"            => \$numToPrint
+	   , "p|proportion=i" => \$proportion
+	   , "r|num_lines_per_record=i" => \$numLinesPerRecord
+	   , "q|quiet"     => sub { $verbose = 0; }
+	   , "wr"          => sub { $allowDupes = 1; } ## with replacement
+	   , "wor"         => sub { $allowDupes = 0; } ## without replacement
+	   , "h|headers=i" => \$numHeaders
+	   , "srand|seed|randseed=i" => \$randSeed
+	   , "nb|noblanks|no_blank|no_blanks"          => sub { $blanks = 0; }
+	   , "sh|suppress_header|suppress_headers"     => sub { $suppressPrintingOfHeaders = 1; }
+	   );
 
-while(@ARGV)
-{
-  $arg = shift @ARGV;
-  if($arg eq '--help')
-  {
-    print STDOUT <DATA>;
-    exit(0);
-  }
-  elsif($arg eq '-q')
-  {
-     $verbose = 0;
-  }
-  elsif($arg eq '-n')
-  {
-     $arg = shift @ARGV;
-     if((-f $arg) or (-l $arg) or ($arg eq '-'))
-     {
-        open(FILE, $arg) or die("Could not open file '$arg'");
-        while(<FILE>)
-        {
-           if(/(\d+)/)
-           {
-              push(@{$nums}, int($1));
-           }
-        }
-        close(FILE);
-     }
-     else
-     {
-        push(@{$nums}, int($arg));
-     }
-  }
-  elsif($arg eq '-wr')
-  {
-    $replace = 1;
-  }
-  elsif($arg eq '-wor')
-  {
-    $replace = 0;
-  }
-  elsif($arg eq '-hnp')
-  {
-    $headers = 1;
-    $print_header = 0;
-  }
-  elsif($arg eq '-hp')
-  {
-    $headers = 1;
-    $print_header = 1;
-  }
-  elsif($arg eq '-nb')
-  {
-    $blanks = 0;
-  }
-  elsif((-f $arg) or ($arg eq '-'))
-  {
-    open($file, $arg) or die("Could not open file '$arg' for reading.");
-  }
-  else
-  {
-    die("Invalid argument '$arg'.");
-    exit(1);
-  }
+(($numLinesPerRecord >= 1) or die "The number of lines per record cannot be less than 1.");
+
+if (defined($randSeed)) {
+    $verbose && print STDERR ("Using the value " . $randSeed . " to seed the random number generator. This way we will get the same \'random\' lines each time...\n");
+    srand($randSeed);
 }
 
-my @lines=();
-my $item = '';
-my $lineNum = 0;
+my @lines = <>;
 
-while(<$file>)
-{
-  $lineNum++;
-  if($lineNum > $headers and ($blanks or /\S/))
-  {
-     my $line = $_;
-     chomp($line);
-     push(@lines, \$line);
-  }
+my @headerLines = ();
 
-  if ($lineNum == $headers && $print_header) {
-      my $line = $_;
-      print STDOUT $line;
-  }
+if ($numHeaders > 0) {
+    @headerLines = @lines[0..($numHeaders-1)]; ## save the headers
+    @lines = @lines[$numHeaders..(scalar(@lines)-1)]; ## remove the headers from "@lines"
 }
-close($file);
 
-# $num = defined($num) ? $num : scalar(@lines);
-if (scalar(@{$nums}) <= 0) {
-    $nums = [scalar(@lines)];
-    #replaces this code: $nums = scalar(@{$nums}) > 0 ? $nums : [scalar(@lines)];
+if (!$blanks) {
+    ## Remove blank lines
+    $verbose && print STDERR "Removing all blank lines from input, due to the -nb option...\n";
+    @lines = grep/\S/, @lines; ## Find all non-blank lines only
+}
+
+my $numRecords = scalar(@lines) / $numLinesPerRecord;
+
+if (scalar(@lines) % $numLinesPerRecord != 0) {
+    die "Uh oh! The number of lines in the file *NOT INCLUDING THE HEADER* was " . scalar(@lines) . ", which is not evenly divisible by the number of rows per record, which you specified with the -r option as being " . $numLinesPerRecord . ". Is each \"record\" in the file really a group of " . $numLinesPerRecord . "? Or maybe you specified the wrong number of header lines, or forgot that this file had a header. (Default number of header lines is 0. Specify a single header line with --headers=1.\n";
+}
+
+((!defined($numToPrint) || ($numToPrint >= 0)) or die "The number of lines to obtain cannot be less than 0.");
+
+if (!defined($numToPrint)) { $numToPrint = $numRecords; }
+
+if ($numToPrint > $numRecords && !$allowDupes) {
+    print STDERR "Warning: you specified more lines to select randomly than there are lines in the input to rand_lines.pl, but you also said you didn't want lines to be repeated (the -wor option, which is the default).\nSo to solve this problem, we set the actual number of lines to print to the number of lines in the file. You could also specify -wr (with replacement) to allow repeated lines.\n\n";
+    $numToPrint = $numRecords;
 }
 
 
-for(my $i = 0; $i < scalar(@{$nums}); $i++)
-{
-   my $num = $$nums[$i];
+$verbose && print STDERR ("Number of lines to print: " . $numToPrint . "\n");
 
-   $num = defined($num) ? $num : scalar(@lines);
+$verbose && print STDERR ("Number of lines in file: " . $numRecords . "\n");
 
-   if(not($replace))
-   {
-      $num = $num < scalar(@lines) ? $num : scalar(@lines);
-   }
+$verbose && $allowDupes && print STDERR ("Allowing duplicate lines to be picked. Specify -wor to pick lines randomly *without* replacement.\n");
 
-   $verbose and print STDERR "Selecting $num random lines from the ",
-                             scalar(@lines),
-                             " read in ",
-                             ($replace ? "with" : "without"),
-                             " replacement.\n";
-   
-   $verbose and print STDERR "Permuting the lines.\n";
-   my $permuted = &listPermute(\@lines, $num, $replace);
-   $verbose and print STDERR "Done permuting the lines.\n";
-   
-   foreach my $item (@{$permuted})
-   {
-      if(defined($item))
-      {
-         print STDOUT $$item, (defined($nums) and scalar(@{$nums}) > 1) ? "\t" : "\n";
-      }
-      else
-      {
-         print STDOUT "NaN\n";
-      }
-   }
+my @x = ();
 
-   if($i < scalar(@{$nums}) - 1)
-   {
-      print STDOUT "\n";
-   }
+if (!$allowDupes) {
+    $#x = $numRecords;
+    for (my $i = 0; $i < $numRecords; $i++) { $x[$i] = $i; }
+
+    for (my $i = 0; $i < $numRecords; $i++) {
+	my $switchWith = int($numRecords*rand());
+	my $temp = $x[$i];
+	$x[$i] = $x[$switchWith];
+	$x[$switchWith] = $temp;
+    }
+} else {
+    ## Allow duplicates!
+    $#x = $numToPrint;
+    for (my $i = 0; $i < $numToPrint; $i++) {
+	my $thisRandNum = int($numRecords*rand());
+	$x[$i] = $thisRandNum;
+    }
+    #for (my $i = 0
 }
 
-exit(0);
+
+
+## DEBUGGING: print the indices that we chose randomly
+#print STDERR "Here are the indices that we chose (numbering starts at 0 rather than 1):\n";
+#print STDERR (join("\n",@x),"\n");
+
+if (!$suppressPrintingOfHeaders) {
+    print STDOUT @headerLines;
+}
+
+for (my $i = 0; $i < $numToPrint; $i++) {
+    my $theBaseIndexForThisRecord = $x[$i];
+    for (my $rec = 0; $rec < $numLinesPerRecord; $rec++) {
+	## When a record is multi-lined, we want to go through each of the lines and print it.
+	print STDOUT ($lines[$theBaseIndexForThisRecord + $rec]);
+    }
+}
+
+
+
 
 __DATA__
-syntax: rand_lines.pl [OPTIONS] < INFILE
 
-DESCRIPTION: Chooses random lines from a newline-delimited file.
+syntax: rand_lines.pl FILENAME
 
-BUG FIXED: The program can now choose random lines without replacement correctly.
+Randomly shuffles a file around and chooses the first N random lines to print out.
 
-USAGE EXAMPLE:
-    rand_lines.pl -n 50 -wor -nb myfile.txt
-       This would choose 50 lines at random from myfile.txt,
-       omitting blank lines (-nb). 
-       No line would be chosen more than once (-wor).
+Examples:
+        rand_lines.pl -n 100 MY_BIG_FILE.txt > a_hundred_random_lines_from_the_file.txt
 
-OPTIONS are:
+        rand_lines.pl --randseed=123 -n 10 SOME_FILE.txt > always_same_10_random_lines.txt
 
--n N: Choose N lines from the file (default: choose ALL lines from file; i.e. either
-      bootstraps if -wr supplied, or returns a permutation if -wor is supplied).
-      If N is a file, reads the first line and extracts a number from it.
+        rand_lines.pl -
+Supports more-than-one-line-per-record files. So it can deal with, for example, FASTA files.
 
--wor: Choose lines without replacement (DEFAULT)
--wr:  Choose lines with replacement (lines may by chosen more than once)
+Options:
+  -n INTEGER  : Print the first *NUMBER* records. Default: print all lines in the file.
 
--hp:  "Header, print"
-      The file contains a header line and the header should be printed to STDOUT.
+  -r INTEGER or --num_lines_per_record=INTEGER : Specifies that records are more than one line.
+             Good for FASTA files. This means that every INTEGER lines will be taken as being a single
+             mega-line.
 
--hnp: "Header, no printing"
-      The file contains a header line, but it should *not* be printed to STDOUT.
+  -wor       : Without replacement---choose lines without replacement (default)
 
--nb:  "No blanks" (NOT the default)
-      Skip blanks (otherwise we *include* blank lines in the file).
+  -wr        : With replacement---allow lines to be chosen more than once.
 
+  -h INTEGER or --headers=INTEGER : How many header lines are in the file? These will be
+             printed to the output, unless --suppress_headers is specified.
+
+  -sh or --suppress_headers: Do not print any header lines to the output.
+
+  -nb or --noblanks:  Eliminate all blank lines.
+
+  --randseed=INTEGER : Use INTEGER as a "seed" for the random number generator. This means
+             the same "random" lines will be selected each time.
+
+  -q         : Quiet. (Not verbose.) Suppress debugging info. Default is verbose.
