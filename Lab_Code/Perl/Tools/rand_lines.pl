@@ -145,7 +145,10 @@ Examples:
 Supports more-than-one-line-per-record files. So it can deal with, for example, FASTA files.
 
 Options:
-  -n INTEGER  : Print the first *NUMBER* records. Default: print all lines in the file.
+  -n INTEGER  : Print *NUMBER* randomly-chosen records. Default: print all lines in the file.
+
+  -p NUMBER or --proportion=NUMBER   : Print a *NUMBER* fraction of randomly-picked records.
+             1.0 prints all records, 0.5 prints half of them, etc.
 
   -r INTEGER or --num_lines_per_record=INTEGER : Specifies that records are more than one line.
              Good for FASTA files. This means that every INTEGER lines will be taken as being a single
