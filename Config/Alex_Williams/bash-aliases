@@ -176,7 +176,7 @@ else
     alias nau='ssh  $UCSF_USER@nausicaa.ucsf.edu'
 fi
 
-
+alias chef='ssh $UCSF_USER@chef.compbio.ucsf.edu' ## QB3 cluster head node
 alias lighthouse='ssh  $UCSF_USER@lighthouse.ucsf.edu' ## Database machine
 alias bueno='ssh  $UCSF_USER@bueno.gladstone.internal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
 
