@@ -1,5 +1,9 @@
 #!/usr/bin/perl
 
+## By Alex Williams, 2010.
+
+## Named the same as a previous script from UCSC, but shares *none* of the same code.
+
 # Randomly choose a certain number of lines from a file.
 # Supports multi-line records, as long as they are always the SAME line.
 
@@ -18,8 +22,8 @@ my $randSeed      = undef;
 my $suppressPrintingOfHeaders = 0;
 
 GetOptions("help|man|?" => sub { print STDERR <DATA>; exit(0); }
-	   , "n=i"            => \$numToPrint
-	   , "p|proportion=i" => \$proportion
+	   , "n=s"            => \$numToPrint
+	   , "p|proportion=s" => \$proportion
 	   , "r|num_lines_per_record=i" => \$numLinesPerRecord
 	   , "q|quiet"     => sub { $verbose = 0; }
 	   , "wr"          => sub { $allowDupes = 1; } ## with replacement
@@ -58,7 +62,16 @@ if (scalar(@lines) % $numLinesPerRecord != 0) {
     die "Uh oh! The number of lines in the file *NOT INCLUDING THE HEADER* was " . scalar(@lines) . ", which is not evenly divisible by the number of rows per record, which you specified with the -r option as being " . $numLinesPerRecord . ".\nMaybe you should specify no blank lines (with --noblanks)--there could be a trailing blank line.\nIs each \"record\" in the file really a group of " . $numLinesPerRecord . "?\nOr maybe you specified the wrong number of header lines, or forgot that this file had a header. (Default number of header lines is 0. Specify a single header line with --headers=1.\n\n";
 }
 
+
+
+
 ((!defined($numToPrint) || ($numToPrint >= 0)) or die "The number of lines to obtain cannot be less than 0.");
+
+((!defined($proportion) || ((0 <= $proportion) && ($proportion <= 1.0))) or die "Hey, the proportion of lines to print must be between 0.0 and 1.0, inclusive.");
+
+if (!defined($numToPrint) && defined($proportion)) {
+    $numToPrint = ($proportion * $numRecords);    
+}
 
 if (!defined($numToPrint)) { $numToPrint = $numRecords; }
 
