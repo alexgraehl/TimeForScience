@@ -47,7 +47,11 @@ colors.agw <- function(n = 12, type="blueblackyellow", reverse=FALSE) {
 ## =================================================================
 ## Heatmap (by Alex)
 ## =================================================================
-heatmap.agw <- function(m, breaks=12, labRow=rownames(m), labCol=colnames(m), col, main, title="", rowLabelCex=NULL) {
+heatmap.agw <- function(m, breaks=12, labRow=rownames(m), labCol=colnames(m), col, main, title="", rowLabelCex=NULL, maxNumLabels=1000) {
+     ## M: a matrix to plot
+     ## Breaks: the number of histogram breaks, used for the color scheme
+     ## maxNumLabels: do not print labels if there are more than this many labels ***with actual non-blank content***
+     
      if (is.vector(m)) {
           m <- as.matrix(m)
      }
@@ -186,8 +190,10 @@ heatmap.agw <- function(m, breaks=12, labRow=rownames(m), labCol=colnames(m), co
           }
      }
 
-     MAX_NUM_ROWS_TO_LABEL <- 1000
-     if (numRows <= MAX_NUM_ROWS_TO_LABEL) {
+     if (is.null(labRow)) {  numNonBlankRows <- 0
+     } else {                numNonBlankRows <- sum(!is.na(labRow) & (nchar(labRow) > 0))  }
+     
+     if (0 < numNonBlankRows && numNonBlankRows <= maxNumLabels) {
           axis(4, at=(0:(ncol(m)-1))/(ncol(m)-1), labels=labCol, tick=F, las=2, cex.axis=rowLabelCex) # 4 = right axis, usually with gene names
      }
 
