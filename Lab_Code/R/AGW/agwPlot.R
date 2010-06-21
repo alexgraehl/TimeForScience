@@ -190,10 +190,12 @@ heatmap.agw <- function(m, breaks=12, labRow=rownames(m), labCol=colnames(m), co
           }
      }
 
-     if (is.null(labRow)) {  numNonBlankRows <- 0
-     } else {                numNonBlankRows <- sum(!is.na(labRow) & (nchar(labRow) > 0))  }
+     numNonBlankRows <- 0
+     if (!is.null(labRow)) {
+          numNonBlankRows <- sum(!is.na(labRow) & (nchar(labRow) > 0))  } ## Count the number of NON-BLANK rows only!
+     }
      
-     if (0 < numNonBlankRows && numNonBlankRows <= maxNumLabels) {
+     if (!is.null(labRow) && numNonBlankRows <= maxNumLabels) {
           axis(4, at=(0:(ncol(m)-1))/(ncol(m)-1), labels=labCol, tick=F, las=2, cex.axis=rowLabelCex) # 4 = right axis, usually with gene names
      }
 
