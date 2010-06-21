@@ -189,10 +189,10 @@ heatmap.agw <- function(m, breaks=12, labRow=rownames(m), labCol=colnames(m), co
                rowLabelCex <- 0.10 + (maxRowCex-minRowCex)*(1 - (fractionTowardMinimum**0.5))
           }
      }
-
+     
      numNonBlankRows <- 0
      if (!is.null(labRow)) {
-          numNonBlankRows <- sum(!is.na(labRow) & (nchar(labRow) > 0))  } ## Count the number of NON-BLANK rows only!
+          numNonBlankRows <- sum(!is.na(labRow) & (nchar(labRow) > 0)) ## Count the number of NON-BLANK rows only!
      }
      
      if (!is.null(labRow) && numNonBlankRows <= maxNumLabels) {
@@ -202,5 +202,5 @@ heatmap.agw <- function(m, breaks=12, labRow=rownames(m), labCol=colnames(m), co
      axis(1, at=(0:(nrow(m)-1))/(nrow(m)-1), labels=labRow, tick=F, las=2, cex.axis=1.5) # 1 = bottom axis, usually with array names
      box(lwd=1)
      # ======================================
-     # ==========================================
+# ==========================================
 }
