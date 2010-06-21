@@ -54,10 +54,11 @@ alias mv='mv -i'
 alias cp='cp -i'
 alias rrm='/bin/rm' # --verbose --preserve-root --interactive=once'
 alias rm='trash.pl'
-alias checktrash='mkdir -p /tmp/$USER/Trash/ && echo "Contents of /tmp/$USER/Trash:" && ls /tmp/$USER/Trash/'
-alias emptytrash='mkdir -p /tmp/$USER/Trash/ && /bin/rm -rfv --preserve-root /tmp/$USER/Trash/ && echo "Emptied the trash directory (/tmp/$USER/Trash)" ;'
+alias checktrash='mkdir -p /tmp/${USER}/Trash/ && echo "Contents of /tmp/${USER}/Trash:" && ls /tmp/${USER}/Trash/'
+alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv --preserve-root /tmp/${USER}/Trash/ && echo "Emptied the trash directory (/tmp/${USER}/Trash)" ;'
 alias kpk='exit'
 
+alias crt='crontab -u ${USER} -e'
 
 ## Mac-specific commands:
 alias invisible='SetFile -a V' ## Make a file/folder invisible to the Finder
@@ -128,8 +129,8 @@ alias gitcom="git commit -a -m 'Changes committed by alexgw'"
 alias gitstat="git ls-files --modified --deleted"
 alias gitdiff="git difftool"
 
-alias hgcom="hg commit -u '$USER' -m 'Changes committed by $USER' && echo '[Done] committing changes locally with Mercurial.'"
-alias hgpush="hg commit -u '$USER' -m 'Changes committed by $USER' && hg push && echo '[Done] pushing changes to the remote server with Mercurial.'"
+alias hgcom="hg commit -u '${USER}' -m 'Changes committed by ${USER}' && echo '[Done] committing changes locally with Mercurial.'"
+alias hgpush="hg commit -u '${USER}' -m 'Changes committed by ${USER}' && hg push && echo '[Done] pushing changes to the remote server with Mercurial.'"
 alias hgpull="hg pull && hg update && echo '[Done] pulling remote changes and updating the local Mercurial repository.'"
 alias hgup="hg update && echo '[Done] updating local changes in Mercurial'"
 alias hgs="hg status"
