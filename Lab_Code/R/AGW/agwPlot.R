@@ -47,19 +47,18 @@ colors.agw <- function(n = 12, type="blueblackyellow", reverse=FALSE) {
 ## =================================================================
 ## Heatmap (by Alex)
 ## =================================================================
-heatmap.agw <- function(m, breaks=12, labRow=rownames(m), labCol=colnames(m), col, main, title="", rowLabelCex=NULL, maxNumLabels=1000) {
+heatmap.agw <- function(m, breaks=12, labRow=colnames(m), labCol=rownames(m), col, main, title="", cexRow=NULL, maxNumLabels=1000) {
      ## M: a matrix to plot
      ## Breaks: the number of histogram breaks, used for the color scheme
      ## maxNumLabels: do not print labels if there are more than this many labels ***with actual non-blank content***
-     
+
      if (is.vector(m)) {
           m <- as.matrix(m)
      }
      stopifnot(is.matrix(m))
      stopifnot(nrow(m) >= 1)
      stopifnot(ncol(m) >= 1)
-
-
+     
      # Generates a three-row multi-part figure.
      # Top part: the caption (title)
      # Middle part: the histogram and distribution key (probably should be made optional, but it's required for now)
@@ -171,35 +170,37 @@ heatmap.agw <- function(m, breaks=12, labRow=rownames(m), labCol=colnames(m), co
 
      numRows <- ncol(m) ## -- yes, it really is NCOL, because we transposed m due to the way "image" draws things
      numCols <- nrow(m) ## -- yes, it really is NROW, because we transposed m due to the way "image" draws things
-     if (is.null(rowLabelCex)) {
-          rowLabelCex = 1.0
 
+     numNonBlankRows <- 0
+     if (!is.null(labRow)) {
+          numNonBlankRows <- sum(!is.na(labRow) & (nchar(labRow) > 0)) ## Count the number of NON-BLANK rows only!
+     }
+     
+     if (is.null(cexRow)) {
+          rowNumberToUseForSizeCalculation <- numRows } ## Make the labels tiny enough to individually specify a single row
+          
+          cexRow = 1.0
           rowsAtWhichCexIsMin <- 800 ## The number of rows at which the text is the tiniest (or more rows than this)
           rowsAtWhichCexIsMax <- 100 ## The number of rows at which the text is the biggest (or fewer rows than this)
           stopifnot(rowsAtWhichCexIsMin > rowsAtWhichCexIsMax)
           maxRowCex <- 1.00
           minRowCex <- 0.10
 
-          if (numRows >= rowsAtWhichCexIsMin) {
-               rowLabelCex <- minRowCex
-          } else if (numRows <= rowsAtWhichCexIsMax) {
-               rowLabelCex <- maxRowCex
+          if (rowNumberToUseForSizeCalculation >= rowsAtWhichCexIsMin) {
+               cexRow <- minRowCex
+          } else if (rowNumberToUseForSizeCalculation <= rowsAtWhichCexIsMax) {
+               cexRow <- maxRowCex
           } else {
-               fractionTowardMinimum <- (numRows - rowsAtWhichCexIsMax)/(rowsAtWhichCexIsMin - rowsAtWhichCexIsMax)
-               rowLabelCex <- 0.10 + (maxRowCex-minRowCex)*(1 - (fractionTowardMinimum**0.5))
+               fractionTowardMinimum <- (rowNumberToUseForSizeCalculation - rowsAtWhichCexIsMax)/(rowsAtWhichCexIsMin - rowsAtWhichCexIsMax)
+               cexRow <- 0.10 + (maxRowCex-minRowCex)*(1 - (fractionTowardMinimum**0.5))
           }
      }
-     
-     numNonBlankRows <- 0
-     if (!is.null(labRow)) {
-          numNonBlankRows <- sum(!is.na(labRow) & (nchar(labRow) > 0)) ## Count the number of NON-BLANK rows only!
-     }
-     
-     if (!is.null(labRow) && numNonBlankRows <= maxNumLabels) {
-          axis(4, at=(0:(ncol(m)-1))/(ncol(m)-1), labels=labCol, tick=F, las=2, cex.axis=rowLabelCex) # 4 = right axis, usually with gene names
-     }
 
-     axis(1, at=(0:(nrow(m)-1))/(nrow(m)-1), labels=labRow, tick=F, las=2, cex.axis=1.5) # 1 = bottom axis, usually with array names
+     if (!is.null(labRow) && numNonBlankRows <= maxNumLabels) {
+          axis(4, at=(0:(ncol(m)-1))/(ncol(m)-1), labels=labRow, tick=F, las=2, cex.axis=cexRow) # 4 = right axis, usually with gene names
+     }
+     
+     axis(1, at=(0:(nrow(m)-1))/(nrow(m)-1), labels=labCol, tick=F, las=2, cex.axis=1.5) # 1 = bottom axis, usually with array names
      box(lwd=1)
      # ======================================
 # ==========================================
