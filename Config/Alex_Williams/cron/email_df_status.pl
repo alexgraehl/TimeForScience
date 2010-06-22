@@ -9,10 +9,17 @@ my $dfTemp = '/tmp/df.tmp';
 my $sendTo = 'alexgraehl+lighthouse+status+update@gmail.com';
 
 my $EMAIL_USERNAME_FROM = 'binfcore'; ## Do NOT include @gmail.com here!
-my $PLAINTEXT_PASSWORD = undef;
+
+my $email_smtp_client_location = $ARGV[0];
+my $PLAINTEXT_PASSWORD = $ARGV[1];
+
+if (!defined($email_smtp_client_location)) {
+    print STDERR "Not enough arguments to email_df_status.pl: Need to specify executable for SMTP sending (first argument! type which email-smtp-client.pl)...\n";
+    exit(1);
+}
 
 if (!defined($PLAINTEXT_PASSWORD)) {
-    print STDERR "Need to define the password...\n";
+    print STDERR "Not enough arguments to email_df_status.pl: Need to define the password (second argument!)...\n";
     exit(1);
 }
 
