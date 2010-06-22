@@ -11,7 +11,6 @@
 ## sudo chmod o-rwx crashplan-backup-mod.sudo.sh
 
 if [[ $1 = "off" ]]; then
-     echo "arr";
      echo "Turns off CrashPlan remote backups on the Mac."
      echo "Use the command <backon> to re-enable backups."
      echo ""
