@@ -6,9 +6,11 @@ my @files;
 my @cols     = ();
 my $rev      = 0;
 my $delim    = "\t";
+my $outDelim = undef;
 my $inc      = 1;
 my $blanks   = 1;
 my $all_cols = 0;
+my $printOriginal = 0;
 
 my $allowSingletons = 1; ## By default, we allow "singletons" with no tab-delimiter after them. If we put '-s' though, then anything without a delimiter afterwards gets kicked out
 
@@ -39,11 +41,16 @@ while(@ARGV)
     elsif($arg eq '-d') {
 	$delim = shift @ARGV;
     }
+    elsif($arg eq '-do' or $arg eq '--do') {
+	$outDelim = shift @ARGV;
+    }
     elsif($arg eq '-i') {
 	$inc = shift @ARGV;
-    }
-    elsif($arg eq '--ns') {
+    } elsif($arg eq '--ns') {
 	$allowSingletons = 0;
+
+    } elsif($arg eq '--orig') {
+	$printOriginal = 1;
 	
     } elsif($arg eq '-blanks' or $arg eq '-b') {
 	$blanks = 0;
@@ -60,6 +67,10 @@ if(scalar(@cols) == 0) {
     push(@cols, 0);
 }
 
+if (!defined($outDelim)) {
+    $outDelim = $delim;
+}
+
 if(scalar(@files) == 0) { push(@files, '-'); }
 
 foreach my $file (@files) {
@@ -67,11 +78,17 @@ foreach my $file (@files) {
 
     open($fin, $file) or die("Could not open file '$file'");
 
-    while(<$fin>) {
-	next if (not /\S/); ## Always skip lines that are completely blank...
-	my @tuple = split($delim);
-
+    while(my $line = <$fin>) {
+	next if ($line !~ /\S/); ## Always skip lines that are completely blank...
+	my @tuple = split($delim, $line);
 	chomp($tuple[$#tuple]);
+
+	my $theOrigToPrint = undef;
+	{
+	    my $lineCopy = $line;
+	    chomp($lineCopy);
+	    $theOrigToPrint = ($printOriginal) ? (${lineCopy} . "\t") : '';
+	}
 
 	for(my $i = 0; $i < ($all_cols ? scalar(@tuple) : scalar(@cols)); $i++) {
 	    my $col = ($all_cols) ? $i : $cols[$i];
@@ -80,7 +97,7 @@ foreach my $file (@files) {
 	    if (scalar(@tuple) == 0 && $allowSingletons) {
 		## Ok, this line had only an item and then *no* tab after it. So there was only one element for this line!
 		## i.e., the line was just "SOMETHING" and there was no delimiter afterward
-		print $key . $delim . "\n"; ## we print this item, which is just a key but *no* delimiter, with a delimiter, even though it did not have one originally.
+		print $theOrigToPrint . $key . $outDelim . "\n"; ## we print this item, which is just a key but *no* delimiter, with a delimiter, even though it did not have one originally.
 	    }
 	    
 	    for(my $i = 0; $i < scalar(@tuple); $i += $inc) {
@@ -89,13 +106,13 @@ foreach my $file (@files) {
 		    my $data = $tuple[$i + $j];
 		    if($blanks or $data =~ /\S/) {
 			if(not($rev)) {
-			    $output = $output . $delim . $data; ## REGULAR ORDER!!
+			    $output = $output . $outDelim . $data; ## REGULAR ORDER!!
 			} else {
-			    $output = $data . $delim . $output; ## REVERSED ORDER!
+			    $output = $data . $outDelim . $output; ## REVERSED ORDER!
 			}
 		    }
 		}
-		print $output . "\n";
+		print $theOrigToPrint . $output . "\n";
 	    }
 	    
 	}
@@ -127,7 +144,9 @@ OPTIONS are:
         every column is treated as the key so that all pairwise combinations
         are printed.
 
--d DELIM: Set the delimiter to DELIM (default is <tab>)
+-d DELIM: Set the input field delimiter to DELIM (default is <tab>).
+
+-do OUTPUT_DELIM: When outputting, use this delimiter instead of the input one. Defaults to -d DELIM otherwise.
 
 --ns: Disallow "singletons" (cases in which there is an item on a line, but no delimiter afterward)
     By default, we *do* print these items. But with --ns, we do not.
@@ -135,6 +154,8 @@ OPTIONS are:
 -i INC: increment through the members by INC (default is 1).
 
 --rev: Print in reverse order.
+
+--orig: Also print the original line (without ending whitespace/linebreaks), at the beginning of each line
 
 -b: Do *not* print blank elements (default prints them). Totally blank lines are *always* skipped.
 
