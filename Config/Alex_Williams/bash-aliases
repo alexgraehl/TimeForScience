@@ -1,0 +1,249 @@
+# -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
+
+if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
+    source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
+fi
+
+echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
+
+## Searches both the R source and the current directory (and any subdirectories!)
+## Note that it only looks for files with a ".R" ending!!!!!!!
+function ff {
+    /bin/grep --color=always -T \
+	--ignore-case \
+	--recursive \
+	--extended-regexp \
+	--line-number --with-filename \
+	--exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="CVS" --exclude-dir="[bB]ackup*" \
+	--binary-files=without-match \
+	--include=*.R \
+	"$*" \
+	/work/Common/Code/R_Binf_Core \
+	./
+}
+
+alias cheat="echo \">>> Here is how you find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \;\" ; \
+echo \">>> Here is how you diff directories:   diff -rq DIR1 DIR2\" ; \
+echo \">>> Here is how you check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string>\" ; \
+echo \">>> Here is how you install a new package in R from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...))\" ; \
+echo \">>> Check current Linux version: cat /etc/*-release\" ; \
+"
+
+alias tunes="lsof | grep -i mp3"
+alias viewlog='tail -f /var/log/httpd/access_log'
+
+alias treeviewmemory='java -Xmx999m -jar TreeView.jar'
+
+alias diffdir='diff -rq' ## diff on directories
+
+# Shell navigation / commands
+
+pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
+
+
+alias l='/bin/ls -F $AGW_LS_COLOR_OPTION'
+alias ls='/bin/ls -F $AGW_LS_COLOR_OPTION'
+alias ll='/bin/ls -lh -A -F $AGW_LS_COLOR_OPTION'
+alias p='pwd'
+alias tc='randomize_terminal_color.pl -cycle'
+#alias cd='pushd'
+alias b='popd'
+alias ..='cd ..'
+#alias ..='pushd ..'
+alias res='source ~/.bashrc ; source ~/.bash_profile'
+alias mv='mv -i'
+alias cp='cp -i'
+alias rrm='/bin/rm' # --verbose --preserve-root --interactive=once'
+alias rm='trash.pl'
+alias checktrash='mkdir -p /tmp/${USER}/Trash/ && echo "Contents of /tmp/${USER}/Trash:" && ls /tmp/${USER}/Trash/'
+alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv --preserve-root /tmp/${USER}/Trash/ && echo "Emptied the trash directory (/tmp/${USER}/Trash)" ;'
+alias kpk='exit'
+
+alias crt='crontab -u ${USER} -e'
+
+## Mac-specific commands:
+alias invisible='SetFile -a V' ## Make a file/folder invisible to the Finder
+alias visible='SetFile -a v' ## opposite of "invisible"
+alias clearicon='SetFile -a c' ## clear mac custom icons. Useful for images that have old custom icons.
+
+#alias s='less -S --LINE-NUMBERS'
+
+alias version="lsb_release -a" # Tells you which version of Ubuntu you are running!
+
+alias res="source ~/.bashrc"
+
+
+# Convert a Mac-style line-ending file to a UNIX one
+# Useful for when you save a file in Excel and then UNIX won't read it.
+alias mac2unix="tr '\r' '\n'"
+
+# Convert a Windows-style line-ending file to a UNIX one
+# Useful for when you save a file in Excel and then UNIX won't read it.
+alias dos2unix="tr -d '\r'"
+
+
+## Mac-specific commands:
+alias invisible='SetFile -a V' ## Make a file/folder invisible to the Finder
+alias visible='SetFile -a v' ## opposite of "invisible"
+
+## remember dot_clean to remove annoying ._something files
+
+
+## Utility commands
+
+## -U: "screen understands UTF8"
+alias rr="screen -xR -U"
+
+alias wcl='wc -l'
+alias sortt='sort -t "	"' # sort with tab as separator
+alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
+
+if [[ isAGWHomeMachine -eq 1 ]]; then
+    alias e='/Applications/Emacs.app/Contents/MacOS/Emacs -nw'
+elif [[ isMac -eq 1 ]]; then
+    alias e='emacs --daemon ; emacsclient -a "emacs"'
+else
+    alias e='emacs --daemon ; emacsclient -c -a "emacs"'
+    #alias e='emacs -nw'
+fi
+
+alias t='transpose.pl -q'
+alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl --color=always \
+--ht=75 --trunc=60 | tail -n +2 ; echo -e -n '$a_end_color'"
+
+# GNU Make-related
+alias make='make --warn-undefined-variables --print-directory'
+alias mcm='make clean && make'
+function remake {
+    ## Lets you type "remake" to remove a file and then use GNU make to try to re-generate it
+	trash.pl "$1" && make --warn-undefined-variables --print-directory "$1"
+}
+
+# Aliases related to GREP
+alias grep='grep   --color=always --with-filename --line-number'
+alias egrep='egrep --color=always --with-filename --line-number'
+alias fgrep='fgrep --color=always --with-filename --line-number'
+
+# Aliases related to CVS
+alias commit="cvs commit -m 'AGW CVS Commit'"
+alias gitcom="git commit -a -m 'Changes committed by alexgw'"
+alias gitstat="git ls-files --modified --deleted"
+alias gitdiff="git difftool"
+
+alias hgcom="hg commit -u '${USER}' -m 'Changes committed by ${USER}' && echo '[Done] committing changes locally with Mercurial.'"
+alias hgpush="hg commit -u '${USER}' -m 'Changes committed by ${USER}' && hg push && echo '[Done] pushing changes to the remote server with Mercurial.'"
+alias hgpull="hg pull && hg update && echo '[Done] pulling remote changes and updating the local Mercurial repository.'"
+alias hgup="hg update && echo '[Done] updating local changes in Mercurial'"
+alias hgs="hg status"
+
+function hglog {
+    hg status
+    if [[ $? == 0 ]] ; then  ## <-- only check the log if there is actually a mercurial repo here!
+	hg log -p --color=always $* | s
+    fi
+}
+
+
+alias workcom='hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}/Common/Code" -m "Changes committed by alexgw" && hg commit --user ${USER} --cwd /work/Common/GICD_ProjectArchives -m "Changes committed" && echo "[Done] committing work repository"' # && hg push --cwd ${BINF_CODE}'
+#alias workup='hg --cwd ${BINF_CODE} pull && hg --cwd ${BINF_CODE} update && echo "[Done] updating work repository"'
+alias workstat='hg --cwd ${BINF_CODE} status ; hg --cwd /work/Common/GICD_ProjectArchives status'
+
+alias sciencecom='hg commit --user ${USER} --cwd ${TIME_FOR_SCIENCE_DIR} -m "Changes committed by alexgw" && hg push --cwd ${TIME_FOR_SCIENCE_DIR} && echo "[Done] commiting and pushing TimeForScience repository"'
+alias scienceup='hg --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SCIENCE_DIR} update && echo "[Done] updating TimeForScience repository"'
+alias sciencestat='hg --cwd ${TIME_FOR_SCIENCE_DIR} status'
+
+
+if [[ $USER == alexgw ]]
+then
+    alias alexcom='ssh alexcom@alexwilliams.com'
+    alias jig='ssh jig.cse.ucsc.edu'
+    alias hustle='ssh  hustle.cse.ucsc.edu'
+    alias disco='ssh  disco.cse.ucsc.edu' # -X
+    
+    alias chacha='ssh -X chacha.cse.ucsc.edu'
+    alias jive='ssh -X   jive.cse.ucsc.edu'
+    alias tap='ssh       tap.cse.ucsc.edu'
+    alias bop='ssh       bop.cse.ucsc.edu'
+    
+    alias moondance='ssh moondance.cse.ucsc.edu'
+    alias riverdance='ssh waterdance.cse.ucsc.edu'
+    alias waterdance='ssh waterdance.cse.ucsc.edu'
+    alias sundance='ssh sundance.cse.ucsc.edu'
+fi
+
+if [[ 'nausicaa' == $HOSTNAME ]]
+then
+    alias nau="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
+else
+    alias nau='ssh  $UCSF_USER@nausicaa.ucsf.edu'
+fi
+
+alias chef='ssh $UCSF_USER@chef.compbio.ucsf.edu' ## QB3 cluster head node
+alias lighthouse='ssh  $UCSF_USER@lighthouse.ucsf.edu' ## Database machine
+alias bueno='ssh  $UCSF_USER@bueno.gladstone.internal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
+
+# Things related to "LESS"
+export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
+# lesspipe_basic.sh casues less to transparently decompress gzipped files before showing them
+# Old:  '|/usr/bin/lesspipe.sh %s'
+
+alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_advanced.sh %s" /usr/bin/less -S --RAW-CONTROL-CHARS -f --IGNORE-CASE'
+# It's less, but it "magically" handles gzipped files and automatically runs ".tab" files through sheet.pl
+# Note that this only magically happens if the files are passed in on the command line--otherwise you have
+# to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
+# sheet.pl unless you say "cat something | ssf"
+
+# Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
+alias  sn='/usr/bin/less -S --LINE-NUMBERS --status-column --RAW-CONTROL-CHARS -f --IGNORE-CASE'
+
+alias sweep='trash.pl *.tmp *.temp'
+
+function s { ## <-- this needs to come BEFORE the other things that use less!
+    # "s" uses "magicless" to run files through sheet.pl
+    magicless --LINE-NUMBERS --status-column $*
+}
+
+function sf {
+    # Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
+    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always | s
+}
+
+function s1 {
+    # like sf, but shorter columns # Can only view ONE file, unlike "ss"
+    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always --trunc=15 | s
+}
+
+function s2 {
+    # like sf, but shorter columns # Can only view ONE file, unlike "ss"
+    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always --trunc=25 | s
+}
+
+function v {
+    # Use sheet.py to view a file or list of files. These files cannot be gzipped, however.
+    # Must be python2.6, and not python 3, currently
+    python `which sheet.py` $*
+}
+
+
+## Convert line endings mac-style --> UNIX
+## Useful for loading Excel-generated .txt files
+function mac2unix {
+    cat $1 | tr '\r' '\n'
+}
+
+## Convert line endings dos-style --> UNIX
+## Useful for loading Excel-generated .txt files
+function dos2unix {
+    cat $1 | tr -d '\r'
+}
+
+
+alias huh='cat <(declare -f) <(alias)' ## uses bash subshells to show everything that is defined
+
+
+alias backoff='~/TimeForScience/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh off'
+alias backon='~/TimeForScience/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh on'
+
+
+
+
