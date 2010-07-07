@@ -18,7 +18,7 @@ function ff {
 	--binary-files=without-match \
 	--include=*.R \
 	"$*" \
-	/work/Common/Code/R_Binf_Core \
+	"${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
 	./
 }
 
@@ -144,9 +144,11 @@ function hglog {
 }
 
 
-alias workcom='hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}/Common/Code" -m "Changes committed by alexgw" && hg commit --user ${USER} --cwd /work/Common/GICD_ProjectArchives -m "Changes committed" && echo "[Done] committing work repository"' # && hg push --cwd ${BINF_CODE}'
-#alias workup='hg --cwd ${BINF_CODE} pull && hg --cwd ${BINF_CODE} update && echo "[Done] updating work repository"'
-alias workstat='hg --cwd ${BINF_CODE} status ; hg --cwd /work/Common/GICD_ProjectArchives status'
+alias workcom='hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}/Common/Code" -m "Changes committed by ${USER}" && hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives" -m "Changes committed" && echo "[Done] committing work repository"' # && hg push --cwd ${BINF_CODE}'
+
+alias workup='hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" pull && hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" update && echo "[Done] updating work repository"'
+
+alias workstat='hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" status ; hg --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives status"'
 
 alias sciencecom='hg commit --user ${USER} --cwd ${TIME_FOR_SCIENCE_DIR} -m "Changes committed by alexgw" && hg push --cwd ${TIME_FOR_SCIENCE_DIR} && echo "[Done] commiting and pushing TimeForScience repository"'
 alias scienceup='hg --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SCIENCE_DIR} update && echo "[Done] updating TimeForScience repository"'

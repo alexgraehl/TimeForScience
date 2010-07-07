@@ -129,6 +129,7 @@ heatmap.agw <- function(m, breaks=12, labRow=colnames(m), labCol=rownames(m), co
      }
 
      if (missing(col) || is.null(col)) {
+          totalColors <- length(breaks)-1
           if (totalColors == 2) {
                col <- c("#000066", "#FFFF99")
           } else if (totalColors >= 10) {
