@@ -146,8 +146,8 @@ foreach my $itemToDelete (@ARGV) {
     #print $itemToDelete . "\n";
     $itemToDelete = trim($itemToDelete);
 
-    if (not (-e $itemToDelete)) {
-	# the item doesn't even exist, so skip it
+    if ((not (-l $itemToDelete)) and (not (-e $itemToDelete))) {
+	# The item doesn't even exist (and it isn't a symlink), so skip it
 	minorComplaint($itemToDelete, "it did either not exist or could not be read. Check that this file actually exists.");
 	next;
     }
@@ -206,9 +206,9 @@ foreach my $itemToDelete (@ARGV) {
     }
 
     my $index = 1;
-    my $trashDupeSuffix = ".trash_duplicate";
+    my $trashDupeSuffix = qq{.trash_duplicate};
 
-    my $trashedDirLoc  = "$trash/$dirname";
+    my $trashedDirLoc  = qq{$trash/$dirname};
 
     if (! -d $trashedDirLoc) {
 	#print qq{trash.pl: Making a new trash subdirectory at $trashedDirLoc\n};
@@ -273,8 +273,7 @@ foreach my $itemToDelete (@ARGV) {
 
 if ($numItemsDeleted > 0) {
 
-    print STDOUT qq{trash.pl: Keep in mind that the trash directory may be\n};
-    print STDOUT qq{${tab}automatically deleted when this machine is restarted.\n};
+    print STDOUT qq{trash.pl: Note: the trash directory may be auto-deleted without warning.\n};
 
     print STDOUT (qq{-} x 80) . "\n";
 
