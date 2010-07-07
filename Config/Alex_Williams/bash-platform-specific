@@ -118,10 +118,14 @@ else
     UCSF_USER=$USER
 fi
 
-
-
 # =========== BIOINFORMATICS CORE VARIABLES ================
-export BINF_CORE_WORK_DIR="/work"  # <-- set the BINF CORE work directory. Required by scripts that use any common data.
+if [ $isAGWHomeMachine -eq 1 ] ; then
+    export BINF_CORE_WORK_DIR="/Users/${USER}/work" # <-- set the BINF CORE work directory. This is in my HOME directory when I'm at home!
+else
+    export BINF_CORE_WORK_DIR="/work"  # <-- set the BINF CORE work directory. Required by scripts that use any common data.
+fi
+
+
 export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"  # <-- set the "R scripts library directory" for the Bioinformatics Core R scripts. Required by many R scripts.
 # =========== BIOINFORMATICS CORE VARIABLES ================
 
