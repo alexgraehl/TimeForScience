@@ -8,19 +8,31 @@ echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
 
 ## Searches both the R source and the current directory (and any subdirectories!)
 ## Note that it only looks for files with a ".R" ending!!!!!!!
-function ff {
-    /bin/grep --color=always -T \
-	--ignore-case \
-	--recursive \
-	--extended-regexp \
-	--line-number --with-filename \
-	--exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="CVS" --exclude-dir="[bB]ackup*" \
-	--binary-files=without-match \
-	--include=*.R \
-	"$*" \
-	"${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
-	./
-}
+
+
+if [ $isMac -eq 1 ] ; then
+    function ff {
+	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
+	    "$*" \
+	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
+	    ./
+    }
+else
+    ## Must be different between mac/unix
+    function ff {
+	`which grep` --color=always -T \
+	    --ignore-case \
+	    --recursive \
+	    --extended-regexp \
+	    --line-number --with-filename \
+	    --exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="CVS" --exclude-dir="[bB]ackup*" \
+	    --binary-files=without-match \
+	    --include=*.R \
+	    "$*" \
+	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
+	    ./
+    }
+fi
 
 alias cheat="echo \">>> Here is how you find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \;\" ; \
 echo \">>> Here is how you diff directories:   diff -rq DIR1 DIR2\" ; \
