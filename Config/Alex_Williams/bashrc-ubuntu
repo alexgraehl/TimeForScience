@@ -72,7 +72,9 @@ fi
 if [ "$color_prompt" -eq 1 ]; then
     #PS1="${a_machine_prompt_main_color}\u@\h:\w\$${a_end_color}" #"${debian_chroot:+($debian_chroot)}\[$color_prefix[01;32m\]\u@\h\[$color_prefix[00m\]:\[$color_prefix[01;34m\]\w\[$color_prefix[00m\]\$ "
     #PS1="\u@\h:\w\$"
-    PS1="\[${a_machine_prompt_main_color}\][\$(date +%H:%M)] [\u@\h:\w]$\[\033[0m\]\[${a_end_color}\] "
+## \w is the full working directory
+## \W is just the basename of the working directory
+    PS1="\[${a_machine_prompt_main_color}\][\$(date +%H:%M)] [\u@\h:\W]\$\[\033[0m\]\[${a_end_color}\] "
     #PS1="\[\033[1;34m\][\$(date +%H:%M)][\u@\h:\w]$\[\033[0m\] "
     #PS1="${debian_chroot:+($debian_chroot)}\[$color_prefix[01;32m\]\u@\h\[$color_prefix[00m\]:\[$color_prefix[01;34m\]\w\[$color_prefix[00m\]\$ "
 else
@@ -83,6 +85,7 @@ unset color_prompt ## done with this variable...
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
     xterm*|rxvt*)
+	## Set the title text!
 	PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
 	;;
     *)
