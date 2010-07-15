@@ -47,6 +47,25 @@ export PATH=/opt/Apps/bin:/home/Common/opt/bin:/opt/bin:$PATH  ## <-- goes at th
 export MYSRC=$HOME/cvs-local
 export PATH=$MYSRC/alexgw:$MYSRC/perl/Tools:$MYSRC/perl/web:$MYSRC/perl/Map:$PATH  # These come BEFORE other things found on the path. Whatever is listed FIRST gets run
 
+
+case "$HOSTNAME"
+    in
+    nausicaa)
+	export SICER_DIR_ENV_VAR=/opt/Bio/sicer
+	;;
+    bueno)
+	export SICER_DIR_ENV_VAR=SICER_IS_NOT_INSTALLED_ON_THIS_MACHINE_CHECK_YOUR_BASH_PROFILE_SETUP
+	;;
+    lighthouse)
+	export SICER_DIR_ENV_VAR=SICER_IS_NOT_INSTALLED_ON_THIS_MACHINE_CHECK_YOUR_BASH_PROFILE_SETUP
+	;;
+    --)
+	export SICER_DIR_ENV_VAR=SICER_IS_NOT_INSTALLED_ON_THIS_MACHINE_CHECK_YOUR_BASH_PROFILE_SETUP
+	;;
+esac
+
+
+
 export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$PATH
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$PATH
