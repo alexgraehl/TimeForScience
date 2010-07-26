@@ -1,0 +1,147 @@
+#!/usr/bin/env Rgetopt.py
+library(Rgetopt)
+
+
+global.options <- c("plot.R - Blah
+
+Usage:
+  enrich.R  [METHOD]  SETS_FILE  SCORE_MATRIX
+
+METHOD is the enrichment score method:
+  --gsea : Use the GSEA method
+
+SETS_FILE must be in list_t format (set-major format).
+  (See SET.tab example below)
+
+SCORE_MATRIX should be a tab-delimited matrix file.
+  (See VALUES.matrix example below)
+
+You can read from STDIN by specifying a hyphen (-) instead
+of a filename. Example:  cat SETFILE | enrich.R - SCOREMATRIX
+
+Examples:
+
+Set file \"SET.tab\": (tab delimited)
+ODDSET   gene1   gene3   gene5
+EVENSET  gene2   gene4   gene6   gene8
+
+Score matrix \"VALUES.matrix\": (tab-delimited)
+        ARRAY1   ARRAY2   ARRAY3   ARRAY4
+gene1    1.1      2.6      3.8      
+gene2    4.4      4.6     11.6      6.1
+gene7    3.3      3.2               4.4
+gene5    2.2      1.1      0.9      
+gene4             4.1      7.1      
+                                 ^
+                                 |
+      Note that there must be a tab here at the end of the
+      line (even though gene4 has no value for ARRAY4).
+
+You can run enrich.R like this:
+  enrich.R  --gsea   SET.tab   VALUES.matrix
+
+If your file was comma-delimited instead:
+  enrich.R  --gsea   -d ','   SET.csv  VALUES.csv
+
+If you only wanted to calculate the enrichment for ARRAY2, ARRAY3, and ARRAY4,
+and you wanted to read from a gzipped SET file. (The - means \"read from STDIN\")
+zcat SET.gz  |  enrich.R  --gsea   -k 2:4    -    VALUES.matrix
+
+Format for specifying which data columns to examine:
+  -k 2:4    <-- Specifies columns 2, 3, and 4
+  -k 2:5,7,19 <-- Specifies columns 2,3,4,5,7, and 19.
+  -k 5:8,15:18  <-- Columns 5,6,7,8 and 15,16,17,18
+
+Note: enrich.R *will* operate when there are missing values, but it requires the cells
+with these values to be completely blank (or maybe NA will work?).
+So you may have to search-and-replace for any NO_DATA entries and replace
+them with the empty string.
+
+Options:",
+                    "gsea  Specify that we want to calculate the GSEA enrichment score",
+                    "d=s   Delimiter (default: tab)",
+                    "h=i   Number of header lines (default 1)",
+                    "n=i   Index of column with row headers (usually gene names) (default 1)",
+                    "k=li  Indices of columns to score (default: from index n+1 onward). Format is R-style (e.g. 2:10,15)"
+)
+
+opt <- Rgetopt(argspec=global.options, defaults=list(d="\t", n=1, h=1))
+
+if (length(opt$argv) != 2) usage("ERROR IN INPUT ARGUMENTS: You need to specify TWO files, a SET file and a DATA file.\n", global.options)
+
+if (is.null(opt$gsea)) usage("ERROR IN INPUT ARGUMENTS: You need to specify a METHOD to use to calculate enrichment. Valid options are: --gsea .\n", global.options)
+
+readSetList <- function(file, delim="\t") {
+  l <- readLines(file)
+  l.fields <- strsplit(l, delim)
+  r <- lapply(l.fields, function(x) as.vector(x[-1]))
+  names(r) <- sapply(l.fields, "[[", 1)
+  return(r)
+}
+
+setListEnrichmentScores <- function(scores, setList, geneids) {
+  scores <- scores[!is.na(scores)]
+  o <- order(scores, decreasing=TRUE)
+  scores <- scores[o]
+  geneids <- geneids[o]
+
+  return(sapply(setList, gseaEnrichmentScore, scores, geneids))
+}
+
+gseaEnrichmentScore <- function(set, scores, geneids) {
+  in.set <- geneids %in% set
+  if (all(in.set)) return(NA)
+  hit <- cumsum((abs(scores) * in.set))
+  norm <- hit[length(hit)]
+  if (norm == 0) return(NA)
+  hit <- hit / norm
+
+  miss <- cumsum(!in.set) / sum(!in.set)
+
+  d <- hit - miss
+  return(as.double(d[which.max(abs(d))]))
+}
+
+sets.file <- parseReadableFile(opt$argv[1])
+sets <- readSetList(sets.file, delim=opt$d)
+
+data.file <- parseReadableFile(opt$argv[2])
+
+if(summary(data.file)$opened == "closed") {
+  open(data.file) # readLines requires file to be pre-opened or it will close
+}
+
+# Read the header line(s) (if any) separately.
+header <- readLines(data.file, n=opt$h)
+
+# Read everything, INCLUDING the header, but treat it all as a giant matrix. (Don't treat the header, if any, specially here).
+data <- read.table(data.file, sep=opt$d, stringsAsFactors=FALSE, quote="",
+                   row.names=NULL, header=FALSE, skip=0,)
+close(data.file)
+
+# If the user did NOT specify a -k, then the columns to use are (1 + n_option) all the way to the end of the file.
+if (is.null(opt$k)) opt$k <- (opt$n + 1):ncol(data)
+
+# If the user specified an out-of-bounds index for a column, then quit.
+stopifnot(opt$n > 0, opt$n <= ncol(data))
+stopifnot(opt$k > 0, opt$k <= ncol(data))
+
+# The Gene IDs (the row headers) are found in column "n". Read them here...
+geneids <- as.character(data[,opt$n])
+
+# Apply "setListEnrichmentScores(...)" across all the columns specified in k.
+enrichment.scores <- sapply(opt$k, function(colIndex) {
+  setListEnrichmentScores(data[,colIndex], setList=sets, geneids=geneids)
+})
+
+header.split <- strsplit(header, opt$d)
+header.sub <- lapply(header.split, function(line) line[c(opt$n, opt$k)])
+writeLines(sapply(header.sub, paste, collapse="\t"))
+
+# somehow, we can round numbers to only 5 sig figures. This kinda-sorta works, but it de-matrixifies the result
+# Turning simplify=FALSE does not appear to help, either.
+#enrichment.scores <- sapply(enrichment.scores, function(item) { signif(item, digits = 5) } )
+
+write.table(data.frame(names(sets),enrichment.scores),
+            sep="\t", quote=FALSE,
+            row.names=FALSE, col.names=FALSE)

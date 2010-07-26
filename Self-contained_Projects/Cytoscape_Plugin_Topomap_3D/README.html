@@ -1,0 +1,124 @@
+<HTML>
+<!-- This plugin was developed by Alex Williams in ~2006. It is not finished, however. It did work at some point, but it's unclear to me if Cytoscape has changed since then -->
+
+
+<HEAD>
+	<TITLE>README File for Topomap3D, a Cytoscape Plug-in</TITLE>
+	
+</HEAD>
+
+<BODY>
+
+<H2>README File for Topomap3D Version 0.1</H2>
+
+<P>
+<H3>What is Topomap3D?</H3>
+<DIR>
+Topomap3D is a Cytoscape Plug-in that allows you to visualize a 2D network as a 3D topographical map, where areas of higher node density make up mountains in the graph, and areas with no nodes result in valleys.
+<BR>
+Topomap3D is currently a very, very basic 3D graph visualizer. It doesn't have any frills, and there is no way to edit or select anything in the Topomap3D view.
+</DIR>
+</P>
+
+<P>
+<H3>Why would this be useful?</H3>
+<DIR>
+There are many options for data visualization that can make use of the three-dimensional layout. The three-dimensional layout also adds new potential possibilities for more intuitive superposition of multiple graphs and multiple data sets. Superposition hasn't been implemented yet, however, so right now this view is more of a proof of concept or technical demo than anything else. There is also the possibility of making use of three spatial dimensions for graph layout.
+</DIR>
+</P>
+
+
+<P>
+<H3>How do I run Topomap3D?</H3>
+<DIR>
+<OL>
+<LI>Put the "Topomap3DPlugin.jar" file into the Cytoscape <I>plugins</I> directory (the <I>plugins</I> folder is located in the same place as the Cytoscape application).
+<LI>Launch Cytoscape
+<LI>Create a graph, and a view for that graph, using the standard Cytoscape tools
+<LI>You should see new options in the Cytoscape Plug-ins menu. One of them is "Topomap3D." Once you have created a graph and a graph view, select this menu item to get a topographical map of your graph view.
+</OL>
+</DIR>
+</P>
+
+<P>
+<H3>What does the Topomap3D graph look like?</H3>
+<DIR>
+Here are some examples: <A HREF="./readme_items/images/0_1_3d_graph_1.jpg">3D Graph</A>, <A HREF="./readme_items/images/0_1_fullwindow.jpg">Full window</A>, <A HREF="./readme_items/images/0_1_network_web.jpg">Network web</A>.
+
+</DIR>
+</P>
+
+
+<P>
+<H3>How do I change the graph once it is displayed in 3D?</H3>
+<DIR>
+There are not currently any options for editing the graph once it has been displayed in 3D. You will need to delete the current graph view (which can be accomplished by right-clicking on the network information displayed in the leftmost Cytoscape tab) and create a new view. You can then lay out this view again and run Topomap3D again.
+</DIR>
+</P>
+
+<P>
+<H3>Does Topomap3D accept three-dimensional data points?</H3>
+<DIR>
+Topomap3D currently only accepts 2D graphs. The third dimension is calculated based on the proximity of graph nodes, not from any inherent properties of the nodes.
+</DIR>
+</P>
+
+
+<P>
+<H3>Can I get the source?</H3>
+<DIR>
+Yes. This plug-in is released under the GPL (<A HREF="http://www.gnu.org/copyleft/gpl.html">GNU General Public License</A>), so the source is freely available. The full source should be distributed along with the plug-in.
+</DIR>
+</P>
+
+
+
+<P>
+<H3>Who wrote this plug-in?</H3>
+<DIR>
+Source for this plug-in was written by Alex Williams (alexgw at soe.ucsc.edu) and Charlie Vaske (cvaske, also at soe.ucsc.edu), at Dr. Josh Stuart's lab at the University of California, Santa Cruz. The README file is by Alex Williams.
+</DIR>
+</P>
+
+<HR>
+<P>
+<H3>Version History</H3>
+<DIR>
+<UL>
+<LI>0.1 (December, 2005): Initial Version
+</UL>
+</DIR>
+</P>
+
+
+<HR>
+
+
+<P>
+<H3>Future Additions</H3>
+<DIR>
+
+<H4>Fixes</H4>
+<UL>
+<LI>Labels should always be drawn in front of nodes
+<LI>Resizing the 3D window on certain systems should not cause a crash
+<LI>Should figure out how to edit the graph after creation--any topographical changes are incredibly slow right now
+</UL>
+
+<H4>Features</H4>
+<UL>
+<LI>Better navigational controls
+<LI>Ability to pick nodes with the mouse and get more info on them
+<LI>Ability to search for nodes by name
+</UL>
+
+</DIR>
+</P>
+
+<BR>
+<HR>
+<BR>
+README file for Topomap3D, &copy; 2005
+
+</BODY>
+</HTML>
