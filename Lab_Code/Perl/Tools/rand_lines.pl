@@ -38,7 +38,7 @@ GetOptions("help|man|?" => sub { print STDERR <DATA>; exit(0); }
 
 if (defined($randSeed)) {
     $verbose && print STDERR ("Using the value " . $randSeed . " to seed the random number generator. This way we will get the same \'random\' lines each time...\n");
-    srand($randSeed);
+    srand($randSeed); ## <-- if you set srand, you get THE SAME "random" values each time
 }
 
 my @lines = <>;
@@ -87,9 +87,14 @@ $verbose && print STDERR ("Number of lines in file: " . $numRecords . "\n");
 
 $verbose && $allowDupes && print STDERR ("Allowing duplicate lines to be picked. Specify -wor to pick lines randomly *without* replacement.\n");
 
-my @x = ();
+my @x = (); ## array of indices of which line to pick
 
 if (!$allowDupes) {
+
+    #use List::Util qw(first max maxstr min minstr reduce shuffle sum);
+    ## We could have, instead, just used "shuffle" to perl-style shuffle the array! Note that we would have to
+    ## figure out how srand interacts with shuffle. (To make sure we get the same results each time.)"
+
     $#x = $numRecords;
     for (my $i = 0; $i < $numRecords; $i++) { $x[$i] = $i; }
 
@@ -119,6 +124,7 @@ if (!$suppressPrintingOfHeaders) {
     print STDOUT @headerLines;
 }
 
+## x is the INDICES in order
 for (my $i = 0; $i < $numToPrint; $i++) {
     my $theBaseIndexForThisRecord = ($x[$i] * $numLinesPerRecord); ## Note that this is counting in LINES, not records.
     for (my $rec = 0; $rec < $numLinesPerRecord; $rec++) {
@@ -166,6 +172,7 @@ Options:
   -nb or --noblanks:  Eliminate all blank lines.
 
   --randseed=INTEGER : Use INTEGER as a "seed" for the random number generator. This means
-             the same "random" lines will be selected each time.
+             the same "random" lines will be selected each time. Uses perl's srand(...) function
+             to do the random seed. Note: might NOT be portable between machines!
 
   -q         : Quiet. (Not verbose.) Suppress debugging info. Default is verbose.
