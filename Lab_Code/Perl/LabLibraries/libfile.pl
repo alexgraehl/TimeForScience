@@ -31,8 +31,7 @@ sub fileFriendlyName($) {
 #-----------------------------------------------------------------------------
 #
 #-----------------------------------------------------------------------------
-sub makeValidFileName
-{
+sub makeValidFileName {
     # This should probably be combined with the "fileFriendlyName" function
     # above.
     my ($name) = @_;
@@ -202,6 +201,7 @@ sub readFileName($;$) {
 
 ##------------------------------------------------------------------------
 ## string getFileReaderMethod($string filename=undef)
+## Usage:  Do not call this function directly--use openFile
 ##------------------------------------------------------------------------
 sub getFileReaderMethod($) {
     # Looks at the extension of a file and finds a suitable
@@ -214,7 +214,7 @@ sub getFileReaderMethod($) {
 	print STDERR "WARNING: The file named <$filename> that was sent to getFileReaderMethod() to be read by code in libfile.pl was not found!!! Trying to proceed anyway...\n";
     }
 
-    if ($filename =~ /\.gz$/ or $filename =~ /\.Z$/) {
+    if ($filename =~ /\.gz$/ or $filename =~ /\.Z$/ or $filename =~ /\.zip$/) {
 	return "zcat $filename |"; # Transparently read from gzipped files
     }
 
@@ -584,23 +584,19 @@ sub expandPath
 ##------------------------------------------------------------------------
 ##
 ##------------------------------------------------------------------------
-sub resolvePath # ($file,$pwd)
-{
+sub resolvePath { # ($file,$pwd)
     my $file = &expandPath(shift);
     my $pwd  = shift;
     $pwd = defined($pwd) ? $pwd : '.';
     $pwd =~ s/[\/]+\s*$//;
-
     $file = &isRelative($file) ? ($pwd . '/' . $file) : $file;
-
     return $file;
 }
 
 ##------------------------------------------------------------------------
 ## Returns the depth of the file from the root directory.
 ##------------------------------------------------------------------------
-sub getPathDepth
-{
+sub getPathDepth {
     my $file = &expandPath(shift);
     # Remove any leading ./ that indicate "current" directory.
     while($file =~ s/^\.\///) {}
@@ -627,8 +623,7 @@ sub isAbsolute # ($file)
 ##------------------------------------------------------------------------
 ## Returns 1 if the file is a relative path, 0 otherwise.
 ##------------------------------------------------------------------------
-sub isRelative # ($file)
-{
+sub isRelative {
     my $file = shift;
     return not(&isAbsolute($file));
 }
@@ -636,8 +631,7 @@ sub isRelative # ($file)
 ##------------------------------------------------------------------------
 ##
 ##------------------------------------------------------------------------
-sub dos2unix
-{
+sub dos2unix {
     my $file = shift @_;
 
     $file =~ s/\\/\//g;
@@ -649,12 +643,10 @@ sub dos2unix
 ##------------------------------------------------------------------------
 ##
 ##------------------------------------------------------------------------
-sub isCodeFile
-{
+sub isCodeFile {
     my $file = shift;
 
-    if(not(-f $file))
-    {
+    if(not(-f $file)) {
 	return 0;
     }
 
@@ -662,6 +654,8 @@ sub isCodeFile
     if($file =~ /\.cc$/i)  { return 1; }
     if($file =~ /\.cpp$/i) { return 1; }
     if($file =~ /\.h$/i)   { return 1; }
+    if($file =~ /\.m$/i)   { return 1; }
+    if($file =~ /\.c\+\+$/i)   { return 1; }
     if($file =~ /\.hh$/i)  { return 1; }
     if($file =~ /\.hpp$/i)  { return 1; }
     if($file =~ /\.pl$/i)  { return 1; }
@@ -677,8 +671,7 @@ sub isCodeFile
 ##------------------------------------------------------------------------
 ##
 ##------------------------------------------------------------------------
-sub protectFromShell # ($file)
-{
+sub protectFromShell {
     my $file = shift;
     my $doubleQuote = qq{\"};
     my $singleQuote = qq{\'};
@@ -689,8 +682,7 @@ sub protectFromShell # ($file)
 ##------------------------------------------------------------------------
 ##
 ##------------------------------------------------------------------------
-sub deprotectFromShell # ($file)
-{
+sub deprotectFromShell {
     my $file = shift;
     $file =~ s/\\([^\\])/$1/g;
     return $file;
@@ -699,8 +691,7 @@ sub deprotectFromShell # ($file)
 ##------------------------------------------------------------------------
 ##
 ##------------------------------------------------------------------------
-sub getFileText($)
-{
+sub getFileText($) {
     my ($fileName) = @_;
     my $lines    = &readFileName($fileName);
     my $text      = join("\n",@{$lines});
@@ -710,8 +701,7 @@ sub getFileText($)
 ##------------------------------------------------------------------------
 ##
 ##------------------------------------------------------------------------
-sub getFileNumbers($$)
-{
+sub getFileNumbers($$) {
     my ($fileName,$delim) = @_;
     my $file = &openFile($fileName);
     my @tokens = ();
@@ -2160,46 +2150,46 @@ sub splitKeyAndValue
 # \@list listRead ($string file, $string delim="\t", \@list key_cols=(1))
 #---------------------------------------------------------------------------
 sub tableRead {
-   my ($file, $delim, $key_cols, $num_headers) = @_;
-   $delim = not(defined($delim)) ? "\t" : $delim;
-   $num_headers = defined($num_headers) ? $num_headers : 0;
+    my ($file, $delim, $key_cols, $num_headers) = @_;
+    $delim = not(defined($delim)) ? "\t" : $delim;
+    $num_headers = defined($num_headers) ? $num_headers : 0;
 
-   my $header = undef;
+    my $header = undef;
 
-   if(not(defined($key_cols))) {
-      my @key_cols = (1);
-      $key_cols = \@key_cols;
-   }
-   my @sorted_key_cols = sort { $a <=> $b; } @{$key_cols};
-   my $filep = &openFile($file);
-   my @tuples;
-   my $line_no = 0;
-   my $max_fields = 0;
-   while(my $line = <$filep>) {
-      $line_no++;
-      chomp($line);
-      my ($key, $tuple) = &splitKeyAndValue($line, $key_cols, \@sorted_key_cols, $delim);
-      my @key_tuple = ($key);
-      push(@key_tuple, @{$tuple});
-      if($line_no > $num_headers) {
-         push(@tuples, \@key_tuple);
-         if(not(defined($header))) {
-            $header = [];
-            for(my $i = 0; $i < @{$tuple}; $i++) {
-               $$header[$i] = '';
-            }
-         }
-      }
-      else {
-         $header = [];
-         for(my $i = 0; $i < @{$tuple}; $i++) {
-            $$header[$i] = defined($$header[$i]) ? ($$header[$i] . $delim . $$tuple[$i]) : $$tuple[$i];
-         }
-      }
-   }
-   close($filep);
+    if(not(defined($key_cols))) {
+	my @key_cols = (1);
+	$key_cols = \@key_cols;
+    }
+    my @sorted_key_cols = sort { $a <=> $b; } @{$key_cols};
+    my $filep = &openFile($file);
+    my @tuples;
+    my $line_no = 0;
+    my $max_fields = 0;
+    while(my $line = <$filep>) {
+	$line_no++;
+	chomp($line);
+	my ($key, $tuple) = &splitKeyAndValue($line, $key_cols, \@sorted_key_cols, $delim);
+	my @key_tuple = ($key);
+	push(@key_tuple, @{$tuple});
+	if($line_no > $num_headers) {
+	    push(@tuples, \@key_tuple);
+	    if(not(defined($header))) {
+		$header = [];
+		for(my $i = 0; $i < @{$tuple}; $i++) {
+		    $$header[$i] = '';
+		}
+	    }
+	}
+	else {
+	    $header = [];
+	    for(my $i = 0; $i < @{$tuple}; $i++) {
+		$$header[$i] = defined($$header[$i]) ? ($$header[$i] . $delim . $$tuple[$i]) : $$tuple[$i];
+	    }
+	}
+    }
+    close($filep);
 
-   return (\@tuples, $header);
+    return (\@tuples, $header);
 }
 
 #------------------------------------------------------------------------
@@ -2602,8 +2592,7 @@ sub undefAdd
 #-----------------------------------------------------------------------------
 #
 #-----------------------------------------------------------------------------
-sub safeAdd
-{
+sub safeAdd {
     my $sum = undef;
 
     foreach my $x (@_)
@@ -2620,6 +2609,7 @@ sub safeAdd
 #
 #-----------------------------------------------------------------------------
 sub isNumber($) {
+    ## This should probably not be in libfile
     my ($str) = @_;
     $str =~ s/\s+//g;  # Remove any spaces.
     $str =~ s/^[+-]//; # Remove leading + or -.
@@ -2695,8 +2685,7 @@ sub format_number
 sub appendToFilename($$) {
     # Arg 1: filename
     # Arg 2: string to append to that file
-    # Why you would use it: A quick way to write to a file without having to
-    # mess around with OPEN / print / close
+    # Why you would use it: A quick way to write to a file without having to mess around with OPEN / print / close
     my ($filename, $string) = @_;
     if (not open(FILE, ">>", $filename)) {
 	my $errorMessage = "libfile.pl: ";
@@ -2715,44 +2704,54 @@ sub appendToFilename($$) {
     close(FILE) or die "libfile.pl: Cannot close file <$filename>.\n\n";
 }
 
+#-----------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------
 sub breakText {
-   my ($oldText, $charsPerLine, $lineDelim, $wordDelim) = @_;
-   $lineDelim = defined($lineDelim) ? $lineDelim : "\n";
-   my $lines = &splitLines($oldText, $charsPerLine, $wordDelim);
-   my $newText = $$lines[0];
-   for(my $i = 1; $i < scalar(@{$lines}); $i++) {
-      $newText .= $lineDelim . $$lines[$i];
-   }
-   return $newText;
+    ## Breaks up text by adding linebreaks at a certain width for each line.
+    ## This is a good way to make a block of text that doesn't wrap on the terminal.
+    my ($oldText, $charsPerLine, $lineDelim, $wordDelim) = @_;
+    if (!defined($charsPerLine)) { $charsPerLine = 80; }
+    if (!defined($lineDelim)) { $lineDelim = "\n"; }
+    my $lines = &splitLines($oldText, $charsPerLine, $wordDelim);
+    my $newText = $$lines[0];
+    for(my $i = 1; $i < scalar(@{$lines}); $i++) {
+	$newText .= $lineDelim . $$lines[$i];
+    }
+    return $newText;
 }
 
+#-----------------------------------------------------------------------------
+#
+#-----------------------------------------------------------------------------
 sub splitLines {
-   my ($text, $charsPerLine, $delim) = @_;
-   $text         = defined($text) ? $text : $_;
-   $charsPerLine = defined($charsPerLine) ? $charsPerLine : 75;
-
-   $text =~ s/\n//g;
-
-   my @words     = defined($delim) ? split($delim, $text) : split(/\s+/, $text);
-   $delim        = defined($delim) ? $delim : ' ';
-
-   my @lines;
-   my @line;
-   my $len  = 0;
-   foreach my $word (@words) {
-      my $wlen = length($word);
-      if($len + $wlen > $charsPerLine) {
-         push(@lines, join($delim, @line));
-         @line = ();
-         $len  = 0;
-      }
-      push(@line, $word);
-      $len += $wlen;
-   }
-   if(scalar(@line) > 0) {
-      push(@lines, join($delim, @line));
-   }
-   return \@lines;
+    ## Hmmm, seems like this also adds linebreaks every so often to some text. Used by breakText
+    my ($text, $charsPerLine, $delim) = @_;
+    $text         = defined($text) ? $text : $_;
+    $charsPerLine = defined($charsPerLine) ? $charsPerLine : 75;
+    
+    $text =~ s/\n//g;
+    
+    my @words     = defined($delim) ? split($delim, $text) : split(/\s+/, $text);
+    $delim        = defined($delim) ? $delim : ' ';
+    
+    my @lines;
+    my @line;
+    my $len  = 0;
+    foreach my $word (@words) {
+	my $wlen = length($word);
+	if($len + $wlen > $charsPerLine) {
+	    push(@lines, join($delim, @line));
+	    @line = ();
+	    $len  = 0;
+	}
+	push(@line, $word);
+	$len += $wlen;
+    }
+    if(scalar(@line) > 0) {
+	push(@lines, join($delim, @line));
+    }
+    return \@lines;
 }
 
 1
