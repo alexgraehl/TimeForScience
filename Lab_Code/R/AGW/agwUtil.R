@@ -1,3 +1,782 @@
+
+## This file should not *source* any others!
+
+
+cols <- Sys.getenv("COLUMNS") ## Get UNIX terminal column width...
+if (nzchar(cols)) { options(width = as.integer(cols)) } # set the current display column width to whatever the number of columns in the terminal is!
+
+
+Z_LINE <- '--------------------------------------------------------------------------------\n' ## 80 characters
+## ====================================
+# "Constants" for mtext and other plotting commands
+SIDE_BOTTOM <- 1
+SIDE_LEFT   <- 2
+SIDE_TOP    <- 3
+SIDE_RIGHT  <- 4
+## ====================================
+
+LAS_AXIS_PARALLEL      <- 0
+LAS_AXIS_HORIZONTAL    <- 1
+LAS_AXIS_PERPENDICULAR <- 2
+LAS_AXIS_VERTICAL      <- 3
+## ====================================
+
+APPLY_BY_ROW <- 1  # <-- for "apply" (see help("apply") for more details)
+APPLY_BY_COL <- 2
+APPLY_BY_BOTH <- c(1,2)
+## ====================================
+
+
+PCH.X = 4
+PCH.DIAMOND = 23  ## The hollow diamong plotting character
+
+PCH.SOLID.BOX = 15
+PCH.BOX       = PCH.SOLID.BOX
+
+PCH.HOLLOW.UP.TRIANGLE    = 2
+PCH.HOLLOW.DOWN.TRIANGLE  = 6
+PCH.BORDER.UP.TRIANGLE    = 24
+PCH.BORDER.DOWN.TRIANGLE  = 25
+
+
+PCH.SMALL.CIRCLE  = 20
+PCH.MEDIUM.CIRCLE = 16
+PCH.BIG.CIRCLE    = 19
+
+PCH.FILL.BOX           = 15
+PCH.FILL.MEDIUM.CIRCLE = 16
+PCH.FILL.UP.TRIANGLE   = 17
+PCH.FILL.DIAMOND       = 18
+PCH.FILL.BIG.CIRCLE    = 19
+PCH.FILL.SMALL.CIRCLE  = 20
+
+PCH.COLOR.CIRCLE  = 21
+PCH.COLOR.SQUARE  = 22
+PCH.COLOR.DIAMOND = 23
+PCH.COLOR.UP.TRIANGLE   = 24
+PCH.COLOR.DOWN.TRIANGLE = 25
+
+
+MAKE.AGW.SUBDIR = "make.tmp"
+
+
+## ====================================
+join.left.outer.agw <- function(left.mat, right.mat, both.key, left.key, right.key, silent=FALSE) {
+     ## This is like an SQL "left outer join" . Look it up on google for more details!
+     ## It always returns the data from left.mat, no matter whether it has a key in right.mat or not.
+     ## Accepts the special name "rownames()", which means that instead of looking for a column index,
+     ## we use the rownames
+     
+     SPECIAL_CASE_ROWNAME_STRING <- "rownames()"
+     
+     if (!missing(both.key)) { ## both.key was specified...
+          assert.agw(missing(left.key) && missing(right.key), "join.left.outer.agw: You cannot specify both.key AND ALSO left.key or right.key. Both.key sets BOTH of the other keys!") ## both of the other key types must be missing...
+          left.key <- right.key <- both.key
+     }
+     
+     theVectorForMatching <- function(theMatrix, theKey) {
+          ## If the key is the literal string "rownames()", then there is no column with the key,
+          ## the key column is already the rownames!
+          if (theKey == SPECIAL_CASE_ROWNAME_STRING) {    return(rownames(theMatrix))  }
+          else                        {    return(theMatrix[, theKey])  }
+     }
+     
+     if (!silent) { print.agw("Join in progress on keys <", left.key, "> and <", right.key, ">...") }
+     matchingIDs <- match(  theVectorForMatching(left.mat,  left.key)
+                          , theVectorForMatching(right.mat, right.key))
+     
+     if (right.key != SPECIAL_CASE_ROWNAME_STRING && left.key != SPECIAL_CASE_ROWNAME_STRING) {
+          ## Neither key is "rownames", so let's not double-add this key
+          colIndexToOmit <- which( colnames(rightMatch) == right.key)
+          assert.agw(length(colIndexToOmit) == 1)
+          ## don't double-add the same key to the resulting matrix...
+          rightMatch <- right.mat[matchingIDs, -c(colIndexToOmit)]
+     } else {
+          rightMatch <- right.mat[matchingIDs, ]
+     }
+     
+     if (!silent) { print.agw("Join operation completed.") }
+     return(cbind(left.mat, rightMatch))
+}
+
+
+
+## ==============================================
+## Makes a new directory, or a bunch of directories. (Input is a single name, or a vector.)
+## Doesn't warn you if the directory exists, but does abort with an error
+## if it fails to create the directory. (Unless ignore.errors=TRUE, in which case it continues anyway)
+## ==============================================
+mkdir.agw <- function(..., ignore.errors=FALSE) {
+     for (d in c(...)) {
+          dir.create(d, recursive=TRUE, showWarnings=FALSE)
+          # showWarnings is FALSE above, because otherwise a warning is generated
+          # every time the directory *already* exists, which is not a problem, and
+          # does not warrant cluttering the screen with a superfluous warning.
+          if (!file.exists(d)) {
+               warning(paste("mkdir.agw: Unable to create the new directory", d))
+               if (!ignore.errors) { stop("Failed to create a directory: halting.") }
+               # But if we fail to make the directory, that actually probably IS a problem.
+          }
+     }
+}
+
+
+## ==============================================
+## system.agw: Basically equivalent to print(cmd) and then system(cmd)
+## Inputs: a vector of items (or a single item) to be pasted together to make a single system command.
+## So you can say: system.agw("ls ", FILES, " ; mkdir somedir ")
+## If a command has four spaces in a row, that is treated as as "fake" linebreak for display purposes only.
+## Note that items are concatenated WITHOUT any surrounding spaces, so you have to add YOUR OWN SPACES
+## around arguments, so that they don't all run together.
+## If you want to have spaces around your inputs by default, use sep=" ".
+## By default, prints the command in FORMATTED fashion, with line breaks. If you don't like this,
+## set formatted=FALSE.
+## If "dryrun" is true, then it just PRINTS the command, but does not execute it.
+## Returns the exit code of the command. Not sure what happens if there are compound commands!
+## ==============================================
+system.agw <- function(...
+                       , sep=''
+                       , formatted=TRUE
+                       , dryrun=FALSE
+                       , wait=TRUE) {
+     
+     theCommand <- paste(..., sep=sep) ## Default is to just mash all the input arguments together with no spaces.
+     syscallPrefix <- "System Call: ";
+     if (!wait)  { syscallPrefix <- "System (Background): " }
+     if (dryrun) { syscallPrefix <- "System call dry run (not executed!): " }
+     
+     numPrefixSpaces <- 1 + nchar(syscallPrefix) # <-- how many spaces required to indent the following lines of the combined system call properly?
+     prefixWhitespace <- paste(rep(' ', numPrefixSpaces), collapse='') ## <-- a whitespace region to indent things properly
+     
+     if (formatted) {
+          formattedCmd = gsub("    ", paste("\n", prefixWhitespace, sep=''), theCommand, perl=TRUE) ## <-- four spaces becomes a newline
+          formattedCmd = gsub(" [|] ", paste("\n", prefixWhitespace,"| ", sep=''), formattedCmd, perl=TRUE) # <-- a vertical bar surrounded by spaces becomes a newline, then a vertical bar
+          print.color.agw("\n", syscallPrefix, formattedCmd, "\n\n", fg="#00FFFF")
+     } else {
+          print.color.agw(syscallPrefix, theCommand, "\n", sep='', fg="#00FFFF")
+     }
+
+     
+
+     if (!dryrun) { return(system(theCommand, wait=wait)) }
+}
+
+
+## ==============================================
+## Prints a warning message and then exits, if the "thingThatShouldBeTrue" is not true.
+## Much like C's assert
+## ==============================================
+assert.agw <- function(assertionAGW=NULL
+                       , ...
+                       , ignore.errors=FALSE
+                       , use.browser=FALSE ## jump directly into the browser
+                       , sep='') {
+
+     if (length(assertionAGW) > 1) {
+          warning("assert.agw: Assertions cannot be more than one element in length. Probably you need to wrap your assertion in the \"all(...)\" command. Perhaps you were checking to see if all elements of a list were equal.")
+     }
+     
+     if (is.null(assertionAGW) || (length(assertionAGW) <= 0) || !assertionAGW) {
+          if (!missing(...)) {
+               print.red.agw(paste("Assertion failed: ", ..., sep=sep))
+               warning(paste("Assertion failed: ", ..., sep=sep))
+          } else {
+               theStr <- ">>> Assertion failed, but no assertion error message was specified."
+               print.red.agw(theStr)
+               warning(theStr)
+          }
+          
+          if (!ignore.errors) {
+               if (use.browser) {
+                    browser()
+               } else {
+                    stop("Assertion failed! Stopping now.")
+               }
+          } else {
+               warning("continuing...")
+          }
+          
+     }
+}
+
+
+## ==============================================
+## t.test, but returns NA instead of stopping with an error if you give it values
+## that don't make sense for a t.test (for example: variance of zero data)
+## ==============================================
+t.test.no.errors.agw <- function(...) {
+     obj <- try(t.test(...), silent=TRUE)
+     if (is(obj, "try-error")) { return(NA) } else { return(obj) }
+}
+
+
+## ==============================================
+## From: https://stat.ethz.ch/pipermail/r-help/2008-February/154172.html
+## ==============================================
+try.or.return.default <- function(tryThis, default=NA) {
+     result <- default
+     tryCatch(result <- tryThis
+              , error=function(e) {}) # don't do anything with errors...
+     return(result)
+}
+
+## ==============================================
+## From: https://stat.ethz.ch/pipermail/r-help/2008-February/154172.html
+## ==============================================
+fail.with.default <- function(default=NULL, theFunc, ...) {
+     function(...) try_default(theFunc(...), default)
+}
+
+
+## ==============================================
+## Prints a message, the arguments to it pasted together (with no spaces between items by default)
+## If you say "silent=TRUE" then it does nothing---this can be used to control printing for debugging
+## ==============================================
+print.agw <- function(...
+                      , sep=''
+                      , silent=FALSE
+                      , newline=TRUE) {
+     if (!silent) {
+          cat(..., sep='')
+          if (newline) { cat("\n") }
+     }
+}
+
+
+## ==============================================
+## Like "length" and "dim" together at last!
+## Gives you some basic data on whatever variable you passed in.
+## ==============================================
+huh <- function(x) {
+
+     if (is.null(x)) {
+          print.magenta.agw("  The variable is NULL!")
+     } else if (is.list(x)) {
+          listSpacer <- "     "
+          dataFrameStatus.text <- ifelse(is.data.frame(x), "(also a data frame) ", "")
+          print.cyan.agw("  List ", dataFrameStatus.text, "of length ", length(x), ".\n")
+          print.cyan.agw("Names in the list are:")
+          print.cyan.agw(paste(listSpacer, paste(names(x), collapse=paste("\n", listSpacer, sep='')), sep=''))
+     } else if (is.vector(x)) {
+          print.green.agw("  Vector of type ", typeof(x))
+          print.green.agw("  Length: ", length(x))
+     } else if (is.matrix(x)) {
+          print.yellow.agw("  Matrix of type ", typeof(x))
+          print.yellow.agw("  Dim: ", nrow(x), " rows by ", ncol(x), " cols.")
+          if (ncol(x) <= 50) { print.yellow.agw("  ", ncol(x), " cols: ", paste(colnames(x), collapse=", "))
+          } else {             print.yellow.agw("  ", ncol(x), " cols (showing first 50): ", paste(c(colnames(x)[1:50], "..."), collapse=", ")) }
+          print.yellow.agw("--------------------------------")
+          if (nrow(x) <= 50) { print.yellow.agw("  ", nrow(x), " rows: ", paste(rownames(x), collapse=", "))
+          } else {             print.yellow.agw("  ", nrow(x), " rows (showing first 50): ", paste(c(rownames(x)[1:50], "..."), collapse=", ")) }
+     } else if (is.object(x)) {
+          print.green.agw("  Object of class ", class(x)[[1]])
+          print.green.agw("  With ", length(slotNames(x)), " slotNames(): ", paste(slotNames(x), collapse=', '))
+          if (showMethods(class(x), printTo=FALSE)[3] == " <not a generic function>") {
+               print.green.agw("  And with no methods.")
+          } else {
+               print.green.agw("  And with showMethods(): ", showMethods(class(x)))
+          }
+     } else {
+          print.magenta.agw("  Type: ", typeof(x))
+     }
+}
+
+
+## ==============================================
+## Extracts a vector out of a list of lists. Loops over the OUTER list, and returns a particular element
+## from each sub-list. For example, if you have a list named "ZZZ" of elements like
+## list("a"=something, "b"=something),
+## then you can get all of the "a"s out as a vector with listExtract.agw(ZZZ, "a")
+## If you say "silent=TRUE" then it does nothing---this can be used to control printing for debugging
+## ==============================================
+listExtract.agw <- function(listOfLists, key) {
+     return(sapply(listOfLists, "[[", key))
+}
+#sapply(a2,"[[","ensembl_ID")
+
+
+
+## ==============================================
+## Emulates the "make" utility.
+## Only computes something once---on subsequent runs, the variable is actually
+## loaded from a file instead of being recomputed.
+               ## Does NOT save to the global namespace.
+               ## in order to use this function, you MUST
+               ## assign the return value.
+## Example:  thing <- make.agw("myvar", makeTheThing(x=10) )
+## This will compute thing using the "makeTheThing" function once, and save the result in
+## "myvar.RData.tmp". Later it will just assign the "thing" variable from that file,
+## rather than recomputing it.
+## ==============================================
+make.agw <- function(varname, thingToRunIfVariableIsNotFound, varToCheckInsteadOfVarname) {
+     mkdir.agw(MAKE.AGW.SUBDIR)
+     filename <- file.path(MAKE.AGW.SUBDIR, paste("tmp.make.", varname, ".RData.tmp", sep=''))
+
+     if (!exists("z.agw.make.files")) { z.agw.make.files <<- c() }
+     if (!exists("z.agw.make.vars")) {  z.agw.make.vars  <<- c() }
+     z.agw.make.files <<- union(z.agw.make.files, filename)
+     z.agw.make.vars  <<- union(z.agw.make.vars, varname)
+     
+     if (!file.exists(filename)) {
+          print.green.agw("make.agw: Making the file <", filename, "> and saving the R variable <", varname, "> to it for later retrieval without having to recompute it.")
+          ## If the file "filename" does NOT already exist,
+          ## then we will run the "thingToRunIfVariableIsNotFound" function,
+          ## and save the result into a file for future reading (without having to recompute it)
+          temp <- thingToRunIfVariableIsNotFound
+          save(temp, file=filename)
+          return(temp)
+     } else {
+
+          variableAlreadyInNamespace <- FALSE
+          
+          if (!missing(varToCheckInsteadOfVarname)) {
+               variableAlreadyInNamespace <- (exists("varToCheckInsteadOfVarname") && !is.null(varToCheckInsteadOfVarname) && !is.na(varToCheckInsteadOfVarname))
+          } else {
+               variableAlreadyInNamespace <- agwHasContent(varname)
+          }
+          
+          if (variableAlreadyInNamespace) {
+               ## If the variable already exists and isn't null / NA, then load it again...
+               if (!missing(varToCheckInsteadOfVarname)) {
+                    print.yellow.agw("make.agw: Skipping reloading of the variable we were supposed to check. varname was <", varname, ">,\nbut the variable to actually check was overriden in the call to varToCheckInsteadOfVarname as <", paste(substitute(varToCheckInsteadOfVarname), collapse=','), ">.\nYou can remake this variable by deleting the on-disk file at <", filename, ">.\n")
+                    return(varToCheckInsteadOfVarname) ## <-- gotta return it, because the user is going to try to assign another variable based on this!
+               } else {
+                    print.yellow.agw("make.agw: Skipping reloading of variable <", varname, ">, as it already exists in the namespace.\nIf you want to remake it, delete the on-disk file at <", filename, ">.\n")
+                    return(get(varname)) ## <-- gotta return it, because the user is going to try to assign another variable based on this!
+               }
+          } else {
+               print.yellow.agw("make.agw: Retrieving data directly from <", filename, ">, without doing any additional computation.\nMake sure you save the return value of this function, as the loaded variable does NOT become part of the namespace.\n")
+               ## If the file "filename" *IS* found already,
+               ## then load the variable we want out of it, and return it.
+               local({
+                    ## Does NOT save to the global namespace.
+                    ## in order to use this function, you MUST
+                    ## assign the return value.
+                    loadedVariables.vec <- load(filename)
+                    assert.agw(length(loadedVariables.vec) == 1, "Currently, we can only save or load ONE variable at a time using make.agw")
+                    return(get(loadedVariables.vec[1]))
+               })
+          }
+     }
+}
+
+make.list <- function() {
+    print(z.agw.make.vars)
+    #print(z.agw.make.files)
+}
+
+make.clean <- function(varnames.vec) {
+     if (missing(varnames.vec)) { ## Clean EVERYTHING if nothing is specified
+          ## clean ALL
+          varnames.vec <- z.agw.make.vars
+     }
+     
+     if (length(varnames.vec) == 0) {
+          print("Nothing to clean.")
+          return()
+     }
+     
+     sapply(varnames.vec,
+            function(v) {
+                 file <- file.path(MAKE.AGW.SUBDIR, paste("tmp.make.", v, ".RData.tmp", sep=''))
+                 print.agw("Removing variable <", v, "> and file <", file, ">...")
+                 if (exists(v)) {  rm(v)  }
+                 if (file.exists(file)) { file.remove(file) }
+            })
+     z.agw.make.vars  <<- setdiff(z.agw.make.vars, varnames.vec)
+     filenames.vec <- file.path(MAKE.AGW.SUBDIR, paste("tmp.make.", varnames.vec, ".RData.tmp", sep=''))
+     z.agw.make.files <<- setdiff(z.agw.make.files, filenames.vec)
+}
+
+## ==============================================
+## Same as "file.path", but requires that the file EXISTS ALREADY. (Otherwise, it quits with an error message!)
+## First arguments ("..."): the first arguments are the elements to construct a path from (identical to the built-in R function file.path)
+## missing.message (optional argument): An additional warning message to print out in the event that the file does NOT exist.
+## ==============================================
+file.path.that.exists.agw <- function(..., missing.message="File not found.") {
+     thePath <- file.path(...)
+     if (!file.exists(thePath)) {
+          warning(missing.message)
+          assert.agw(file.exists(thePath), paste("(Could not find a file at ", thePath, ".) file.path.agw was called with 'must.exist.already=TRUE'. This means that it ensures that a file ALREADY EXISTS at the same time that it constructs the file path. If you don't need to also test that a file exists (for example, you would NOT want to require a file to exist if you were just writing an output file), then remove this must.exist.already option.", missing.message, sep=''))
+     }
+     return(thePath)
+}
+
+
+## ==============================================
+## Tells you if your copy of R is 32-bit
+## ==============================================
+is.32.bit <- function() {
+     return (4 == .Machine$sizeof.pointer)
+}
+
+## ==============================================
+## Tells you if your copy of R is 64-bit
+## ==============================================
+is.64.bit <- function() {
+     return (8 == .Machine$sizeof.pointer)
+}
+
+
+## ==============================================
+## Similar to "source"
+## ==============================================
+sourceSettingsFile.agw <- function(pattern="^1_Settings_.*\\.R$") {
+     ## Loads up a local file i nthe current directory whose name matches the "pattern"
+     ## Used if you have project-specific settings--put them in the "settings" file.
+     settings.filename <- list.files(pattern = pattern)  ## project-specific settings
+     assert.agw(1 == length(settings.filename), "More than one potential settings file was found. There must be exactly one file that matches the pattern for searching for a settings file!")
+     source(settings.filename) ## project-specific settings
+}
+
+
+## ==============================================
+## Omits columns in a matrix or data frame by NAME.
+## Throws an error if you have specified nonexistent names.
+## (Remove columns by name instead of by index.)
+## ==============================================
+omitColumnsByName.agw <- function(mat, namesToRemoveVec, ignore.mismatch=FALSE) {
+     prelim.remove <- match(namesToRemoveVec, colnames(mat))
+     remove.vec <- na.omit(prelim.remove)
+     if (!ignore.mismatch) {
+          if (length(remove.vec) != length(namesToRemoveVec)) {
+               print("=========================================")
+               print.red.agw("Error: The function <omitColumnsByName.agw> cannot find a column name that was specified.")
+               print.red.agw("The following names that were to be removed were NOT found in the vector:")
+               print(namesToRemoveVec[ is.na(prelim.remove) ])
+               print.red.agw("Here are the names that we DID find in the vector. Maybe there was a misspelling, or an element was removed twice:")
+               print(colnames(mat))
+               print("=========================================")
+               assert.agw(length(prelim.remove) == length(namesToRemoveVec))
+          }
+     }
+     
+     if (length(remove.vec) > 0) {
+          return(mat[, -remove.vec, drop=FALSE])
+          #return(matrix(mat[, -remove.vec], nrow=nrow(mat), ncol=(ncol(mat) - length(remove.vec))
+#                        , dimnames=list(rownames(mat), colnames(mat)[-remove.vec]) ))
+     } else {
+          ## weird... no columns removed!
+          return(mat)
+     }
+}     
+
+
+
+
+
+## =================================================================
+## Shows the detailed information of all the sub-items of a list.
+## It's like a more thorough version of "names(...)"
+## =================================================================
+agwNames <- function(thingToExamineInDetail) {
+     v <- vector(mode="character", length=length(thingToExamineInDetail))
+     if(typeof(thingToExamineInDetail) == "environment") {
+          ## it's a hash/environment
+          for (i in 1:length(thingToExamineInDetail)) {
+               key = ls(thingToExamineInDetail)[i]
+               valueType = typeof(thingToExamineInDetail[[key]])
+               v[i] <- paste("Hash key #", i, "/", length(thingToExamineInDetail)," (", valueType, "): ", key, sep='')
+          }
+     } else {
+          ## not a hash...
+          for (i in 1:length(thingToExamineInDetail)) {
+               thing = thingToExamineInDetail[i]
+               thingName = names(thing)
+               valueType = typeof(thing)
+               v[i] <- paste("Item #", i, "/", length(thingToExamineInDetail)," (", valueType, "): ", thingName, sep='')
+          }
+     }
+     return(v)
+}
+
+## =================================================================
+## Like the built-in R "grep", but it returns the actual
+## elements found, instead of the indices  where the elements
+## were found. (So it is like UNIX grep in this regard.)
+## =================================================================
+agwGrep <- function(inWhat, inWhere, ...) {
+     z <- grep(inWhat, inWhere, ...)
+     return(inWhere[z])
+}
+
+
+## =================================================================
+## Calculate numbers that correspond to a particular character string. Sums together all the ascii (maybe ascii, anyway) numerical values for the letters in a string, and returns a final number. Then this number gets used by "fullColorGroups" to color the bars on the graph.
+## Note that the "gsub('[\\d.]'..." part replaces any numbers or decimal points with a blank spot. This way various concentrations / replicates will normally have the same resulting string->sum value. However, this also causes some drugs with different names to map to the same color when their numeric parts are deleted. Oh well!
+## Saturation goes from 0 to 1 (0 = grayscale)
+## Value goes from 0 to 1 (0 = black, 1 = bright colors)
+## =================================================================
+agwColorsFromStrings <- function(inputVectorOfStrings, saturation=1, value=1, allowNumeric=FALSE) {
+     substString <- '[\\d.]'
+     if (allowNumeric) { substString <- '' }
+     
+     stringAsciiValueSums <- sapply(inputVectorOfStrings, function(sss) {
+          sum(sapply(strsplit(paste("z",gsub(substString,'',sss,perl=TRUE)),'')[[1]], ## "paste("z") is only there to keep this from ever being empty!
+                     function(x){ as.integer(charToRaw(x))}))
+     })
+     
+     randuNCol = ncol(randu)  ## Randu is a built-in set of 400*3 uniform random numbers
+     randuNRow = nrow(randu)
+     fullColorGroups <- sapply(stringAsciiValueSums,function(a){ hsv(randu[1+((39*a) %% randuNRow),1+((17*a) %% randuNCol)], saturation, value) })
+     return(fullColorGroups);
+}
+## =================================================================
+
+
+
+
+## =================================================================
+## Used to fake a typing system in R, so we can distinguish between
+## the millions of various objects that should and should not be used
+## in various instances.
+## Usually indicates that you should simplify the required arguments
+## to a function, but can be useful to catch errors in passing around
+## large lists with many sub-elements.
+## =================================================================
+agwSetType <- function(someList, theType) {
+     assert.agw(!is.na(theType) && !is.null(theType) && is.list(someList))
+     assert.agw(!is.na(theType) && !is.null(theType) && is.character(theType) && (length(theType) == 1) && (nchar(theType) > 0))
+     someList$"z.type.system.agw" <- theType
+}
+
+## =================================================================
+## Used to fake a typing system in R, so we can distinguish between
+## the millions of various objects that should and should not be used
+## in various instances.
+## Usually indicates that you should simplify the required arguments
+## to a function, but can be useful to catch errors in passing around
+## large lists with many sub-elements.
+## =================================================================
+agwAssertType <- function(someList, requiredType) {
+     actualType <- someList$"z.type.system.agw"
+     assert.agw(!is.na(actualType))
+     assert.agw(!is.null(actualType))
+     assert.agw(is.character(actualType))
+     assert.agw(nchar(actualType) > 0)
+     assert.agw(identical(actualType, requiredType))
+}
+
+
+
+## =================================================================
+## Returns a multi-plot layout for however many items you want
+## =================================================================
+agwRectangularLayoutForNItems <- function(n) {
+     stopifnot(length(n) == 1)
+     ## Note! rows, cols. So it's the OPPOSITE of (x,y) <-- NOT x,y!!
+     if (n <= 3) { return(c(n, 1))
+     } else {
+          NCOL <- ceiling(sqrt(n))
+          NROW <- (1 * ((n %% NCOL) > 0)) + (n %/% NCOL)  # <-- %/% is "integer division" (x %/% y is like floor(x / y))
+          return(c(NROW, NCOL))
+     }
+}
+
+## =================================================================
+## If data values cross the 0-axis, then return a ylim/xlim that will be symmetric
+## around this axis.
+## =================================================================
+agwSymmetricAxis <- function(dataPoints) {
+     top <- max(dataPoints)
+     bot <- min(dataPoints)
+     if (top >= 0 && bot >= 0) { return(c(bot, top)) }
+     if (top <= 0 && bot <= 0) { return(c(bot, top)) }
+     else {
+          absBiggest <- max(abs(top), abs(bot))
+          return(c(-absBiggest, absBiggest))
+     }
+}
+
+
+## =================================================================
+## Pass in the NAME of a variable, not a variable!!
+## Returns TRUE if there is some data that isn't NA or NULL
+## in this structure or variable.
+## Returns FALSE if the structure is length zero, if no
+## such variable exists, or if the variable is set to NA or NULL.
+## So here are some things returning false:
+##  list()     NA     NULL     vector(length=0)
+## =================================================================
+agwHasContent <- function(vName) {
+     stopifnot(typeof(vName) == "character")
+     if (!exists(vName)) { return(FALSE); }
+     v <- eval(parse(text=vName))
+     if (length(v) == 0) { return(FALSE); }
+     if (is.null(v)) {     return(FALSE); }
+     if (typeof(v) != "environment") { ## <-- hashes should not (and cannot) be checked for NA-ness
+          if (length(v) == 1 && is.na(v)) { return(FALSE); }
+     }
+     return(TRUE);
+}
+
+
+
+agwRemoveNAFromBoth <- function(xVec = NULL, yVec = NULL) {
+     ## You pass in a list of x-coordinates and a list of y-coordinates.
+     ## If *either* the x or the y is NA, then *both* the elements are skipped.
+     ## Otherwise, both elements are included. In the end, a list consisting of the xVec and yVec
+     ## where *neither* element was NA is returned.
+     ## In other words:
+     ## if x = c(1,2,NA, 3)
+     ## and y = (c(NA, 4, 5, 6)
+     ## Then this function will return a list(x=c(2,3),y=c(4,6))
+     if (length(xVec) != length(yVec)) {
+          agwPrint("First (X) Vector length: ", length(xVec))
+          agwPrint("Second (Y) Vector length: ", length(yVec))
+          stop("The vectors passed into agwRemoveNAForPlot(...) must be the same length!")
+     }
+     elementsToKeepVec <- (!is.na(xVec) & !is.na(yVec))
+     return( list(  x = xVec[elementsToKeepVec]
+                  , y = yVec[elementsToKeepVec] ) )
+}
+
+
+
+
+
+
+agwMatrixFromLists <- function(inList) {
+     ### Makes a vector with maybe-different-length lists.
+     ### Pads the extra values with NA
+     longestRowLength <- max(sapply(inList, length))
+     tempVec <- vector()
+     for (i in 1:length(inList)) {
+          thisVecLen <- length(inList[[i]])
+          v <- c(inList[[i]], rep(NA, longestRowLength-thisVecLen))
+          tempVec <- append(tempVec, v)
+     }
+     return( matrix(tempVec, nrow=length(inList), ncol=longestRowLength, byrow=TRUE) )
+}
+
+
+
+agwMatrixWithoutMissingLines <- function(inputMatrix) {
+     ## Given an input matrix, returns that same matrix minus any rows and columns
+     ## that are *all* NA. As long as there is at least one non-NA element, we
+     ## leave that row or column.
+     return(inputMatrix[ which(apply(inputMatrix, BY.ROW, function(a) !all(is.na(a))))
+                        ,which(apply(inputMatrix, BY.COL, function(b) !all(is.na(b))))])
+}
+
+## If you want to reduce a matrix in size by removing the rows
+## and columns that don't have enough data points, then you should
+## use this function.
+## In the case of "minN=1", it is identical to "agwMatrixWithoutNALines"
+agwMatrixLinesWithEnoughData <- function(inputMatrix, minN=1) {
+     ## Given an input matrix, returns that same matrix minus any rows and columns
+     ## without at least "minN" non-NA elements.
+     return(inputMatrix[ which(apply(inputMatrix, BY.ROW, function(a) (sum(!is.na(a)) >= minN)))
+                        ,which(apply(inputMatrix, BY.COL, function(b) (sum(!is.na(b)) >= minN)))])
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+agwPreparePlot <- function(directory=NULL, file=NULL, filetype="png", pointsize=DEFAULT.POINTSIZE, width=NULL, height=NULL, res=SCREEN.RES.DPI, verbose=TRUE, func=NULL, fullPath=NULL, ...) {
+     # Height and width should be given in PIXELS, even for pdfs. If you want to make your 8.5-by-11 pdf the right
+     # size image-wise, you should call it like:  agwPreparePlot(.. , res=72, width=(8.5*72), height=(11*72))
+     agwFinishPlot() ## <-- finish a plot if there was already one
+     
+     completeFilename <- NULL
+     
+     if (is.null(file) && is.null(fullPath)) {
+          if (verbose) { cat(paste(">>>> agwPreparePlot: Status message: About to plot to the standard screen.\n")) }
+          
+     } else {    ## Ok, the user DOES want output to a file...
+          if (!is.null(fullPath)) {
+               completeFilename <- paste(fullPath, '.', filetype, sep='')
+          } else {
+               stopifnot(!is.null(directory))
+               stopifnot(!is.null(file))
+               completeFilename <- paste(directory, '/', file, '.', filetype, sep='')
+          }
+          
+          if (verbose) { cat(paste(">>>> agwPreparePlot: Status message: About to plot to the file <", completeFilename, ">...", "\n", sep='')) }
+          
+          if (!is.null(directory) && !(file.exists(directory))) {
+               cat(agwGlue("\n\n\n>>>> agwPreparePlot: ERROR: Quitting, because the directory \"", directory, "\" did not exist!\n>>>>        You will need to manually create it!\n"))
+               stop(agwGlue("ERROR: agwPreparePlot: Quitting early because directory \"", directory, "\" does not exist! You will need to manually create it!"))
+          }
+          ## Note: you probably want to call agwFinishPlot after you make your plot!
+          if ("png" == filetype) {
+               if (is.null(width)) { width <- STANDARD.PLOT.WIDTH; }
+               if (is.null(height)) { height <- STANDARD.PLOT.HEIGHT; }
+               png(filename=completeFilename, pointsize=pointsize
+                   , width=width, height=height, res=res)
+          } else if ("pdf" == filetype) {
+               ## width and height are assumed to have been
+               ## given in PIXELS
+               pdf(file=completeFilename, pointsize=pointsize, width=(width/res), height=(height/res))
+          } else {
+               stop("agwPreparePlot: Sorry, only PNG and PDF filetypes are supported for now!!!")
+          }
+     }
+     
+     if (!is.null(func)) {  ## If there is a function to call, then call it!
+          func(...) ;
+     }
+     gvGLOBAL.LAST.PLOT <<- file ;
+}
+
+agwFinishPlot <- function() {
+     if (length(dev.list()) > 0) {
+          dev.off();
+     }
+     gvGLOBAL.LAST.PLOT <<- NULL
+}
+
+
+
+print.red.agw <- function(..., newline=T) {
+     print.color.agw(..., newline=newline, fg="#FF0000")
+}
+
+print.yellow.agw <- function(..., newline=T) {
+     print.color.agw(..., newline=newline, fg="#FFFF00")
+}
+
+print.green.agw <- function(..., newline=T) {
+     print.color.agw(..., newline=newline, fg="#00FF00")
+}
+
+print.cyan.agw <- function(..., newline=T) {
+     print.color.agw(..., newline=newline, fg="#00FFFF")
+}
+
+print.magenta.agw <- function(..., newline=T) {
+     print.color.agw(..., newline=newline, fg="#FF00FF")
+}
+
+print.blue.agw <- function(..., newline=T) {
+     print.color.agw(..., newline=newline, fg="#0000FF")
+}
+
+print.color.agw <- function(..., newline=T, fg=NULL, bg=NULL) {
+     if (require(xterm256)) {
+          print.agw( style(paste(..., sep=''), fg=fg, bg=bg, check.xterm=FALSE), newline=newline)
+     } else {
+          print.agw(..., newline=newline)
+     }
+}
+
+
+
+
+
+
 #
 #
 #
@@ -726,6 +1505,7 @@ agwGetHeatColors <- function(n) {
 ##strAmt <- sum(sapply(strsplit("abgcdefgg",'')[[1]],function(x){as.integer(charToRaw(x))}))
 ##sapply(strAmt,function(a){ rgb((a*37) %% 255, (a*13) %% 255, (a*17) %% 255, maxColorValue=255) })
 ##rgb((strAmt*37) %% 255, (strAmt*13) %% 255, (strAmt*17) %% 255, maxColorValue=255)
+
 
 
 
