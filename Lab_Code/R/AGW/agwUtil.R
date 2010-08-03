@@ -9,23 +9,16 @@ if (nzchar(cols)) { options(width = as.integer(cols)) } # set the current displa
 Z_LINE <- '--------------------------------------------------------------------------------\n' ## 80 characters
 ## ====================================
 # "Constants" for mtext and other plotting commands
-SIDE_BOTTOM <- 1
-SIDE_LEFT   <- 2
-SIDE_TOP    <- 3
-SIDE_RIGHT  <- 4
+SIDE_BOTTOM <- 1 ; SIDE_LEFT   <- 2 ; SIDE_TOP    <- 3 ; SIDE_RIGHT  <- 4
 ## ====================================
 
-LAS_AXIS_PARALLEL      <- 0
-LAS_AXIS_HORIZONTAL    <- 1
-LAS_AXIS_PERPENDICULAR <- 2
-LAS_AXIS_VERTICAL      <- 3
+LAS_AXIS_PARALLEL      <- 0 ; LAS_AXIS_HORIZONTAL    <- 1
+LAS_AXIS_PERPENDICULAR <- 2 ; LAS_AXIS_VERTICAL      <- 3
 ## ====================================
 
-APPLY_BY_ROW <- 1  # <-- for "apply" (see help("apply") for more details)
-APPLY_BY_COL <- 2
-APPLY_BY_BOTH <- c(1,2)
+APPLY_BY_ROW <- 1 ; APPLY_BY_COL <- 2 ; APPLY_BY_BOTH <- c(1,2)
+BY.ROW = 1; BY.COL = 2 ; BY.BOTH = c(1,2)
 ## ====================================
-
 
 PCH.X = 4
 PCH.DIAMOND = 23  ## The hollow diamong plotting character
@@ -43,6 +36,9 @@ PCH.SMALL.CIRCLE  = 20
 PCH.MEDIUM.CIRCLE = 16
 PCH.BIG.CIRCLE    = 19
 
+PCH.SOLID.BOX = 15
+PCH.BOX = PCH.SOLID.BOX
+
 PCH.FILL.BOX           = 15
 PCH.FILL.MEDIUM.CIRCLE = 16
 PCH.FILL.UP.TRIANGLE   = 17
@@ -56,9 +52,27 @@ PCH.COLOR.DIAMOND = 23
 PCH.COLOR.UP.TRIANGLE   = 24
 PCH.COLOR.DOWN.TRIANGLE = 25
 
+LTY.DASHED.LINE     = 3  ## "LTY: Line TYpe"
+LAS.HORIZONTAL.TEXT = 1  ## Text alignment for margin text
+LAS.PERPENDICULAR   = 2
+LAS.VERTICAL.TEXT   = 3  ## Text alignment for margin text
+
+POS.BOTTOM = 1; POS.LEFT = 2; POS.ABOVE = 3 ; POS.RIGHT = 4 ;
+
+A.X.AXIS = 1
+A.Y.AXIS = 2
+
+WORST.P.VALUE = 1
+
+HIGH.RES.DPI       <- 150
+SCREEN.RES.DPI     <- 72
+
+DEFAULT.POINTSIZE  = 12
+
+STANDARD.PLOT.WIDTH  = 750
+STANDARD.PLOT.HEIGHT = 750
 
 MAKE.AGW.SUBDIR = "make.tmp"
-
 
 ## ====================================
 join.left.outer.agw <- function(left.mat, right.mat, both.key, left.key, right.key, silent=FALSE) {
@@ -777,50 +791,6 @@ print.color.agw <- function(..., newline=T, fg=NULL, bg=NULL) {
 
 
 
-#
-#
-#
-## =================================================================
-## ## ## ## ## ## ## ## COMMON R CONSTANTS (NOT VARIABLES!) ## ## ## ## ## ## ## ##
-## ## ##
-## ##
-##
-
-LTY.DASHED.LINE     = 3  ## "LTY: Line TYpe"
-LAS.HORIZONTAL.TEXT = 1  ## Text alignment for margin text
-LAS.PERPENDICULAR   = 2
-LAS.VERTICAL.TEXT   = 3  ## Text alignment for margin text
-
-POS.BOTTOM = 1; POS.LEFT = 2; POS.ABOVE = 3 ; POS.RIGHT = 4 ;
-
-A.X.AXIS = 1
-A.Y.AXIS = 2
-
-BY.ROW = 1; BY.COL = 2 ; BY.BOTH = c(1,2)
-
-WORST.P.VALUE = 1
-
-PCH.X = 4
-PCH.DIAMOND = 23  ## The hollow diamong plotting character
-PCH.SMALL.CIRCLE = 20
-PCH.MEDIUM.CIRCLE = 16
-PCH.BIG.CIRCLE = 19
-
-PCH.SOLID.BOX = 15
-PCH.BOX = PCH.SOLID.BOX
-
-PCH.HOLLOW.UP.TRIANGLE   = 2
-PCH.HOLLOW.DOWN.TRIANGLE = 6
-PCH.BORDER.UP.TRIANGLE    = 24
-PCH.BORDER.DOWN.TRIANGLE  = 25
-
-HIGH.RES.DPI       <- 150
-SCREEN.RES.DPI     <- 72
-
-DEFAULT.POINTSIZE  = 12
-
-STANDARD.PLOT.WIDTH  = 750
-STANDARD.PLOT.HEIGHT = 750
 
 
 ##
