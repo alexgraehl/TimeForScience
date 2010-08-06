@@ -1,6 +1,5 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
-
 # .bashrc: Loaded when the shell is non-interactively started up
 
 # [ -z "$PS1" ] && return <-- If not running interactively, don't do anything
