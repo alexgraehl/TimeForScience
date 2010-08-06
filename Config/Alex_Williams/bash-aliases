@@ -10,6 +10,7 @@ echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
 ## Note that it only looks for files with a ".R" ending!!!!!!!
 
 
+
 if [ $isMac -eq 1 ] ; then
     function ff {
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
@@ -17,6 +18,14 @@ if [ $isMac -eq 1 ] ; then
 	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
 	    ./
     }
+    alias SET_NAUCOLOR="osascript -e 'tell front window of app \"Terminal\" to set background color to {0,0,0,-20750}' &> /dev/null"
+    alias SET_LOCALCOLOR="osascript -e 'tell front window of app \"Terminal\" to set background color to {14000,1500,1500,-20750}' &> /dev/null"
+
+    alias SET_BUENOCOLOR="osascript -e 'tell front window of app \"Terminal\" to set background color to {1500,1500,15000,-20750}' &> /dev/null"
+    alias SET_LIGHTHOUSECOLOR="osascript -e 'tell front window of app \"Terminal\" to set background color to {14000,8000,1500,-20750}' &> /dev/null"
+
+    osascript -e 'tell front window of app "Terminal" to set background color to {14000,1500,1500,-20750}' &> /dev/null ## Automatically set the terminal color based on the server!
+
 else
     ## Must be different between mac/unix
     function ff {
@@ -32,7 +41,16 @@ else
 	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
 	    ./
     }
+
+    alias SET_NAUCOLOR="echo -n ''"
+    alias SET_LOCALCOLOR="echo -n ''"
+    alias SET_LIGHTHOUSECOLOR="echo -n ''"
+    alias SET_BUENOCOLOR="echo -n ''"
+
 fi
+
+
+
 
 BRACKETOPEN='{'
 BRACKETCLOSE='}'
@@ -186,7 +204,7 @@ then
     alias nau="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
     alias workup="echo -e -n '$a_warning_color' ; echo 'No need to update: this machine is already the Mercurial main root. You cannot update anything from it, since there is nowhere to pull changes from.' ; echo -e -n '$a_end_color'"
 else
-    alias nau='ssh  $UCSF_USER@nausicaa.ucsf.edu'
+    alias nau='SET_NAUCOLOR ; ssh  $UCSF_USER@nausicaa.ucsf.edu'
     alias workup='hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" pull && hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" update && echo "[Done] updating work repository"'
 fi
 
@@ -202,8 +220,8 @@ alias sciencestat='hg --cwd ${TIME_FOR_SCIENCE_DIR} status'
 
 
 alias chef='ssh $UCSF_USER@chef.compbio.ucsf.edu' ## QB3 cluster head node
-alias lighthouse='ssh  $UCSF_USER@lighthouse.ucsf.edu' ## Database machine
-alias bueno='ssh  $UCSF_USER@bueno.gladstone.internal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
+alias lighthouse='SET_LIGHTHOUSECOLOR ; ssh  $UCSF_USER@lighthouse.ucsf.edu' ## Database machine
+alias bueno='SET_BUENOCOLOR ; ssh  $UCSF_USER@bueno.gladstone.internal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
 
 # Things related to "LESS"
 export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
