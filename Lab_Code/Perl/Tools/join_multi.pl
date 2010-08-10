@@ -238,20 +238,13 @@ sub parseColsFromArgs
 
    my $fileno = undef;
 
-   while(@{$args})
-   {
+   while(@{$args}) {
       my $arg = shift @{$args};
-
-      if($arg =~ /^-(\d+)/)
-      {
+      if($arg =~ /^-(\d+)/) {
          $fileno = int($1) - 1;
-
          $arg = shift @{$args};
-
          my @col_list = split(',', $arg);
-
-         foreach my $col (@col_list)
-         {
+         foreach my $col (@col_list) {
             push(@{$cols[$fileno]}, $col - 1);
          }
       }
@@ -259,20 +252,15 @@ sub parseColsFromArgs
    return \@cols;
 }
 
-sub extractKey
-{
+sub extractKey {
    my ($tuple, $cols, $ordered_cols) = @_;
-
    my $key = '';
-
    for(my $i = 0; $i < scalar(@{$cols}); $i++) {
       $key .= (($i > 0) ? "\t" : "") . $$tuple[$$cols[$i]];
    }
-
    for(my $i = scalar(@{$cols}) - 1; $i >= 0; $i--) {
       splice(@{$tuple}, $$ordered_cols[$i], 1);
    }
-
    return $key;
 }
 
@@ -283,6 +271,8 @@ Joins multiple files together, saving you from having to call
 join.pl over and over. Note that this is a specific kind of join,
 and the results from join_multi.pl will most likely be *DIFFERENT*
 from the results of regular join.pl .
+
+Unclear how it handles headers. Seems to work, though.
 
 If you want to merge files together, for example, to collect all
 the runs of a various experiments into one file, you can use
