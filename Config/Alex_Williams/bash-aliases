@@ -24,7 +24,9 @@ if [ $isMac -eq 1 ] ; then
     alias SET_BUENOCOLOR="osascript -e 'tell front window of app \"Terminal\" to set background color to {1500,1500,15000,-20750}' &> /dev/null"
     alias SET_LIGHTHOUSECOLOR="osascript -e 'tell front window of app \"Terminal\" to set background color to {14000,8000,1500,-20750}' &> /dev/null"
 
-    osascript -e 'tell front window of app "Terminal" to set background color to {14000,1500,1500,-20750}' &> /dev/null ## Automatically set the terminal color based on the server!
+    if [[ isAGWHomeMachine -ne 1 ]]; then
+	osascript -e 'tell front window of app "Terminal" to set background color to {14000,1500,1500,-20750}' &> /dev/null ## only set the color when we are at WORK, not when we are on my home machine!
+    fi
 
 else
     ## Must be different between mac/unix
