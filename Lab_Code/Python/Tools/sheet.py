@@ -146,6 +146,7 @@ KEYS_QUIT = (ord('q'), ord('Q'), curses.ascii.ESC) #, curses.ascii.ctrl(ord('q')
 KEYS_GOTO_NEXT_MATCH = (ord('n'),)
 KEYS_GOTO_PREVIOUS_MATCH = (ord('N'),)
 
+KEYS_WANT_TO_ENTER_SEARCH_MODE = (ord('/'), curses.ascii.ctrl(ord('m')))
 
 # ==== HERE ARE KEYS THAT ARE SPECIFIC TO SEARCH MODE ====
 KEYS_SEARCH_MODE_FINISHED = (curses.KEY_ENTER, curses.ascii.LF, curses.ascii.CR )
@@ -206,6 +207,10 @@ NUMERIC_POSITIVE_COLOR_BG_COLOR = STANDARD_BG_COLOR
 ACTIVE_FILENAME_COLOR_ID = 11
 ACTIVE_FILENAME_COLOR_TEXT_COLOR = curses.COLOR_YELLOW
 ACTIVE_FILENAME_COLOR_BG_COLOR = STANDARD_BG_COLOR
+
+HELP_AREA_ID = 12
+HELP_AREA_TEXT_COLOR = curses.COLOR_YELLOW
+HELP_AREA_BG_COLOR   = curses.COLOR_BLUE
 
 # RAGGED_END_ID = 1
 # RAGGED_END_TEXT_COLOR   = curses.COLOR_WHITE
@@ -384,6 +389,8 @@ class AGW_File_Data:
 
 # =======================================
 # Start of class AGW_Win
+# These are "curses" (terminal) "windows"--basically just regions in the terminal
+# that can be written to separately with their own coordinate systems.
 # =======================================
 class AGW_Win:
     def __init__(self):
@@ -392,7 +399,8 @@ class AGW_Win:
         self.windowWidth = 0
         self.windowHeight = 0
         pass
-
+    
+    # Make a new window with the height, width, and at the location specified
     def initWindow(self, argHeight, argWidth, atY, atX):
         self.pos  = Point(atX, atY)
         self.windowWidth  = argWidth
@@ -446,6 +454,8 @@ class AGW_Win:
             raise
 
 
+
+## Data window (the main window with the cells in it)
 class AGW_DataWin(AGW_Win):
     def __init__(self):
         AGW_Win.__init__(self) # parent constructor
@@ -633,7 +643,7 @@ class AGW_Table:
         pass
 
     def getColWidth(self, colIdx):
-        if (gTransposition):
+        if (gIsTransposed):
             return 25 # This is a hack! Currently colwidth isn't properly computed for transposed matrices
 
         try: return self.colWidth[colIdx]
@@ -642,13 +652,13 @@ class AGW_Table:
             raise #return 0 #raise #return 0
 
     def getNumCols(self):
-        if (gTransposition):
+        if (gIsTransposed):
             return self.__nCells.height # <-- if displaying transposed!
         else:
             return self.__nCells.width  # table width in number of cells
 
     def getNumRows(self):
-        if (gTransposition):
+        if (gIsTransposed):
             return self.__nCells.width  # <-- if displaying transposed!
         else:
             return self.__nCells.height  # table height in number of cells
@@ -657,7 +667,7 @@ class AGW_Table:
     def getHeaderCellForRow(self, rowIdx): return self.cellValue(rowIdx, 0)
 
     def cellValue(self, row, col):
-        if (gTransposition):
+        if (gIsTransposed):
             temp = row
             row = col
             col = temp
@@ -731,7 +741,7 @@ class AGW_Table:
                 myLine = file.readline()
                 if (not myLine): break # just read the last line
 
-                myLine = myLine.rstrip("\n") # <-- like Perl's "chomp"--remove the trailing newlines
+                myLine = myLine.rstrip("\n") # <-- like Perl "chomp"--remove the trailing newlines
                 self.appendRowOfCellContents( myLine.split(delimiter) )
                 numLinesRead += 1
                 #global GLOB
@@ -799,16 +809,17 @@ def attributeForNumeric(theProspectiveNumber, defaultAttr):
     pass
 
 
-gTermSize = Size(None, None)
+gTermSize = Size(None, None) ## Size of the actual xterm terminal window that sheet.py lives in
 
 gStandardScreen = None  # The main screen
 
-gTransposition = False # Whether to show the data "as-is" or transposed
+gIsTransposed = False # Whether to show the data "as-is" or transposed
 
 mainInfo = AGW_File_Data_Collection() # An array of AGW_File_Datas
 
 sheetWin = AGW_DataWin()
 infoWin  = AGW_Win()
+helpWin  = AGW_Win()
 
 colHeaderWin = AGW_DataWin()
 rowHeaderWin = AGW_DataWin()
@@ -818,23 +829,24 @@ MAX_NUM_LINES_TO_READ = None   # None means "no limit"--read all lines
 cellHeight = 1
 
 gCellBorders = Size(1, 0) #Size(1,1) # Width, Height
+## Size(1, 0) means there is a border to the left/right of each cell, but no border above/below
 
-gCurrentMode = KEY_MODE_NORMAL_INPUT
+gCurrentMode = KEY_MODE_NORMAL_INPUT ## Start in normal input (not search) mode
 
-gWantToQuit = False
+gWantToQuit = False ## False, since, by default, the user does not want to immediately quit!
 
-windowPos = Point(0,0)
+windowPos = Point(0,0) ## Initial position in the table of data: Point(0,0) is the top left
 
-truncationSuffix = "..."
+truncationSuffix = "..." ## Suffix for "this cell is too long to fit on screen"
 
 delimiter = "\t"
 
-fastMoveSpeed = Point(10, 10)
+fastMoveSpeed = Point(10, 10) ## How many cells to scroll when the user is moving with shift-arrows
 
 #activeCellPos = Point(0,0)
 
-gWarningMessage = None
-gCommandStr = None
+gWarningMessage = None ## A message that we can display in the "warning" region in the info pane
+gCommandStr = None     ## The current command, which we sometimes display in the info pane
 
 def setWarning(string):
     global gWarningMessage
@@ -874,16 +886,15 @@ def initializeWindowSettings(aScreen, fileInfoToReadFrom):
         print("### Init window: Someone passed in a not-an-AGW_File_Data object to initializeWindowSettings\n")
         raise
 
-    global sheetWin
-    global infoWin
-    global colHeaderWin
-    global rowHeaderWin
+    global sheetWin, infoWin, colHeaderWin, rowHeaderWin, helpWin
+
+    ## =========== Specify the dimensions of the windows here! ==================
+    INFO_PANEL_HEIGHT = 6 ## How many vertical lines of terminal is the info panel in total?
+    COL_HEADER_HEIGHT = 2 # How many vertical lines of terminal is the column header? Answer, it should be 2: one line for the header itself, and one below for the horizontal line that separates it from the main window (sheetWin).
+    HELP_WIN_HEIGHT   = 2 ## How tall is the "help" window at the bottom?
+    ## =========== Specify the dimensions of the windows here! ==================
 
     gTermSize.resizeYX(aScreen.getmaxyx()) # Resize the curses window to use the whole available screen
-
-    INFO_PANEL_HEIGHT = 6
-
-    COL_HEADER_HEIGHT = 2 # one line for the data, and one below for the horizontal line
 
     sheetWin.setInfo(fileInfoToReadFrom)
     fileInfoToReadFrom.table.readFromFileInfo(fileInfoToReadFrom, MAX_NUM_LINES_TO_READ)
@@ -896,6 +907,8 @@ def initializeWindowSettings(aScreen, fileInfoToReadFrom):
         fileInfoToReadFrom.cursorPos.x = 1 # start off with the first not-a-header row highlighted
         pass
 
+    ## ===============================================
+    ## Figure out how wide the row header should be.
     rowHeaderMaxWidth = 0
     if (sheetWin.getTable().getNumCols() > 0):
         # If there is at least one column, then the row header is as wide as the first column
@@ -908,18 +921,27 @@ def initializeWindowSettings(aScreen, fileInfoToReadFrom):
         rowHeaderMaxWidth = int(gTermSize.width*ROW_HEADER_MAXIMUM_COLUMN_FRACTION_OF_SCREEN)
         pass
 
-    sheetWin.initWindow(gTermSize.height - INFO_PANEL_HEIGHT - COL_HEADER_HEIGHT,
-                        gTermSize.width - rowHeaderMaxWidth,
-                        INFO_PANEL_HEIGHT+COL_HEADER_HEIGHT,
-                        rowHeaderMaxWidth)
+    ## Done figuring out how wide the row header should be
+    ## ===============================================
 
-    infoWin.initWindow(INFO_PANEL_HEIGHT,  # height
-                       gTermSize.width,    # width
-                       0,      # location--y
-                       0)      # location--x
+    SHEET_WIN_HEIGHT = (gTermSize.height - INFO_PANEL_HEIGHT - COL_HEADER_HEIGHT - HELP_WIN_HEIGHT) ## How tall is the main data window?
+    sheetWin.initWindow(SHEET_WIN_HEIGHT ## height
+                        , (gTermSize.width - rowHeaderMaxWidth) ## width
+                        , (INFO_PANEL_HEIGHT + COL_HEADER_HEIGHT) ## location (y)
+                        , rowHeaderMaxWidth) ## location (x)
 
+    infoWin.initWindow(INFO_PANEL_HEIGHT  # height
+                       , gTermSize.width    # width
+                       , 0      # location--y
+                       , 0)      # location--x
+
+    helpWin.initWindow(HELP_WIN_HEIGHT ## height
+                       , gTermSize.width ## width
+                       , (INFO_PANEL_HEIGHT + COL_HEADER_HEIGHT + SHEET_WIN_HEIGHT) ## location (y)
+                       , 0) ## location (x)
+                       
     # Goes along the left side!
-    ROW_HEADER_HEIGHT = (gTermSize.height - INFO_PANEL_HEIGHT - COL_HEADER_HEIGHT)
+    ROW_HEADER_HEIGHT = SHEET_WIN_HEIGHT
     ROW_HEADER_LOC_X  = 0
     ROW_HEADER_LOC_Y  = INFO_PANEL_HEIGHT + COL_HEADER_HEIGHT
     rowHeaderWin.initWindow(ROW_HEADER_HEIGHT,
@@ -1019,6 +1041,24 @@ def processCommandLineArgs(argv):
     return
 
 
+
+
+def drawHelpWin(theScreen):
+    helpWin.win.erase()
+    lineAttr = curses.color_pair(HELP_AREA_ID) # <-- set the border color
+    helpWin.safeAddStr(0, 0
+                       ,("Help: [Q]uit   [ijkl]: Move cursor (faster with [Shift])" +
+                         "[/]: Search   [t]: Transpose table                      ")
+                         , curses.color_pair(HELP_AREA_ID))
+                       
+    helpWin.safeAddStr(1, 0
+                       ,("[a/e/g/G]: Go to left/right/top/bottom of table   [</>]:" +
+                         "Prev/next file   [!]: Toggle highlighting of numbers    ")
+                       , curses.color_pair(HELP_AREA_ID))
+
+    helpWin.win.refresh()    
+    return
+
 #
 #
 # File " " is 2 rows X 3 cols. (Ragged ends)
@@ -1045,7 +1085,7 @@ def drawInfoWin(theScreen, theInfo, inTab):
     if (theInfo.filename is kSTDIN_HYPHEN): filename = "<STDIN>"
     else:                                   filename = '"' + theInfo.filename + '"'
 
-    if (gTransposition): filename = "Transposed file " + filename
+    if (gIsTransposed): filename = "Transposed file " + filename
     else: filename = "File " + filename
 
     if (inTab.isRagged): raggedText = " The table is ragged--some rows have differing numbers of columns."
@@ -1056,7 +1096,7 @@ def drawInfoWin(theScreen, theInfo, inTab):
 
     fileStatusStr = filename + fileNumberStr + " has " + str(inTab.getNumRows()) + agwEnglishPlural(" row", inTab.getNumRows()) + " and " + str(inTab.getNumCols()) + agwEnglishPlural(" column", inTab.getNumCols()) + "." + raggedText
 
-    infoWin.safeAddStr(FILE_INFO_ROW, 0, fileStatusStr)
+    infoWin.safeAddStr(FILE_INFO_ROW, 0, fileStatusStr) ## infoWin is the topmost "window" pane
 
     rowStr1 = "Row #" + str(activeCellPos.y+1) + ": " + stringFromAny(inTab.getHeaderCellForRow(activeCellPos.y))
     cursesClearLine(infoWin.win, ROW_HEADER_ROW)
@@ -1134,13 +1174,16 @@ def drawEverything(theScreen):
     # The "info" pane at the top...
     drawInfoWin(theScreen, activeFI, sheetWin.getTable())
 
+    # The "help" window at the bottom...
+    drawHelpWin(theScreen)
+
     # The main table...
     sheetWin.drawTable(activeFI, activeCellPos.y, activeCellPos.x)
 
-    # Row header...
+    # Row header... (the leftmost, vertically-oriented pane along the left edge of the table)
     rowHeaderWin.drawTable(activeFI, activeCellPos.y, 0, nColsToDraw=1, boolPrependRowCoordinate=True)
 
-    # Column header...
+    # Column header... (the column header along the top of the table)
     colHeaderWin.drawTable(activeFI, 0, activeCellPos.x, nRowsToDraw=1, boolPrependColCoordinate=True)
 
     lineAttr = curses.color_pair(BOX_COLOR_ID) # <-- set the border color
@@ -1204,6 +1247,7 @@ def setUpCurses(): # initialize the curses environment
     curses.init_pair(NUMERIC_NEGATIVE_COLOR_ID, NUMERIC_NEGATIVE_COLOR_TEXT_COLOR, NUMERIC_NEGATIVE_COLOR_BG_COLOR)
     curses.init_pair(NUMERIC_POSITIVE_COLOR_ID, NUMERIC_POSITIVE_COLOR_TEXT_COLOR, NUMERIC_POSITIVE_COLOR_BG_COLOR)
     curses.init_pair(ACTIVE_FILENAME_COLOR_ID, ACTIVE_FILENAME_COLOR_TEXT_COLOR, ACTIVE_FILENAME_COLOR_BG_COLOR)
+    curses.init_pair(HELP_AREA_ID, HELP_AREA_TEXT_COLOR, HELP_AREA_BG_COLOR)
 
     CURSES_INVISIBLE_CURSOR = 0
     CURSES_VISIBLE_CURSOR = 1
@@ -1260,11 +1304,12 @@ def calculateBorderChar(r, c, topRow, leftCol, bottomRow, rightCol):
 
 
 def handleKeysForSearchMode(argCh, currentTable, theScreen):
-
+    ## If we are in search mode, then when the user types, that text is added to the query.
+    
     finishedSearch = False
     cancelSearch = False
 
-    if (argCh in KEYS_SEARCH_MODE_FINISHED):
+    if (argCh in KEYS_SEARCH_MODE_FINISHED): ## User wants to STOP entering search text
         # ----------------------------------
         if (len(mainInfo.getCurrent().getRegexString()) > 0):
             finishedSearch = True # If there *is* a search string
@@ -1274,13 +1319,11 @@ def handleKeysForSearchMode(argCh, currentTable, theScreen):
             pass
         # ----------------------------------
         pass
-    elif (argCh in KEYS_SEARCH_MODE_CANCEL):
-        # ----------------------------------
+    elif (argCh in KEYS_SEARCH_MODE_CANCEL): ## User wants to CANCEL searching, deleting any query that was there
         cancelSearch = True
         # ----------------------------------
         pass
     elif argCh in KEYS_SEARCH_MODE_BACKSPACE or argCh in KEYS_SEARCH_MODE_DELETE_FORWARD:
-        # ----------------------------------
         # we don't support forward-delete yet. sorry.
         # Pretend it's regular delete for now...
         if (mainInfo.getCurrent().regexIsActive() is False):
@@ -1294,7 +1337,6 @@ def handleKeysForSearchMode(argCh, currentTable, theScreen):
         # ----------------------------------
         pass
     else:
-        # ----------------------------------
         # Append whatever the user typed to the search string...
         try:
             charToAdd = chr(argCh)
@@ -1326,16 +1368,16 @@ def handleKeysForSearchMode(argCh, currentTable, theScreen):
 
 
 
-
 def handleKeysForNormalMode(argCh, currentTable, theScreen):
-    # Handle user keyboard input when we are *not* in search mode
+    ## Handle user keyboard input when we are *not* in search mode.
+    ## This will handle the majority of user interactions.
 
-    theAction = None
+    theAction = None  ## What did the user want to do?
 
-    wantToMove = Point(0,0)
-    wantToChangeFileIdx = None
+    wantToMove = Point(0,0)    ## Do we want to move the cursor in the table?
+    wantToChangeFileIdx = None ## Do we want to go to the next/previous file?
 
-    activeCellPos = mainInfo.getCurrent().cursorPos
+    activeCellPos = mainInfo.getCurrent().cursorPos ## Where are we currently, in the table?
 
     #if (argCh is not None and argCh is not ''): raise "ArgCh: " + str(argCh)
 
@@ -1365,12 +1407,12 @@ def handleKeysForNormalMode(argCh, currentTable, theScreen):
         theActionParam = 1
         pass
     elif argCh in KEYS_TRANSPOSE: # Display the file in transposed format
-        global gTransposition
-        gTransposition = ~gTransposition
+        global gIsTransposed
+        gIsTransposed = ~gIsTransposed
         temp = activeCellPos.x
         activeCellPos.x = activeCellPos.y
         activeCellPos.y = temp
-        if (gTransposition):
+        if (gIsTransposed):
             setCommandStr("Now displaying the file in TRANSPOSED format.")
             pass
         else:
@@ -1381,9 +1423,9 @@ def handleKeysForNormalMode(argCh, currentTable, theScreen):
     elif argCh in KEYS_GOTO_LINE_END: activeCellPos.x = (currentTable.getNumCols()-1)
     elif argCh in KEYS_GOTO_LINE_START: activeCellPos.x = 0
     #elif argCh in (ord('w'),): sheetWin.win.mvwin(20,0)
-    # elif argCh in (ord('R'),): gCellBorders.width = (1 - gCellBorders.width)
-    elif argCh in (ord('r'),): gCellBorders.height = (1 - gCellBorders.height)
-    elif argCh in (ord('/'),):
+    #elif argCh in (ord('R'),): gCellBorders.width = (1 - gCellBorders.width)   ## Add/remove column borders (not useful)
+    #elif argCh in (ord('r'),): gCellBorders.height = (1 - gCellBorders.height) ## Add row borders (not useful)
+    elif argCh in KEYS_WANT_TO_ENTER_SEARCH_MODE:
         GLOBAL_setUserInteractionMode(KEY_MODE_SEARCH_INPUT)
         mainInfo.getCurrent().clearCurrentSearchTerm()
         currentTable.initRegexTable()
