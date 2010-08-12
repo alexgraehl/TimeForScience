@@ -75,11 +75,13 @@ colors.agw <- function(n = 12, type="blueblackyellow", reverse=FALSE) {
 ## =================================================================
 ## Heatmap (by Alex)
 ## =================================================================
-heatmap.agw <- function(m, breaks=12, labRow=colnames(m), labCol=rownames(m), col, main, title="", cexRow=NULL, maxNumLabels=1000) {
+heatmap.agw <- function(m, breaks=12, labRow=colnames(m), labCol=rownames(m), col, main, title="", cexRow=NULL, maxNumLabels=1000, colnames, rownames) {
      ## M: a matrix to plot
      ## Breaks: the number of histogram breaks, used for the color scheme
      ## maxNumLabels: do not print labels if there are more than this many labels ***with actual non-blank content***
 
+     if (!missing(colnames)) { labCol <- colnames } ## "colnames" is just an alias for "labCol"
+     if (!missing(rownames)) { labRow <- rownames } ## "rownames" is just an alias for "labRow"
      if (is.vector(m)) {
           m <- as.matrix(m)
      }
