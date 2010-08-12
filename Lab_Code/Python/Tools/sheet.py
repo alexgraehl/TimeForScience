@@ -138,7 +138,7 @@ KEYS_GOTO_LINE_END   = (ord('e'), GOTO_LINE_END_KEY_IN_EMACS)
 
 KEYS_NEXT_FILE     = (ord('.'),ord('>'))
 KEYS_PREVIOUS_FILE = (ord(','), ord('<'))
-KEYS_TRANSPOSE     = (ord('t'),)
+KEYS_TRANSPOSE     = (ord('t'),ord('T'))
 
 KEYS_QUIT = (ord('q'), ord('Q'), curses.ascii.ESC) #, curses.ascii.ctrl(ord('q')), curses.ascii.ctrl(ord('d')), curses.ascii.ctrl(ord('c')), curses.ascii.ESC)
 
@@ -209,7 +209,7 @@ ACTIVE_FILENAME_COLOR_TEXT_COLOR = curses.COLOR_YELLOW
 ACTIVE_FILENAME_COLOR_BG_COLOR = STANDARD_BG_COLOR
 
 HELP_AREA_ID = 12
-HELP_AREA_TEXT_COLOR = curses.COLOR_YELLOW
+HELP_AREA_TEXT_COLOR = curses.COLOR_RED
 HELP_AREA_BG_COLOR   = curses.COLOR_BLUE
 
 # RAGGED_END_ID = 1
@@ -1048,12 +1048,12 @@ def drawHelpWin(theScreen):
     lineAttr = curses.color_pair(HELP_AREA_ID) # <-- set the border color
     helpWin.safeAddStr(0, 0
                        ,("Help: [Q]uit   [ijkl]: Move cursor (faster with [Shift])" +
-                         "[/]: Search   [t]: Transpose table                      ")
+                         "   [/]: Search             [T]ranspose table                  ")
                          , curses.color_pair(HELP_AREA_ID))
                        
     helpWin.safeAddStr(1, 0
-                       ,("[a/e/g/G]: Go to left/right/top/bottom of table   [</>]:" +
-                         "Prev/next file   [!]: Toggle highlighting of numbers    ")
+                       ,("      [a/e/g/G]: Go to left/right/top/bottom of table   " +
+                         "   [</>]: Prev/next file   [!]: Toggle number highlighting    ")
                        , curses.color_pair(HELP_AREA_ID))
 
     helpWin.win.refresh()    
