@@ -158,10 +158,10 @@ function remake {
 	trash.pl "$1" && make --warn-undefined-variables --print-directory "$1"
 }
 
-# Aliases related to GREP
-alias grep='grep   --color=always --with-filename --line-number'
-alias egrep='egrep --color=always --with-filename --line-number'
-alias fgrep='fgrep --color=always --with-filename --line-number'
+# Aliases related to COLOR GREP
+alias grepc='grep   --color=always --with-filename --line-number'
+alias egrepc='egrep --color=always --with-filename --line-number'
+alias fgrepc='fgrep --color=always --with-filename --line-number'
 
 # Aliases related to CVS
 alias commit="cvs commit -m 'AGW CVS Commit'"
