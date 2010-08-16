@@ -83,7 +83,7 @@ pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't
 alias l='/bin/ls -F $AGW_LS_COLOR_OPTION'
 alias ls='/bin/ls -F $AGW_LS_COLOR_OPTION'
 alias ll='/bin/ls -lh -A -F $AGW_LS_COLOR_OPTION'
-alias p='pwd'
+alias p='pwd -P'
 alias tc='randomize_terminal_color.pl -cycle'
 #alias cd='pushd'
 alias b='popd'
