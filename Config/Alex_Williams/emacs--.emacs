@@ -318,8 +318,14 @@
 
 (global-unset-key "\M-c")
 
+
+;; ========================= HOW TO DEFINE A KEY SEQUENCE THAT WILL BE REPEATED (TEMPORARY MACRO) ====================
+;; You hit meta-' to start recording your keys.
+;; Then you type some stuff, and/or move the cursor with the keys
+;; You hit meta-' again to stop recording
+;; Now you hit Meta-; to repeat the sequence over and over.
 (setq agw-defining-macro nil)
-(global-set-key (kbd "M-\'")
+(global-set-key (kbd "M-\'") ;; <-- meta + single quotation means "start/stop recording the keyboard sequence"
 		'(lambda () "Start keyboard macro" (interactive)
 		   (if (equal agw-defining-macro nil)
 		       (progn (setq agw-defining-macro (not agw-defining-macro))
@@ -327,9 +333,8 @@
 		     ;; else
 		     (progn (setq agw-defining-macro (not agw-defining-macro))
 			    (end-kbd-macro)))))
-
-(global-set-key (kbd "M-;") '(lambda () "Run keyboard macro"   (interactive) (call-last-kbd-macro) (message "Repeated the last macro defined with M-[...")))
-
+(global-set-key (kbd "M-;") '(lambda () "Run keyboard macro"   (interactive) (call-last-kbd-macro) (message "Repeated the last macro defined with M-'..."))) ;; <-- and here's how you EXECUTE that temporary sequence
+;; ========================= DONE DEFINING A KEY SEQUENCE THAT WILL BE REPEATED (TEMPORARY MACRO) ====================
 
 
 (global-set-key (kbd "M-1") '(lambda () "Close other windows"   (interactive) (delete-other-windows) (message "delete-other-windows: Closed all windows besides the active one.")))
