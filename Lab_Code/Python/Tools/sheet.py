@@ -1697,3 +1697,51 @@ if __name__ == "__main__":
     curses.wrapper(mainScreenHandlingLoop)
     pass
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# class Dispatcher:
+#     def __init__(self):
+#         self._keys = []
+
+#     def add_listener(self, key_list, method):
+#         for key in key_list:
+#             self._keys[key] = method
+
+#     def move_up(self, key):
+#         pass
+
+#     def dispatch(self, key):
+#         try:
+#             method = self._keys[key]
+#             return self.__getattr__(method)(self, key)
+#         except:
+#             return
+
+
+
+# d = Dispatcher()
+# d.add_listener([33, 34 35], 'move_up')
+# d.add_listener([33, 34 35], 'move_down')
+
+
+# def main_loop():
+#     while True:
+#         key = get_key()
+#         d.dispatch(key)
+
