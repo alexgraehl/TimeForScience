@@ -56,12 +56,15 @@ colors.agw <- function(n = 12, type="blueblackyellow", reverse=FALSE) {
           col1 <- rev(hsv(h=rev(0.6+0.20*range1), s=rev(1.0-0.2*range1), v=range1))
           col2 <- (hsv(h=rev(0.15+0.10*range2), s=rev(1.0-0.2*range2), v=range2))
           col <- c(col1, col2)
+     } else if (type == "blueblackyellow2") { ## blue -> black -> yellow, hand-picked
+          stopifnot(n == 11)
+          col <- c("#00C8FF", "#00AAF5", "#0082D7", "#2464A8", "#004064", "black", "#646400","#919114","#B6B61E","#D7D728","#FFFF00")
      } else if (grepl("^gr[ea]y", type)) { col <- gray(colRange01) }
      else if (grepl("^brown", type))   { col <- rev(hsv(h=rev(0.2*colRange01), s=colRange01, v=(1.0 - 0.7*colRange01))) }
      else if (grepl("^sepia", type))   { col <- rev(hsv(h=rev(0.3*colRange01), s=colRange01, v=rev(colRange01))) }
      else if (grepl("^heat", type))    { col <- heat.colors(n) }
      else {
-          print("Unrecognized type passed into colorGradientAGW:")
+          print(paste("An unrecognized color gradient type (<", type, ">) was passed into colorGradientAGW:", sep=''))
           print(type)
           stopifnot(paste("Color type is not recognized. Try something like \"gray.colors\"") == 999)
      }
@@ -75,26 +78,32 @@ colors.agw <- function(n = 12, type="blueblackyellow", reverse=FALSE) {
 ## =================================================================
 ## Heatmap (by Alex)
 ## =================================================================
-heatmap.agw <- function(m, breaks=12, labRow=colnames(m), labCol=rownames(m), col, main, title="", cexRow=NULL, maxNumLabels=1000, col.names, row.names) {
+heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colorStyle=NULL, main, title="", cexRow=NULL, cexCol=1.5, maxNumLabels=1000, col.names=NULL, row.names=NULL) {
      ## M: a matrix to plot
      ## Breaks: the number of histogram breaks, used for the color scheme
      ## maxNumLabels: do not print labels if there are more than this many labels ***with actual non-blank content***
 
-     if (!missing(col.names)) { labCol <- col.names } ## "col.names" is just an alias for "labCol"
-     if (!missing(row.names)) { labRow <- row.names } ## "row.names" is just an alias for "labRow"
-     if (is.vector(m)) {
-          m <- as.matrix(m)
+     ## col: the SPECIFIC list of colors to pass in. Must be equal in length to (breaks - 1)
+     ## colorStyle: OR you can specify the colors as a style. This is one of the strings accepted by "colors.agw"--for example, "sepia" or "gray" or "blueblackyellow"
+
+     if (is.vector(mmm)) {
+          mmm <- as.matrix(mmm)
      }
-     stopifnot(is.matrix(m))
-     stopifnot(nrow(m) >= 1)
-     stopifnot(ncol(m) >= 1)
+     stopifnot(is.matrix(mmm))
+     stopifnot(nrow(mmm) >= 1)
+     stopifnot(ncol(mmm) >= 1)
      
      # Generates a three-row multi-part figure.
      # Top part: the caption (title)
      # Middle part: the histogram and distribution key (probably should be made optional, but it's required for now)
      # Bottom part: the heatmap
+     
+     if (!missing(col.names) && !is.null(col.names)) { labCol <- col.names } ## "col.names" is just an alias for "labCol"
+     if (!missing(row.names) && !is.null(col.names)) { labRow <- row.names } ## "row.names" is just an alias for "labRow"
+     
+     if (is.null(labRow)) { labRow = rownames(mmm) }
+     if (is.null(labCol)) { labCol = colnames(mmm) }
 
-     m <- t(m)
 
      stopifnot(breaks >= 3)
 
@@ -105,17 +114,16 @@ heatmap.agw <- function(m, breaks=12, labRow=colnames(m), labCol=rownames(m), co
      # ==========================================
      # ======================================
 
-     min.raw <- min(m, na.rm=TRUE)
-     max.raw <- max(m, na.rm=TRUE)
+     min.raw <- min(mmm, na.rm=TRUE)
+     max.raw <- max(mmm, na.rm=TRUE)
 
-     mean.raw <- mean(m, na.rm=TRUE)
-     median.raw <- median(m, na.rm=TRUE)
+     mean.raw <- mean(mmm, na.rm=TRUE)
+     median.raw <- median(mmm, na.rm=TRUE)
 
-
-     textDescriptionPlotAGW(paste("Heatmap with ", length(m)
-                                  , " values, in ", nrow(m)
+     textDescriptionPlotAGW(paste("Heatmap with ", length(mmm)
+                                  , " values, in ", nrow(mmm)
                                   , " rows and "
-                                  , ncol(m), " columns."
+                                  , ncol(mmm), " columns."
                                   , " Mean = ", format(mean.raw, digits=3, nsmall=1)
                                   , ", median = ", format(median.raw, digits=3, nsmall=1)
                                   , ". ", title
@@ -125,19 +133,31 @@ heatmap.agw <- function(m, breaks=12, labRow=colnames(m), labCol=rownames(m), co
      # ==========================================
      # ==========================================
      # ======================================
+
+     
      par(mar=c("bottom"=3, "left"=9.5, "top"=5, "right"=15.5))
 
      if (missing(main) || is.null(main)) {
           main <- "Heatmap"
      }
-     main <- paste(main, "\n(", nrow(m), " rows by ", ncol(m), " columns)", sep='')
+     main <- paste(main, "\n(", nrow(mmm), " rows by ", ncol(mmm), " columns)", sep='')
 
      if (missing(breaks) || is.null(breaks) || (length(breaks) == 1)) {
           ## If breaks was not specified, OR it was a length-one scalar
           breaks <- seq(min.raw, max.raw, length.out=breaks)
      }
 
+     ## Alternative color scale chosen by Alex, blue to yellow (black in the middle):
+     ##, col=c("#00C8FF", "#00AAF5", "#0082D7", "#2464A8", "#004064", "black", "#646400","#919114","#B6B61E","#D7D728","#FFFF00") ## blue to yellow
+
+     if (!missing(colorStyle) && !is.null(colorStyle)) {
+          assert.agw(length(colorStyle) == 1, "colorStyle needs to be a string like blueblackyellow. The user can pass in a string here to automagically pick the color scheme. Or they can specify it manually with \"col\".")
+          ## ColorStyle is a CHARACTER vector
+          col <- colors.agw(n = length(breaks)-1, type=colorStyle)
+     }
+     
      if (missing(col) || is.null(col)) {
+          ## If the color was not specified...
           totalColors <- length(breaks)-1
           if (totalColors == 2) {
                col <- c("#000066", "#FFFF99")
@@ -147,18 +167,23 @@ heatmap.agw <- function(m, breaks=12, labRow=colnames(m), labCol=rownames(m), co
                col <- c("#330033", "#770044", heat.colors(totalColors-2))
           }
           col <- col[1:totalColors]
-     } else {
-          col <- colors.agw(n = length(breaks)-1, type=col)
      }
 
-     z <- seq(min.raw, max.raw, length = length(col))
-     image(z = matrix(z, ncol = 1), col = col, breaks = breaks, xaxt = "n", yaxt = "n")
+     ## ===============================
+     ## ===============================
+     ## ===============================
+     ## Draw the KEY / LEGEND histogram
+     
+     ## Draw the background for the "legend" histogram
+     legendBack <- seq(min.raw, max.raw, length=length(col)) ## Heatmap Histogram!
+     image(z = matrix(legendBack, ncol = 1), col=col, breaks=breaks, xaxt="n", yaxt="n") ## This is the histogram / distribution background that goes at the top of the heatmap
+     
      par(usr = c(0, 1, 0, 1))
      lv <- pretty(breaks)
      xv <- scale01(as.numeric(lv), min.raw, max.raw)
      axis(1, at = xv, labels = lv)
 
-     h <- hist(m, plot = FALSE, breaks=breaks)
+     h <- hist(mmm, plot = FALSE, breaks=breaks)
      hx <- scale01(breaks, min.raw, max.raw)
      hy <- c(h$counts, h$counts[length(h$counts)])
 
@@ -172,24 +197,32 @@ heatmap.agw <- function(m, breaks=12, labRow=colnames(m), labCol=rownames(m), co
      abline(v=scale01(median.raw, min.raw, max.raw), lwd=MEDIAN_LINE_WIDTH, lty="dashed", col="black")
 
      Y_SCALE <- 0.95
-     lines(hx, hy/max(hy) * Y_SCALE, lwd=2*HISTOGRAM_LINE_WIDTH, type = "s", col = "white")
+     lines(hx, hy/max(hy) * Y_SCALE, lwd=2*HISTOGRAM_LINE_WIDTH, type = "s", col = "white") ## Draw the actual histogram as a squiggly line
      lines(hx, hy/max(hy) * Y_SCALE, lwd=HISTOGRAM_LINE_WIDTH, type = "s", col = "black")
 
      axis(2, at=pretty(hy)/max(hy) * Y_SCALE, pretty(hy))
      par(cex.main=1.7)
      title(paste("Color Key and Histogram of the Distribution of Heatmap Values\nDashed line = median value (", format(median.raw, digits=3, nsmall=1), ")", sep=''))
-     mtext(side=2, paste("Count (out of ", length(m) ,")", sep=''), line=3)
+     mtext(side=2, paste("Count (out of ", length(mmm) ,")", sep=''), line=3)
      box(lwd=1)
+     ## Done drawing the "legend" histogram of values in the heatmap
+     
      # ======================================
      # ==========================================
      # ==========================================
      # ======================================
      par(mar=c("bottom"=25, "left"=8, "top"=8, "right"=20), cex.main=2.2)
      par(cex = 0.5) ## Expansion factor
-     image(m, axes=F, main=main, col=col)
+     #image(m, axes=F, main=main, col=col)
+     image(t(mmm)[, nrow(mmm):1], axes=F, main=main, col=col) ## <-- transpose AND flip, to rotate the correct way
+     # Notice that ‘image’ interprets the matrix as a table of
+     # ‘f(x[i], y[j])’ values, so that the x axis corresponds to row
+     # number and the y axis to column number, with column 1 at the
+     # bottom, i.e. a 90 degree counter-clockwise rotation of the
+     # conventional printed layout of a matrix.
 
-     numRows <- ncol(m) ## -- yes, it really is NCOL, because we transposed m due to the way "image" draws things
-     numCols <- nrow(m) ## -- yes, it really is NROW, because we transposed m due to the way "image" draws things
+     numRows <- nrow(mmm) ## -- yes, it really is NCOL, because we transposed m due to the way "image" draws things
+     numCols <- ncol(mmm) ## -- yes, it really is NROW, because we transposed m due to the way "image" draws things
 
      numNonBlankRows <- 0
      if (!is.null(labRow)) {
@@ -217,10 +250,15 @@ heatmap.agw <- function(m, breaks=12, labRow=colnames(m), labCol=rownames(m), co
      }
 
      if (!is.null(labRow) && numNonBlankRows <= maxNumLabels) {
-          axis(4, at=(0:(ncol(m)-1))/(ncol(m)-1), labels=labRow, tick=F, las=2, cex.axis=cexRow) # 4 = right axis, usually with gene names
+          ## Right side axis--got to FLIP them around, because of the way we printed the image
+          tickLoc.vec <- (0:(nrow(mmm)-1))/(nrow(mmm)-1)
+          backwardsLabels.vec <- rev(labRow) ## Gotta reverse the order here!
+          ## You can verify that this is correct by examining the values in "heatByCoef" and verifying that
+          ## they match up here, too.
+          axis(4, at=tickLoc.vec, labels=backwardsLabels.vec, tick=F, las=2, cex.axis=cexRow) # 4 = right axis, usually with gene names
      }
      
-     axis(1, at=(0:(nrow(m)-1))/(nrow(m)-1), labels=labCol, tick=F, las=2, cex.axis=1.5) # 1 = bottom axis, usually with array names
+     axis(1, at=(0:(ncol(mmm)-1))/(ncol(mmm)-1), labels=labCol, tick=F, las=2, cex.axis=cexCol) # 1 = bottom axis, usually with array names
      box(lwd=1)
      # ======================================
 # ==========================================

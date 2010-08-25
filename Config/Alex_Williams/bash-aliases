@@ -63,6 +63,7 @@ echo \">>> Here is how you check the version of an apt-get installed package:   
 echo \">>> Here is how you install a new package in R from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...))\" ; \
 echo \">>> Check current Linux version: cat /etc/*-release\" ; \
 echo \">>> Print every Nth line from a file, starting with line M: sed -n 'N~Mp'\" ; \
+echo \">>> Set the time on Ubuntu: sudo ntpdate-debian\" ; \
 echo \">>> Foreach: for f in ${BACKTICK}ls${BACKTICK}; do echo \\\$f will become \\\$${BRACKETOPEN}f/.txt/.newending/${BRACKETCLOSE} ; done  \" ; \
 "
 

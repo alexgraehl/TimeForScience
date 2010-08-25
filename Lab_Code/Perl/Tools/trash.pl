@@ -273,7 +273,7 @@ foreach my $itemToDelete (@ARGV) {
 
 if ($numItemsDeleted > 0) {
 
-    print STDOUT qq{trash.pl: Note: the trash directory may be auto-deleted without warning.\n};
+    print STDOUT qq{trash.pl: Note: the trash directory will be auto-deleted every reboot, without warning.\n};
 
     print STDOUT (qq{-} x 80) . "\n";
 
