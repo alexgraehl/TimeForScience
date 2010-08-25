@@ -1,0 +1,85 @@
+========================================================
+
+For the VERY FIRST TIME you want a Mercurial repository:
+
+This will make a "TimeForScience" folder in your home directory. You can
+move it to any location, or rename it, as you see fit. Note that later instructions
+assume that you did in fact name your repository "TimeForScience" and put it in your
+home directory. If you did not, you will have to remember what you call it and change
+the later instructions accordingly!
+	
+  hg clone https://timeforscience.googlecode.com/hg/ ~/TimeForScience
+    This creates a new directory named "TimeForScience" in the base level of your home directory.
+
+Now you will need to read "0005_How_to_set_up_your_path.txt" to see how to set up your shell's path.
+
+========================================================
+
+Procedure for getting updated code. You will want to do this every so often to get bug fixes!
+
+First command:
+   cd ~/TimeForScience
+     You must be in the source code repository for this to work!
+
+Second command:
+   hg pull
+     This checks the google code server to find out what has been changed.
+
+Third and last command:
+   hg update
+     This actually overwrites the local files with the updated ones.
+
+
+========================================================
+Procedure for uploading your changes to the google code repository:
+
+First command:
+   cd ~/TimeForScience
+     You must be in the source code repository for this to work!
+
+Second command:
+   hg pull
+     This checks the google code server to find out what has been changed.
+
+Third command:
+   hg update
+     This actually overwrites the local files with the updated ones.
+
+Fourth command, which is only for new files:
+   hg add MY_NEW_FILE
+   This tells Mercurial that you have a totally new file that you made. Make sure to put it in a sensible location!)
+   You can skip this step if you aren't creating a totally new file.
+
+Fifth command:
+   hg commit -m "Fixed the bug in this file, so I am uploading it"
+     This tells your local computer that you have a change to make, but it does NOT
+     send it to the server yet!! (it is NOT like CVS commit!)
+
+Last command:
+   hg push
+     This sends your updated file's changes to the server.
+     Note: you will have to type your username and password here, UNLESS
+     you put your password in your config file. Read on for instructions on how to do that.
+
+========================================================
+
+To avoid having to type in the annoying auto-generated password every time, you can save your password in a local file. Note that anyone on the filesystem can read this file, so don't use a password you care about! The password is stored as plaintext! Anyone can read it!
+
+There are two steps:
+
+1. Here are the two important lines that should be in the file ~/TimeForScience/.hg/hgrc :
+
+[paths]
+default = https://YOUR_USERNAME_HERE:YOUR_PASSWORD_GOES_HERE@timeforscience.googlecode.com/hg/
+                  ^^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^
+              Put your username here         and password here
+              (note that anybody can read these!)
+
+2. For a tiny bit of additional security, now run:
+        chmod -R og-rx ~/TimeForScience/.hg/
+    to make it only "very easy to read your password" instead of "incredibly easy."
+
+
+========================================================
+
+
