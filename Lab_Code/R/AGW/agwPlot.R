@@ -155,6 +155,16 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
           ## ColorStyle is a CHARACTER vector
           col <- colors.agw(n = length(breaks)-1, type=colorStyle)
      }
+
+     if (missing(cexCol) || is.null(cexCol)) {
+          cexCol = 1.5
+          if (nrow(mmm) > 12) {
+               cexCol=1.0
+          }
+          if (nrow(mmm) > 25) {
+               cexCol=0.8
+          }
+     }
      
      if (missing(col) || is.null(col)) {
           ## If the color was not specified...
@@ -181,7 +191,7 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      par(usr = c(0, 1, 0, 1))
      lv <- pretty(breaks)
      xv <- scale01(as.numeric(lv), min.raw, max.raw)
-     axis(1, at = xv, labels = lv)
+     axis(1, at=xv, labels=lv)
 
      h <- hist(mmm, plot = FALSE, breaks=breaks)
      hx <- scale01(breaks, min.raw, max.raw)
@@ -221,16 +231,13 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      # bottom, i.e. a 90 degree counter-clockwise rotation of the
      # conventional printed layout of a matrix.
 
-     numRows <- nrow(mmm) ## -- yes, it really is NCOL, because we transposed m due to the way "image" draws things
-     numCols <- ncol(mmm) ## -- yes, it really is NROW, because we transposed m due to the way "image" draws things
-
      numNonBlankRows <- 0
      if (!is.null(labRow)) {
           numNonBlankRows <- sum(!is.na(labRow) & (nchar(labRow) > 0)) ## Count the number of NON-BLANK rows only!
      }
      
      if (is.null(cexRow)) {
-          rowNumberToUseForSizeCalculation <- numRows ## Make the labels tiny enough to individually specify a single row
+          rowNumberToUseForSizeCalculation <- nrow(mmm) ## Make the labels tiny enough to individually specify a single row
           
           cexRow = 1.0
           rowsAtWhichCexIsMin <- 800 ## The number of rows at which the text is the tiniest (or more rows than this)
