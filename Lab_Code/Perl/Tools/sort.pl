@@ -53,11 +53,14 @@ my $reverse       = $args{'-r'};
 my $file          = $args{'--file'};
 my @extra         = @{$args{'--extra'}};
 
-my @data;
+my @data = ();
+my @headerStorage = ();
 
 my @cols;
 
 my $prev_cols = 0;
+
+my $numLinesRead = 0;
 
 open(FILE, $file) or die("Could not open file '$file' for reading");
 while(<FILE>) {
@@ -71,89 +74,71 @@ while(<FILE>) {
       }
    }
 
-   my @x;
-   foreach my $i (@cols) {
-      if($i <= $#tuple) {
-         push(@x, $tuple[$i]);
-      }
+   if ($numLinesRead < $headers) {
+       push(@headerStorage, $_);
+   } else {
+       ## not a header line
+       my @x;
+       foreach my $i (@cols) {
+	   if($i <= $#tuple) {
+	       push(@x, $tuple[$i]);
+	   }
+       }
+       push(@data, [$_, \@x]);
    }
-
-   push(@data, [$_, \@x]);
-
    $prev_cols = $num_cols;
 }
 
 close(FILE);
 
-if($reverse) {
+if ($reverse) {
    @data = sort fancyCompareRev @data;
-}
-else
-{
-   @data = sort fancyCompare @data;
+} else {
+    ## what a mess...
+    @data = sort fancyCompare @data;
 }
 
-for(my $i = 0; $i < scalar(@data); $i++)
-{
-   print $data[$i][0], "\n";
+for (my $i = 0; $i < scalar(@headerStorage); $i++) {
+    print $headerStorage[$i] . "\n";
+}
+
+for (my $i = 0; $i < scalar(@data); $i++) {
+    print $data[$i][0], "\n";
 }
 
 exit(0);
 
-sub fancyCompare
-{
+sub fancyCompare {
    my $x = $$a[1];
-
    my $y = $$b[1];
-
    my $n = scalar(@{$x});
-
    my $m = scalar(@{$y});
-
    return &fancyCompareRecursive($x, $y, 0, ($n > $m ? $m : $n), 0);
 }
 
-sub fancyCompareRev
-{
+sub fancyCompareRev {
    my $x = $$a[1];
-
    my $y = $$b[1];
-
    my $n = scalar(@{$x});
-
    my $m = scalar(@{$y});
-
    return &fancyCompareRecursive($x, $y, 0, ($n > $m ? $m : $n), 1);
 }
 
-sub fancyCompareRecursive
-{
+sub fancyCompareRecursive {
    my ($x, $y, $i, $n, $rev) = @_;
-
    my $result;
-
-   if($i >= $n)
-   {
+   if($i >= $n) {
       $result = 0;
-   }
-   elsif(&isEmpty($$x[$i]) and &isEmpty($$y[$i]))
-   {
+   } elsif(&isEmpty($$x[$i]) and &isEmpty($$y[$i])) {
       $result = &fancyCompareRecursive($x, $y, $i+1, $n, $rev);
    }
-   elsif(&isEmpty($$y[$i]))
-   {
+   elsif(&isEmpty($$y[$i])) {
       $result = -1;
-   }
-   elsif(&isEmpty($$x[$i]))
-   {
+   } elsif(&isEmpty($$x[$i])) {
       $result = 1;
-   }
-   elsif($$x[$i] == $$y[$i])
-   {
+   } elsif($$x[$i] == $$y[$i]) {
       $result = &fancyCompareRecursive($x, $y, $i+1, $n, $rev);
-   }
-   else
-   {
+   } else {
       $result = ($rev ? -1 : 1) * ($$x[$i] > $$y[$i] ? 1 : -1);
    }
    return $result;
@@ -165,7 +150,7 @@ sub isEmpty {
           or ($x =~ 'NaN') # "not a number"
           or ($x =~ 'NA') # "NA"
           or ($x =~ 'ND') # "no data"
-          or ($x !~ /\S/) # all spaces
+          or ($x !~ /\S/) # all spaces--i.e., x doesn't match anything that is NOT a space!
        );
 }
 
@@ -182,7 +167,7 @@ OPTIONS are:
 
 -d DELIM: Set the field delimiter to DELIM (default is tab).
 
--h HEADERS: Set the number of header lines to HEADERS (default is 1).
+-h HEADERS: Set the number of header lines to HEADERS (default is 0).
 
 
 
