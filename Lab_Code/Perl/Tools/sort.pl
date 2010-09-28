@@ -58,25 +58,25 @@ my @headerStorage = ();
 
 my @cols;
 
-my $prev_cols = 0;
+my $numColumnsInPreviousLine = -1;
 
 my $numLinesRead = 0;
 
 open(FILE, $file) or die("Could not open file '$file' for reading");
-while(<FILE>) {
-   chomp;
-   my @tuple = split($delim);
-   my $num_cols = scalar(@tuple);
-
-   if(defined($fields)) {
-      if($num_cols != $prev_cols) {
-         @cols = &parseRanges($fields, $num_cols, -1);
-      }
-   }
-
+while (<FILE>) {
+   chomp; ## remove the newline...
    if ($numLinesRead < $headers) {
        push(@headerStorage, $_);
    } else {
+       my @tuple = split($delim);
+       my $numColumnsForThisLine = scalar(@tuple);
+       
+       if (defined($fields)) {
+	   if ($numColumnsForThisLine != $numColumnsInPreviousLine) {
+	       @cols = &parseRanges($fields, $numColumnsForThisLine, -1);
+	   }
+       }
+       
        ## not a header line
        my @x;
        foreach my $i (@cols) {
@@ -85,8 +85,9 @@ while(<FILE>) {
 	   }
        }
        push(@data, [$_, \@x]);
+       $numColumnsInPreviousLine = $numColumnsForThisLine;
    }
-   $prev_cols = $num_cols;
+   $numLinesRead++;
 }
 
 close(FILE);
