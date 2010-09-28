@@ -58,7 +58,7 @@ case "$OSTYPE" in
 	;;
 esac
 
-if [[ $OSTYPE = "darwin10.0" && $HOSTNAME = "Z.local" ]]; then
+if [[ $HOSTNAME = "Guinea-Beast.local" ]]; then
     isAGWHomeMachine=1
 fi
 
