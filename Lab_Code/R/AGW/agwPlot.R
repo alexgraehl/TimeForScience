@@ -369,17 +369,17 @@ panel.correlation.local <- function(x, y, digits=2, prefix="", cex.cor=4.0, boxW
      MIDDLE_OF_SQUARE <- (SQUARE_MAX + SQUARE_MIN)/2.0
      par(usr = c(SQUARE_MIN, SQUARE_MAX, SQUARE_MIN, SQUARE_MAX))
      #‘usr’ A vector of the form ‘c(x1, x2, y1, y2)’ giving the extremes of the user coordinates of the plotting region.
-
-     origR   <- cor(x, y, use="complete")
-     r <- ifelse(is.finite(origR), origR, 0.00)
+     
+     origR   <- cor(x, y, use="complete", method="pearson")
+     absR <- abs(ifelse(is.finite(origR), origR, 0.00))
      MIN_CEX_FAC <- 0.4
-     theCex <- cex.cor * max(MIN_CEX_FAC, abs(r)**2) ## don't let the CEX get any smaller than the MIN_CEX
+     theCex <- cex.cor * max(MIN_CEX_FAC, absR**2) ## don't let the CEX get any smaller than the MIN_CEX
 
-     backgroundColor <- hsv(s = 0.0,  v = 1.0 - 5*(1.0 - max(0.9, abs(r)))) ## uhh... 1.0 = white, and lower scores = a dark-ish gray... kind of hack-ish
+     backgroundColor <- hsv(s = 0.0,  v = 1.0 - 5*(1.0 - max(0.9, absR))) ## uhh... 1.0 = white, and lower scores = a dark-ish gray... kind of hack-ish. Basically it gets as dark as it's going to get around R=0.7 or thereabouts.
      rect(xleft=-100, ybottom=-100, xright=100, ytop=100, col=backgroundColor)
      text(MIDDLE_OF_SQUARE, MIDDLE_OF_SQUARE
           , format(origR, digits=2, nsmall=2, scientific=FALSE)
-          , cex=theCex ## the closer R is to zero, the smaller the text size
+          , cex=theCex ## <-- The closer R is to zero, the smaller the text size
           )
      box(lwd=boxWidth)
 }
@@ -396,7 +396,8 @@ geneST.pairs.plot <- function(..., celKeys) {
 ## Uses the data in "dataMatrix" to figure out what to plot.
 ## if you for some reason actually want NO labels, set labelVec to "" in the arguments
 ### ===============================================================================
-pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, main="log2(Intensity).  Red points = within-same-group comparison") {
+pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, main="log2(Intensity).  Red points = within-group comparison. Values in lower left are Pearson's R of the log-transformed values.") {
+     
      assert.agw(nrow(keys$"table") == ncol(dataMatrix))
      if (missing(labelVec) || is.null(labelVec)) {
           COLUMN_THAT_PROBABLY_HAS_THE_FILENAMES <- 1 ## usually the first column in the keys file...
@@ -446,15 +447,17 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
      par(mar=c("bottom"=2, "left"=2, "right"=2, "top"=8))
      par(cex.axis=1.0, cex.lab=1.2, cex.main=1.0)     
      dimSize <- ncol(dataMatrix)
-     
+
      whichSubplot <- list("x" = 2, "y" = 1)  ## <-- have to MANUALLY keep track of which sub-plot we are plotting in the  big "upper.panel" function using these vars and the <<- assignment operator
-     graphics::pairs(dataMatrix #[1:100, ]
+     graphics::pairs(dataMatrix
                      , main=main, labels=labelVec
                      , cex.labels=1.5 ## <-- this determines the labels on the diagonal
                      , cex.main=1.0 ## <-- this is related to the size of the graph in a non-intuitive way
                      , lower.panel=function(x,y) {
                           #rect(-10,-10,10,10, col="gray", border=NA) ;
+                          cat("Running correlation...")
                           panel.correlation.local(x,y, boxWidth=MINI_PLOT_BORDER_THICKNESS) ;
+                          cat("[done]\n")
                      }
                      , upper.panel=function(x,y) {
                           binX <- whichBin(whichSubplot$x, cumul)
@@ -471,8 +474,9 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
                           
                           rect(xleft=min(x)-10, ybottom=min(y)-10, xright=max(x)+10, ytop=max(y)+10, col=theBackColor, border=NA)
                           points(x,y, pch='.', cex=4, col=thePointColor) ## <-- pch='.' is 10 times faster than any other plot character. Use cex=### to adjust the size of the dot.
+
                           box(lwd=MINI_PLOT_BORDER_THICKNESS)
-                          whichSubplot$x <<- whichSubplot$x+1; ## go to the next column...
+                          whichSubplot$x <<- (whichSubplot$x+1); ## go to the next column... note that this is a GLOBAL assignment! That is important.
                           if (whichSubplot$x > dimSize) {
                                whichSubplot$x <<- (whichSubplot$y+2) ## <-- because upper.panel is a right triangle, we start from a point farther to the right on the plot each time. (This really is supposed to be (xVal <<- yVal+2)!
                                whichSubplot$y <<- (whichSubplot$y+1) ## <-- this only works because the upper.panel is a *right triangle*, so it just happens that the X axis index where we start a new row is the same as the Y axis index. Y axis index is also the same as the X##(whichSubplot$y) #startX;
