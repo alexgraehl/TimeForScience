@@ -128,16 +128,16 @@ sub fancyCompareRev {
 sub fancyCompareRecursive {
    my ($x, $y, $i, $n, $rev) = @_;
    my $result;
-   if($i >= $n) {
+   if ($i >= $n) {
       $result = 0;
-   } elsif(&isEmpty($$x[$i]) and &isEmpty($$y[$i])) {
+   } elsif (&isEmpty($$x[$i]) and &isEmpty($$y[$i])) {
       $result = &fancyCompareRecursive($x, $y, $i+1, $n, $rev);
    }
-   elsif(&isEmpty($$y[$i])) {
+   elsif (&isEmpty($$y[$i])) {
       $result = -1;
-   } elsif(&isEmpty($$x[$i])) {
+   } elsif (&isEmpty($$x[$i])) {
       $result = 1;
-   } elsif($$x[$i] == $$y[$i]) {
+   } elsif ($$x[$i] == $$y[$i]) {
       $result = &fancyCompareRecursive($x, $y, $i+1, $n, $rev);
    } else {
       $result = ($rev ? -1 : 1) * ($$x[$i] > $$y[$i] ? 1 : -1);
