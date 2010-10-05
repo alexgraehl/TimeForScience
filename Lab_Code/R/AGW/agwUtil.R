@@ -991,6 +991,53 @@ agwClampVec <- function(x, min=NULL, max=NULL) {
 }
 ## =================================================================
 
+
+## =================================================================
+read.file.into.data.frame.default.agw <- function(filename, allowRagged=FALSE, row.names=NULL, header=TRUE, comment.char='', sep="\t") {
+     ## Input: a tab-delimited file with a single row header AND a single column header.
+     ## Set <row.names> to NULL to force auto-numbering of rows (useful if you don't care about the row names, and want to avoid the "duplicate 'row.names' are not allowed" problem)
+     return(read.table(filename, stringsAsFactors=FALSE
+                       ,       header = header
+                       , comment.char = comment.char
+                       ,          sep = sep
+                       ,    row.names = row.names
+                       ,        quote = ''
+                       ,   na.strings = c("NA","NaN","ND")
+                       ,  check.names = FALSE
+                       ,  strip.white = TRUE
+                       ,         fill = allowRagged));
+}
+## =================================================================
+
+read.file.into.list.of.lists.agw <- function(filename, sep="\t", row.name.column=NA) {
+     ## Reads from a file into a list of lists
+     ## "row.name.column" lets you pick which column becomes the row name.
+     ## Note that I think R requires that row names are unique.
+     ## If "row.name.column" is set to NA, then no row names are set.
+     initList <- readLines(filename)
+     initList <- strsplit(initList, sep, fixed=TRUE)
+     if (!is.na(row.name.column)) {
+          ## Set the names to whatever is in the specified column (assuming of course that there is something there...
+          ## Might not be unique? This could be a huge problem,
+          ## so probably we should check for uniqueness of names
+          names(initList) <- sapply(initList,
+                                    function(a) {
+                                         a[[row.name.column]]
+                                    })
+     }
+     return(initList)
+}
+
+## =================================================================
+read.file.into.matrix.agw <- function(filename) {
+     ## Input: a tab-delimited file with a single row header AND a single column header.
+     ## Returns a matrix.
+     return(as.matrix(read.table(filename, stringsAsFactors=FALSE, header=TRUE, comment.char="", sep="\t", row.names=1, quote="", na.strings=c("NA","NaN","ND"), check.names=FALSE)));
+}
+## =================================================================
+
+
+
 ## =================================================================
 agwReadFileIntoDataFrame <- function(filename, allowRagged=FALSE, row.names=1, header=TRUE) {
      ## Input: a tab-delimited file with a single row header AND a single column header.
