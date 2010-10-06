@@ -94,11 +94,26 @@ alias ..='cd ..'
 alias res='source ~/.bashrc ; source ~/.bash_profile'
 alias mv='mv -i'
 alias cp='cp -i'
-alias rrm='/bin/rm' # --verbose --preserve-root --interactive=once'
+alias kpk='exit'
+
+
+
+## Below: aliases the command "rm" to actually run the script "trash.pl," which moves files to a trash directory in /tmp.
+## They can be recovered by just copying them back.
+## Use the "checktrash" command to find the trash directory if you forget where it is.
+#alias rm='/home/alexgw/trash.pl'
 alias rm='trash.pl'
+
+## Below: the REAL rm command in /bin/rm is aliased to "rrm". rrm will delete files instantly.
+## You may need to use this in the few cases where trash.pl doesn't work, like for files with unusual special characters.
+alias rrm='/bin/rm'
+##alias rrm='/bin/rm' # --verbose --preserve-root --interactive=once'
+
+## Below: the command to list the top-level contents of the trash directory. You may have to look through the files here if you want to recover something you just accidentally deleted. Beware, files don't last long in /tmp\!
 alias checktrash='mkdir -p /tmp/${USER}/Trash/ && echo "Contents of /tmp/${USER}/Trash:" && ls /tmp/${USER}/Trash/'
 alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv --preserve-root /tmp/${USER}/Trash/ && echo "Emptied the trash directory (/tmp/${USER}/Trash)" ;'
-alias kpk='exit'
+
+
 
 alias crt='crontab -u ${USER} -e'
 
