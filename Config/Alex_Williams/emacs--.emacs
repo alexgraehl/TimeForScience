@@ -262,6 +262,7 @@
  query-replace-highlight   t ;; <-- highlight during searching
  abbrev-case-fold-search   t
 
+ large-file-warning-threshold 50000000  ; 10000000 = 10 megabytes (10,000,000) . Nil disables this completely
  blink-matching-paren      t
  blink-matching-paren-distance 999000
  line-number-mode          t ; Show current line number in status bar
