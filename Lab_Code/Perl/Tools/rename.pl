@@ -43,7 +43,7 @@ die "Usage: rename [-v] [-n] [-f] perlexpr [filenames]\n"
 	'f|force'   => \$force,
     ) and $op = shift;
 
-$verbose++ if $no_act;
+if ($no_act) { $verbose = 1; } ## always be verbose when we are using a dry-run
 
 if (!@ARGV) {
     print "reading filenames from STDIN\n" if $verbose;
@@ -51,20 +51,30 @@ if (!@ARGV) {
     chop(@ARGV);
 }
 
+
+if ($verbose) { print "About to examine " . scalar(@ARGV) . " items that might be renamed if they match the pattern. . .\n"; }
+
 for (@ARGV) {
-    my $was = $_;
+    my $prevFilename = $_;  ## previous filename
     eval $op;
     die $@ if $@;
-    next if $was eq $_; # ignore quietly
+
+    if ($prevFilename eq $_) { next; } # same filenames -- ignore quietly
     
+    if ($no_act) {
+	if ($verbose) { print "Dry run:  $prevFilename  would be renamed to  $_\n"; }
+	next;
+    }
+
     if (-e $_ and !$force) {
-        warn  "$was not renamed: $_ already exists\n";
+        warn "$prevFilename was not renamed: $_ already exists\n";
+	next;
     }
-    elsif ($no_act or rename $was, $_) {
-        print "$was renamed as $_\n" if $verbose;
-    }
-    else {
-        warn  "Can't rename $was $_: $!\n";
+        
+    if (rename $prevFilename, $_) {
+        if ($verbose) { print "$prevFilename  renamed to  $_\n"; }
+    } else {
+        warn "Can't rename $prevFilename $_: $!\n";
     }
 }
 
