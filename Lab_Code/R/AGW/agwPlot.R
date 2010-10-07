@@ -238,7 +238,6 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      
      if (is.null(cexRow)) {
           rowNumberToUseForSizeCalculation <- nrow(mmm) ## Make the labels tiny enough to individually specify a single row
-          
           cexRow = 1.0
           rowsAtWhichCexIsMin <- 800 ## The number of rows at which the text is the tiniest (or more rows than this)
           rowsAtWhichCexIsMax <- 100 ## The number of rows at which the text is the biggest (or fewer rows than this)
