@@ -445,6 +445,35 @@ sourceSettingsFile.agw <- function(pattern="^1_Settings_.*\\.R$") {
 
 
 ## ==============================================
+## Provides a boolean list of indices to be removed from a vector /data frame / whatever.
+## Throws an error if you have specified nonexistent names, unless you say ignore.mismatch=TRUE.
+## Example:
+# m  <- matrix(rnorm(100), ncol=10) ; colnames(m) <- letters[1:10]
+# nn <- m[, omitByName.agw(colnames(m), c("a","i"))]  ## <-- removes columns "a" and "i"
+## ==============================================
+toOmitNames.agw <- function(allNames, omitThese, ignore.mismatch=FALSE) {
+     to.keep.bool.vec <- !(allNames %in% omitThese)
+     if (!ignore.mismatch) {
+          itemsInRemoveThatAreAlsoInNames.bool.vec <- (omitThese %in% allNames)
+          print (itemsInRemoveThatAreAlsoInNames.bool.vec)
+          if (!all(itemsInRemoveThatAreAlsoInNames.bool.vec)) {
+               print.magenta.agw("=========================================")
+               print.red.agw("Error: The function <boolOfWhichToOmitByName.agw> was told to remove a name that did *not* exist in the input.")
+               print.red.agw("       In other words, one of the items in omitThese was NOT also present in allNames.")
+               print.red.agw("       Here is allNames:")
+               print(allNames)
+               print.red.agw("       And here is omitThese:")
+               print(omitThese)
+               print.red.agw("       And finally, here is the vector telling you which items in REMOVE were found in names. The \"FALSE\" ones are bad news:")
+               print(itemsInRemoveThatAreAlsoInNames.bool.vec)
+               print.magenta.agw("=========================================")
+               assert.agw(all(itemsInRemoveThatAreAlsoInNames.bool.vec), "One of the names that we wanted to remove was *not* a name that was actually present. You may want to check your spelling, or override this with ignore.mismatch=TRUE.")
+          }
+     }
+     return(to.keep.bool.vec)
+}
+
+## ==============================================
 ## Omits columns in a matrix or data frame by NAME.
 ## Throws an error if you have specified nonexistent names.
 ## (Remove columns by name instead of by index.)
