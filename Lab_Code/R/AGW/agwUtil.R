@@ -455,19 +455,18 @@ toOmitNames.agw <- function(allNames, omitThese, ignore.mismatch=FALSE) {
      to.keep.bool.vec <- !(allNames %in% omitThese)
      if (!ignore.mismatch) {
           itemsInRemoveThatAreAlsoInNames.bool.vec <- (omitThese %in% allNames)
-          print (itemsInRemoveThatAreAlsoInNames.bool.vec)
           if (!all(itemsInRemoveThatAreAlsoInNames.bool.vec)) {
                print.magenta.agw("=========================================")
-               print.red.agw("Error: The function <boolOfWhichToOmitByName.agw> was told to remove a name that did *not* exist in the input.")
+               print.magenta.agw("===================")
+               print.red.agw("Error: The function \"", (match.call())[[1]], "\" was told to remove a name that did *not* exist in the input.")
                print.red.agw("       In other words, one of the items in omitThese was NOT also present in allNames.")
-               print.red.agw("       Here is allNames:")
-               print(allNames)
-               print.red.agw("       And here is omitThese:")
-               print(omitThese)
-               print.red.agw("       And finally, here is the vector telling you which items in REMOVE were found in names. The \"FALSE\" ones are bad news:")
-               print(itemsInRemoveThatAreAlsoInNames.bool.vec)
+               print.red.agw("       Here is allNames:") ;     print(allNames)
+               print.red.agw("       And here is omitThese:"); print(omitThese)
+               print.red.agw("       This boolean vector shows which items in omitThese were found in allNames. The \"FALSE\" ones are bad news:") ; print(itemsInRemoveThatAreAlsoInNames.bool.vec)
+               print.red.agw("       Thus, the items in omitNames that were NOT in allNames were:") ; print(omitThese[!itemsInRemoveThatAreAlsoInNames.bool.vec])
+               print.magenta.agw("===================")
                print.magenta.agw("=========================================")
-               assert.agw(all(itemsInRemoveThatAreAlsoInNames.bool.vec), "One of the names that we wanted to remove was *not* a name that was actually present. You may want to check your spelling, or override this with ignore.mismatch=TRUE.")
+               assert.agw(all(itemsInRemoveThatAreAlsoInNames.bool.vec), "One of the names that we wanted to remove was *not* a name that was actually present. You may want to check your spelling AND capitalization, or override this with ignore.mismatch=TRUE.")
           }
      }
      return(to.keep.bool.vec)
@@ -479,31 +478,8 @@ toOmitNames.agw <- function(allNames, omitThese, ignore.mismatch=FALSE) {
 ## (Remove columns by name instead of by index.)
 ## ==============================================
 omitColumnsByName.agw <- function(mat, namesToRemoveVec, ignore.mismatch=FALSE) {
-     prelim.remove <- match(namesToRemoveVec, colnames(mat))
-     remove.vec <- na.omit(prelim.remove)
-     if (!ignore.mismatch) {
-          if (length(remove.vec) != length(namesToRemoveVec)) {
-               print("=========================================")
-               print.red.agw("Error: The function <omitColumnsByName.agw> cannot find a column name that was specified.")
-               print.red.agw("The following names that were to be removed were NOT found in the vector:")
-               print(namesToRemoveVec[ is.na(prelim.remove) ])
-               print.red.agw("Here are the names that we DID find in the vector. Maybe there was a misspelling, or an element was removed twice:")
-               print(colnames(mat))
-               print("=========================================")
-               assert.agw(length(prelim.remove) == length(namesToRemoveVec))
-          }
-     }
-     
-     if (length(remove.vec) > 0) {
-          return(mat[, -remove.vec, drop=FALSE])
-          #return(matrix(mat[, -remove.vec], nrow=nrow(mat), ncol=(ncol(mat) - length(remove.vec))
-#                        , dimnames=list(rownames(mat), colnames(mat)[-remove.vec]) ))
-     } else {
-          ## weird... no columns removed!
-          return(mat)
-     }
+     return(mat[ , toOmitNames.agw(colnames(mat), namesToRemoveVec, ignore.mismatch=ignore.mismatch)])
 }     
-
 
 
 
