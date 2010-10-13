@@ -1005,7 +1005,7 @@ agwClampVec <- function(x, min=NULL, max=NULL) {
 ## Input: a tab-delimited file with a single row header AND a single column header.
 ## Set <row.names> to NULL to force auto-numbering of rows (useful if you don't care about the row names, and want to avoid the "duplicate 'row.names' are not allowed" problem)
 read.file.into.data.frame.default.agw <- function(...) { return (agwReadFileIntoDataFrame(...)) } ## <-- old function name for the same thing
-agwReadFileIntoDataFrame <- function(filename, allowRagged=FALSE, row.names=1, header=TRUE, sep="\t", comment.char="") {
+agwReadFileIntoDataFrame <- function(filename, allowRagged=FALSE, row.names=1, header=TRUE, sep="\t", comment.char="", check.names=FALSE) {
      return(read.table(filename, stringsAsFactors=FALSE
                        , header=header
                        , comment.char=comment.char
@@ -1013,7 +1013,7 @@ agwReadFileIntoDataFrame <- function(filename, allowRagged=FALSE, row.names=1, h
                        , row.names=row.names
                        , quote=''
                        , na.strings=c("NA","NaN","ND")
-                       , check.names=FALSE
+                       , check.names=check.names  ## Read row/col names verbatim, do not change them (by default) to be R variables!
                        , strip.white=TRUE
                        , allowEscapes=TRUE
                        , fill=allowRagged));
