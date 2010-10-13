@@ -85,7 +85,7 @@ colors.agw <- function(n = 12, type="blueblackyellow", reverse=FALSE) {
 ## * You can pass in either the matrix that you are about to plot, OR the numRows you will plot.
 ## =================================================================
 pdf.for.heatmap.agw <- function( mat=NULL, numRows=NULL, width="should not be specified by the user!!", height="should not be specified by the user!!", ...) {
-     if (!is.null(matrix)) {
+     if (!is.null( mat )) {
           amount <- nrow( mat )
           assert.agw(is.null(numRows), "You cannot specify both a matrix AND a number of rows!! Input one OR the other!")
      } else if (!is.null(nrows)) {
