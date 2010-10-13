@@ -109,11 +109,23 @@ pdf.for.heatmap.agw <- function(file=file, mat=NULL, numRows=NULL, width="should
 ## For a PDF, this heatmap.agw must be at least 12 inches tall for the heatmap AND the histogram to both fit.
 ## It can be 8 or more inches wide and look OK.
 ## =================================================================
-heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colorStyle=NULL, main, title="", cexRow=NULL, cexCol=1.5, maxNumLabels=1000, col.names=NULL, row.names=NULL) {
+heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colorStyle=NULL, main, title="", cexRow=NULL, cexCol=1.5, maxNumLabels=1000, col.names=NULL, row.names=NULL, cluster.rows=FALSE) {
      ## M: a matrix to plot
      ## Breaks: the number of histogram breaks, used for the color scheme
      ## maxNumLabels: do not print labels if there are more than this many labels ***with actual non-blank content***
 
+     if (is.logical(cluster.rows) && cluster.rows) {
+          ## If cluster.rows is true, then we will CLUSTER the rows, kind of like how regular built-in "heatmap"
+          ## does it. Check the source to "heatmap" to get a sort of general idea how this works.
+          hcc <- stats::hclust(stats::dist(mmm, method="euclidean")
+                               , method="complete")
+          dcc <- as.dendrogram(hcc)
+          reordering <- order.dendrogram(dcc)
+          mmm <- mmm[reordering, ] ## REORDER THE INPUT MATRIX BASED ON THE CLUSTERING
+               assert.agw(is.null(labRow) && is.null(row.names), "Uh oh! You cannot specify that you want the matrix to be re-clustered AND ALSO specify row names. This is because once you recluster, the row names will not be what you probably expect! i.e., the row names move around!")
+          }
+     }
+     
      ## col: the SPECIFIC list of colors to pass in. Must be equal in length to (breaks - 1)
      ## colorStyle: OR you can specify the colors as a style. This is one of the strings accepted by "colors.agw"--for example, "sepia" or "gray" or "blueblackyellow"
 
