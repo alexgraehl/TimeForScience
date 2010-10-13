@@ -84,7 +84,7 @@ colors.agw <- function(n = 12, type="blueblackyellow", reverse=FALSE) {
 ##   have gigantic super-tall cells.
 ## * You can pass in either the matrix that you are about to plot, OR the numRows you will plot.
 ## =================================================================
-pdf.for.heatmap.agw <- function(file=file, ..., mat=NULL, numRows=NULL, width="should not be specified by the user!!", height="should not be specified by the user!!") {
+pdf.for.heatmap.agw <- function(file=file, mat=NULL, numRows=NULL, width="should not be specified by the user!!", height="should not be specified by the user!!", ...) {
      if (!is.null( mat )) {
           amount <- nrow( mat )
           assert.agw(is.null(numRows), paste("You cannot specify both a matrix AND a number of rows!! Input one OR the other! numRows was specified to be: ", numRows, ".", sep=''))
@@ -98,9 +98,10 @@ pdf.for.heatmap.agw <- function(file=file, ..., mat=NULL, numRows=NULL, width="s
      ALEX_HEATMAP_WIDTH_INCHES <- 15
      MAX_HEIGHT <- 80
      MIN_HEIGHT <- 12
-     pdf(file=file, ...
+     pdf(file=file,
          , width=ALEX_HEATMAP_WIDTH_INCHES
-         , height=min(MAX_HEIGHT, max(amount*0.3, 12)))
+         , height=min(MAX_HEIGHT, max(amount*0.3, 12))
+         , ...)
 }
 
 ## =================================================================
