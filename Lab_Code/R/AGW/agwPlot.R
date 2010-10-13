@@ -76,7 +76,37 @@ colors.agw <- function(n = 12, type="blueblackyellow", reverse=FALSE) {
 
 
 ## =================================================================
-## Heatmap (by Alex)
+## pdf.for.heatmap.agw:
+## * This is used INSTEAD of a call to pdf
+## * Automatically calculates the proper PDF dimentions for a heatmap.agw plot.
+## * This way the heatmaps can be scaled to have cells that are semi-approximately the right size.
+##   Otherwise, heatmaps with lots of rows tend to have really cramped rows, and heatmaps with few rows
+##   have gigantic super-tall cells.
+## * You can pass in either the matrix that you are about to plot, OR the numRows you will plot.
+## =================================================================
+pdf.for.heatmap.agw <- function( mat=NULL, numRows=NULL, width="should not be specified by the user!!", height="should not be specified by the user!!", ...) {
+     if (!is.null(matrix)) {
+          amount <- nrow( mat )
+          assert.agw(is.null(numRows), "You cannot specify both a matrix AND a number of rows!! Input one OR the other!")
+     } else if (!is.null(nrows)) {
+          amount <- numRows
+     }
+     assert.agw(missing(width), "Hey! You should not specify width in pdf.for.heatmap.agw! It is always set to the same value.")
+     assert.agw(missing(height), "Hey! You cannot manually specify height in pdf.for.heatmap.agw. It is auto-calculated!")
+     assert.agw(is.numeric(amount), "Uh oh! Pdf.for.heatmap.agw is broken!")
+
+     ALEX_HEATMAP_WIDTH_INCHES <- 15
+     MAX_HEIGHT <- 80
+     MIN_HEIGHT <- 12
+     pdf(...
+         , width=ALEX_HEATMAP_WIDTH_INCHES
+         , height=min(MAX_HEIGHT, max(amount*0.3, 12)))
+}
+
+## =================================================================
+## Alex's Heatmap-and-histogram plot
+## For a PDF, this heatmap.agw must be at least 12 inches tall for the heatmap AND the histogram to both fit.
+## It can be 8 or more inches wide and look OK.
 ## =================================================================
 heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colorStyle=NULL, main, title="", cexRow=NULL, cexCol=1.5, maxNumLabels=1000, col.names=NULL, row.names=NULL) {
      ## M: a matrix to plot
