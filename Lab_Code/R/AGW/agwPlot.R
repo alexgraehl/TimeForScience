@@ -100,7 +100,7 @@ pdf.for.heatmap.agw <- function(file=file, mat=NULL, numRows=NULL, width="should
      MIN_HEIGHT <- 12
      pdf(file=file,
          , width=ALEX_HEATMAP_WIDTH_INCHES
-         , height=min(MAX_HEIGHT, max(amount*0.3, 12))
+         , height=min(MAX_HEIGHT, max(6+amount*0.25, 12))
          , ...)
 }
 
@@ -123,7 +123,6 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
           reordering <- order.dendrogram(dcc)
           mmm <- mmm[reordering, ] ## REORDER THE INPUT MATRIX BASED ON THE CLUSTERING
                assert.agw(is.null(labRow) && is.null(row.names), "Uh oh! You cannot specify that you want the matrix to be re-clustered AND ALSO specify row names. This is because once you recluster, the row names will not be what you probably expect! i.e., the row names move around!")
-          }
      }
      
      ## col: the SPECIFIC list of colors to pass in. Must be equal in length to (breaks - 1)
