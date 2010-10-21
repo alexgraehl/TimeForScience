@@ -16,6 +16,7 @@ if [ $isMac -eq 1 ] ; then
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
 	    "$*" \
 	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
+	    "${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode" \
 	    ./
     }
     alias SET_NAUCOLOR="osascript -e 'tell front window of app \"Terminal\" to set background color to {0,0,0,-20750}' &> /dev/null"
