@@ -423,6 +423,7 @@ panel.correlation.local <- function(x, y, digits=2, prefix="", cex.cor=4.0, boxW
           , cex=theCex ## <-- The closer R is to zero, the smaller the text size
           )
      box(lwd=boxWidth)
+     cat(".") ## progress indicator
 }
 
 ### ===============================================================================
@@ -446,8 +447,10 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
           labelVec <- paste(filenamesMostLikely.vec, "\n(", keys$groups, ")", sep='')
      }
      labelVec <- gsub("[ ]+", "\n", labelVec, perl=TRUE, ignore.case=TRUE) ## labelVec with a newline added for any spaces
-     labelVec <- gsub("\\.(CEL|gpr)", "\n.\\1", labelVec, perl=TRUE, ignore.case=TRUE )  ## put a newline before the .CEL or .gpr extension at the end of the filename
+     labelVec <- gsub("\\.(CEL|gpr)", " ", labelVec, perl=TRUE, ignore.case=TRUE )  ## put a newline before the .CEL or .gpr extension at the end of the filename
      labelVec <- gsub("[ _]+vs[.]?[ _]+", "\nvs.\n", labelVec, perl=TRUE, ignore.case=TRUE) ## break up "vs" so it spans multiple lines
+     labelVec <- gsub("\n\n+", "\n", labelVec, perl=TRUE, ignore.case=TRUE) ## One newline in a row at most!
+     labelVecNoNewlines <- gsub("\n", "", labelVec, perl=TRUE, ignore.case=TRUE)
      
      print.agw("Drawing a \"pairs\" plot matrix with many sub-plots to file <", filePath, ">... (note, this can take a couple of minutes)\n")
      
@@ -484,21 +487,36 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
      MIN_ALLOWED_SIZE_OF_PLOT_IN_PIXELS     <- 1000 ## Minimum size of this plot
      TOTAL_PNG_SQUARE_SIZE <- max((ncol(dataMatrix) * SIZE_IN_PIXELS_PER_SCATTERPLOT), MIN_ALLOWED_SIZE_OF_PLOT_IN_PIXELS)
      # ======================================
+
+
      png(filePath, height=TOTAL_PNG_SQUARE_SIZE, width=TOTAL_PNG_SQUARE_SIZE, pointsize=18, res=72)
      par(mar=c("bottom"=2, "left"=2, "right"=2, "top"=8))
      par(cex.axis=1.0, cex.lab=1.2, cex.main=1.0)     
      dimSize <- ncol(dataMatrix)
 
      whichSubplot <- list("x" = 2, "y" = 1)  ## <-- have to MANUALLY keep track of which sub-plot we are plotting in the  big "upper.panel" function using these vars and the <<- assignment operator
+
+     corrMatrixOutputFilePath <- gsub(".png", ".pearson.corr.matrix.out.txt", filePath)
+     print.green.agw("Now writing output correlations to <", corrMatrixOutputFilePath,">...")
+     vvv <- matrix(nrow=length(labelVecNoNewlines), ncol=length(labelVecNoNewlines), dimnames=list(labelVecNoNewlines, labelVecNoNewlines))
+     for (xx in seq_along(labelVecNoNewlines)) {
+          for (yy in seq_along(labelVecNoNewlines)) {
+               vvv[xx, yy] <- cor(dataMatrix[,xx], dataMatrix[,yy], use="complete", method="pearson")
+          }
+     }
+     NUM_DECIMAL_PLACES_FOR_CORR_OUTPUT <- 4
+     write.table(signif(vvv, NUM_DECIMAL_PLACES_FOR_CORR_OUTPUT), corrMatrixOutputFilePath, sep="\t", col.names=NA, row.names=TRUE, quote=T)
+     print.green.agw("[Done] writing output correlations to <", corrMatrixOutputFilePath,">.")
+     
      graphics::pairs(dataMatrix
                      , main=main, labels=labelVec
                      , cex.labels=1.5 ## <-- this determines the labels on the diagonal
                      , cex.main=1.0 ## <-- this is related to the size of the graph in a non-intuitive way
                      , lower.panel=function(x,y) {
                           #rect(-10,-10,10,10, col="gray", border=NA) ;
-                          cat("Running correlation...")
+                          cat(paste("Correlating", sep=''))
                           panel.correlation.local(x,y, boxWidth=MINI_PLOT_BORDER_THICKNESS) ;
-                          cat("[done]\n")
+                          cat("[Done]\n")
                      }
                      , upper.panel=function(x,y) {
                           binX <- whichBin(whichSubplot$x, cumul)
@@ -511,12 +529,11 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
                                thePointColor <- regularPointColor
                                theBackColor <- backColors[1 + (binQuasiRandomIdentifier %% length(backColors))]
                           }
-                          print.agw("Now calculating the box at X,Y (", whichSubplot$x, ", ", whichSubplot$y, "), which is in bin (", binX, ", ", binY, "), numbered ", binQuasiRandomIdentifier, " and colored <", theBackColor, ">...")
-                          
+                          cat(paste("Now calculating the box at X,Y (", whichSubplot$x, ", ", whichSubplot$y, "), which is in bin (", binX, ", ", binY, "), numbered ", binQuasiRandomIdentifier, " and colored <", theBackColor, ">... (", length(x), " points)", sep=''))
                           rect(xleft=min(x)-10, ybottom=min(y)-10, xright=max(x)+10, ytop=max(y)+10, col=theBackColor, border=NA)
                           points(x,y, pch='.', cex=4, col=thePointColor) ## <-- pch='.' is 10 times faster than any other plot character. Use cex=### to adjust the size of the dot.
-
                           box(lwd=MINI_PLOT_BORDER_THICKNESS)
+                          cat(" [Done]\n")
                           whichSubplot$x <<- (whichSubplot$x+1); ## go to the next column... note that this is a GLOBAL assignment! That is important.
                           if (whichSubplot$x > dimSize) {
                                whichSubplot$x <<- (whichSubplot$y+2) ## <-- because upper.panel is a right triangle, we start from a point farther to the right on the plot each time. (This really is supposed to be (xVal <<- yVal+2)!
