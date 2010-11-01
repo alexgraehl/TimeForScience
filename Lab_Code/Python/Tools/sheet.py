@@ -1,3 +1,5 @@
+#
+#
 #!/usr/bin/python
 
 
@@ -1465,7 +1467,7 @@ def handleKeysForNormalMode(argCh, currentTable, theScreen):
             colHeaderWin.win.refresh()
             rowHeaderWin.win.clear()
             mainInfo.currentFileIdx = possibleNewIndex # update which file we are currently examining
-            initializeWindowSettings(mainInfo.getCurrent())
+            initializeWindowSettings(theScreen, mainInfo.getCurrent())
             setCommandStr("Changed to the file named \"" + mainInfo.getCurrent().filename + '".')
             pass
         pass
