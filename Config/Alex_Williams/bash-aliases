@@ -69,7 +69,7 @@ echo \">>> Set the time on Ubuntu: sudo ntpdate-debian\" ; \
 echo \">>> BASH: Foreach: for f in ${BACKTICK}ls${BACKTICK}; do echo \\\$f will become \\\$${BRACKETOPEN}f/.txt/.newending${BRACKETCLOSE} ; done  \" ; \
 echo \">>> EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J\" ; \
 echo \">>> Xargs/Find: Recursively make all directories in current folder world-readable:  find ./ -type d | xargs chmod a+x \" ; \
-echo \">>> Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gx' THE_FILE \" ; \
+echo \">>> Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE \"  s lets '.' match newlines\; m makes ^ and \$ work ; \
 "
 
 # for f in `ls` ; do cat $f | sed -n '2~4p' | count_char_freq_at_each_position.pl > ${f/_unalign.fq/.count} ; done
