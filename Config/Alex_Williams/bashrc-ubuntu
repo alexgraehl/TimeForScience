@@ -1,6 +1,6 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
-[ -z "$PS1" ] && return # <-- If not running interactively, don't
+[[ -z $PS1 ]] && return # <-- If not running interactively, don't
 # do anything. Printing any output breaks ssh and various things.
 # This is why this line is important at the very top!
 
@@ -13,34 +13,78 @@
 
 # Set up things below ONLY if this shell is interactive
 
-if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ] ; then
+if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]] ; then
     source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
 
 echo -e "${a_echo_color}>>> BASH: Loading .bashrc...${a_end_color}"
 
-if [ -f ~/TimeForScience/Config/Alex_Williams/bash-path-setup ] ; then
+if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-path-setup ]] ; then
     source ~/TimeForScience/Config/Alex_Williams/bash-path-setup
 fi
-
-
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
 # ~/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 # Sets up the aliases whether or not this shell is interactive
-if [ -f ~/TimeForScience/Config/Alex_Williams/bash-aliases ]; then
+if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-aliases ]]; then
     source ~/TimeForScience/Config/Alex_Williams/bash-aliases
 fi
 
-if [[ -z $STY && $HOSTNAME = 'nausicaa' ]] ; then
+
+
+
+# ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
+a_machine_prompt_main_color=''
+if [[ $color_prompt -eq 1 ]] ; then
+    if [[ $is_sshing -eq 0 ]] ; then
+	## LOCAL machine gets a specific color...
+	#a_machine_prompt_main_color="$color_prefix[44m$color_prefix[3;33m" ## Blue background, white foreground
+	a_machine_prompt_main_color="${color_prefix}[1;32m" ## Bold green text
+    else
+	## Ok, we are SSHed into a remote machine...
+	case "$HOSTNAME"
+	    in
+	    nausicaa)
+		a_machine_prompt_main_color="${color_prefix}[1;35m" ## 1;35m == Bold magenta text
+		;;
+	    bueno)
+		a_machine_prompt_main_color="${color_prefix}[44m${color_prefix}[3;36m" # cyan text / blue background
+		;;
+	    lighthouse)
+		a_machine_prompt_main_color="${color_prefix}[43m${color_prefix}[3;30m" # yellow background
+		;;
+	    --)
+		a_machine_prompt_main_color="${color_prefix}[41m${color_prefix}[3;37m"
+		;;
+	esac
+    fi
+
+    #a_machine_prompt_main_color="${color_prefix}[45m${color_prefix}[1;30m" ## Magenta back, bold black foreground
+    #if [[ "darwin10.0" == $OSTYPE
+
+    #a_nau_color="${color_prefix}"
+    # Background foreground
+    #\033[47m\033[3;31m   ## <-- For the second part, where it says [3;31m 1=bold, 2=light, 3=regular
+fi
+# ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
+
+
+
+
+if [[ -z $STY ]] && [[ $HOSTNAME == 'nausicaa' ]] ; then
     echo -e "${a_warning_color}*\n*\n* Remember to resume the screen session on this machine!!!\n*\n*${a_end_color}"
 else
-    echo -n ""
+    echo -n ''
 fi
 
 
+if [[ $isMac -eq 1 ]] ; then
+    AGW_LS_COLOR_OPTION=" -G "  ## -G means "color" on the mac...
+else
+    AGW_LS_COLOR_OPTION=' --color=always ' ## but -G means "no group" on Linux
+fi
 
 
 # don't put duplicate lines in the history. See bash(1) for more options
@@ -60,15 +104,15 @@ shopt -s histappend
 shopt -s checkwinsize
 
 # make less more friendly for non-text input files, see lesspipe(1)
-[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+[[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"
 
 # set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "$debian_chroot" ] && [ -r /etc/debian_chroot ]; then
+if [[ -z $debian_chroot ]] && [[ -r /etc/debian_chroot ]]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
 
 
-if [ "$color_prompt" -eq 1 ]; then
+if [ $color_prompt -eq 1 ]; then
     #PS1="${a_machine_prompt_main_color}\u@\h:\w\$${a_end_color}" #"${debian_chroot:+($debian_chroot)}\[$color_prefix[01;32m\]\u@\h\[$color_prefix[00m\]:\[$color_prefix[01;34m\]\w\[$color_prefix[00m\]\$ "
     #PS1="\u@\h:\w\$"
 ## \w is the full working directory
@@ -85,7 +129,7 @@ unset color_prompt ## done with this variable...
 case "$TERM" in
     xterm*|rxvt*)
 	## Set the title text!
-	PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+	PS1="\[${color_prefix}]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
 	;;
     *)
 	;;
@@ -93,7 +137,7 @@ esac
 
 
 # enable color support of ls and also add handy aliases
-if [ -x /usr/bin/dircolors ]; then
+if [[ -x /usr/bin/dircolors ]]; then
     eval "`dircolors -b`"
     #alias ls='ls --color=auto'
     #alias dir='dir --color=auto'
@@ -107,7 +151,7 @@ fi
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
-if [ -f /etc/bash_completion ]; then
+if [[ -f /etc/bash_completion ]]; then
     . /etc/bash_completion
 fi
 
@@ -143,6 +187,7 @@ export TERM=xterm-color
 #256color
 
 
+set horizontal-scroll-mode on
 
 set -o ignoreeof  # Prevent Ctrl-D from exiting!
 
