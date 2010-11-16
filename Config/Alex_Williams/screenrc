@@ -69,9 +69,8 @@ defscrollback 5000
 
 #shell tcsh
 
-# Set the "escape" character to ctrl-q instead of the default, which is ctrl-a
-#escape ^Ww
-
+# Set the "escape" character to ctrl-o instead of the default, which is ctrl-a
+escape ^Oo
 
 # status line with hostname, centered tabs and redmarked active windows:
 #hardstatus string '%{= kG}[ %{G}%H %{g}][%= %{= kw}%?%-Lw%?%{r}(%{W}%n*%f%t%?(%u)%?%{r})%{w}%?%+Lw%?%?%= %{g}][%{B} %d/%m %{W}%c %{g}]'
