@@ -86,12 +86,6 @@ if (!defined($username) || (length($username) <= 0) || $username =~ /[\/\\"' 	*+
 }
 
 
-# We drop any option passed to command "trash"
-# This allows to use trash as a replacement for rm
-# (Incidentally, we cannot remove files that start with hyphens using trash.pl, either.)
-while ( $ARGV[0] =~ m|^-|i) { # if the option starts with a hyphen...
-    shift @ARGV;
-}
 
 
 
@@ -145,7 +139,12 @@ my $numItemsDeleted = 0;
 foreach my $itemToDelete (@ARGV) {
     #print $itemToDelete . "\n";
     $itemToDelete = trim($itemToDelete);
-
+    
+    if ($itemToDelete =~ m|^-| && (!(-l $itemToDelete)) && (!(-e $itemToDelete))) {
+	# If the option starts with a hyphen AND it isn't a file or symlink
+	minorComplaint($itemToDelete, "it was not a filename, and it appears to have been intended as a command line switch, which trash.pl does not make any use of.");
+    }
+    
     if ((not (-l $itemToDelete)) and (not (-e $itemToDelete))) {
 	# The item doesn't even exist (and it isn't a symlink), so skip it
 	minorComplaint($itemToDelete, "it did either not exist or could not be read. Check that this file actually exists.");
