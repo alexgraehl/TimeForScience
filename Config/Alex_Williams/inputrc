@@ -1,9 +1,24 @@
 # -*-Sh-*-  <-- Tells emacs what syntax highlighting to use
 
+set horizontal-scroll-mode off
+set mark-directories       on
+set completion-ignore-case on
+
+
+
+## This means that when you hit "tab" to auto-complete,
+## and there is more than one completion, instead of just
+## showing you the ENTIRE name, it shows "..." and then the
+## part that is *different*
+set completion-prefix-display-length 6
 
 set meta-flag on
 set input-meta on
 set output-meta on
+
+set show-all-if-ambiguous on
+set show-all-if-unmodified on
+set visible-stats on
 
 "\e[1~": beginning-of-line
 "\e[4~": end-of-line
@@ -25,4 +40,3 @@ set output-meta on
 "\ei": previous-history
 "\ek": next-history
 
-set completion-ignore-case On

@@ -186,8 +186,10 @@ export EDITOR="emacs -nw"
 export TERM=xterm-color
 #256color
 
+export TERM_PROGRAM=Apple_Terminal
 
-set horizontal-scroll-mode on
+
+
 
 set -o ignoreeof  # Prevent Ctrl-D from exiting!
 
