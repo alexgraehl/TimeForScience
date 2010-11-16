@@ -69,12 +69,14 @@ a_end_color=''
 
 a_machine_prompt_main_color=''
 
+## The \[ and \] around the colors tell "readline" that these sequences
+## are NOT printed to the screen. This fixes some problems with wrapping.
 if [ $color_prompt -eq 1 ] ; then
-    color_prefix='\033' ## <-- for the mac
+    color_prefix="\033" ## <-- \033 works everywhere. \e works on Linux
     a_echo_color="${color_prefix}[1;32m" ## green  ## can also be: 1;33 ## was [3;40m before
     a_status_color="${color_prefix}[1;33m"
     a_warning_color="${color_prefix}[1;31m"
-    a_end_color="${color_prefix}[0m"
+    a_end_color="${color_prefix}[m"
 
     if [ $is_sshing -eq 0 ] ; then
 	## LOCAL machine gets a specific color...
