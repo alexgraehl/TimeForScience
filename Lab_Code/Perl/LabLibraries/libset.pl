@@ -1432,8 +1432,7 @@ sub setsReadMatrix {
 #
 # Same as setsReadMatrix()
 #---------------------------------------------------------------------------
-sub setsReadTable
-{
+sub setsReadTable {
    return &setsReadMatrix(@_);
 }
 

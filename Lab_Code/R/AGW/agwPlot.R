@@ -482,12 +482,17 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
      WITHIN_GROUP_BACKGROUND_COLOR   <- "white" ## What color are the cells that have the array filenames?
 
      MINI_PLOT_BORDER_THICKNESS <- 2.0   ## How thick the border around each scatterplot is
-     
-     SIZE_IN_PIXELS_PER_SCATTERPLOT <- 200 ## Minimum size of each mini-scatterplot
+
+     if (ncol(dataMatrix) > 30) {
+          SIZE_IN_PIXELS_PER_SCATTERPLOT <- 100
+     } else if (ncol(dataMatrix) > 60) {
+          SIZE_IN_PIXELS_PER_SCATTERPLOT <- 75
+     } else {
+          SIZE_IN_PIXELS_PER_SCATTERPLOT <- 200 ## Size of each mini-scatterplot
+     }
      MIN_ALLOWED_SIZE_OF_PLOT_IN_PIXELS     <- 1000 ## Minimum size of this plot
      TOTAL_PNG_SQUARE_SIZE <- max((ncol(dataMatrix) * SIZE_IN_PIXELS_PER_SCATTERPLOT), MIN_ALLOWED_SIZE_OF_PLOT_IN_PIXELS)
      # ======================================
-
 
      png(filePath, height=TOTAL_PNG_SQUARE_SIZE, width=TOTAL_PNG_SQUARE_SIZE, pointsize=18, res=72)
      par(mar=c("bottom"=2, "left"=2, "right"=2, "top"=8))

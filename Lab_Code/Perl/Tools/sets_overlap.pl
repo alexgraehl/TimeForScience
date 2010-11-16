@@ -371,9 +371,9 @@ foreach my $testSetKeyName (@testSetKeysInFileOrder) {
 	    my ($key_gold, $lpval, $ov, $draw, $suc, $pop, $intersection) = @{$result};
 	    
 	    if($lpval >= $log_epsilon) {
-		$lpval = 0; # If the log_10-pvalue is bigger than the cutoff, set it to 0.
+		$lpval = 0; # If the log_10-pvalue is bigger than the epsilon cutoff, set it to 0.
 	    }
-	    if(not($noself) or ($key_gold ne $testSetKeyName)) {
+	    if (not($noself) or ($key_gold ne $testSetKeyName)) {
 		my $lpvalToPrint = ($negateOutputPvalue) ? (-$lpval) : $lpval;
 		print STDOUT $key_gold
 		    , $delim_out, &format_number($lpvalToPrint, $numSigFigs)
@@ -385,7 +385,8 @@ foreach my $testSetKeyName (@testSetKeysInFileOrder) {
 	    }
 	}
 	
-	if($verbose) {
+	if ($verbose) {
+	    ## Print some diagnostic information if we're in VERBOSE mode
 	    my $found_best = 0;
 	    for(my $i = 0; $i < @{$results} and not($found_best); $i++) {
 		if(defined($$results[$i])) {
