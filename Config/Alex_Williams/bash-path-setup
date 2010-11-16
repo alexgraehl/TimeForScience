@@ -1,6 +1,10 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
-if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
+## This ONLY sets up the path, and does nothing else (Except for printing a few things at the top)
+
+## It requires the "platform specific" things
+
+if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]]; then
     source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
 
@@ -65,7 +69,6 @@ case "$HOSTNAME"
 esac
 
 
-
 export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$PATH
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$PATH
@@ -77,11 +80,19 @@ export PATH=${PATH}:$MYSRC/lab_apps/python/Tools
 export PATH=${PATH}:$MYSRC/lab_apps/R_shell
 export PATH=${PATH}:$MYSRC/lab_apps/shell_scripts
 export PATH=${PATH}:$MYSRC/cvaske/R/Commands
-export PATH=${PATH}:/sw/bin    # programs installed by Fink, on the Mac
+export PATH=${PATH}:/sw/bin      # programs installed by Fink, on the Mac
 export PATH=${HOME}/bin:${PATH}  # programs in your own home directory come FIRST
 
-if [[ -n isAgwHomeMachine ]]; then
+if [[ $isAgwHomeMachine -eq 1 ]]; then
+    # It is the home machine! Some things are in different places, as a result
     # Add things to Alex's home machine's path
     export PATH=${PATH}:/Alex/Programming/android-sdk-mac_86/tools
-    export PATH=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:${PATH}
+    export PATH=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:${PATH} ## <-- note that these have priority in the path!
+    export BINF_CORE_WORK_DIR="/Users/${USER}/work" # <-- set BINF_CORE work directory
+else
+    export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
 fi
+
+export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"
+# Above: Sets the "R scripts library directory" for the Bioinformatics Core R
+# scripts. Required by many R scripts.

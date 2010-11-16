@@ -199,13 +199,13 @@ alias hgs="hg status"
 
 function hglog {
     hg status
-    if [[ $? == 0 ]] ; then  ## <-- only check the log if there is actually a mercurial repo here!
+    if [[ $? == "0" ]] ; then  ## <-- only check the log if there is actually a mercurial repo here!
 	hg log -p --color=always $* | s
     fi
 }
 
 
-if [[ $USER == alexgw ]]
+if [[ $USER == "alexgw" ]]
 then
     alias alexcom='ssh alexcom@alexwilliams.com'
     alias jig='ssh jig.cse.ucsc.edu'
@@ -223,7 +223,7 @@ then
     alias sundance='ssh sundance.cse.ucsc.edu'
 fi
 
-if [[ 'nausicaa' == $HOSTNAME ]]
+if [[ "nausicaa" == $HOSTNAME ]]
 then
     alias nau="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
     alias workup="echo -e -n '$a_warning_color' ; echo 'No need to update: this machine is already the Mercurial main root. You cannot update anything from it, since there is nowhere to pull changes from.' ; echo -e -n '$a_end_color'"
