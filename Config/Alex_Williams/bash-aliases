@@ -66,7 +66,7 @@ echo \">>> Install a new package in R from source:  R CMD INSTALL packagename.ta
 echo \">>> Check current Linux version: cat /etc/*-release\" ; \
 echo \">>> Print every Xth line from FILE, starting with line Y: awk 'NR%X==Y'\" FILE ; \
 echo \">>> Set the time on Ubuntu: sudo ntpdate-debian\" ; \
-echo \">>> BASH: Foreach: for f in ${BACKTICK}ls${BACKTICK}; do echo \\\$f will become \\\$${BRACKETOPEN}f/.txt/.newending${BRACKETCLOSE} ; done  \" ; \
+echo \">>> BASH: Foreach / rename: for f in ${BACKTICK}ls${BACKTICK}; do echo \\\$f will become \\\$${BRACKETOPEN}f/.txt/.newending${BRACKETCLOSE} ; done  \" ; \
 echo \">>> EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J\" ; \
 echo \">>> Xargs/Find: Recursively make all directories in current folder world-readable:  find ./ -type d | xargs chmod a+x \" ; \
 echo \">>> Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE \"  s lets '.' match newlines\; m makes ^ and \$ work ; \
