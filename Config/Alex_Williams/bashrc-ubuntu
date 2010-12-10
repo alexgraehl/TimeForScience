@@ -158,11 +158,9 @@ export SVN_EDITOR="emacs -nw"
 
 export PAGER=less
 export EDITOR="emacs -nw"
-export TERM=xterm-color
-#256color
+export TERM=$TERM #xterm-color256color
 
 export TERM_PROGRAM=Apple_Terminal
-
 
 
 
@@ -172,8 +170,7 @@ HISTSIZE=10000
 HISTCONTROL=ignoreboth
 # this causes any lines matching the previous history entry not to be saved.
 
-# Keybindings
-# Add IJKL navigation to supplement/replace the arrow keys
+# Keybindings: Add IJKL navigation to supplement/replace the arrow keys
 bind "\M-J:backward-word"
 bind "\M-L:forward-word"
 bind "\M-j:backward-char"
@@ -185,16 +182,12 @@ bind "\M-K:next-history"
 bind "\C-s:history-search-forward"
 
 
-
-
 # Save the local ethernet "en0" MAC address into the variable LOCAL_EN0_MAC. Note the zero.
 # Allows per-machine settinsg.
 #export LOCAL_EN0_MAC=`ifconfig en0 | grep -i ether | sed 's/.*ether //' | sed 's/[ ]*$//'`
 
 
-
-umask 0007 # <-- give users and groups full access to 
-# files I create, but give no access to other users.
+umask 0007 # <-- give users and groups full access to files I create, but give no access to other users.
 # 0 = "full access", 7 = "no access"
 
 
@@ -206,15 +199,6 @@ function zzz {
     echo -e "${a_echo_color}>>> BASH: Loading .bashrc...${a_end_color}"
 }
 
-# 30 through 37 are the FOREGROUND
-# 40 through 47 are the BACKGROUND
-# The order of colors is BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE
-# echo -e '$color_prefix[30m black $color_prefix[31mred $color_prefix[32mgreen $color_prefix[33myellow $color_prefix[34mblue $color_prefix[35mmagenta $color_prefix[36mcyan $color_prefix[37mwhite'
-# echo -e '$color_prefix[30;41mblack on red'
-
-
-
-
 # Add IJKL navigation to supplement/replace the arrow keys
 bind "\M-J:backward-word"
 bind "\M-L:forward-word"
@@ -231,44 +215,4 @@ bind "\C-s:history-search-forward"
 
 
 
-
-
-#export TERM=xterm-color
-#export CVSROOT=:ext:alexgw@tap.cse.ucsc.edu:/projects/compbio/cvsroot/stuartlab
-
-
-
-
-#export LSCOLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;31'
-#export LSCOLORS=FxgxCxDxBxegedabagacad
-#The order of the attributes for LSCOLORS is as follows:
-#
-#                           1.   directory
-#                           2.   symbolic link
-#                           3.   socket
-#                           4.   pipe
-#                           5.   executable
-#                           6.   block special
-#                           7.   character special
-#                           8.   executable with setuid bit set
-#                           9.   executable with setgid bit set
-#                           10.  directory writable to others, with sticky bit
-#                           11.  directory writable to others, without sticky
-#                                bit
-#:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.ogg=01;35:*.mp3=01;35:*.wav=01;35:'
-
-
-
-
-
-# echo -e "\\e[0mCOLOR_NC (No color)"
-# echo -e "\\e[1;37mCOLOR_WHITE\\t\\e[0;30mCOLOR_BLACK"
-# echo -e "\\e[0;34mCOLOR_BLUE\\t\\e[1;34mCOLOR_LIGHT_BLUE"
-# echo -e "\\e[0;32mCOLOR_GREEN\\t\\e[1;32mCOLOR_LIGHT_GREEN"
-# echo -e "\\e[0;36mCOLOR_CYAN\\t\\e[1;36mCOLOR_LIGHT_CYAN"
-# echo -e "\\e[0;31mCOLOR_RED\\t\\e[1;31mCOLOR_LIGHT_RED"
-# echo -e "\\e[0;35mCOLOR_PURPLE\\t\\e[1;35mCOLOR_LIGHT_PURPLE"
-# echo -e "\\e[0;33mCOLOR_YELLOW\\t\\e[1;33mCOLOR_LIGHT_YELLOW"
-# echo -e "\\e[1;30mCOLOR_GRAY\\t\\e[0;37mCOLOR_LIGHT_GRAY"
-
-
+# =======
