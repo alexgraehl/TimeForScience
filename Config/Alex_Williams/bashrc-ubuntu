@@ -86,7 +86,7 @@ fi
 if [[ $isMac -eq 1 ]] ; then
     AGW_LS_COLOR_OPTION=" -G "  ## -G means "color" on the mac...
 else
-    AGW_LS_COLOR_OPTION=' --color=always ' ## but -G means "no group" on Linux
+    AGW_LS_COLOR_OPTION=' --color=auto ' ## but -G means "no group" on Linux
 fi
 
 
