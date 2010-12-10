@@ -1,5 +1,7 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
+
+
 [[ -z $PS1 ]] && return # <-- If not running interactively, don't
 # do anything. Printing any output breaks ssh and various things.
 # This is why this line is important at the very top!
@@ -73,6 +75,7 @@ fi
 
 
 
+
 if [[ -z $STY ]] && [[ $HOSTNAME == 'nausicaa' ]] ; then
     echo -e "${a_warning_color}*\n*\n* Remember to resume the screen session on this machine!!!\n*\n*${a_end_color}"
 else
@@ -113,28 +116,10 @@ fi
 
 
 if [ $color_prompt -eq 1 ]; then
-    #PS1="${a_machine_prompt_main_color}\u@\h:\w\$${a_end_color}" #"${debian_chroot:+($debian_chroot)}\[$color_prefix[01;32m\]\u@\h\[$color_prefix[00m\]:\[$color_prefix[01;34m\]\w\[$color_prefix[00m\]\$ "
-    #PS1="\u@\h:\w\$"
-## \w is the full working directory
-## \W is just the basename of the working directory
     PS1="\[${a_machine_prompt_main_color}\][\$(date +%H:%M)] [\u@\h:\W]\$\[\033[0m\]\[${a_end_color}\] "
-    #PS1="\[\033[1;34m\][\$(date +%H:%M)][\u@\h:\w]$\[\033[0m\] "
-    #PS1="${debian_chroot:+($debian_chroot)}\[$color_prefix[01;32m\]\u@\h\[$color_prefix[00m\]:\[$color_prefix[01;34m\]\w\[$color_prefix[00m\]\$ "
 else
-    PS1="${debian_chroot:+($debian_chroot)}\u@\h:\w\$ "
+    PS1="[\$(date +%H:%M)] [\u@\h:\W]\$ "
 fi
-unset color_prompt ## done with this variable...
-
-# If this is an xterm set the title to user@host:dir
-case "$TERM" in
-    xterm*|rxvt*)
-	## Set the title text!
-	PS1="\[${color_prefix}]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
-	;;
-    *)
-	;;
-esac
-
 
 # enable color support of ls and also add handy aliases
 if [[ -x /usr/bin/dircolors ]]; then
