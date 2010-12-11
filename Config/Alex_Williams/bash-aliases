@@ -242,6 +242,7 @@ alias workstat='hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" status ; hg --cwd "
 
 alias sciencecom='hg commit --user ${USER} --cwd ${TIME_FOR_SCIENCE_DIR} -m "Changes committed by alexgw" && hg push --cwd ${TIME_FOR_SCIENCE_DIR} && echo "[Done] commiting and pushing TimeForScience repository"'
 alias scienceup='hg --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SCIENCE_DIR} update && echo "[Done] updating TimeForScience repository"'
+alias science="scienceup ; sciencecom"
 alias sciencestat='hg --cwd ${TIME_FOR_SCIENCE_DIR} status'
 
 
