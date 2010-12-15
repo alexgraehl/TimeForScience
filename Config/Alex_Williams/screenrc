@@ -7,8 +7,9 @@
 # allow bold colors - necessary for some reason
 
 #term screen-256color
-term xterm-color
-#term xterm-256color
+#term xterm-color
+#term screen-256color
+term xterm-256color
 defutf8 on
 defflow off
 vbell off
@@ -16,16 +17,11 @@ vbell off
 # autodetach on
 startup_message off
 
-attrcolor b ".I"
+attrcolor b ".I" ## <-- allow bold colors. Apparently necessary for screen to work with 256 colors.
 
-
-# Tell screen how to set colors (for 256 color terminal)
 # . AB = background, AF=foreground
-termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm'
-
-
-# erase background with current bg color
-defbce "on"
+termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm' # <-- Tell screen how to set colors (for 256 color terminal)
+defbce "on"  # erase background with current bg color (useful for 256 color terminals)
 
 shell -$SHELL
 
