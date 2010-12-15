@@ -21,18 +21,21 @@
 
 ;; Emacs regexp: http://www.cs.utah.edu/dept/old/texinfo/emacs18/emacs_17.html
 
-;; List of all emacs colors: http://www.geocities.com/kensanata/colors.html
+
 
 ;; #  emacsclient -c -a "" $*
 
-(defvar ACTIVE_MODELINE       "red")   ;; Background for the active modeline
-(defvar ACTIVE_MODELINE_TEXT  "yellow") ;; Text in the currently-active modeline
 
-(defvar INACTIVE_MODELINE       "blue") ;; Background for the inactive modeline
-(defvar INACTIVE_MODELINE_TEXT  "white") ;; Text in the inactive modelines
+;; List of all emacs colors: http://raebear.net/comp/emacscolors.html
 
-(defvar BUFFER_FILENAME_TEXT "blue")   ;; colors for the filename
-(defvar BUFFER_FILENAME_BG   "yellow")
+(defvar ACTIVE_MODELINE       "white")   ;; Background for the active modeline
+(defvar ACTIVE_MODELINE_TEXT  "DodgerBlue1") ;; Text in the currently-active modeline
+
+(defvar INACTIVE_MODELINE       "gray20") ;; Background for the inactive modeline
+(defvar INACTIVE_MODELINE_TEXT  "gray60") ;; Text in the inactive modelines
+
+(defvar BUFFER_FILENAME_TEXT "white")   ;; colors for the filename
+(defvar BUFFER_FILENAME_BG   "DodgerBlue1")
 
 (defvar CURSOR_TEXT  "yellow")
 (defvar CURSOR_BG    "red")
@@ -45,20 +48,20 @@
 (defvar SEARCH_RESULT_OTHER_TEXT SEARCH_RESULT_HIGHLIGHT_BG)
 (defvar SEARCH_RESULT_OTHER_BG   SEARCH_RESULT_HIGHLIGHT_TEXT)
 
-(defvar COMMENT_FOREGROUND "blue") ;"dark slate gray") ; was dark red before
+(defvar COMMENT_FOREGROUND "gray25") ;"dark slate gray") ; was dark red before
 (defvar COMMENT_BACKGROUND nil)
 
-(defvar STRING_TEXT "green") ;;"black")
-(defvar STRING_BG   "blue")  ;;"green")
+(defvar STRING_TEXT "green")
+(defvar STRING_BG   "gray15")
 
 (defvar HASH_TEXT     "yellow") ; only usable in cperl mode
 (defvar ARRAY_TEXT    "yellow") ; only usable in ceperl mode
-(defvar VARIABLE_TEXT "cyan")
 
-(defvar VARIABLE_BG   "blue")
+(defvar VARIABLE_TEXT "Pink1")
+(defvar VARIABLE_BG   "Purple4")
 
-(defvar FUNCTION_TEXT "cyan")
-(defvar FUNCTION_BG   "blue")
+(defvar FUNCTION_TEXT "SteelBlue1")
+(defvar FUNCTION_BG   "RoyalBlue4")
 
 (defvar TYPE_TEXT     "yellow")
 (defvar TYPE_BG       nil)       ;"orange4")
@@ -70,7 +73,7 @@
 (defvar ERR_BG   "yellow")
 
 (defvar BUILTIN_TEXT "black")
-(defvar BUILTIN_BG   "magenta")
+(defvar BUILTIN_BG   "DarkOrange4")
 
 (defvar DOC_TEXT "red")
 (defvar DOC_BG   STRING_BG)
@@ -528,7 +531,7 @@
 
 ;; MODE LINE COLORS
 (agwColor 'modeline ACTIVE_MODELINE ACTIVE_MODELINE_TEXT)
-(agwColor 'mode-line-inactive INACTIVE_MODELINE INACTIVE_MODELINE_TEXT)
+(agwColor 'mode-line-inactive INACTIVE_MODELINE_TEXT INACTIVE_MODELINE)
 (agwColor 'mode-line-highlight "green" "red")
 (agwColor 'mode-line-buffer-id BUFFER_FILENAME_TEXT BUFFER_FILENAME_BG)
 (agwColor 'minibuffer-prompt MINIBUFFER_TEXT MINIBUFFER_BG)
@@ -557,7 +560,7 @@
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
  '(font-lock-comment-face ((((class color)) (:bold t :underline nil :foreground "blue" :background nil)))))
-;(agwColor 'font-lock-comment-face COMMENT_FOREGROUND COMMENT_BACKGROUND)
+(agwColor 'font-lock-comment-face COMMENT_FOREGROUND COMMENT_BACKGROUND)
 (set-default 'font-lock-comment-delimiter-face 'font-lock-comment-face)
 
 (agwColor 'region SELECTED_TEXT SELECTED_BG) ; For a selected region
@@ -757,9 +760,10 @@
 
 
 ;;(setq scroll-preserve-screen-position 1)
-
+(setq backup-inhibited t)
 (setq make-backup-files  nil) ;; Don't make those #scratch-042# backup files!
 (auto-save-mode          nil) ;; Don't auto save!!!!!
+(setq auto-save-default nil)
 
 ;; ================= BACKUP FILES AND AUTOSAVING =================
 
