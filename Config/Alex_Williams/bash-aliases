@@ -210,34 +210,14 @@ function hglog {
 if [[ $USER == "alexgw" ]]
 then
     alias alexcom='ssh alexcom@alexwilliams.com'
-    alias jig='ssh jig.cse.ucsc.edu'
-    alias hustle='ssh  hustle.cse.ucsc.edu'
-    alias disco='ssh  disco.cse.ucsc.edu' # -X
-    
-    alias chacha='ssh -X chacha.cse.ucsc.edu'
-    alias jive='ssh -X   jive.cse.ucsc.edu'
-    alias tap='ssh       tap.cse.ucsc.edu'
-    alias bop='ssh       bop.cse.ucsc.edu'
-    
-    alias moondance='ssh moondance.cse.ucsc.edu'
-    alias riverdance='ssh waterdance.cse.ucsc.edu'
-    alias waterdance='ssh waterdance.cse.ucsc.edu'
-    alias sundance='ssh sundance.cse.ucsc.edu'
 fi
 
-if [[ "nausicaa" == $HOSTNAME ]]
-then
-    alias nau="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
-    alias workup="echo -e -n '$a_warning_color' ; echo 'No need to update: this machine is already the Mercurial main root. You cannot update anything from it, since there is nowhere to pull changes from.' ; echo -e -n '$a_end_color'"
-else
-    alias nau='SET_NAUCOLOR ; ssh  $UCSF_USER@nausicaa.ucsf.edu'
-    alias workup='hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" pull && hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" update && echo "[Done] updating work repository"'
-fi
 
 alias workcom='hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}/Common/Code" -m "Changes committed by ${USER}" ; hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives" -m "Changes committed" && echo "[Done] committing work repository"' # && hg push --cwd ${BINF_CODE}'
 
+alias workup='hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" pull && hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" update && echo "[Done] updating work repository"'
 
-
+alias nau='SET_NAUCOLOR ; ssh  $UCSF_USER@nausicaa.ucsf.edu'
 alias workstat='hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" status ; hg --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives status"'
 
 alias sciencecom='hg commit --user ${USER} --cwd ${TIME_FOR_SCIENCE_DIR} -m "Changes committed by alexgw" && hg push --cwd ${TIME_FOR_SCIENCE_DIR} && echo "[Done] commiting and pushing TimeForScience repository"'
@@ -245,10 +225,24 @@ alias scienceup='hg --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SC
 alias science="scienceup ; sciencecom"
 alias sciencestat='hg --cwd ${TIME_FOR_SCIENCE_DIR} status'
 
-
+alias catbus='ssh $UCSF_USER@catbus.gladstone.internal'
 alias chef='ssh $UCSF_USER@chef.compbio.ucsf.edu' ## QB3 cluster head node
 alias lighthouse='SET_LIGHTHOUSECOLOR ; ssh  $UCSF_USER@lighthouse.ucsf.edu' ## Database machine
 alias bueno='SET_BUENOCOLOR ; ssh  $UCSF_USER@bueno.gladstone.internal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
+
+
+case "$HOSTNAME" in
+    nausicaa)
+	alias nau="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
+	alias workup="echo -e -n '$a_warning_color' ; echo 'No need to update: this machine is already the Mercurial main root. You cannot update anything from it, since there is nowhere to pull changes from.' ; echo -e -n '$a_end_color'"
+	;;
+    catbus)
+	alias catbus="echo -e -n '$a_warning_color' ; echo 'This machine *is* catbus already!' ; echo -e -n '$a_end_color'"
+	;;
+    *)
+	;;
+esac
+
 
 # Things related to "LESS"
 export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
