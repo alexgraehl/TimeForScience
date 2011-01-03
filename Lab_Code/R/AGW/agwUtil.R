@@ -249,10 +249,26 @@ fail.with.default <- function(default=NULL, theFunc, ...) {
 print.agw <- function(...
                       , sep=''
                       , silent=FALSE
-                      , newline=TRUE) {
+                      , newline=TRUE
+                      , log=FALSE) {
+
      if (!silent) {
           cat(..., sep='')
           if (newline) { cat("\n") }
+
+          ## If "log" is true, then we also log to a file, as well
+          ## as printing to stdout. If log is TRUE, then we print to
+          ## a file named "agw.log.txt" . If log is a name, then we make
+          ## a file with that name.
+          if (!is.null(log) && log != FALSE) {
+               
+               fileToWriteTo <- ifelse(log == TRUE, "agw.log.txt", log)
+
+               cat(paste(date(), "\t", sep=''), file=fileToWriteTo, append=TRUE) ## <-- write to the log
+               cat(..., sep='', file=fileToWriteTo, append=TRUE) ## <-- write to the log
+               if (newline) { cat("\n", file=fileToWriteTo, append=TRUE) }
+          }
+          
      }
 }
 
