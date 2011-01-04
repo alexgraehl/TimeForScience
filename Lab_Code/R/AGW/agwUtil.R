@@ -272,6 +272,9 @@ print.agw <- function(...
      }
 }
 
+log.agw <- function(..., log=TRUE) {
+     print.agw(..., log=log)
+}
 
 ## ==============================================
 ## Like "length" and "dim" together at last!
@@ -774,36 +777,72 @@ agwFinishPlot <- function() {
 }
 
 
-
-print.red.agw <- function(..., newline=T) {
-     print.color.agw(..., newline=newline, fg="#FF0000")
+## ====================================================
+## ====================================================
+## Prints with logging-to-file behavior by default
+log.red.agw <- function(..., newline=T, log=T) {
+     print.color.agw(..., newline=newline, fg="#FF0000", log=log)
 }
 
-print.yellow.agw <- function(..., newline=T) {
-     print.color.agw(..., newline=newline, fg="#FFFF00")
+log.yellow.agw <- function(..., newline=T, log=T) {
+     print.color.agw(..., newline=newline, fg="#FFFF00", log=log)
 }
 
-print.green.agw <- function(..., newline=T) {
-     print.color.agw(..., newline=newline, fg="#00FF00")
+log.green.agw <- function(..., newline=T, log=T) {
+     print.color.agw(..., newline=newline, fg="#00FF00", log=log)
 }
 
-print.cyan.agw <- function(..., newline=T) {
-     print.color.agw(..., newline=newline, fg="#00FFFF")
+log.cyan.agw <- function(..., newline=T, log=T) {
+     print.color.agw(..., newline=newline, fg="#00FFFF", log=log)
 }
 
-print.magenta.agw <- function(..., newline=T) {
-     print.color.agw(..., newline=newline, fg="#FF00FF")
+log.magenta.agw <- function(..., newline=T, log=T) {
+     print.color.agw(..., newline=newline, fg="#FF00FF", log=log)
 }
 
-print.blue.agw <- function(..., newline=T) {
-     print.color.agw(..., newline=newline, fg="#0000FF")
+log.blue.agw <- function(..., newline=T, log=T) {
+     print.color.agw(..., newline=newline, fg="#0000FF", log=log)
+}
+## ====================================================
+## ====================================================
+
+## ====================================================
+## ====================================================
+## Prints to the console, default is NOT to log to a file
+print.red.agw <- function(..., newline=T, log=F) {
+     print.color.agw(..., newline=newline, fg="#FF0000", log=log)
 }
 
-print.color.agw <- function(..., newline=T, fg=NULL, bg=NULL) {
+print.yellow.agw <- function(..., newline=T, log=F) {
+     print.color.agw(..., newline=newline, fg="#FFFF00", log=log)
+}
+
+print.green.agw <- function(..., newline=T, log=F) {
+     print.color.agw(..., newline=newline, fg="#00FF00", log=log)
+}
+
+print.cyan.agw <- function(..., newline=T, log=F) {
+     print.color.agw(..., newline=newline, fg="#00FFFF", log=log)
+}
+
+print.magenta.agw <- function(..., newline=T, log=F) {
+     print.color.agw(..., newline=newline, fg="#FF00FF", log=log)
+}
+
+print.blue.agw <- function(..., newline=T, log=F) {
+     print.color.agw(..., newline=newline, fg="#0000FF", log=log)
+}
+
+## ====================================================
+## ====================================================
+
+print.color.agw <- function(..., newline=T, log=F, fg=NULL, bg=NULL) {
      if (require(xterm256)) {
-          print.agw( style(paste(..., sep=''), fg=fg, bg=bg, check.xterm=FALSE), newline=newline)
+          ## "require" checks the currently loaded packages and doesn't reload code that is already loaded.
+          #warning("Note that requiring xterm256 apparently also breaks the ability to inspect functions: you will get an error about \"renderer$translator\".")
+          print.agw( style(paste(..., sep=''), fg=fg, bg=bg, check.xterm=FALSE), newline=newline, log=log)
      } else {
-          print.agw(..., newline=newline)
+          print.agw(..., newline=newline, log=log)
      }
 }
 
