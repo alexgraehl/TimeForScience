@@ -840,7 +840,8 @@ print.color.agw <- function(..., newline=T, log=F, fg=NULL, bg=NULL) {
      if (require(xterm256)) {
           ## "require" checks the currently loaded packages and doesn't reload code that is already loaded.
           #warning("Note that requiring xterm256 apparently also breaks the ability to inspect functions: you will get an error about \"renderer$translator\".")
-          print.agw( style(paste(..., sep=''), fg=fg, bg=bg, check.xterm=FALSE), newline=newline, log=log)
+          print.agw( style(paste(..., collapse=NULL, sep=''), fg=fg, bg=bg, check.xterm=FALSE)
+                    , newline=newline, log=log)
      } else {
           print.agw(..., newline=newline, log=log)
      }

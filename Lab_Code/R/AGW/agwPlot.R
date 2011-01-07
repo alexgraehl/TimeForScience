@@ -114,6 +114,9 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      ## Breaks: the number of histogram breaks, used for the color scheme
      ## maxNumLabels: do not print labels if there are more than this many labels ***with actual non-blank content***
 
+     print.agw("heatmap.agw: Now generating a \"heatmap.agw\" figure. If you get a \"figure region too large\" error,")
+     print.agw("that means your PDF/PNG wasn't big enough, and you should use \"pdf.for.heatmap.agw\" to auto-compute the bounds.")
+     
      if (is.logical(cluster.rows) && cluster.rows) {
           ## If cluster.rows is true, then we will CLUSTER the rows, kind of like how regular built-in "heatmap"
           ## does it. Check the source to "heatmap" to get a sort of general idea how this works.
