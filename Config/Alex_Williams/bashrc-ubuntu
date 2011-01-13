@@ -19,11 +19,15 @@ if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]] ; then
     source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
 
+
+
 echo -e "${a_echo_color}>>> BASH: Loading .bashrc...${a_end_color}"
 
 if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-path-setup ]] ; then
     source ~/TimeForScience/Config/Alex_Williams/bash-path-setup
 fi
+
+
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
@@ -33,7 +37,6 @@ fi
 if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-aliases ]]; then
     source ~/TimeForScience/Config/Alex_Williams/bash-aliases
 fi
-
 
 
 
