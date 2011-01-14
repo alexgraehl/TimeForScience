@@ -74,6 +74,8 @@ echo \">>> Xargs/Find: Recursively make subdirectories world-readable (print0/-0
 echo \"                find ./ -type d -print0 | xargs -0 chmod a+x \" ; \
 echo \">>> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ; \
 echo \">>> Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE \"  s lets '.' match newlines\; m makes ^ and \$ work ; \
+echo \">>> SAM --> BAM:  samtools view -bS in.sam > out.bam;\" ; \
+echo \">>> BAM --> SAM:  samtools view -h  in.bam > out.sam;\" ; \
 "
 
 # for f in `ls` ; do cat $f | sed -n '2~4p' | count_char_freq_at_each_position.pl > ${f/_unalign.fq/.count} ; done
