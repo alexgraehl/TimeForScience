@@ -57,9 +57,8 @@ fi
 
 
 
-BRACKETOPEN='{'
-BRACKETCLOSE='}'
-BACKTICK='\`'
+BRACKET_OPEN='{'
+PAREN_OPEN='('
 alias cheat="echo \">>> Find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \;\" ; \
 echo \">>> See why an Ubuntu machine wants to reboot:  cat /var/run/reboot-required.pkgs\" ; \
 echo \">>> Diff directories:   diff -rq DIR1 DIR2\" ; \
@@ -68,7 +67,7 @@ echo \">>> Install a new package in R from source:  R CMD INSTALL packagename.ta
 echo \">>> Check current Linux version: cat /etc/*-release\" ; \
 echo \">>> Print every Xth line from FILE, starting with line Y: awk 'NR%X==Y'\" FILE ; \
 echo \">>> Set the time on Ubuntu: sudo ntpdate-debian\" ; \
-echo \">>> BASH: Foreach / rename: for f in ${BACKTICK}ls${BACKTICK}; do echo \\\$f will become \\\$${BRACKETOPEN}f/.txt/.newending${BRACKETCLOSE} ; done  \" ; \
+echo \">>> BASH: Foreach / rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done  \" ; \
 echo \">>> EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J\" ; \
 echo \">>> Xargs/Find: Recursively make subdirectories world-readable (print0/-0 makes filenames with spaces work):\" ; \
 echo \"                find ./ -type d -print0 | xargs -0 chmod a+x \" ; \
@@ -76,6 +75,8 @@ echo \">>> Gnu parallel: works like xargs, but works with files with spaces, by 
 echo \">>> Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE \"  s lets '.' match newlines\; m makes ^ and \$ work ; \
 echo \">>> SAM --> BAM:  samtools view -bS in.sam > out.bam;\" ; \
 echo \">>> BAM --> SAM:  samtools view -h  in.bam > out.sam;\" ; \
+echo \">>> Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ; \
+echo \">>> Perl: select random subset of lines (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'if ( rand() < 0.5 ) { print($_); }' theFile.txt \" \
 "
 
 # for f in `ls` ; do cat $f | sed -n '2~4p' | count_char_freq_at_each_position.pl > ${f/_unalign.fq/.count} ; done
