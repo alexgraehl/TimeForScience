@@ -54,6 +54,9 @@ if [[ $color_prompt -eq 1 ]] ; then
 	    nausicaa)
 		a_machine_prompt_main_color="${color_prefix}[1;35m" ## 1;35m == Bold magenta text
 		;;
+	    catbus)
+		a_machine_prompt_main_color="${color_prefix}[1;34m"
+		;;
 	    bueno)
 		a_machine_prompt_main_color="${color_prefix}[44m${color_prefix}[3;36m" # cyan text / blue background
 		;;
@@ -66,11 +69,6 @@ if [[ $color_prompt -eq 1 ]] ; then
 	esac
     fi
 
-    #a_machine_prompt_main_color="${color_prefix}[45m${color_prefix}[1;30m" ## Magenta back, bold black foreground
-    #if [[ "darwin10.0" == $OSTYPE
-
-    #a_nau_color="${color_prefix}"
-    # Background foreground
     #\033[47m\033[3;31m   ## <-- For the second part, where it says [3;31m 1=bold, 2=light, 3=regular
 fi
 # ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
