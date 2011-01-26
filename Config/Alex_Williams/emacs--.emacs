@@ -135,24 +135,30 @@
 
 
 
+;; The indents that show up in the left margin!
 (defface agwIndent1Face
   '((t ( ;; inherit some-other-face
-	:bold nil :background "red" :foreground nil :underline nil))
+	:bold nil :background "gray10" :foreground nil :underline nil))
     )  ""  :group 'agwFaces)
 
 (defface agwIndent2Face
   '((t ( ;; inherit some-other-face
-	:bold nil :background "blue" :foreground nil :underline nil))
+	:bold nil :background "gray15" :foreground nil :underline nil))
     )  ""  :group 'agwFaces)
 
 (defface agwIndent3Face
   '((t ( ;; inherit some-other-face
-	:bold nil :background "red" :foreground nil :underline nil))
+	:bold nil :background "gray21" :foreground nil :underline nil))
     )  ""  :group 'agwFaces)
 
 (defface agwIndent4Face
   '((t ( ;; inherit some-other-face
-	:bold nil :background "blue" :foreground nil :underline nil))
+	:bold nil :background "gray28" :foreground nil :underline nil))
+    )  ""   :group 'agwFaces)
+
+(defface agwIndent5Face
+  '((t ( ;; inherit some-other-face
+	:bold nil :background "gray37" :foreground nil :underline nil))
     )  ""   :group 'agwFaces)
 
 
@@ -701,11 +707,11 @@
 
 	 ("\\([$@][a-zA-Z0-9_\.]+\\)" 1 'agwEssClassElementFace t) ;; anything like something$item ($item would be highlighted)
 	 
-	 ("^\\([ ]\\{1,1\\}\\)"      1 'agwIndent1Face t) ; line-starting tab
-	 ("^    \\([ ]\\{1,1\\}\\)" 1 'agwIndent2Face t) ; line-starting tab
-	 ("^         \\([ ]\\{1,1\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
-	 ("^              \\([ ]\\{1,1\\}\\)" 1 'agwIndent4Face t) ; line-starting tab
-	 ("^                   \\([ ]\\{1,1\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
+	 ("^\\([ ]\\{1,5\\}\\)" 1 'agwIndent1Face t) ; line-starting tab
+	 ("^    \\([ ]\\{1,5\\}\\)" 1 'agwIndent2Face t) ; line-starting tab
+	 ("^         \\([ ]\\{1,5\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
+	 ("^              \\([ ]\\{1,5\\}\\)" 1 'agwIndent4Face t) ; line-starting tab
+	 ("^                   \\([ ]\\{1,5\\}\\)" 1 'agwIndent5Face t) ; line-starting tab
 
 	 ("\\(\<\<-\\)" 1 'agwMakeGlobalVarFace keep) ; the <<- global assignment operator
 	 ("\\(\<-\\)" 1 'agwPositiveNumberFace keep) ; the <- regular assignment operator
