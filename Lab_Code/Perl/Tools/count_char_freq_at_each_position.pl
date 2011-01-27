@@ -45,8 +45,15 @@ while (my $line = <>) {
     if (!defined($lineLength)) {
 	$lineLength = length($line);
     } else {
-	if ((length($line) != $lineLength) && (length($line) > 0)) { print STDERR "### NOTE: Line $lineNum was a different length from the first line in the file. Line $lineNum is: $line\n"; }
-	$numLinesWereDifferentLengths++;
+	if ((length($line) != $lineLength) && (length($line) > 0)) {
+	    $numLinesWereDifferentLengths++;
+
+	    if ($numLinesWereDifferentLengths < 100) {
+		print STDERR "### NOTE: Line $lineNum was length ", length($line), " but we expected it to be length ", $lineLength, ". Line $lineNum is: $line\n";
+	    } elsif ($numLinesWereDifferentLengths == 100) {
+		print STDERR "Not outputting any more lines-were-different-length errors. Check the input file to see if this is a problem.\n...\n...Continuing with the input...\n";
+	    }
+	}
     }
     
     my @la = split('', $line);
