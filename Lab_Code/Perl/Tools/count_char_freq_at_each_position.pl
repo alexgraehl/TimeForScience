@@ -38,6 +38,8 @@ my $lineNum = 1;
 my @lineStats = ();
 my @lineTotals = ();
 
+my $maxLineLengthWarningsToPrint = 50; ## number of times to warn about line lengths being different
+
 my $numLinesWereDifferentLengths = 0;
 while (my $line = <>) {
     if ($lineNum == 1) { print STDERR ("### [OK]: Successfully reading from STDIN.\n"); }
@@ -48,10 +50,10 @@ while (my $line = <>) {
 	if ((length($line) != $lineLength) && (length($line) > 0)) {
 	    $numLinesWereDifferentLengths++;
 
-	    if ($numLinesWereDifferentLengths < 100) {
-		print STDERR "### NOTE: Line $lineNum was length ", length($line), " but we expected it to be length ", $lineLength, ". Line $lineNum is: $line\n";
-	    } elsif ($numLinesWereDifferentLengths == 100) {
-		print STDERR "Not outputting any more lines-were-different-length errors. Check the input file to see if this is a problem.\n...\n...Continuing with the input...\n";
+	    if ($numLinesWereDifferentLengths < $maxLineLengthWarningsToPrint) {
+		print STDERR "### Warning: Line $lineNum was length ", length($line), " but we expected it to be length ", $lineLength, ". Line $lineNum is: $line\n";
+	    } elsif ($numLinesWereDifferentLengths == $maxLineLengthWarningsToPrint) {
+		print STDERR "Not outputting any more lines-were-different-length warnings. Check the input file to see if this is a problem (it may not be).\n...\n...Continuing with the input...\n";
 	    }
 	}
     }
