@@ -9,15 +9,24 @@
 #@shuffled = shuffle(@list);
 # Check out: perldoc -q array
 
+use constant USE_COLORS_CONSTANT => 1; ## 1 = true, 0 = false
+
 use POSIX      qw(ceil floor);
 use List::Util qw(max min);
-use Term::ANSIColor;
+
+
+if (USE_COLORS_CONSTANT) {
+    use Term::ANSIColor;
+}
+
 #use File::Basename;
 use Getopt::Long;
 
 #no warnings 'numeric';
 #use Scalar::Util;
 #print Scalar::Util::looks_like_number($string), "\n";
+
+
 
 use strict;  use warnings;  use diagnostics;
 
@@ -28,15 +37,17 @@ sub main();
 #colorResetString();
 
 sub colorString($) {
-  # Requires: use Term::AnsiColor at the top of your file. Note: you have to
-  # PRINT the result of this function! Only sets the output color if the output
-  # is a TERMINAL. If the output is NOT a terminal, then colorizing output
-  # results in lots of garbage characters (the color control characters)
-  # written to the screen.
-  my ($theColor) = @_;
-  if (-t STDOUT) { # <-- checks to see if STDOUT goes directly to the terminal (instead of, say, outputting to a file with a redirect)
+    # Requires: use Term::AnsiColor at the top of your file. Note: you have to
+    # PRINT the result of this function! Only sets the output color if the output
+    # is a TERMINAL. If the output is NOT a terminal, then colorizing output
+    # results in lots of garbage characters (the color control characters)
+    # written to the screen.
+    my ($theColor) = @_;
+    if (-t STDOUT && USE_COLORS_CONSTANT) { # <-- checks to see if STDOUT goes directly to the terminal (instead of, say, outputting to a file with a redirect)
 	return color($theColor);
-  }
+    } else {
+	return "";
+    }
 }
 
 sub quitWithUsageError($) { print($_[0] . "\n"); printUsage(); print($_[0] . "\n"); }
@@ -118,10 +129,6 @@ AND THE OUTPUT IS THIS FINAL THING.
 See the examples below for more information.
 
 CAVEATS:
-
-MAYBE EXPECTS A HEADER LINE BY DEFAULT.
-
-MAYBE IT BREAKS IF THE INPUT IS TOO LONG.
 
 MAYBE IT TAKES 30 MINUTES TO RUN.
 
