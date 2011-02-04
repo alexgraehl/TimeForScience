@@ -173,53 +173,6 @@ assert.agw <- function(assertionAGW=NULL
 }
 
 
-## ==============================================
-## system.agw: Basically equivalent to print(cmd) and then system(cmd)
-## Inputs: a vector of items (or a single item) to be pasted together to make a single system command.
-## So you can say: system.agw("ls ", FILES, " ; mkdir somedir ")
-## If a command has four spaces in a row, that is treated as as "fake" linebreak for display purposes only.
-## Note that items are concatenated WITHOUT any surrounding spaces, so you have to add YOUR OWN SPACES
-## around arguments, so that they don't all run together.
-## If you want to have spaces around your inputs by default, use sep=" ".
-## By default, prints the command in FORMATTED fashion, with line breaks. If you don't like this,
-## set formatted=FALSE.
-## If "dryrun" is true, then it just PRINTS the command, but does not execute it.
-## Returns the exit code of the command. Not sure what happens if there are compound commands!
-## ==============================================
-system.agw <- function(...
-                       , sep=''
-                       , formatted=TRUE
-                       , requireZeroExitCode=FALSE ## Aborts on a non-zero exit code
-                       , dryrun=FALSE
-                       , wait=TRUE) {
-     
-     theCommand <- paste(..., sep=sep) ## Default is to just mash all the input arguments together with no spaces.
-     syscallPrefix <- "System Call: ";
-     if (!wait)  { syscallPrefix <- "System (Background): " }
-     if (dryrun) { syscallPrefix <- "System call dry run (not executed!): " }
-     
-     numPrefixSpaces <- 1 + nchar(syscallPrefix) # <-- how many spaces required to indent the following lines of the combined system call properly?
-     prefixWhitespace <- paste(rep(' ', numPrefixSpaces), collapse='') ## <-- a whitespace region to indent things properly
-     
-     if (formatted) {
-          formattedCmd = gsub("    ", paste("\n", prefixWhitespace, sep=''), theCommand, perl=TRUE) ## <-- four spaces becomes a newline
-          formattedCmd = gsub(" [|] ", paste("\n", prefixWhitespace,"| ", sep=''), formattedCmd, perl=TRUE) # <-- a vertical bar surrounded by spaces becomes a newline, then a vertical bar
-          print.color.agw("\n", syscallPrefix, formattedCmd, "\n\n", fg="#00FFFF")
-     } else {
-          print.color.agw(syscallPrefix, theCommand, "\n", sep='', fg="#00FFFF")
-     }
-
-     exitCode <- 0
-     if (!dryrun) {
-          exitCode <- system(theCommand, wait=wait)  ## <-- the unix error/success code
-     }
-     
-     if (requireZeroExitCode) {
-          assert.agw(exitCode == 0, paste("Uh oh! The exit code for the command was NOT zero (zero indicates a success in most utilities)! Instead, the exit code was: ", exitCode, "\n", sep=''))
-     }
-     
-     return(exitCode)
-}
 
 
 
@@ -1537,6 +1490,69 @@ agwGetHeatColors <- function(n) {
 
 
 ## =================================================================
+
+
+## ==============================================
+## system.agw: Basically equivalent to print(cmd) and then system(cmd)
+## Inputs: a vector of items (or a single item) to be pasted together to make a single system command.
+## So you can say: system.agw("ls ", FILES, " ; mkdir somedir ")
+## If a command has four spaces in a row, that is treated as as "fake" linebreak for display purposes only.
+## Note that items are concatenated WITHOUT any surrounding spaces, so you have to add YOUR OWN SPACES
+## around arguments, so that they don't all run together.
+## If you want to have spaces around your inputs by default, use sep=" ".
+## By default, prints the command in FORMATTED fashion, with line breaks. If you don't like this,
+## set formatted=FALSE.
+## If "dryrun" is true, then it just PRINTS the command, but does not execute it.
+## Returns the exit code of the command. Not sure what happens if there are compound commands!
+## ==============================================
+system.agw <- function(...
+                       , sep=''
+                       , formatted=TRUE
+                       , requireZeroExitCode=FALSE ## Aborts on a non-zero exit code
+                       , dryrun=FALSE
+                       , wait=TRUE
+                       , log=FALSE ## Should we log to the output file with "log.agw"
+                       , time=FALSE ## Should we print the time?
+                       ) {
+     
+     theCommand <- paste(..., sep=sep) ## Default is to just mash all the input arguments together with no spaces.
+     syscallPrefix <- "System Call: ";
+     if (!wait)  { syscallPrefix <- "System (Background): " }
+     if (dryrun) { syscallPrefix <- "System call dry run (not executed!): " }
+
+     fgColor <- ifelse(dryrun, "#00FFFF" ## cyan = dry run
+                       , "#00FF00") ## green = real run
+     
+     numPrefixSpaces <- 1 + nchar(syscallPrefix) # <-- how many spaces required to indent the following lines of the combined system call properly?
+     prefixWhitespace <- paste(rep(' ', numPrefixSpaces), collapse='') ## <-- a whitespace region to indent things properly
+
+     if (time) { print.color.agw(paste("[", Sys.time(), "] ", sep=''), fg=fgColor, log=log, newline=F) } ## <-- note the lack of a newline!
+     
+     if (formatted) {
+          formattedCmd = gsub("    ", paste("\n", prefixWhitespace, sep=''), theCommand, perl=TRUE) ## <-- four spaces becomes a newline
+          formattedCmd = gsub(" [|] ", paste("\n", prefixWhitespace,"| ", sep=''), formattedCmd, perl=TRUE) # <-- a vertical bar surrounded by spaces becomes a newline, then a vertical bar
+          print.color.agw(syscallPrefix, formattedCmd, "\n", fg=fgColor, log=log)
+     } else {
+          print.color.agw(syscallPrefix, theCommand, "\n", sep='', fg=fgColor, log=log)
+     }
+
+     exitCode <- 0
+     if (!dryrun) {
+          exitCode <- system(theCommand, wait=wait)  ## <-- the unix error/success code
+     }
+
+     if (time) { print.color.agw(paste("Done at [", Sys.time(), "]", sep=''), fg=fgColor, log=log, newline=TRUE) }
+     
+     if (requireZeroExitCode) {
+          assert.agw(exitCode == 0, paste("Uh oh! The exit code for the command was NOT zero (zero indicates a success in most utilities)! Instead, the exit code was: ", exitCode, "\n", sep=''))
+     }
+     
+     return(exitCode)
+}
+
+
+
+
 
 ##
 ## ##
