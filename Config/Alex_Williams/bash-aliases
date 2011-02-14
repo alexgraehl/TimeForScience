@@ -23,6 +23,7 @@ if [ $isMac -eq 1 ] ; then
 	    "$*" \
 	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
 	    "${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode" \
+	    "/home/alexgw/TimeForScience" \
 	    ./
     }
 #    alias SET_NAUCOLOR="osascript -e 'tell front window of app \"Terminal\" to set background color to {0,0,0,-20750}' &> /dev/null"
@@ -40,19 +41,19 @@ if [ $isMac -eq 1 ] ; then
 else
     ## Must be different between mac/unix
     function ff {
-	`which grep` --color=always -T \
+	grep --color=always -T \
 	    --ignore-case \
 	    --recursive \
 	    --extended-regexp \
 	    --line-number --with-filename \
 	    --exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="CVS" --exclude-dir="[bB]ackup*" \
 	    --binary-files=without-match \
-	    --include=*.R \
+	    --include=*.R --include=*.pl --include=*.py \
 	    "$*" \
 	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
-	    ./
+	    "${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode" \
+	    "/home/alexgw/TimeForScience"
     }
-
 fi
 
 

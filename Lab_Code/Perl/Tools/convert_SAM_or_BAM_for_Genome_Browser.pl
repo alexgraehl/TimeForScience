@@ -6,9 +6,12 @@
 
 use strict;  use warnings;  use diagnostics;
 
+## Convert SAM or BAM to Genome Browser format
+
 print STDERR "This is a script that will generate UCSC-genome-browser-ready BAM files.\n"
-    . "Those files are HUGE, but can be hosted locally. Then you tell the UCSC Genome Browser\n"
-    . "where your BAM files are, and it magically uses the BAM files from your local web server.\n"
+    . "It will convert / produce the UCSC-ready files from any SAM or BAM file you want.\n"
+    . "The BAM/SAM files can be HUGE (10+ GB), but can be hosted locally. Then you tell the UCSC Genome Browser\n"
+    . "where your BAM files are, and it magically uses the BAM files from your local web server, without copying the entire file.\n"
     . "\n"
     . "Files that are generated from the input YOURFILE.sam:\n"
     . " 1. YOURFILE.bam\n"
