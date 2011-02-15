@@ -1,7 +1,6 @@
-#
-#
 #!/usr/bin/python
-
+#
+#
 
 #  Old:  #!/projects/sysbio/apps/x86_64/bin/python
 '''
@@ -32,8 +31,16 @@ import curses.ascii   # <-- docs at http://docs.python.org/library/curses.ascii.
 import curses.textpad
 import curses.wrapper
 
-
-from numpy import * # The matrices use this
+try: 
+    from numpy import * # The matrices use this
+except ImportError:
+    print("[sheet.py]: Unable to load the module 'numpy'. Probably it is not installed")
+    print("[sheet.py]: [TERMINATING EARLY]: sheet.py cannot run, because the module 'numpy' was not installed.")
+    print("[sheet.py]:                      On Linux, you should be able to install it with the command:")
+    print("[sheet.py]:                      sudo apt-get install python-numpy")
+    print("[sheet.py]: Try installing numpy, and then running sheet.py again...")
+    sys.exit(1)
+    pass
 
 GLOB = 1
 
@@ -43,6 +50,9 @@ kWANT_TO_MOVE_TO_SEARCH_RESULT    = 2
 kWANT_TO_CHANGE_FILE          = 3
 
 ROW_HEADER_MAXIMUM_COLUMN_FRACTION_OF_SCREEN = 0.25 # The row header column (i.e., the leftmost column) cannot be any wider than this fraction of the total screen width. 1.0 means "do not change--it can be the entire screen," 0.25 means "one quarter of the screen is the max, etc. 0.5 was the default before.
+
+WIDTH_WHEN_TRANSPOSED = 25 # This is a hack! Currently colwidth isn't properly computed for transposed matrices
+MAX_COL_WIDTH = 30  ## If a column is wider than this, then clip it to this width
 
 # ===============
 class SearchBoard:
@@ -495,7 +505,7 @@ class AGW_DataWin(AGW_Win):
                       min(topCell+numToDrawY , theTable.getNumRows()))
 
         cellTextPos = Point(None, None)
-        for r in range(start.y, end.y):
+        for r in range(start.y, end.y): ## Go through each row, one at a time, top to bottom
 
             cellTextPos.y = gCellBorders.height + (gCellBorders.height+cellHeight)*(r - start.y) # <-- all cells are the same HEIGHT, so this can be computed in one equation
 
@@ -503,10 +513,11 @@ class AGW_DataWin(AGW_Win):
 
             cellTextPos.x = gCellBorders.width # initialization! (update is way down below)
 
-            for c in range(start.x, end.x):
+            for c in range(start.x, end.x): ## Go through ALL the cells on this row
                 if (cellTextPos.x >= self.windowWidth): break
 
-                cell = theTable.cellValue(r, c)
+                cell = theTable.cellValue(r, c) ## <-- this is the actual text that is in the cell
+                maxLenForThisCell = theTable.getColWidth(c) ## This is how long this cell text can be.
 
                 if (boolPrependColCoordinate):
                     cell = str(c+1) + HEADER_NUM_DELIMITER_STRING + stringFromAny(cell)
@@ -515,13 +526,11 @@ class AGW_DataWin(AGW_Win):
                 if (boolPrependRowCoordinate):
                     cell = str(r+1) + HEADER_NUM_DELIMITER_STRING + stringFromAny(cell)
                     pass
+                
+                selectedPt = whichInfo.cursorPos # Where is the cursor...
 
-                maxLenForThisCell = theTable.getColWidth(c)
-
-                activeCellPt = whichInfo.cursorPos
-
-                cellIsSelected = (c == activeCellPt.x and r == activeCellPt.y)
-                shouldHighlightCell = cellIsSelected #or (self.highlightEntireCol and c == activeCellPt.x) or (self.highlightEntireRow and r == activeCellPt.y)
+                cellIsSelected = (c == selectedPt.x and r == selectedPt.y)
+                shouldHighlightCell = cellIsSelected #or (self.highlightEntireCol and c == selectedPt.x) or (self.highlightEntireRow and r == selectedPt.y)
 
                 cellAttr = self.defaultCellProperty
 
@@ -554,6 +563,7 @@ class AGW_DataWin(AGW_Win):
 
                 #setWarning(str(self.getColWidth(c)) + " is the length for col " + str(c))
 
+                cell = padStrToLength(cell, maxLenForThisCell, " ") ## <-- needed so that the cells don't randomly get garbage everywhere when they don't re-draw all the way. Very annoying. If you remove this, then long cells will randomly overwrite text of shorter cells when you move left and right.
                 # cell = truncateLongCell(cell, maxLenForThisCell, truncationSuffix)
 
                 if drawCheckerboard:
@@ -645,10 +655,15 @@ class AGW_Table:
         pass
 
     def getColWidth(self, colIdx):
+        ## Report out how wide each column is
         if (gIsTransposed):
-            return 25 # This is a hack! Currently colwidth isn't properly computed for transposed matrices
+            return WIDTH_WHEN_TRANSPOSED ## Transposed cells are always the same width. This is kind of a hack, as we just don't compute the cell widths
 
-        try: return self.colWidth[colIdx]
+        try: 
+            if (self.colWidth[colIdx] > MAX_COL_WIDTH):
+                return MAX_COL_WIDTH
+            else:
+                return self.colWidth[colIdx]
         except:
             print("### Someone passed in an invalid column index, " + str(colIdx) + ". Max was " + str(self.getNumCols()) + ".\n")
             raise #return 0 #raise #return 0
@@ -670,18 +685,9 @@ class AGW_Table:
 
     def cellValue(self, row, col):
         if (gIsTransposed):
-            temp = row
-            row = col
-            col = temp
-            pass
-
-        try:    return self.__cells[row][col] # problem is with the number of rows...
-        except(IndexError):
-            return None # <-- dubious... ? maybe we should actually just fail here
-        except:
-            raise
-        return
-
+            return self.__cells[col][row] ## If it's transposed, then flip the row and column!
+        else:
+            return self.__cells[row][col]
 
     def initRegexTable(self):
         self.regTab = SearchBoard(nrow=self.getNumRows(), ncol=self.getNumCols())
@@ -699,7 +705,7 @@ class AGW_Table:
         self.__nCells.height += 1 # Read another row...
 
         for c in range(0, self.__nCells.width):
-            # Ok, find the longest item in each col.
+            # Ok, find the **longest** item in each column. This could be slow for a tall column!
             cellWidth = None
             if (c >= numItemsInThisNewRow or (contents[c] is None)): cellWidth = 0
             else:                                                    cellWidth = len(contents[c])
@@ -766,7 +772,7 @@ class AGW_Table:
         return # end of "readFromFileInfo"
 
 
-def lenFromAny(argThing): # returns 0 for None's length
+def lenFromAny(argThing): # returns 0 for None's length. Otherwise you get an exception
     if (argThing is None): return 0
     else: return len(argThing)
 
@@ -1274,8 +1280,8 @@ def truncateLongCell(argString, argMaxlen, argTruncString):
 
 def padStrToLength(argString, argMaxlen, padChar):
     # pad out the length with blanks so that the ENTIRE
-    # length is taken up However! curses does not like to
-    # draw just plain things unfortunately so we have to
+    # length is taken up. However! curses does not like to
+    # draw just plain things unfortunately, so we have to
     # trick it with a -. This is very hackish. Maybe I
     # should draw colored boxes instead?
     numBlankSpacesToAdd = argMaxlen - len(argString)

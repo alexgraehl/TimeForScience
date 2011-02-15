@@ -648,13 +648,13 @@
    )
  )
 
-(font-lock-add-keywords
- 'python-mode
- '(
-   ("\\<\\(pass\\|return\\|raise\\)\\>" 1 agwPythonPassFace keep)
-   ("\\<\\(DEBUG\\|Debug\\|debug\\|DEBUGGING\\|Debugging\\|debugging\\)\\>" 1 font-lock-warning-face keep)
-   )
- )
+;; (font-lock-add-keywords
+;;  'python-mode
+;;  '(
+;;    ("\\<\\(pass\\|return\\|raise\\)\\>" 1 agwPythonPassFace keep)
+;;    ("\\<\\(DEBUG\\|Debug\\|debug\\|DEBUGGING\\|Debugging\\|debugging\\)\\>" 1 font-lock-warning-face keep)
+;;    )
+;;  )
 
 
 ;;(defvar ALLOWED_R_VARIABLE_CHARS "[a-zA-Z0-9\\.]")
