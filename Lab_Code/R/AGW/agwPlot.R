@@ -115,7 +115,8 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      ## maxNumLabels: do not print labels if there are more than this many labels ***with actual non-blank content***
 
      print.agw("heatmap.agw: Now generating a \"heatmap.agw\" figure. If you get a \"figure region too large\" error,")
-     print.agw("that means your PDF/PNG wasn't big enough, and you should use \"pdf.for.heatmap.agw\" to auto-compute the bounds.")
+     print.agw("             that means your PDF/PNG wasn't big enough to fit the heatmap. This can be solved by using")
+     print.agw("             a bigger pdf width or by using \"pdf.for.heatmap.agw\" to auto-compute the bounds.")
      
      if (is.logical(cluster.rows) && cluster.rows) {
           ## If cluster.rows is true, then we will CLUSTER the rows, kind of like how regular built-in "heatmap"
@@ -311,8 +312,10 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      
      axis(1, at=(0:(ncol(mmm)-1))/(ncol(mmm)-1), labels=labCol, tick=F, las=2, cex.axis=cexCol) # 1 = bottom axis, usually with array names
      box(lwd=1)
+
+     print.agw("heatmap.agw: Looks like the figure region was an acceptable size to fit the heatmap.")
      # ======================================
-# ==========================================
+     # ==========================================
 }
 
 
