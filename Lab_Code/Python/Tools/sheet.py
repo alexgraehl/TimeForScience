@@ -684,10 +684,14 @@ class AGW_Table:
     def getHeaderCellForRow(self, rowIdx): return self.cellValue(rowIdx, 0)
 
     def cellValue(self, row, col):
-        if (gIsTransposed):
-            return self.__cells[col][row] ## If it's transposed, then flip the row and column!
-        else:
-            return self.__cells[row][col]
+        try:
+            if (gIsTransposed):
+                return self.__cells[col][row] ## If it's transposed, then flip the row and column!
+            else:
+                return self.__cells[row][col]
+        except:
+            return "~~~~~" #("R" + str(row) + ", C" + str(col) + " out of bounds")
+        
 
     def initRegexTable(self):
         self.regTab = SearchBoard(nrow=self.getNumRows(), ncol=self.getNumCols())
