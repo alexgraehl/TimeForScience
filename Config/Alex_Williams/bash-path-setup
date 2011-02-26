@@ -33,6 +33,7 @@ export CISTEMATIC_ROOT=/opt/Bio/cistematic
 # UCSF: CISTEMATIC PYTHONPATH
 export PYTHONPATH=${PYTHONPATH}:$CISTEMATIC_ROOT/core:$CISTEMATIC_ROOT/db:$CISTEMATIC_ROOT/experiments:$CISTEMATIC_ROOT/genomes:$CISTEMATIC_ROOT/programs:$CISTEMATIC_ROOT/stat
 export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.6/dist-packages
+export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.6
 # UCSF: BOOST
 export BOOST_ROOT=/usr/local/boost/boost_1_41_0
 export PATH=$PATH:/usr/local/boost
