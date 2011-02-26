@@ -71,7 +71,7 @@ echo \">>> Set the time on Ubuntu: sudo ntpdate-debian\" ; \
 echo \">>> BASH: Foreach / rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done  \" ; \
 echo \">>> EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J\" ; \
 echo \">>> Make files readable, directories r+x (print0/-0 makes filenames with spaces work):\" ; \
-echo \"      sudo chmod -R a+r ./ ; find ./ -type d -print0 | xargs -0 chmod a+x \" ; \
+echo \"      sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ; \
 echo \">>> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ; \
 echo \">>> Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE \"  s lets '.' match newlines\; m makes ^ and \$ work ; \
 echo \">>> SAM --> BAM:  samtools view -bS in.sam > out.bam;\" ; \
