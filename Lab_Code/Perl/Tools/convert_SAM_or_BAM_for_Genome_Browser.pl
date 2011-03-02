@@ -31,7 +31,7 @@ unless (scalar(@ARGV) == 1) { die "ARGUMENT ERROR: This script takes exactly one
 my $file = $ARGV[0];
 
 
-unless (-e $file) { die "ARGUMENT ERROR: The argument to this program must be a single file that already exists.\n"; }
+unless (-e $file) { die "ARGUMENT ERROR: The argument to this program must be a single BAM/SAM file that already exists.\n"; }
 
 unless (-r $file) { die "FILE ERROR: The argument to this program must be a single file that already exists AND is also readable. We couldn't read the file <$file> though!\n"; }
 
@@ -82,23 +82,27 @@ print("Ok, we're going to run the samtools index command now...\n>> Running the 
 system($indexCmd);
 
 print "DONE!\n\n";
-print "Here are the final output files that you will probably want:\n"
+print "Here are the final output files that you will probably want to put on your server:\n"
     . " - ${sortedOutNameWithoutFileExtension}.bam\n"
     . " - ${sortedOutNameWithoutFileExtension}.bam.bai\n";
-
-print "You will probably want to move these files to your web server now.\n"
-    . "For my server, the command: scp sorted* lighthouse.ucsf.edu:\n"
-    . "copies everything from this machine to my home directory on that machine.\n";
-
+print "\n";
+print "1. You will probably want to move these files to your web server now.\n"
+    . "   For my server, the command: scp sorted* lighthouse.ucsf.edu:\n"
+    . "   copies everything from this machine to my home directory on that machine.\n";
+print "\n";
+print "2. Make sure that the files are READABLE by everyone, and that the directories they\n"
+    . "   are in are also readable and executable by everyone. Double-check that you can access\n"
+    . "   your files in a regular web browser.\n";
 print "\n";
 
 my $thingToTypeForBrowser = qq{track type=bam name="Control_EB" bigDataUrl=http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"};
-
-print "Then you can go to the genome browser gateway page (http://genome.ucsc.edu/cgi-bin/hgGateway)\n"
-    . "and click the \"add custom tracks\" button near the top. Then, in \"Paste URLs or data\", type\n"
-    . $thingToTypeForBrowser . "\n"
-    . "(replacing sorted_ctrl.bam with your actual .bam file---note that the .bai files aren't mentioned here, but MUST be in the same directory.\n";
-
+print "3. Then you can go to the genome browser gateway page (http://genome.ucsc.edu/cgi-bin/hgGateway)\n"
+    . "   and click the \"add custom tracks\" button near the top. Then, in \"Paste URLs or data\", type\n"
+    . "   " . $thingToTypeForBrowser . "\n"
+    . "   (replacing sorted_ctrl.bam with your actual .bam file---note that the .bai files aren't mentioned here, but MUST be in the same directory.\n";
+print "\n";
+print "4. Note that if you want to save this custom track or send it to others, you will need\n"
+    . "   a custom genome browser SESSION---just copying / saving the URL is not sufficient!\n";
 #print "Assuming that your files are hosted on lighthouse, here are the lines to paste into the table browser to make things work:\n";
 #print "track type=bam name="Control_EB" bigDataUrl=http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"
 print "\n";
