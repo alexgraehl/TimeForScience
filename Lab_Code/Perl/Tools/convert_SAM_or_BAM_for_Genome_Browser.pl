@@ -95,7 +95,7 @@ print "2. Make sure that the files are READABLE by everyone, and that the direct
     . "   your files in a regular web browser.\n";
 print "\n";
 
-my $thingToTypeForBrowser = qq{track type=bam name="Control_EB" bigDataUrl=http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"};
+my $thingToTypeForBrowser = qq{track type=bam name="Control_EB" bigDataUrl="http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"};
 print "3. Then you can go to the genome browser gateway page (http://genome.ucsc.edu/cgi-bin/hgGateway)\n"
     . "   and click the \"add custom tracks\" button near the top. Then, in \"Paste URLs or data\", type\n"
     . "   " . $thingToTypeForBrowser . "\n"
