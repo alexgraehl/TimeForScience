@@ -199,7 +199,7 @@ foreach my $itemToDelete (@ARGV) {
     my $UNSAFE_CHARS = q{"'*+\$;};
     if ($thepath =~ /[$UNSAFE_CHARS]/) {
 	if ($outputIsColorTerminal) { print STDERR color("red"); }
-	print STDERR "trash.pl: Uh oh, trash.pl has no idea how to deal with filenames with any of these " . length($UNSAFE_CHARS) . " unusual characters in them: $UNSAFE_CHARS . That might be bad news, so we are just going to abort. Try using the real /bin/rm in this case.";
+	print STDERR "trash.pl: Uh oh, trash.pl has no idea how to deal with filenames with any of these " . length($UNSAFE_CHARS) . " unusual characters in them: $UNSAFE_CHARS . That might be bad news, so we are just going to abort. Try using the real version of 'rm' in /bin/rm in this case.\n";
 	if ($outputIsColorTerminal) { print STDERR color("reset"); }
 	exit(1)
     }
