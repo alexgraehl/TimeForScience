@@ -250,6 +250,8 @@ huh <- function(x) {
      } else if (is.list(x)) {
           listSpacer <- "     "
           dataFrameStatus.text <- ifelse(is.data.frame(x), "(also a data frame) ", "")
+          print.cyan.agw("  List with class ", paste(class(x), collapse=", "))
+          print.cyan.agw("  List with attributes ", paste(attributes(x), collapse=", "))
           print.cyan.agw("  List ", dataFrameStatus.text, "of length ", length(x), ".\n")
           print.cyan.agw("Names in the list are:")
           print.cyan.agw(paste(listSpacer, paste(names(x), collapse=paste("\n", listSpacer, sep='')), sep=''))
@@ -266,6 +268,7 @@ huh <- function(x) {
           } else {             print.yellow.agw("  ", nrow(x), " rows (showing first 50): ", paste(c(rownames(x)[1:50], "..."), collapse=", ")) }
      } else if (is.object(x)) {
           print.green.agw("  Object of class ", class(x)[[1]])
+          print.green.agw("  With attributes ", paste(attributes(x), collapse=", "))
           print.green.agw("  With ", length(slotNames(x)), " slotNames(): ", paste(slotNames(x), collapse=', '))
           if (showMethods(class(x), printTo=FALSE)[3] == " <not a generic function>") {
                print.green.agw("  And with no methods.")
