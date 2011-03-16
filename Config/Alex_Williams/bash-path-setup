@@ -1,0 +1,91 @@
+# -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
+
+## This ONLY sets up the path, and does nothing else (Except for printing a few things at the top)
+
+## It requires the "platform specific" things
+
+if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]]; then
+    source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
+fi
+
+echo -e "${a_echo_color}>>> BASH: Loading bash-path-setup...${a_end_color}"
+
+## Clear out the initial path
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/X11/bin
+
+
+export PATH=$PATH:/opt/Bio/meme/bin     # UCSF: MEME
+export PATH=$PATH:/opt/Bio/paml42/bin   # UCSF: PAML
+export PATH=$PATH:/opt/Bio/macs/bin     # UCSF: MACS
+
+# Cole Trapnell's RNASeq suite: BOWTIE, TOPHAT, CUFFLINKS
+export PATH=$PATH:/opt/Bio/bowtie/bin
+export BOWTIE_INDEXES=/opt/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
+export PATH=$PATH:/opt/Bio/tophat/bin    # UCSF: TOPHAT
+export PATH=$PATH:/opt/Bio/cufflinks/bin # UCSF: CUFFLINKS
+
+# UCSF: SOME DATA
+export PATH=$PATH:$HOME/data
+ 
+# UCSF: CISTEMATIC
+export CISTEMATIC_ROOT=/opt/Bio/cistematic
+
+# UCSF: CISTEMATIC PYTHONPATH
+export PYTHONPATH=${PYTHONPATH}:$CISTEMATIC_ROOT/core:$CISTEMATIC_ROOT/db:$CISTEMATIC_ROOT/experiments:$CISTEMATIC_ROOT/genomes:$CISTEMATIC_ROOT/programs:$CISTEMATIC_ROOT/stat
+export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.6/dist-packages
+export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.6
+# UCSF: BOOST
+export BOOST_ROOT=/usr/local/boost/boost_1_41_0
+export PATH=$PATH:/usr/local/boost
+
+# /opt is where some programs go
+export PATH=/opt/Apps/bin:/home/Common/opt/bin:/opt/bin:$PATH  ## <-- goes at the FRONT of the path
+
+
+# More general path-related settings
+
+export MYSRC=$HOME/cvs-local
+export PATH=$MYSRC/alexgw:$MYSRC/perl/Tools:$MYSRC/perl/web:$MYSRC/perl/Map:$PATH  # These come BEFORE other things found on the path. Whatever is listed FIRST gets run
+
+
+case "$HOSTNAME"
+    in
+    nausicaa)
+	export SICER_DIR_ENV_VAR=/opt/Bio/sicer
+	;;
+    catbus)
+	export SICER_DIR_ENV_VAR=/opt/Bio/sicer
+	;;
+    --)
+	export SICER_DIR_ENV_VAR=SICER_IS_NOT_INSTALLED_ON_THIS_MACHINE_CHECK_YOUR_BASH_PROFILE_SETUP
+	;;
+esac
+
+
+export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience
+export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$PATH
+export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$PATH
+export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$PATH
+export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$PATH
+export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/R:$PATH
+
+export PATH=${PATH}:$MYSRC/lab_apps/python/Tools
+export PATH=${PATH}:$MYSRC/lab_apps/R_shell
+export PATH=${PATH}:$MYSRC/lab_apps/shell_scripts
+export PATH=${PATH}:$MYSRC/cvaske/R/Commands
+export PATH=${PATH}:/sw/bin      # programs installed by Fink, on the Mac
+export PATH=${HOME}/bin:${PATH}  # programs in your own home directory come FIRST
+
+if [[ $isAgwHomeMachine -eq 1 ]]; then
+    # It is the home machine! Some things are in different places, as a result
+    # Add things to Alex's home machine's path
+    export PATH=${PATH}:/Alex/Programming/android-sdk-mac_86/tools
+    export PATH=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:${PATH} ## <-- note that these have priority in the path!
+    export BINF_CORE_WORK_DIR="/Users/${USER}/work" # <-- set BINF_CORE work directory
+else
+    export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
+fi
+
+export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"
+# Above: Sets the "R scripts library directory" for the Bioinformatics Core R
+# scripts. Required by many R scripts.
