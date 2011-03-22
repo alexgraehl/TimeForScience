@@ -56,6 +56,11 @@ else
     }
 fi
 
+function delve {
+    ## Finds, in any subdirectories, any files that have a name that matches the input text.
+    ## Sort of like a poor man's "locate"
+    find ./ -iname "*$**"
+}
 
 
 BRACKET_OPEN='{'
