@@ -254,7 +254,6 @@ alias sciencecom='hg commit --user ${USER} --cwd "${TIME_FOR_SCIENCE_DIR}" -m "C
 alias scienceup='hg --cwd "${TIME_FOR_SCIENCE_DIR}" pull           && hg --cwd "${TIME_FOR_SCIENCE_DIR}" update           && echo "[Done] updating TimeForScience repository"'
 
 
-
 alias science="scienceup ; sciencecom ; workup ; workcom"
 alias sciencestat='hg --cwd ${TIME_FOR_SCIENCE_DIR} status'
 
