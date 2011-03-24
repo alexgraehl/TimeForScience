@@ -62,7 +62,6 @@ function delve {
     find ./ -iname "*$**"
 }
 
-
 BRACKET_OPEN='{'
 PAREN_OPEN='('
 alias cheat="echo \">>> Find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \;\" ; \
@@ -140,8 +139,8 @@ alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv --preserve-root /
 ## "showoff" makes it so that everyone can a+rx any directories and a+r any files.
 ## Note that we don't want to make it so everyone can execute *files* necessarily, just folders
 ## ("Executing" a folder means you can "ls" it and see what's inside.)
-alias showoff='chmod -R a+r ./ ; find ./ -type d -print0 | xargs -0 chmod a+x'
-alias sudoshowoff='sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x'
+function showoff {          chmod -R a+r $1 ;      find $1 -type d -print0 |      xargs -0 chmod a+x ; }
+function sudoshowoff { sudo chmod -R a+r $1 ; sudo find $1 -type d -print0 | sudo xargs -0 chmod a+x ; }
 
 
 alias crt='crontab -u ${USER} -e'
@@ -348,7 +347,6 @@ alias huh='cat <(declare -f) <(alias)' ## uses bash subshells to show everything
 
 alias backoff='~/TimeForScience/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh off'
 alias backon='~/TimeForScience/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh on'
-
 
 
 
