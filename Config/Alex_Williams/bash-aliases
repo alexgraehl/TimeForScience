@@ -80,6 +80,7 @@ echo \">>> Gnu parallel: works like xargs, but works with files with spaces, by 
 echo \">>> Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE \"  s lets '.' match newlines\; m makes ^ and \$ work ; \
 echo \">>> SAM --> BAM:  samtools view -bS in.sam > out.bam;\" ; \
 echo \">>> BAM --> SAM:  samtools view -h  in.bam > out.sam;\" ; \
+echo \">>> View BAM header: samtools view -H  in.bam \" ; \
 echo \">>> Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ; \
 echo \">>> Perl: select random subset of lines (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'if ( rand() < 0.5 ) { print(\\\$_); }' theFile.txt \" ; \
 echo \">>> Reverse-complement DNA:  perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ; \
