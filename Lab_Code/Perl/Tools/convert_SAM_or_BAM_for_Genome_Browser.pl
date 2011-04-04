@@ -27,17 +27,11 @@ print STDERR "This is a script that will generate UCSC-genome-browser-ready BAM 
 
 unless (scalar(@ARGV) == 1) { die "ARGUMENT ERROR: This script takes exactly one argument: one single file name of a BAM or SAM file!\n[Quitting now.]\n"; }
 
-
 my $file = $ARGV[0];
 
-
 unless (-e $file) { die "ARGUMENT ERROR: The argument to this program must be a single BAM/SAM file that already exists.\n"; }
-
 unless (-r $file) { die "FILE ERROR: The argument to this program must be a single file that already exists AND is also readable. We couldn't read the file <$file> though!\n"; }
-
 unless (not (-z $file)) { die "FILE ERROR: The file <$file> was 0-length. It's not a real BAM/SAM file!\n"; }
-
-
 
 # Everything about BAM -> browser is described here http://genome.ucsc.edu/goldenPath/help/bam.html
 
@@ -47,13 +41,13 @@ if ($fileIsSAM) { print "<$file> appears to be a SAM file.\n"; }
 my $fileIsBAM = ($file =~ m/\.bam$/i);
 if ($fileIsBAM) { print "<$file> appears to be a BAM (Binary SAM) file.\n"; }
 
+if (!$fileIsBAM && !$fileIsSAM) { die "FILE ERROR: File must be sequence data in either SAM or BAM format!\n"; }
 
-if (!$fileIsBAM && !$fileIsSAM) { die "FILE ERROR: File must be either SAM or BAM!\n"; }
 
 my $bamFilename;
 
 if ($fileIsSAM) {
-    ## User specified a SAM file
+    ## User specified a SAM file, so we're going to CONVERT it to a BAM file. Samtools must be installed for this to work!
     $bamFilename = $file;
     $bamFilename =~ s/\.sam$/\.bam/i;
     if (not(-e $bamFilename)) {
