@@ -214,22 +214,25 @@ print.agw <- function(...
                       , silent=FALSE
                       , newline=TRUE
                       , log=FALSE) {
-
      if (!silent) {
-          cat(..., sep='')
-          if (newline) { cat("\n") }
-
-          ## If "log" is true, then we also log to a file, as well
-          ## as printing to stdout. If log is TRUE, then we print to
-          ## a file named "agw.log.txt" . If log is a name, then we make
-          ## a file with that name.
+          ####### Print directly to the screen
+          cat(paste(date(), "\t", sep=''))
+          cat(..., sep='')           ## Print the main part of the data we wnat to print
+          if (newline) { cat("\n") } ## Print a newline (maybe)
+          ####### Done printing directly to the screen
+          
           if (!is.null(log) && log != FALSE) {
-               
-               fileToWriteTo <- ifelse(log == TRUE, "agw.log.txt", log)
-
-               cat(paste(date(), "\t", sep=''), file=fileToWriteTo, append=TRUE) ## <-- write to the log
-               cat(..., sep='', file=fileToWriteTo, append=TRUE) ## <-- write to the log
-               if (newline) { cat("\n", file=fileToWriteTo, append=TRUE) }
+               #### Write to a log file
+               ## If "log" is true, then we also log to a file, as well
+               ## as printing to stdout. If log is TRUE, then we print to
+               ## a file named "agw.log.txt" . If log is a name, then we make
+               ## a file with that name.
+               if (log == TRUE) { fileToWriteTo = "agw.log.txt"; } ## Default name for the log file
+               else { fileToWriteTo <- log } ## If "log" is something other than true or false, we assume it's the file name to write to
+               cat(paste(date(), "\t", sep=''), file=fileToWriteTo, append=TRUE) ## <-- write to the log file!
+               cat(..., sep='', file=fileToWriteTo, append=TRUE) ## <-- write to the log file!
+               if (newline) { cat("\n", file=fileToWriteTo, append=TRUE) } # <-- Write a newline to the file
+               #### Done writing to a log file
           }
           
      }
