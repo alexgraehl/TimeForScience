@@ -88,6 +88,9 @@ echo \">>> Apache error log: sudo less -S /var/log/apache2/error.log \" ; \
 echo \">>> OS X Dictionary: /usr/share/dict/words \" ; \
 echo \">>> coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ; \
 echo \">>> dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ; \
+echo \">>> Passphraseless SSH: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub \" ; \
+echo \"                         to server ~/.ssh/authorized_keys  \" ; \
+
 "
 
 # for f in `ls` ; do cat $f | sed -n '2~4p' | count_char_freq_at_each_position.pl > ${f/_unalign.fq/.count} ; done
