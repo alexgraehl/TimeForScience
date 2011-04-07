@@ -14,21 +14,21 @@ echo -e "${a_echo_color}>>> BASH: Loading bash-path-setup...${a_end_color}"
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/X11/bin
 
 
-export PATH=$PATH:/opt/Bio/meme/bin     # UCSF: MEME
-export PATH=$PATH:/opt/Bio/paml42/bin   # UCSF: PAML
-export PATH=$PATH:/opt/Bio/macs/bin     # UCSF: MACS
+export PATH=$PATH:/work/Apps/Bio/meme/bin     # UCSF: MEME
+export PATH=$PATH:/work/Apps/Bio/paml42/bin   # UCSF: PAML
+export PATH=$PATH:/work/Apps/Bio/macs/bin     # UCSF: MACS
 
 # Cole Trapnell's RNASeq suite: BOWTIE, TOPHAT, CUFFLINKS
-export PATH=$PATH:/opt/Bio/bowtie/bin
-export BOWTIE_INDEXES=/opt/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
-export PATH=$PATH:/opt/Bio/tophat/bin    # UCSF: TOPHAT
-export PATH=$PATH:/opt/Bio/cufflinks/bin # UCSF: CUFFLINKS
+export PATH=$PATH:/work/Apps/Bio/bowtie/bin
+export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
+export PATH=$PATH:/work/Apps/Bio/tophat/bin    # UCSF: TOPHAT
+export PATH=$PATH:/work/Apps/Bio/cufflinks/bin # UCSF: CUFFLINKS
 
 # UCSF: SOME DATA
 export PATH=$PATH:$HOME/data
  
 # UCSF: CISTEMATIC
-export CISTEMATIC_ROOT=/opt/Bio/cistematic
+export CISTEMATIC_ROOT=/work/Apps/Bio/cistematic
 
 # UCSF: CISTEMATIC PYTHONPATH
 export PYTHONPATH=${PYTHONPATH}:$CISTEMATIC_ROOT/core:$CISTEMATIC_ROOT/db:$CISTEMATIC_ROOT/experiments:$CISTEMATIC_ROOT/genomes:$CISTEMATIC_ROOT/programs:$CISTEMATIC_ROOT/stat
@@ -38,8 +38,8 @@ export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.6
 export BOOST_ROOT=/usr/local/boost/boost_1_41_0
 export PATH=$PATH:/usr/local/boost
 
-# /opt is where some programs go
-export PATH=/opt/Apps/bin:/home/Common/opt/bin:/opt/bin:$PATH  ## <-- goes at the FRONT of the path
+# /work is where some programs go
+export PATH=/work/Apps/bin:/home/Common/opt/bin:/opt/bin:$PATH  ## <-- goes at the FRONT of the path
 
 
 # More general path-related settings
