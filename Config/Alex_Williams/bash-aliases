@@ -71,6 +71,7 @@ echo \">>> Check the version of an apt-get installed package:   dpkg -s <package
 echo \">>> Install a new package in R from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...))\" ; \
 echo \">>> Check current Linux version: cat /etc/*-release\" ; \
 echo \">>> Print every Xth line from FILE, starting with line Y: awk 'NR%X==Y'\" FILE ; \
+echo \">>> Print based on perl expr: perl -e '$n = 0; while(<>) { if ($n%2 == 0) { print $_; }; $n++; }' \" ; \
 echo \">>> Set the time on Ubuntu: sudo ntpdate-debian\" ; \
 echo \">>> BASH: Foreach / rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done  \" ; \
 echo \">>> EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J\" ; \
