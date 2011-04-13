@@ -8,6 +8,30 @@ use strict;  use warnings;  use diagnostics;
 
 ## Convert SAM or BAM to Genome Browser format
 
+
+## wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/bigWigToBedGraph
+
+## BEDTOOLS
+## git clone https://github.com/arq5x/bedtools.git
+## cd bedtools
+## make clean
+## make all
+
+
+## Chrom sizes!
+## samtools view -H nodup.bam | awk '/@SQ/ {OFS="\t"; gsub("SN:", "", $2); gsub("LN:", "", $3); print $2, $3}' > chromsizes.tab
+
+# Workflow:
+# # 1. Convert SAM to BAM
+# samtools view -S -b -o sample.bam sample.sam
+# # 2. Sort the BAM file
+# samtools sort sample.bam sample.sorted
+# # 3. Create BedGraph coverage file
+# genomeCoverageBed -bg -ibam sample.sorted.bam -g chromsizes.txt > sample.bedgraph
+# # 4. Convert the BedGraph file to BigWig
+# bedGraphToBigWig sample.bedgraph chromsizes.txt sample.bw
+
+
 print STDERR "This is a script that will generate UCSC-genome-browser-ready BAM files.\n"
     . "It will convert / produce the UCSC-ready files from any SAM or BAM file you want.\n"
     . "The BAM/SAM files can be HUGE (10+ GB), but can be hosted locally. Then you tell the UCSC Genome Browser\n"
