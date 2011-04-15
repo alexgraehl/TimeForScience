@@ -65,33 +65,35 @@ function delve {
 BRACKET_OPEN='{'
 PAREN_OPEN='('
 alias cheat="echo \">>> Find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \;\" ; \
-echo \">>> See why an Ubuntu machine wants to reboot:  cat /var/run/reboot-required.pkgs\" ; \
-echo \">>> Diff directories:   diff -rq DIR1 DIR2\" ; \
-echo \">>> Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string>\" ; \
-echo \">>> Install a new package in R from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...))\" ; \
-echo \">>> Check current Linux version: cat /etc/*-release\" ; \
-echo \">>> Print every Xth line from FILE, starting with line Y (starts at 1, not 0): awk 'NR%X==Y'\" FILE ; \
-echo \">>> Print based on perl expr: perl -e '$n = 0; while(<>) { if ($n%2 == 0) { print $_; }; $n++; }' \" ; \
-echo \">>> Set the time on Ubuntu: sudo ntpdate-debian\" ; \
-echo \">>> BASH: Foreach / rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done  \" ; \
-echo \">>> EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J\" ; \
-echo \">>> Make files readable, directories r+x (print0/-0 makes filenames with spaces work):\" ; \
-echo \"      sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ; \
-echo \">>> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ; \
-echo \">>> Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE \"  s lets '.' match newlines\; m makes ^ and \$ work ; \
-echo \">>> SAM --> BAM:  samtools view -bS in.sam > out.bam;\" ; \
-echo \">>> BAM --> SAM:  samtools view -h  in.bam > out.sam;\" ; \
-echo \">>> View BAM header: samtools view -H  in.bam \" ; \
-echo \">>> Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ; \
-echo \">>> Perl: select random subset of lines (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'if ( rand() < 0.5 ) { print(\\\$_); }' theFile.txt \" ; \
-echo \">>> Reverse-complement DNA:  perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ; \
-echo \">>> Apache error log: sudo less -S /var/log/apache2/error.log \" ; \
-echo \">>> OS X Dictionary: /usr/share/dict/words \" ; \
-echo \">>> coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ; \
-echo \">>> dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ; \
-echo \">>> Passphraseless SSH: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub \" ; \
+echo \">>> DIFF directories:   diff -rq DIR1 DIR2\" ; \
+echo \">>> R: Install new package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...))\" ; \
+echo \">>> NIX: Check Linux version: cat /etc/*-release\" ; \
+echo \">>> NIX: Set system time on Ubuntu: sudo ntpdate-debian\" ; \
+echo \">>> PKG/NIX: See why Ubuntu wants to reboot:  cat /var/run/reboot-required.pkgs\" ; \
+echo \">>> PKG: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ; \
+echo \">>> PKG: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string>\" ; \
+echo \">>> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub \" ; \
 echo \"                         to server ~/.ssh/authorized_keys  \" ; \
-
+echo \">>> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work):\" ; \
+echo \"      sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ; \
+echo \" \" ; \
+echo \">>> BASH: Foreach / rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done  \" ; \
+echo \">>> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ; \
+echo \">>> REGEXP Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE \"  s lets '.' match newlines\; m makes ^ and \$ work ; \
+echo \">>> REGEXP EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J\" ; \
+echo \" \" ; \
+echo \">>> RNASEQ SAM --> BAM:  samtools view -bS in.sam > out.bam;\" ; \
+echo \">>> RNASEQ BAM --> SAM:  samtools view -h  in.bam > out.sam;\" ; \
+echo \">>> RNASEQ View BAM header: samtools view -H  in.bam \" ; \
+echo \">>> RNASEQ Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ; \
+echo \">>> DNA Reverse-complement:  perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ; \
+echo \">>> APACHE error log: sudo less -S /var/log/apache2/error.log \" ; \
+echo \">>> OS X Dictionary: /usr/share/dict/words \" ; \
+echo \">>> COPROC: coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ; \
+echo \">>> LINES RANDOM subset (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'if ( rand() < 0.5 ) { print(\\\$_); }' theFile.txt \" ; \
+echo \">>> LINES: Range from N to M, inclusive (starts at 1):  sed -n N,Mp INPUTFILE \" ; \
+echo \">>> LINES: Every Xth, starting with line Y (starts at 1, not 0): awk 'NR%X==Y'\" FILE ; \
+echo \">>> LINES based on perl expr: perl -e '$n = 0; while(<>) { if ($n%2 == 0) { print $_; }; $n++; }' \" ; \
 "
 
 # for f in `ls` ; do cat $f | sed -n '2~4p' | count_char_freq_at_each_position.pl > ${f/_unalign.fq/.count} ; done
