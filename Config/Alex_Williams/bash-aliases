@@ -66,7 +66,15 @@ BRACKET_OPEN='{'
 PAREN_OPEN='('
 alias cheat="echo \">>> Find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \;\" ; \
 echo \">>> DIFF directories:   diff -rq DIR1 DIR2\" ; \
+echo \" \" ; \
 echo \">>> R: Install new package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...))\" ; \
+echo \">>> R: sessionInfo(): show package versions. ls('package:something') shows package details.\" ; \
+echo \">>> R: t.test failing? Use tryCatch: tryCatch(something, error=function() { return('NA'); }); \" ; \
+echo \">>> R: Need to un-list things? Use unlist! \" ; \
+echo \">>> R: Perpendicular axis labels: las=2 (1=horiz, 3=vertical) \" ; \
+echo \">>> R: Draw beyond graph region: par(xpd=T/F/NA) \" ; \
+echo \">>> R: Figure out attributes of a variable: attr(x, 'theAttribute'); Works even when names()/attributes() does not! \" ; \
+echo \" \" ; \
 echo \">>> NIX: Check Linux version: cat /etc/*-release\" ; \
 echo \">>> NIX: Set system time on Ubuntu: sudo ntpdate-debian\" ; \
 echo \">>> PKG/NIX: See why Ubuntu wants to reboot:  cat /var/run/reboot-required.pkgs\" ; \
