@@ -102,6 +102,7 @@ echo \">>> LINES RANDOM subset (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'if ( rand
 echo \">>> LINES: Range from N to M, inclusive (starts at 1):  sed -n N,Mp INPUTFILE \" ; \
 echo \">>> LINES: Every Xth, starting with line Y (starts at 1, not 0): awk 'NR%X==Y'\" FILE ; \
 echo \">>> LINES based on perl expr: perl -e '$n = 0; while(<>) { if ($n%2 == 0) { print $_; }; $n++; }' \" ; \
+echo \">>> LINES Count characters on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ; \
 "
 
 # for f in `ls` ; do cat $f | sed -n '2~4p' | count_char_freq_at_each_position.pl > ${f/_unalign.fq/.count} ; done
