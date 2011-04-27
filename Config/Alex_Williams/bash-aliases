@@ -157,8 +157,18 @@ alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv --preserve-root /
 ## "showoff" makes it so that everyone can a+rx any directories and a+r any files.
 ## Note that we don't want to make it so everyone can execute *files* necessarily, just folders
 ## ("Executing" a folder means you can "ls" it and see what's inside.)
-function showoff {          chmod -R a+r $1 ;      find $1 -type d -print0 |      xargs -0 chmod a+x ; }
-function sudoshowoff { sudo chmod -R a+r $1 ; sudo find $1 -type d -print0 | sudo xargs -0 chmod a+x ; }
+function showoff {
+    chmod -R a+r $1 ;
+    find $1 -type d -type d -exec chmod a+x {} \;
+    ## do not collapse this down to one line, because bash is terrible and will screw things up
+}
+
+
+function sudoshowoff {
+    sudo chmod -R a+r $1 ;
+    sudo find $1 -type d -exec sudo chmod a+x {} \;
+    ## do not collapse this down to one line, because bash is terrible and will screw things up
+}
 
 
 alias crt='crontab -u ${USER} -e'
