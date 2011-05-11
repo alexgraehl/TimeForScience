@@ -86,6 +86,8 @@ echo \">>> CHMOD Make files readable, directories r+x (print0/-0 makes filenames
 echo \"      sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ; \
 echo \" \" ; \
 echo \">>> BASH: Foreach / rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done  \" ; \
+echo \">>> ZIP: Zip a folder: zip -r ARCHIVENAME FOLDER \" ; \
+echo \">>> BASH: See a function definition:   type FUNCTIONNAME \" ; \
 echo \">>> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ; \
 echo \">>> REGEXP Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE \"  s lets '.' match newlines\; m makes ^ and \$ work ; \
 echo \">>> REGEXP EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J\" ; \
