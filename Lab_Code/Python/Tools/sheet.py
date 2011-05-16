@@ -1,8 +1,5 @@
 #!/usr/bin/python
-#
-#
 
-#  Old:  #!/projects/sysbio/apps/x86_64/bin/python
 '''
 Sheet.py
 
@@ -31,6 +28,8 @@ import curses.ascii   # <-- docs at http://docs.python.org/library/curses.ascii.
 import curses.textpad
 import curses.wrapper
 
+import pdb; #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
+
 try: 
     from numpy import * # The matrices use this
 except ImportError:
@@ -43,6 +42,8 @@ except ImportError:
     pass
 
 GLOB = 1
+
+kNUM_LINES_TO_READ_AT_A_TIME = 10000
 
 kWANT_TO_ADJUST_CURSOR        = 0
 kWANT_TO_DIRECTLY_MOVE_CURSOR = 1
@@ -239,6 +240,11 @@ HELP_AREA_BG_COLOR   = curses.COLOR_BLUE
 # ROW_HEADER_ID = 4
 # ROW_HEADER_TEXT_COLOR = curses.COLOR_BLACK
 # ROW_HEADER_BG_COLOR = curses.COLOR_GREEN
+
+
+GlobalCurrentFile = None
+GlobalCurrentFilename = None
+GlobalCurrentNumLinesLoaded = 0
 
 DEFAULT_HIGHLIGHT_NUMBERS_SETTING = True   # By default, color numbers + as green and - as red. (Based on the settings in NUMERIC_POSITIVE_COLOR_ID and NUMERIC_NEGATIVE_COLOR_ID.)
 
@@ -504,9 +510,12 @@ class AGW_DataWin(AGW_Win):
         end   = Point(min(leftCell+numToDrawX, theTable.getNumCols()),
                       min(topCell+numToDrawY , theTable.getNumRows()))
 
+        ## See if we need to read more lines from the file
+        if (end.y >= theTable.getNumRows()):
+            theTable.readFromCurrentFile() ## Ok, read some more lines!
+        
         cellTextPos = Point(None, None)
         for r in range(start.y, end.y): ## Go through each row, one at a time, top to bottom
-
             cellTextPos.y = gCellBorders.height + (gCellBorders.height+cellHeight)*(r - start.y) # <-- all cells are the same HEIGHT, so this can be computed in one equation
 
             if (cellTextPos.y >= self.windowHeight): break
@@ -698,6 +707,9 @@ class AGW_Table:
         return
 
     def appendRowOfCellContents(self, contents):
+        ## Turns a line from a file into a properly-formatted internal
+        ## representation of row of cells.
+        
         self.__cells.append(contents)
 
         if (self.__nCells.width > 0 and self.__nCells.width != len(contents)):
@@ -730,50 +742,71 @@ class AGW_Table:
             pass
         pass
 
-    def readFromFileInfo(self, singleFileInfo, maxLines):
-        if (not isinstance(singleFileInfo, AGW_File_Data)):
-            print("### Someone passed in a not-an-AGW_File_Data object to readFromFileInfo\n")
-            raise
+    def loadNewFile(self, theFilename):
+        self.closeCurrentFile() ## Close the old table first, if there is one
+        
+        global GlobalCurrentNumLinesLoaded
+        global GlobalCurrentFile
+        global GlobalCurrentFilename
 
-        try:
-            file = None
-            self.clearTable()
-
-            if (singleFileInfo.filename is kSTDIN_HYPHEN):
-                file = sys.stdin
-                pass
-            else:
-                file = open(singleFileInfo.filename, 'r')
-                pass
-
-            numLinesRead = 0
-            while True:
-                if (MAX_NUM_LINES_TO_READ is not None) and (numLinesRead >= MAX_NUM_LINES_TO_READ): break
-                # ff = file.readlines()
-                myLine = file.readline()
-                if (not myLine): break # just read the last line
-
-                myLine = myLine.rstrip("\n") # <-- like Perl "chomp"--remove the trailing newlines
-                self.appendRowOfCellContents( myLine.split(delimiter) )
-                numLinesRead += 1
-                #global GLOB
-                #GLOB = str(GLOB) + " " + str(numLinesRead)
-                pass
-        except:
-            print("Cannot read from the file <" + singleFileInfo.filename + ">. Sorry!")
-            raise
-        finally:
-            if (singleFileInfo.filename is kSTDIN_HYPHEN):
-                os.close(0) # <-- closes stdin (required!)
-                sys.stdin = open('/dev/tty', 'r')
-                #raise "LEAVING!!! DBEUG!!!"
-                pass
-            else:
-                if (file is not None): file.close()
-                pass
+        self.clearTable()
+        ## We want to see which file we should read from.
+        ## 1. We either got a HYPHEN, which is the UNIX shorthand for "read from STDIN"
+        ## 2. or we got a real filename, in which case we try to read the file from the filesystem
+        if (theFilename is kSTDIN_HYPHEN):
+            GlobalCurrentFile = sys.stdin
+            pass
+        else:
+            GlobalCurrentFile = open(theFilename, 'r')
             pass
 
-        return # end of "readFromFileInfo"
+        print("Loaded the file named " + theFilename)
+        GlobalCurrentFilename = theFilename
+
+        pass
+
+    def closeCurrentFile(self):
+        global GlobalCurrentNumLinesLoaded
+        global GlobalCurrentFile
+        global GlobalCurrentFilename
+
+        if (GlobalCurrentFilename is kSTDIN_HYPHEN):
+                ## If we were reading from STDIN, then we have some cleanup to do.
+            os.close(0) # <-- closes stdin (required!)
+            sys.stdin = open('/dev/tty', 'r') ## <-- more STDIN cleanup...
+            pass
+        else:
+            if (GlobalCurrentFile is not None): GlobalCurrentFile.close()
+            pass
+
+        GlobalCurrentFile = None
+        GlobalCurrentFilename = None
+        GlobalCurrentNumLinesLoaded = 0
+        pass
+    
+
+    def readFromCurrentFile(self):
+        global GlobalCurrentNumLinesLoaded
+        global GlobalCurrentFile
+        global GlobalCurrentFilename
+        
+        try:
+            ## Read lines from a file into our data structure
+            lines = GlobalCurrentFile.readlines(kNUM_LINES_TO_READ_AT_A_TIME)
+            if (lines):
+                for line in lines:
+                    line = line.rstrip("\n") # <-- like Perl "chomp"--remove the trailing newlines
+                    self.appendRowOfCellContents( line.split(delimiter) )
+                    GlobalCurrentNumLinesLoaded += 1
+                    pass
+                pass
+        except:
+            print("[sheet.py]: Error: Problem attempting to read from the file named " + GlobalCurrentFilename)
+            print("[sheet.py]:        We were able to read " + str(GlobalCurrentNumLinesLoaded) + " lines from it.")
+            print("[sheet.py]:        Verify that this file exists and is readable.")
+            raise
+
+        return # end of function
 
 
 def lenFromAny(argThing): # returns 0 for None's length. Otherwise you get an exception
@@ -833,12 +866,10 @@ sheetWin = AGW_DataWin()
 infoWin  = AGW_Win()
 helpWin  = AGW_Win()
 
-colHeaderWin = AGW_DataWin()
-rowHeaderWin = AGW_DataWin()
+colHeaderWin = AGW_DataWin() ## "Window" for the column headers at the top of the screen
+rowHeaderWin = AGW_DataWin() ## "Window" for the row headers at the left side of the screen
 
-MAX_NUM_LINES_TO_READ = None   # None means "no limit"--read all lines
-
-cellHeight = 1
+cellHeight = 1 ## How many lines of text each cell takes up, vertically. 1 is normal. Integer.
 
 gCellBorders = Size(1, 0) #Size(1,1) # Width, Height
 ## Size(1, 0) means there is a border to the left/right of each cell, but no border above/below
@@ -847,15 +878,13 @@ gCurrentMode = KEY_MODE_NORMAL_INPUT ## Start in normal input (not search) mode
 
 gWantToQuit = False ## False, since, by default, the user does not want to immediately quit!
 
-windowPos = Point(0,0) ## Initial position in the table of data: Point(0,0) is the top left
+#windowPos = Point(0,0) ## Initial position in the table of data: Point(0,0) is the top left
 
 truncationSuffix = "..." ## Suffix for "this cell is too long to fit on screen"
 
 delimiter = "\t"
 
 fastMoveSpeed = Point(10, 10) ## How many cells to scroll when the user is moving with shift-arrows
-
-#activeCellPos = Point(0,0)
 
 gWarningMessage = None ## A message that we can display in the "warning" region in the info pane
 gCommandStr = None     ## The current command, which we sometimes display in the info pane
@@ -900,6 +929,7 @@ def initializeWindowSettings(aScreen, fileInfoToReadFrom):
 
     global sheetWin, infoWin, colHeaderWin, rowHeaderWin, helpWin
 
+
     ## =========== Specify the dimensions of the windows here! ==================
     INFO_PANEL_HEIGHT = 6 ## How many vertical lines of terminal is the info panel in total?
     COL_HEADER_HEIGHT = 2 # How many vertical lines of terminal is the column header? Answer, it should be 2: one line for the header itself, and one below for the horizontal line that separates it from the main window (sheetWin).
@@ -909,7 +939,8 @@ def initializeWindowSettings(aScreen, fileInfoToReadFrom):
     gTermSize.resizeYX(aScreen.getmaxyx()) # Resize the curses window to use the whole available screen
 
     sheetWin.setInfo(fileInfoToReadFrom)
-    fileInfoToReadFrom.table.readFromFileInfo(fileInfoToReadFrom, MAX_NUM_LINES_TO_READ)
+    fileInfoToReadFrom.table.loadNewFile(fileInfoToReadFrom.filename)
+    fileInfoToReadFrom.table.readFromCurrentFile()
 
     if (fileInfoToReadFrom.hasColHeader and fileInfoToReadFrom.getNumRows() >= 2):
         fileInfoToReadFrom.cursorPos.y = 1 # start off with the column to the RIGHT of the col header selected, instead of having the column header show up twice
@@ -1031,23 +1062,24 @@ def processCommandLineArgs(argv):
         pass
 
     for filename in arrFilenamesToRead:
+        ## Check to make sure the specified filenames are valid.
+        ## We also allow a hyphen, which is UNIX shorthand for "read from STDIN."
         if (filename is kSTDIN_HYPHEN or os.path.isfile(filename)):
-            # It's a valid thing to read...
+            # If we got here, then it's a valid file or STDIN to read from...
             singleFileInfo = AGW_File_Data(filename)
             singleFileInfo.hasColHeader = True
             singleFileInfo.hasRowHeader = True
-
             mainInfo.addFileInfo(singleFileInfo)
             pass
         else:
-            print("Tried to read <" + filename + ">, which is not a file!")
+            print("[sheet.py]: Error in reading a file: Tried to read <" + filename + ">, but that file either did not exist, or could not be read!")
             pass
         pass
 
     mainInfo.currentFileIdx = 0
 
     if (mainInfo.size() == 0):
-        usageAndQuit(0, "sheet.py: No files that were specified on the command line could be read. Maybe you specified a directory (instead of a list of files). If you want to list all the files in a directory, try:\tsheet.py your_directory/*\n")
+        usageAndQuit(0, "[sheet.py]: No files that were specified on the command line could be read. Maybe you specified a directory (instead of a list of files). If you want to list all the files in a directory, try:\tsheet.py your_directory/*\n")
         pass
 
     return
@@ -1123,9 +1155,11 @@ def drawInfoWin(theScreen, theInfo, inTab):
     infoWin.safeAddStr(VALUE_ROW, 0, valueStr1)
 
     if (mainInfo.size() < 2):
+        ## If there's only ONE file that the user specified, then don't both showing a file list.
         fileListStr1 = "" # only one file to read... no need for a list
         pass
     else:
+        ## Draw a list of the currently files that we can switch between
         xOffset = 0
         fileListStr1 = "File List: "
         infoWin.safeAddStr(FILE_LIST_ROW, 0, fileListStr1)
@@ -1385,8 +1419,8 @@ def handleKeysForNormalMode(argCh, currentTable, theScreen):
     ## This will handle the majority of user interactions.
 
     theAction = None  ## What did the user want to do?
-
-    wantToMove = Point(0,0)    ## Do we want to move the cursor in the table?
+    
+    wantToMove = Point(0,0)    ## See if we need to move the cursor / scroll up / down / left /right
     wantToChangeFileIdx = None ## Do we want to go to the next/previous file?
 
     activeCellPos = mainInfo.getCurrent().cursorPos ## Where are we currently, in the table?
@@ -1479,10 +1513,8 @@ def handleKeysForNormalMode(argCh, currentTable, theScreen):
             mainInfo.currentFileIdx = possibleNewIndex # update which file we are currently examining
             initializeWindowSettings(theScreen, mainInfo.getCurrent())
             setCommandStr("Changed to the file named \"" + mainInfo.getCurrent().filename + '".')
-            pass
+            currentTable.loadNewFile(mainInfo.getCurrent().filename)
         pass
-
-
 
     return
 
@@ -1591,139 +1623,6 @@ BUGS:
 
 
 
-# Extra code snippets:
-
-# curses.textpad.rectangle(self.win, cellTextPos.y-1, cellTextPos.x-1, cellTextPos.y+cellHeight, cellTextPos.x+maxLenForThisCell)
-
-
-
-# import curses as c
-
-# def doKeyEvent(key):
-#     if key == '\x00' or key == '\xe0': # non ASCII key
-#        key = screen.getch() # fetch second character
-#     screen.addstr(str(key)+' ')
-
-# def doQuitEvent(key):
-#     raise SystemExit
-
-# # clear the screen of clutter, stop characters auto
-# # echoing to screen and then tell user what to do to quit
-
-# screen = c.initscr()
-# c.noecho()
-# screen.addstr("Hit space to end...\n")
-
-# # Now mainloop runs "forever"
-# while True:
-#      ky = screen.getch()
-#      if ky != -1:
-#        # send events to event handling functions
-#        if ky == ord(" "): # check for quit event
-#             doQuitEvent(ky)
-#        else:
-#             doKeyEvent(ky)
-
-# c.endwin()
-
-# #
-
-
-                        #. Move with IJKL. Hold shift to move faster. '/' activates search mode.")
-#     infoWin.safeAddStr(1, 0, fileStatusString)
-#     infoWin.safeAddStr(2, 0, "File #" + str(mainInfo.currentFileIdx+1) + " (of " + str(mainInfo.size()) + ") is \"" + theInfo.filename + "\"")
-
-#     selectedCellProperty = curses.color_pair(SELECTED_CELL_ID)
-
-#     cursesClearLine(infoWin.win, 3)
-#     if (selectedCellText is None):
-#         line3 = "R_" + str(activeCellPos.y+1) + ", C_" + str(activeCellPos.x+1) + " does not exist in this table."
-#         infoWin.safeAddStr(3, 0, line3, curses.A_NORMAL)
-#         pass
-#     else:
-#         line3a = "R_" + str(activeCellPos.y+1) + ", C_" + str(activeCellPos.x+1) + " = "
-#         line3b = selectedCellText
-#         infoWin.safeAddStr(3, 0, line3a, curses.A_NORMAL)
-#         infoWin.safeAddStr(3, len(line3a), line3b, selectedCellProperty)
-#         pass
-
-
-
-
-
-# b = BitBoard(row=3, col=5)
-
-# b.board[1][1] = None
-# print( b.board[1][1])
-
-# b.board[0][1] = False
-# print( b.board[0][1])
-
-# b.board[1][0] = True
-# print( b.board[1][0])
-
-#sys.exit(1)
-#b.set(row=2,col=1)
-#print( b.at(2,3))
-#print( b.sizeX())
-#print( b.board)
-#sys.exit(1)
-
-
-
-# How to use Curses.wrapper:
-# From http://mail.python.org/pipermail/tutor/2003-July/024075.html
-# curses.wrapper is now simply used this way:
-# curses.wrapper(main)
-
-# Here I've got a piece of code that shows the non-wrapper way but with use
-# of a "main" function (The "if __name__=='__main__':" part asures that the
-# code is only excecuted when the file is excecuted as a script (not
-# imported as a modul). You can ignore this when you can't see the
-# benefit. try-finally asures the the finally-block is executed even if an
-# exception occurs in main. You shouldn't ignore this ;-):
-
-# if __name__=='__main__':
-#     try:
-# stdscr=curses.initscr()
-# curses.noecho() ; curses.cbreak()
-# stdscr.keypad(1)
-# main(stdscr)# Enter the main loop
-#     finally:
-#         stdscr.erase()
-#         stdscr.refresh()
-# stdscr.keypad(0)
-# curses.echo() ; curses.nocbreak()
-# curses.endwin()# Terminate curses
-
-
-# and the same (plus color activating) with the wrapper:
-
-#if __name__=='__main__':
-#     curses.wrapper(main)
-
-
-# Must come at the VERY END!
-if __name__ == "__main__":
-    processCommandLineArgs(sys.argv[1:])
-    curses.wrapper(mainScreenHandlingLoop)
-    pass
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1756,4 +1655,16 @@ if __name__ == "__main__":
 #     while True:
 #         key = get_key()
 #         d.dispatch(key)
+
+
+
+# Must come at the VERY END!
+if __name__ == "__main__":
+    processCommandLineArgs(sys.argv[1:])
+    curses.wrapper(mainScreenHandlingLoop)
+    pass
+
+
+
+
 
