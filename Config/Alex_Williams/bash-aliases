@@ -77,6 +77,8 @@ echo \">>> R: Figure out attributes of a variable: attr(x, 'theAttribute'); Work
 echo \" \" ; \
 echo \">>> NIX: Check Linux version: cat /etc/*-release\" ; \
 echo \">>> NIX: Set system time on Ubuntu: sudo ntpdate-debian\" ; \
+echo \">>> NIX: Set system time on Ubuntu: sudo ntpdate-debian\" ; \
+echo \">>> NIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles\" ; \
 echo \">>> PKG/NIX: See why Ubuntu wants to reboot:  cat /var/run/reboot-required.pkgs\" ; \
 echo \">>> PKG: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ; \
 echo \">>> PKG: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string>\" ; \
