@@ -13,11 +13,11 @@
 
 lesspipe() {
     case "$1" in
-	*.[1-9n]|*.man|*.[1-9n].bz2|*.man.bz2|*.[1-9].gz|*.[1-9]x.gz|*.[1-9].man.gz)
+	*.[1-9n]|*.man|*.[1-9n].bz2|*.man.bz2|*.[1-9].gz|*.[1-9]x.gz|*.[1-9].man.gz) ## <--- For viewing multi-part archives!
 	    case "$1" in
-		*.gz)	DECOMPRESSOR="gunzip -c" ;;
-		*.bz2)	DECOMPRESSOR="bunzip2 -c" ;;
-		*)	DECOMPRESSOR="cat" ;;
+		*.gz)	DECOMPRESSOR="gunzip -c" ;;  ## <-- For viewing multi-part archives only!
+		*.bz2)	DECOMPRESSOR="bunzip2 -c" ;; ## <-- For viewing multi-part archives only!
+		*)	DECOMPRESSOR="cat" ;;        ## <-- For viewing multi-part archives only!
 	    esac
 	    if $DECOMPRESSOR -- "$1" | file - | grep -q troff; then
 		if echo "$1" | grep -q ^/; then	#absolute path
@@ -27,7 +27,7 @@ lesspipe() {
 		fi
 	    else
 		$DECOMPRESSOR -- "$1"
-	    fi ;;
+	    fi ;; ## <-- Done with the "multi-part archive" part
 
   # Alex:
   # CHANGED from default lesspipe: Now we load any files ending in
@@ -39,6 +39,8 @@ lesspipe() {
   #  UNIX-tool-only version of this, instead of "sheet.pl", use "column -t -s '	'"
 	*.tab.gz|*.matrix.gz) gunzip -c "$1" | sheet.pl --notify --color="always" ;;
 	*.tab|*.matrix) sheet.pl --notify --color="always" "$1" ;;
+
+	*.bam) echo '######\n### Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format ###\n######' ; samtools view -h "$1" ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
 
 	*.tar) tar tvvf "$1" ;;
 	*.tgz|*.tar.gz|*.tar.[zZ]) tar tzvvf "$1" ;;
