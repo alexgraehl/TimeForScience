@@ -80,33 +80,24 @@ while(@ARGV)
         $arg = shift @ARGV;
         @key2 = &parseRanges($arg);
 	}
-    elsif($arg eq '-o' or $arg eq '-of')
-    {
-		$arg = shift @ARGV;
-		if(-f $arg)
-		{
-			if(not(open(FILE, $arg)))
-			{
-				print STDERR "join.pl: WARNING: Could not open file '$arg' to find outer text, skipping.\n";
-			}
-			else
-			{
-				while(<FILE>)
-				{
-					if(/\S/)
-					{
-						chomp;
-						push(@fill_lines, $_);
-					}
-				}
-				$outer = 1;
-			}
+    elsif($arg eq '-o' or $arg eq '-of') {
+	$arg = shift @ARGV;
+	if(-f $arg) { ## if it's a file...
+	    if(not(open(FILE, $arg))) {
+		print STDERR "join.pl: WARNING: Could not open file '$arg' to find outer text, skipping.\n";
+	    } else {
+		while(<FILE>) {
+		    if(/\S/) { ## if there's some content that's non-spaces-only
+			chomp;
+			push(@fill_lines, $_);
+		    }
 		}
-		else
-		{
-			$fill = $arg;
-			$outer = 1;
-		}
+		$outer = 1;
+	    }
+	} else {
+	    $fill = $arg; ## fill with this text
+	    $outer = 1;
+	}
     }
     elsif($arg eq '-ob' or $arg eq '--outer_blank')
     {
