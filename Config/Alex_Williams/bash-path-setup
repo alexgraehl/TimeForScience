@@ -12,75 +12,51 @@ echo -e "${a_echo_color}>>> BASH: Loading bash-path-setup...${a_end_color}"
 
 ## Clear out the initial path
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/X11/bin
-
-
-export PATH=$PATH:/work/Apps/Bio/meme/bin     # UCSF: MEME
-export PATH=$PATH:/work/Apps/Bio/paml42/bin   # UCSF: PAML
-export PATH=$PATH:/work/Apps/Bio/macs/bin     # UCSF: MACS
+export PATH=$PATH:/work/Apps/bin:${HOME}/bin ## System-wide "Science" bin, plus user-specific bin
 
 # Cole Trapnell's RNASeq suite: BOWTIE, TOPHAT, CUFFLINKS
-export PATH=$PATH:/work/Apps/Bio/bowtie/bin
 export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
-export PATH=$PATH:/work/Apps/Bio/tophat/bin    # UCSF: TOPHAT
-export PATH=$PATH:/work/Apps/Bio/cufflinks/bin # UCSF: CUFFLINKS
-
-# UCSF: SOME DATA
-export PATH=$PATH:$HOME/data
  
 # UCSF: CISTEMATIC
-export CISTEMATIC_ROOT=/work/Apps/Bio/cistematic
+#export CISTEMATIC_ROOT=/work/Apps/Bio/cistematic
 
 # UCSF: CISTEMATIC PYTHONPATH
-export PYTHONPATH=${PYTHONPATH}:$CISTEMATIC_ROOT/core:$CISTEMATIC_ROOT/db:$CISTEMATIC_ROOT/experiments:$CISTEMATIC_ROOT/genomes:$CISTEMATIC_ROOT/programs:$CISTEMATIC_ROOT/stat
-export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.6/dist-packages
-export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.6
+#export PYTHONPATH=${PYTHONPATH}:$CISTEMATIC_ROOT/core:$CISTEMATIC_ROOT/db:$CISTEMATIC_ROOT/experiments:$CISTEMATIC_ROOT/genomes:$CISTEMATIC_ROOT/programs:$CISTEMATIC_ROOT/stat
+#export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.6/dist-packages
+#export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.6
 # UCSF: BOOST
-export BOOST_ROOT=/usr/local/boost/boost_1_41_0
-export PATH=$PATH:/usr/local/boost
+#export BOOST_ROOT=/usr/local/boost/boost_1_41_0
 
 # /work is where some programs go
-export PATH=/work/Apps/bin:/home/Common/opt/bin:/opt/bin:$PATH  ## <-- goes at the FRONT of the path
+
 
 
 # More general path-related settings
 
-export MYSRC=$HOME/cvs-local
-export PATH=$MYSRC/alexgw:$MYSRC/perl/Tools:$MYSRC/perl/web:$MYSRC/perl/Map:$PATH  # These come BEFORE other things found on the path. Whatever is listed FIRST gets run
+# case "$HOSTNAME"
+#     in
+#     nausicaa)
+# 	export SICER_DIR_ENV_VAR=/opt/Bio/sicer
+# 	;;
+#     catbus)
+# 	export SICER_DIR_ENV_VAR=/opt/Bio/sicer
+# 	;;
+#     --)
+# 	export SICER_DIR_ENV_VAR=SICER_IS_NOT_INSTALLED_ON_THIS_MACHINE_CHECK_YOUR_BASH_PROFILE_SETUP
+# 	;;
+# esac
 
 
-case "$HOSTNAME"
-    in
-    nausicaa)
-	export SICER_DIR_ENV_VAR=/opt/Bio/sicer
-	;;
-    catbus)
-	export SICER_DIR_ENV_VAR=/opt/Bio/sicer
-	;;
-    --)
-	export SICER_DIR_ENV_VAR=SICER_IS_NOT_INSTALLED_ON_THIS_MACHINE_CHECK_YOUR_BASH_PROFILE_SETUP
-	;;
-esac
+export TFSDIR=$HOME/TimeForScience ## Location of the TIME FOR SCIENCE directory
 
-
-export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience
-export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$PATH
-export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$PATH
-export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$PATH
-export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$PATH
-export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/R:$PATH
-
-export PATH=${PATH}:$MYSRC/lab_apps/python/Tools
-export PATH=${PATH}:$MYSRC/lab_apps/R_shell
-export PATH=${PATH}:$MYSRC/lab_apps/shell_scripts
-export PATH=${PATH}:$MYSRC/cvaske/R/Commands
-export PATH=${PATH}:/sw/bin      # programs installed by Fink, on the Mac
-export PATH=${HOME}/bin:${PATH}  # programs in your own home directory come FIRST
+export PATH=$TFSDIR/Lab_Code/Perl/Tools:$TFSDIR/Lab_Code/Perl/Scientific:$TFSDIR/Lab_Code/Python/Tools:$TFSDIR/Lab_Code/Shell:$TFSDIR/Lab_Code/R:${PATH} ## <-- Priority!
+export PATH=${HOME}/bin:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST
+export PATH=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:${PATH} ## <-- PRIORITY on the path
+export PATH=/work/Apps/bin:/home/Common/opt/bin:/opt/bin:/sw/bin:$PATH  ## <-- PRIORITY at the FRONT of the path
 
 if [[ $isAgwHomeMachine -eq 1 ]]; then
     # It is the home machine! Some things are in different places, as a result
     # Add things to Alex's home machine's path
-    export PATH=${PATH}:/Alex/Programming/android-sdk-mac_86/tools
-    export PATH=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:${PATH} ## <-- note that these have priority in the path!
     export BINF_CORE_WORK_DIR="/Users/${USER}/work" # <-- set BINF_CORE work directory
 else
     export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
