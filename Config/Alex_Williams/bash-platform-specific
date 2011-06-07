@@ -1,6 +1,11 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
 ## SSH_CLIENT and SSH2_CLIENT are set automatically by SSH if you are connected to a machine by SSH
+
+if [[ $BASH_PLATFORM_SPECIFIC_FILE_IS_ALREADY_INCLUDED ]] ; then
+    return; ## Return early--don't include this file multiple times.
+fi
+
 if [[ -z $SSH_CLIENT && -z $SSH2_CLIENT ]] ; then
     is_sshing=0 ## We aren't connected to any other server...
 else
@@ -70,3 +75,4 @@ fi
 
 
 
+BASH_PLATFORM_SPECIFIC_FILE_IS_ALREADY_INCLUDED=1

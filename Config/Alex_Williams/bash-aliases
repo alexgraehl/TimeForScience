@@ -4,19 +4,15 @@ if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
     source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
 
-
 echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
-
-## Searches both the R source and the current directory (and any subdirectories!)
-## Note that it only looks for files with a ".R" ending!!!!!!!
-
 
 alias SET_NAUCOLOR="echo -n ''"
 alias SET_LOCALCOLOR="echo -n ''"
 alias SET_LIGHTHOUSECOLOR="echo -n ''"
 alias SET_BUENOCOLOR="echo -n ''"
 
-
+## Searches both the R source and the current directory (and any subdirectories!)
+## Note that it only looks for files with a ".R" ending!!!!!!!
 if [ $isMac -eq 1 ] ; then
     function ff {
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
@@ -124,7 +120,7 @@ alias diffdir='diff -rq' ## diff on directories
 
 # Shell navigation / commands
 
-pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
+#pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
 
 
 alias l='/bin/ls -F $AGW_LS_COLOR_OPTION'
@@ -174,12 +170,9 @@ alias invisible='SetFile -a V' ## Make a file/folder invisible to the Finder
 alias visible='SetFile -a v' ## opposite of "invisible"
 alias clearicon='SetFile -a c' ## clear mac custom icons. Useful for images that have old custom icons.
 
-#alias s='less -S --LINE-NUMBERS'
-
 alias version="lsb_release -a" # Tells you which version of Ubuntu you are running!
 
-alias res="source ~/.bashrc"
-
+alias res="source ~/.bashrc" ## Re-load the source file
 
 # Convert a Mac-style line-ending file to a UNIX one
 # Useful for when you save a file in Excel and then UNIX won't read it.
@@ -189,13 +182,11 @@ alias mac2unix="tr '\r' '\n'"
 # Useful for when you save a file in Excel and then UNIX won't read it.
 alias dos2unix="tr -d '\r'"
 
-
 ## Mac-specific commands:
-alias invisible='SetFile -a V' ## Make a file/folder invisible to the Finder
-alias visible='SetFile -a v' ## opposite of "invisible"
+alias invisible='SetFile -a V' ## Mac-only: Make a file/folder invisible to the Finder
+alias visible='SetFile -a v' ## Mac-only: opposite of "invisible"
 
 ## remember dot_clean to remove annoying ._something files
-
 
 ## Utility commands
 
@@ -207,7 +198,9 @@ alias wcl='wc -l'
 alias sortt='sort -t "	"' # sort with tab as separator
 alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
 
-if [[ isAGWHomeMachine -eq 1 ]]; then
+
+if [[ -f /Applications/Emacs.app/Contents/MacOS/Emacs ]]; then
+    echo -e "${a_echo_color}>>> BASH: Note: alising 'e' to the Mac Application version of emacs.${a_end_color}"
     alias e='/Applications/Emacs.app/Contents/MacOS/Emacs -nw'
 elif [[ isMac -eq 1 ]]; then
     alias e='emacs --daemon ; emacsclient -a "emacs"'
@@ -278,7 +271,7 @@ function workcom {
     echo "[Done] committing work repository"  # && hg push --cwd ${BINF_CODE}'
 }
 
-function workup {
+function workup { ## Update mercurial work directories
     hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" pull && hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" update && echo "[Done] updating work code repository"
     hg --cwd "${BINF_CORE_WORK_DIR}/Common/Data" pull && hg --cwd "${BINF_CORE_WORK_DIR}/Common/Data" update && echo "[Done] updating work data repository"
     hg --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives" pull && hg --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives" update && echo "[Done] updating work project archive repository"
@@ -324,7 +317,7 @@ alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/le
 # Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
 alias  sn='/usr/bin/less -S --LINE-NUMBERS --status-column --RAW-CONTROL-CHARS -f --IGNORE-CASE'
 
-alias sweep='trash.pl *.tmp *.temp'
+alias sweep='trash.pl *.tmp *.temp' ## Sweep out the .tmp files
 
 function s { ## <-- this needs to come BEFORE the other things that use less!
     # "s" uses "magicless" to run files through sheet.pl
