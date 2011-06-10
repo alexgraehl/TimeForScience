@@ -320,8 +320,11 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
           axis(4, at=tickLoc.vec, labels=backwardsLabels.vec, tick=F, las=2, cex.axis=cexRow) # 4 = right axis, usually with gene names
      }
 
-     #bottomAxisLoc <- (0:(ncol(mmm)-1))/(ncol(mmm)-1)
-     bottomAxisLoc.vec <- seq(from=0, to=(ncol(mmm)-1), by=(1/(ncol(mmm)-1)))
+     if (ncol(mmm) == 1) {
+          bottomAxisLoc.vec <- c(0.5) ## special case for ncol == 1, so we don't divide by zero!
+     } else {
+          bottomAxisLoc.vec <- seq(from=0, to=(ncol(mmm)-1)) / (ncol(mmm)-1)
+     }
      axis(1, at=bottomAxisLoc.vec, labels=labCol, tick=F, las=2, cex.axis=cexCol) # 1 = bottom axis, usually with array names
      box(lwd=1)
 
