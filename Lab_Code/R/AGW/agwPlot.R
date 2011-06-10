@@ -3,7 +3,17 @@
 ## This file contains various miscellaneous plotting functions. They should be general-purpose.
 ## =============================================================================
 
-
+if (!exists("print.agw")) {
+     if (file.exists("/work/Common/Code/R_Binf_Core/Utility/agwUtil.R")) {
+          source("/work/Common/Code/R_Binf_Core/Utility/agwUtil.R")
+     } else if (file.exists("~/TimeForScience/Lab_Code/R/AGW/agwUtil.R")) {
+          source("~/TimeForScience/Lab_Code/R/AGW/agwUtil.R")
+     } else if (file.exists("./agwUtil.R")) {
+          source("./agwUtil.R")
+     } else {
+          stop("Error -- can't find Alex's R utilities on the filesystem.")
+     }                      
+}
 
 
 ## Plotting-related functions.
