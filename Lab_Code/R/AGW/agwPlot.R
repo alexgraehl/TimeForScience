@@ -135,7 +135,7 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
                                , method="complete")
           dcc <- as.dendrogram(hcc)
           reordering <- order.dendrogram(dcc)
-          mmm <- mmm[reordering, ] ## REORDER THE INPUT MATRIX BASED ON THE CLUSTERING
+          mmm <- mmm[reordering, , drop=F] ## REORDER THE INPUT MATRIX BASED ON THE CLUSTERING
                assert.agw(is.null(labRow) && is.null(row.names), "Uh oh! You cannot specify that you want the matrix to be re-clustered AND ALSO specify row names. This is because once you recluster, the row names will not be what you probably expect! i.e., the row names move around!")
      }
      
@@ -280,7 +280,7 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      par(mar=c("bottom"=25, "left"=8, "top"=8, "right"=20), cex.main=2.2)
      par(cex = 0.5) ## Expansion factor
      #image(m, axes=F, main=main, col=col)
-     image(t(mmm)[, nrow(mmm):1], axes=F, main=main, col=col) ## <-- transpose AND flip, to rotate the correct way
+     image(t(mmm)[, nrow(mmm):1, drop=F], axes=F, main=main, col=col) ## <-- transpose AND flip, to rotate the correct way
      # Notice that ‘image’ interprets the matrix as a table of
      # ‘f(x[i], y[j])’ values, so that the x axis corresponds to row
      # number and the y axis to column number, with column 1 at the
@@ -319,8 +319,10 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
           ## they match up here, too.
           axis(4, at=tickLoc.vec, labels=backwardsLabels.vec, tick=F, las=2, cex.axis=cexRow) # 4 = right axis, usually with gene names
      }
-     
-     axis(1, at=(0:(ncol(mmm)-1))/(ncol(mmm)-1), labels=labCol, tick=F, las=2, cex.axis=cexCol) # 1 = bottom axis, usually with array names
+
+     #bottomAxisLoc <- (0:(ncol(mmm)-1))/(ncol(mmm)-1)
+     bottomAxisLoc.vec <- seq(from=0, to=(ncol(mmm)-1), by=(1/(ncol(mmm)-1)))
+     axis(1, at=bottomAxisLoc.vec, labels=labCol, tick=F, las=2, cex.axis=cexCol) # 1 = bottom axis, usually with array names
      box(lwd=1)
 
      print.agw("heatmap.agw: Looks like the figure region was an acceptable size to fit the heatmap.")
