@@ -1,11 +1,8 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
-
-
 [[ -z $PS1 ]] && return # <-- If not running interactively, don't
 # do anything. Printing any output breaks ssh and various things.
 # This is why this line is important at the very top!
-
 
 # .bashrc: Loaded when the shell is non-interactively started up
 
@@ -19,15 +16,11 @@ if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]] ; then
     source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
 
-
-
 echo -e "${a_echo_color}>>> BASH: Loading .bashrc...${a_end_color}"
 
 if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-path-setup ]] ; then
     source ~/TimeForScience/Config/Alex_Williams/bash-path-setup
 fi
-
-
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
@@ -39,6 +32,10 @@ if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-aliases ]]; then
 fi
 
 
+#iterm_bg=000000
+#iterm_title_r255=200
+#iterm_title_g255=0
+#iterm_title_b255=0
 
 # ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
 a_machine_prompt_main_color=''
@@ -47,12 +44,16 @@ if [[ $color_prompt -eq 1 ]] ; then
 	## LOCAL machine gets a specific color...
 	#a_machine_prompt_main_color="$color_prefix[44m$color_prefix[3;33m" ## Blue background, white foreground
 	a_machine_prompt_main_color="${color_prefix}[1;32m" ## Bold green text
+	##[[ $TERM_PROGRAM == iTerm ]] && 
+	#iterm_bg=001100 # iTerm console window background
     else
 	## Ok, we are SSHed into a remote machine...
 	case "$HOSTNAME"
 	    in
 	    nausicaa)
-		a_machine_prompt_main_color="${color_prefix}[1;35m" ## 1;35m == Bold magenta text
+		a_machine_prompt_main_color="${color_prefix}[1;35m" ; ## 1;35m == Bold magenta
+		iterm_bg=003300 ;# iTerm console window background
+		export $iterm_bg
 		;;
 	    catbus)
 		a_machine_prompt_main_color="${color_prefix}[1;34m"
@@ -65,6 +66,7 @@ if [[ $color_prompt -eq 1 ]] ; then
 		;;
 	    --)
 		a_machine_prompt_main_color="${color_prefix}[41m${color_prefix}[3;37m"
+		echo "HELLO"
 		;;
 	esac
     fi
@@ -74,7 +76,13 @@ fi
 # ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
 
 
-
+#echo -e "\033]Pg4040ff\033\\"
+[[ $iterm_bg ]] && echo -e "\033]Ph${iterm_bg}\033\\" ; ## iTerm background
+if [[ $iterm_title_r255 ]] ; then
+    echo -e "\033]6;1;bg;red;brightness;${iterm_title_r255}\a" ; ## title bar of iTerm
+    echo -e "\033]6;1;bg;green;brightness;${iterm_title_g255}\a" ; ## title bar of iTerm
+    echo -e "\033]6;1;bg;blue;brightness;${iterm_title_b255}\a" ## title bar of iTerm
+fi
 
 
 if [[ -z $STY ]] && [[ $HOSTNAME == 'nausicaa' ]] ; then
@@ -116,7 +124,7 @@ if [[ -z $debian_chroot ]] && [[ -r /etc/debian_chroot ]]; then
 fi
 
 
-if [ $color_prompt -eq 1 ]; then
+if [[ $color_prompt -eq 1 ]]; then
     PS1="\[${a_machine_prompt_main_color}\][\$(date +%H:%M)] [\u@\h:\W]\$\[\033[0m\]\[${a_end_color}\] "
 else
     PS1="[\$(date +%H:%M)] [\u@\h:\W]\$ "
@@ -142,16 +150,15 @@ if [[ -f /etc/bash_completion ]]; then
 fi
 
 
-
-export LS_OPTIONS='--color=auto'
+## ===============================================
+## COMMAND LINE COLOR / LS COLOR
 export CLICOLOR='Yes'
-
+export LS_OPTIONS='--color=auto'
 ## LS_COLORS *with* an underscore is for Ubuntu
-export LS_COLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;31'
-
+export LS_COLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;31' 
 ## LSCOLORS *without* an underscore is for Mac OS X
 export LSCOLORS=FxgxCxDxBxegedabagacad
-
+## ===============================================
 
 export CVS_RSH=ssh
 export CVSEDITOR="emacs -nw"
@@ -159,11 +166,7 @@ export SVN_EDITOR="emacs -nw"
 
 export PAGER=less
 export EDITOR="emacs -nw"
-export TERM=$TERM #xterm-color256color
-
-export TERM_PROGRAM=Apple_Terminal
-
-
+#export TERM=$TERM #xterm-color256color ## <-- gotta EXPORT the local term variable
 
 set -o ignoreeof  # Prevent Ctrl-D from exiting!
 
@@ -214,6 +217,5 @@ bind "\M-K:next-history"
 
 bind "\C-s:history-search-forward"
 
-
-
 # =======
+

@@ -2,9 +2,7 @@
 
 ## SSH_CLIENT and SSH2_CLIENT are set automatically by SSH if you are connected to a machine by SSH
 
-if [[ $BASH_PLATFORM_SPECIFIC_FILE_IS_ALREADY_INCLUDED ]] ; then
-    return; ## Return early--don't include this file multiple times.
-fi
+[[ $BASH_PLATFORM_SPECIFIC_FILE_IS_ALREADY_INCLUDED ]] && return ## Return early if this file was ALREADY included
 
 if [[ -z $SSH_CLIENT && -z $SSH2_CLIENT ]] ; then
     is_sshing=0 ## We aren't connected to any other server...
@@ -25,22 +23,24 @@ fi
 
 
 case "$TERM" in
-    xterm-color|xterm-256color)
-	color_prompt=1;
-	;;
-    *)
-	color_prompt=0; # <-- Non-color terminal
-	;;
+    xterm-color|xterm-256color)	color_prompt=1 ;;
+##    *)	                        color_prompt=0 ;;
 esac
 
 case "$OSTYPE" in
-    darwin10.0)
-	isMac=1
-	;;
-    *)
-	isMac=0
-	;;
+    darwin10.0) isMac=1 ;;
+#    *)          isMac=0 ;;
 esac
+
+if [[ ! $is_sshing -eq 1 ]] ; then
+    ## Only if we are NOT sshing, then set the Terminal program
+    tmp_term_is_iTerm=`ps -x | grep 'MacOS/iTerm' | grep -v 'grep'`
+    if [[ $tmp_term_is_iTerm ]] ; then
+	export TERM_PROGRAM=iTerm
+    else
+	export TERM_PROGRAM=Apple_Terminal ;
+    fi
+fi
 
 if [[ $HOSTNAME == "Guinea-Beast.local" ]]; then
     isAGWHomeMachine=1
