@@ -52,21 +52,23 @@ if [[ $color_prompt -eq 1 ]] ; then
 	    in
 	    nausicaa)
 		a_machine_prompt_main_color="${color_prefix}[1;35m" ; ## 1;35m == Bold magenta
-		iterm_bg=003300 ;# iTerm console window background
-		export $iterm_bg
+		iterm_bg=001100 ;# iTerm console window background
 		;;
 	    catbus)
 		a_machine_prompt_main_color="${color_prefix}[1;34m"
+		iterm_bg=000022 ;# iTerm console window background
 		;;
 	    bueno)
 		a_machine_prompt_main_color="${color_prefix}[44m${color_prefix}[3;36m" # cyan text / blue background
+		iterm_bg=220000 ;# iTerm console window background
 		;;
 	    lighthouse)
 		a_machine_prompt_main_color="${color_prefix}[43m${color_prefix}[3;30m" # yellow background
+		iterm_bg=222200 ;# iTerm console window background
 		;;
 	    --)
 		a_machine_prompt_main_color="${color_prefix}[41m${color_prefix}[3;37m"
-		echo "HELLO"
+		iterm_bg=220022 ;# iTerm console window background
 		;;
 	esac
     fi
