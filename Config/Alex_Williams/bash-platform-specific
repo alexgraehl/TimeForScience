@@ -32,7 +32,7 @@ case "$OSTYPE" in
 #    *)          isMac=0 ;;
 esac
 
-if [[ ! $is_sshing -eq 1 ]] ; then
+if [[ $is_sshing -eq 0 ]] ; then
     ## Only if we are NOT sshing, then set the Terminal program
     tmp_term_is_iTerm=`ps -x | grep 'MacOS/iTerm' | grep -v 'grep'`
     if [[ $tmp_term_is_iTerm ]] ; then
