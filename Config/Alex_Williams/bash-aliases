@@ -13,7 +13,7 @@ alias SET_BUENOCOLOR="echo -n ''"
 
 ## Searches both the R source and the current directory (and any subdirectories!)
 ## Note that it only looks for files with a ".R" ending!!!!!!!
-if [ $isMac -eq 1 ] ; then
+if [[ $isMac -eq 1 ]] ; then
     function ff {
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
 	    "$*" \
@@ -245,14 +245,9 @@ function hglog {
     fi
 }
 
-
-if [[ $USER == "alexgw" ]]
-then
-    alias alexcom='ssh alexcom@alexwilliams.com'
-fi
-
-
-
+#if [[ $USER == "alexgw" ]] ; then
+#    alias alexcom='ssh alexcom@alexwilliams.com'
+#fi
 
 alias nau='SET_NAUCOLOR ; ssh  $UCSF_USER@nausicaa.ucsf.edu'
 alias workstat='hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" status ; hg --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives status"'
