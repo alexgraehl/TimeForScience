@@ -24,12 +24,12 @@ fi
 
 case "$TERM" in
     xterm-color|xterm-256color)	color_prompt=1 ;;
-##    *)	                        color_prompt=0 ;;
+    *)	                        color_prompt=0 ;;
 esac
 
 case "$OSTYPE" in
     darwin10.0) isMac=1 ;;
-#    *)          isMac=0 ;;
+    *)          isMac=0 ;;
 esac
 
 if [[ $is_sshing -eq 0 ]] ; then
