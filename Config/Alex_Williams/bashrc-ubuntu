@@ -1,6 +1,6 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
-[[ -z $PS1 ]] && return # <-- If not running interactively, don't
+[[ -z "$PS1" ]] && return # <-- If not running interactively, don't
 # do anything. Printing any output breaks ssh and various things.
 # This is why this line is important at the very top!
 
@@ -39,8 +39,8 @@ fi
 
 # ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
 a_machine_prompt_main_color=''
-if [[ $color_prompt -eq 1 ]] ; then
-    if [[ $is_sshing -eq 0 ]] ; then
+if [[ -n "$color_prompt" ]] ; then
+    if [[ -z "$is_sshing" ]] ; then
 	## LOCAL machine gets a specific color...
 	#a_machine_prompt_main_color="$color_prefix[44m$color_prefix[3;33m" ## Blue background, white foreground
 	a_machine_prompt_main_color="${color_prefix}[1;32m" ## Bold green text
@@ -79,46 +79,36 @@ fi
 
 
 #echo -e "\033]Pg4040ff\033\\"
-[[ $iterm_bg ]] && echo -e "\033]Ph${iterm_bg}\033\\" ; ## iTerm background
-if [[ $iterm_title_r255 ]] ; then
+[[ -n "$iterm_bg" ]] && echo -e "\033]Ph${iterm_bg}\033\\" ; ## iTerm background
+if [[ -n "$iterm_title_r255" ]] ; then
     echo -e "\033]6;1;bg;red;brightness;${iterm_title_r255}\a" ; ## title bar of iTerm
     echo -e "\033]6;1;bg;green;brightness;${iterm_title_g255}\a" ; ## title bar of iTerm
     echo -e "\033]6;1;bg;blue;brightness;${iterm_title_b255}\a" ## title bar of iTerm
 fi
 
 
-if [[ -z $STY ]] && [[ $HOSTNAME == 'nausicaa' ]] ; then
+if [[ -z "$STY" ]] && [[ "$HOSTNAME" == 'nausicaa' ]] ; then
     echo -e "${a_warning_color}*\n*\n* Remember to resume the screen session on this machine!!!\n*\n*${a_end_color}"
 else
     echo -n ''
 fi
 
-
-if [[ $isMac -eq 1 ]] ; then
-    AGW_LS_COLOR_OPTION=" -G "  ## -G means "color" on the mac...
-else
-    AGW_LS_COLOR_OPTION=' --color=auto ' ## but -G means "no group" on Linux
-fi
-
-
-# don't put duplicate lines in the history. See bash(1) for more options
-# don't overwrite GNU Midnight Commander's setting of `ignorespace'.
+## ===============================================
+## ====== TERMINAL HISTORY =======================
 export HISTSIZE=9999
-export HISTCONTROL=$HISTCONTROL${HISTCONTROL+,}ignoredups
-# ... or force ignoredups and ignorespace
-export HISTCONTROL=ignoreboth  # this causes any lines matching the previous history entry not to be saved.
+export HISTCONTROL=ignoreboth  # duplicate and blank lines are not saved in the history
+shopt -s histappend # Save terminal history between sessions
+PROMPT_COMMAND='history -a' ## save ALL terminal histories
+## ====== TERMINAL HISTORY =======================
+## ===============================================
 
-# append to the history file, don't overwrite it
-shopt -s histappend
-
-# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-
-# check the window size after each command and, if necessary,
-# update the values of LINES and COLUMNS.
-shopt -s checkwinsize
-
-# make less more friendly for non-text input files, see lesspipe(1)
-[[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)"
+set   -o ignoreeof  # Prevent Ctrl-D from exiting!
+shopt -s checkwinsize # Check the window size after each command and, if necessary, update the values of LINES and COLUMNS.
+shopt -s cdspell ## Fix common mis-spellings in directories to "cd" to
+shopt -s cmdhist ## Save multi-line pasted commands into one single history command
+#shopt -s lithist ##
+shopt -s no_empty_cmd_completion ## Don't display ALL commands on an empty-line tab
+shopt -s nocaseglob ## Match glob / regexp in case-insensitive fashion
 
 # set variable identifying the chroot you work in (used in the prompt below)
 if [[ -z $debian_chroot ]] && [[ -r /etc/debian_chroot ]]; then
@@ -153,6 +143,7 @@ fi
 
 
 ## ===============================================
+## ====== LS COLORS ==============================
 ## COMMAND LINE COLOR / LS COLOR
 export CLICOLOR='Yes'
 export LS_OPTIONS='--color=auto'
@@ -160,17 +151,20 @@ export LS_OPTIONS='--color=auto'
 export LS_COLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;31' 
 ## LSCOLORS *without* an underscore is for Mac OS X
 export LSCOLORS=FxgxCxDxBxegedabagacad
+#if [[ -n "$isMac" ]] ; then
+#    AGW_LS_COLOR_OPTION=" -G "  ## -G means "color" on the mac...
+#else
+#    AGW_LS_COLOR_OPTION=' --color=auto ' 
+#fi
+## ====== LS COLORS ==============================
 ## ===============================================
 
 export CVS_RSH=ssh
 export CVSEDITOR="emacs -nw"
 export SVN_EDITOR="emacs -nw"
-
-export PAGER=less
 export EDITOR="emacs -nw"
-#export TERM=$TERM #xterm-color256color ## <-- gotta EXPORT the local term variable
 
-set -o ignoreeof  # Prevent Ctrl-D from exiting!
+
 
 HISTSIZE=10000
 HISTCONTROL=ignoreboth
@@ -187,11 +181,9 @@ bind "\M-k:next-history"
 bind "\M-K:next-history"
 bind "\C-s:history-search-forward"
 
-
 # Save the local ethernet "en0" MAC address into the variable LOCAL_EN0_MAC. Note the zero.
 # Allows per-machine settinsg.
 #export LOCAL_EN0_MAC=`ifconfig en0 | grep -i ether | sed 's/.*ether //' | sed 's/[ ]*$//'`
-
 
 umask 0007 # <-- give users and groups full access to files I create, but give no access to other users.
 # 0 = "full access", 7 = "no access"
@@ -220,4 +212,3 @@ bind "\M-K:next-history"
 bind "\C-s:history-search-forward"
 
 # =======
-
