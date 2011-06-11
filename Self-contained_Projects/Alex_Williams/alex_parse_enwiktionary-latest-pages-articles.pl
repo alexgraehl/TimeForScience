@@ -4,8 +4,21 @@
 ## Expecting to read from the file named:
 
 ## enwiktionary-latest-pages-articles.xml
+## This is a standard downloadable file from Wikimedia.
 
-## usage: ./programname.pl enwiktionary-latest-pages-articles.xml 
+## What this script does is take the ETYMOLOGY links for each word out of that huge wikimedia file
+
+## Example of the input file:
+
+## enwiktionary-latest-pages-articles.xml.bz2 (200 MB compressed)
+##  from http://dumps.wikimedia.org/enwiktionary/latest/
+
+## This file on the Wiktionary download site has all the word data PLUS etymologies
+## From the original file, Here's the etymology for "pound":
+##    From {{etyl|ang|en}} {{term|pund|lang=ang}}, from {{proto|Germanic|pundan|lang=en}}, an early borrowing from {{etyl|la|en}} {{term|pondo|pondō|lang=la|by weight}}
+
+
+## usage: ./program_name.pl enwiktionary-latest-pages-articles.xml 
 
 ## expected tab-delimited output with three columns:
 # line number //// type_of_thing (word or etymology) //// content
