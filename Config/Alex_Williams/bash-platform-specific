@@ -1,57 +1,35 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
-## SSH_CLIENT and SSH2_CLIENT are set automatically by SSH if you are connected to a machine by SSH
+
 
 [[ $BASH_PLATFORM_SPECIFIC_FILE_IS_ALREADY_INCLUDED ]] && return ## Return early if this file was ALREADY included
 
-if [[ -z $SSH_CLIENT && -z $SSH2_CLIENT ]] ; then
-    is_sshing=0 ## We aren't connected to any other server...
-else
-    is_sshing=1 ## We are connected via SSH or SSH2...
-fi
+if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
 
-
-if [[ $is_sshing -eq 1 ]] ; then
-    CONN=ssh
-elif [[ -z $SESS_SRC ]] ; then
-    CONN=lcl
-elif [[ $SESS_SRC == "(:0.0)"]] || [[$SESS_SRC == "" ]] ; then
-    CONN=lcl
-else
-    CONN=tel
-fi
-
+## I have no idea what the "CONN" environment variable is actually useful for
+#if   [[ $is_sshing -eq 1 ]] ; then   CONN=ssh
+#elif [[ -z $SESS_SRC ]]     ; then   CONN=lcl ## local
+#elif [[ $SESS_SRC == "(:0.0)"]] || [[$SESS_SRC == "" ]] ; then    CONN=lcl ## local
+#else    CONN=tel
+#fi
 
 case "$TERM" in
     xterm-color|xterm-256color)	color_prompt=1 ;;
     *)	                        color_prompt=0 ;;
 esac
 
-case "$OSTYPE" in
-    darwin10.0) isMac=1 ;;
-    *)          isMac=0 ;;
-esac
+if [[ "$OSTYPE" == darwin10* ]] ; then isMac=1 ; fi
 
-if [[ $is_sshing -eq 0 ]] ; then
-    ## Only if we are NOT sshing, then set the Terminal program
-    tmp_term_is_iTerm=`ps -x | grep 'MacOS/iTerm' | grep -v 'grep'`
-    if [[ $tmp_term_is_iTerm ]] ; then
-	export TERM_PROGRAM=iTerm
-    else
-	export TERM_PROGRAM=Apple_Terminal ;
-    fi
-fi
+if [[ -n `ps -x | grep 'MacOS/iTerm' | grep -v 'grep'` ]] ; then export TERM_PROGRAM=iTerm ;
+else                                                             export TERM_PROGRAM=Apple_Terminal ; fi
 
-if [[ $HOSTNAME == "Guinea-Beast.local" ]]; then
-    isAGWHomeMachine=1
-else
-    isAGWHomeMachine=0
-fi
+if [[ "$HOSTNAME" == "Guinea-Beast.local" ]]; then isAGWHomeMachine=1 ; fi
+
+if [[ 'Alex' == "$USER" ]] ; then UCSF_USER='alexgw' ; ## Expected username is "alexgw" and not "Alex" on the UCSF servers
+else UCSF_USER="$USER" ; fi
 
 
-## The \[ and \] around the colors tell "readline" that these sequences
-## are NOT printed to the screen. This fixes some problems with wrapping.
-if [[ $color_prompt -eq 1 ]] ; then
+if [[ -n "$color_prompt" ]] ; then
     color_prefix="\033" ## <-- \033 works everywhere. \e works on Linux
     a_echo_color="${color_prefix}[1;32m" ## green  ## can also be: 1;33 ## was [3;40m before
     a_status_color="${color_prefix}[1;33m"
@@ -64,15 +42,6 @@ else
     a_warning_color=''
     a_end_color=''
 fi
-
-
-if [[ 'Alex' == $USER ]] ; then
-    ## Change 'Alex' to 'alexgw', since that's what all the remote servers at UCSF expect
-    UCSF_USER='alexgw'
-else
-    UCSF_USER=$USER
-fi
-
 
 
 BASH_PLATFORM_SPECIFIC_FILE_IS_ALREADY_INCLUDED=1

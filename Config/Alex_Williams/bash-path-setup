@@ -27,10 +27,6 @@ export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST 
 # UCSF: BOOST
 #export BOOST_ROOT=/usr/local/boost/boost_1_41_0
 
-# /work is where some programs go
-
-
-
 # More general path-related settings
 
 # case "$HOSTNAME"

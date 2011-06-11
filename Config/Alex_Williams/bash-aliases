@@ -107,25 +107,15 @@ echo \">>> LINES based on perl expr: perl -e '$n = 0; while(<>) { if ($n%2 == 0)
 echo \">>> LINES Count characters on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ; \
 "
 
-# for f in `ls` ; do cat $f | sed -n '2~4p' | count_char_freq_at_each_position.pl > ${f/_unalign.fq/.count} ; done
 
-
-
-alias tunes="lsof | grep -i mp3"
-alias viewlog='tail -f /var/log/httpd/access_log'
-
-alias treeviewmemory='java -Xmx999m -jar TreeView.jar'
-
-alias diffdir='diff -rq' ## diff on directories
 
 # Shell navigation / commands
 
 #pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
 
-
-alias l='/bin/ls -F $AGW_LS_COLOR_OPTION'
-alias ls='/bin/ls -F $AGW_LS_COLOR_OPTION'
-alias ll='/bin/ls -lh -A -F $AGW_LS_COLOR_OPTION'
+alias l='/bin/ls -F'
+alias ls='/bin/ls -F'
+alias ll='/bin/ls -lh -A -F'
 alias p='pwd -P'
 alias tc='randomize_terminal_color.pl -cycle'
 #alias cd='pushd'
@@ -136,10 +126,11 @@ alias res='source ~/.bashrc ; source ~/.bash_profile'
 alias mv='mv -i'
 alias cp='cp -i'
 alias kpk='exit'
+alias diffdir='diff -rq' ## diff on directories
 
 
-
-
+## ===============================================
+## ====== SAFER 'rm' COMMANDS ====================
 ## Below: aliases the command "rm" to actually run the script "trash.pl," which moves files to a trash directory in /tmp.
 ## They can be recovered by just copying them back.
 ## Use the "checktrash" command to find the trash directory if you forget where it is.
@@ -155,6 +146,9 @@ alias rrm='/bin/rm'
 alias checktrash='mkdir -p /tmp/${USER}/Trash/ && echo "Contents of /tmp/${USER}/Trash:" && ls /tmp/${USER}/Trash/'
 alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv --preserve-root /tmp/${USER}/Trash/ && echo "Emptied the trash directory (/tmp/${USER}/Trash)" ;'
 
+## ====== SAFER 'rm' COMMANDS ====================
+## ===============================================
+
 
 ## "showoff" makes it so that everyone can a+rx any directories and a+r any files.
 ## Note that we don't want to make it so everyone can execute *files* necessarily, just folders
@@ -162,31 +156,30 @@ alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv --preserve-root /
 function showoff { chmod -R a+r $1 ; find $1 -type d -type d -exec chmod a+x \{\} \; ; }
 function sudoshowoff { sudo chmod -R a+r $1 ; sudo find $1 -type d -exec sudo chmod a+x \{\} \; ; }
 
-
-alias crt='crontab -u ${USER} -e'
-
 ## Mac-specific commands:
-alias invisible='SetFile -a V' ## Make a file/folder invisible to the Finder
-alias visible='SetFile -a v' ## opposite of "invisible"
+alias invisible='SetFile -a V' ## Mac-only: Make a file/folder invisible to the Finder
+alias visible='SetFile -a v' ## Mac-only: opposite of "invisible"
 alias clearicon='SetFile -a c' ## clear mac custom icons. Useful for images that have old custom icons.
 
 alias version="lsb_release -a" # Tells you which version of Ubuntu you are running!
 
 alias res="source ~/.bashrc" ## Re-load the source file
 
-# Convert a Mac-style line-ending file to a UNIX one
-# Useful for when you save a file in Excel and then UNIX won't read it.
-alias mac2unix="tr '\r' '\n'"
+function mac2unix { # Convert a Mac-style line-ending file to a UNIX one. Useful for when you save a file in Excel and then UNIX won't read it.
+    if [[ -f "$1" ]] ; then
+	cat $1 | tr '\r' '\n' ## if a filename is passed in, then auto-cat that file
+    else
+	tr '\r' '\n' ## otherwise it's probably part of a cmdline pipe
+    fi
+}
 
-# Convert a Windows-style line-ending file to a UNIX one
-# Useful for when you save a file in Excel and then UNIX won't read it.
-alias dos2unix="tr -d '\r'"
-
-## Mac-specific commands:
-alias invisible='SetFile -a V' ## Mac-only: Make a file/folder invisible to the Finder
-alias visible='SetFile -a v' ## Mac-only: opposite of "invisible"
-
-## remember dot_clean to remove annoying ._something files
+function dos2unix { # Convert a Windows-style line-ending file to a UNIX one. Useful for when you save a file in Excel and then UNIX won't read it.
+    if [[ -f "$1" ]] ; then
+	cat $1 | tr -d '\r' ## if a filename is passed in, then auto-cat that file
+    else
+	tr -d '\r' ## otherwise it's probably part of a cmdline pipe
+    fi
+}
 
 ## Utility commands
 
@@ -197,7 +190,6 @@ alias sc='screen' ## Make a new screen session
 alias wcl='wc -l'
 alias sortt='sort -t "	"' # sort with tab as separator
 alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
-
 
 if [[ -f /Applications/Emacs.app/Contents/MacOS/Emacs ]]; then
     echo -e "${a_echo_color}>>> BASH: Note: alising 'e' to the Mac Application version of emacs.${a_end_color}"
@@ -245,11 +237,6 @@ function hglog {
     fi
 }
 
-#if [[ $USER == "alexgw" ]] ; then
-#    alias alexcom='ssh alexcom@alexwilliams.com'
-#fi
-
-alias nau='SET_NAUCOLOR ; ssh  $UCSF_USER@nausicaa.ucsf.edu'
 alias workstat='hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" status ; hg --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives status"'
 
 function workcom {
@@ -279,6 +266,8 @@ alias scienceup='hg --cwd "${TFSDIR}" pull           && hg --cwd "${TFSDIR}" upd
 alias science="scienceup ; sciencecom ; workup ; workcom"
 alias sciencestat='hg --cwd ${TFSDIR} status'
 
+
+alias nau='SET_NAUCOLOR ; ssh  $UCSF_USER@nausicaa.ucsf.edu'
 alias catbus='ssh $UCSF_USER@catbus.gladstone.internal'
 alias chef='ssh $UCSF_USER@chef.compbio.ucsf.edu' ## QB3 cluster head node
 alias lighthouse='SET_LIGHTHOUSECOLOR ; ssh  $UCSF_USER@lighthouse.ucsf.edu' ## Database machine
@@ -298,6 +287,11 @@ case "$HOSTNAME" in
 esac
 
 
+## ===============================================
+## ====== LESS ===================================
+export PAGER=less
+[[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)" # make "less" friendly for non-text input files
+
 # Things related to "LESS"
 export LESSOPEN="|${TFSDIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
 # lesspipe_basic.sh casues less to transparently decompress gzipped files before showing them
@@ -308,6 +302,8 @@ alias magicless='env LESSOPEN="|${TFSDIR}/Config/1_Shell_Config/lesspipe_advance
 # Note that this only magically happens if the files are passed in on the command line--otherwise you have
 # to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
 # sheet.pl unless you say "cat something | ssf"
+## ====== LESS ===================================
+## ===============================================
 
 # Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
 alias  sn='/usr/bin/less -S --LINE-NUMBERS --status-column --RAW-CONTROL-CHARS -f --IGNORE-CASE'
@@ -341,21 +337,8 @@ function v {
 }
 
 
-## Convert line endings mac-style --> UNIX
-## Useful for loading Excel-generated .txt files
-function mac2unix {
-    cat $1 | tr '\r' '\n'
-}
-
-## Convert line endings dos-style --> UNIX
-## Useful for loading Excel-generated .txt files
-function dos2unix {
-    cat $1 | tr -d '\r'
-}
-
 
 alias huh='cat <(declare -f) <(alias)' ## uses bash subshells to show everything that is defined
-
 
 alias backoff='~/TimeForScience/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh off'
 alias backon='~/TimeForScience/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh on'
