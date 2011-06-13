@@ -20,7 +20,7 @@ esac
 
 if [[ "$OSTYPE" == darwin10* ]] ; then isMac=1 ; fi
 
-if [[ -n `ps -x | grep 'MacOS/iTerm' | grep -v 'grep'` ]] ; then export TERM_PROGRAM=iTerm ;
+if [[ -n `ps x | grep 'MacOS/iTerm' | grep -v 'grep'` ]] ; then export TERM_PROGRAM=iTerm ;
 else                                                             export TERM_PROGRAM=Apple_Terminal ; fi
 
 if [[ "$HOSTNAME" == "Guinea-Beast.local" ]]; then isAGWHomeMachine=1 ; fi
