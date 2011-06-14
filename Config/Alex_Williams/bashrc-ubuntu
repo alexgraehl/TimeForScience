@@ -62,10 +62,6 @@ function agwReColorTerminal {
     echo "Re-coloring the terminal..."
 }
 
-#echo -e "\033]Pg4040ff\033\\"
-#[[ -n "$iterm_bg" ]] && echo -e "\033]Ph${iterm_bg}\033\\" ; ## iTerm background
-#if [[ -n "$iterm_title_r255" ]] ; then
-
 
 # ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
 a_machine_prompt_main_color=''
@@ -78,36 +74,36 @@ if [[ -n "$color_prompt" ]] ; then
 	#iTermColor "top" 180 180 180
 
 	##[[ $TERM_PROGRAM == iTerm ]] && 
-	iterm_bg=003300 # iTerm console window background
-	iterm_top="180 180 180"
+	iterm_bg=000000 # iTerm console window background
+	iterm_top="120 50 120"
     else
 	## Ok, we are SSHed into a remote machine...
 	case "$HOSTNAME"
 	    in
 	    nausicaa)
 		a_machine_prompt_main_color="${color_prefix}[1;35m" ; ## 1;35m == Bold magenta
-		iterm_bg=002255 ;# iTerm console window background
-		iterm_top="180 180 180" ; # iTerm window top bar color
+		iterm_bg=002200 ;# iTerm console window background
+		iterm_top="40 120 40" ; # iTerm window top bar color
 		;;
 	    catbus)
 		a_machine_prompt_main_color="${color_prefix}[1;34m"
-		iterm_bg=000022 ;# iTerm console window background
-		iterm_top="180 180 180" ; # iTerm window top bar color
+		iterm_bg=000022 ;
+		iterm_top="80 80 250" ;
 		;;
 	    bueno)
 		a_machine_prompt_main_color="${color_prefix}[44m${color_prefix}[3;36m" # cyan text / blue background
-		iterm_bg=220000 ;# iTerm console window background
-		iterm_top="180 180 180" ; # iTerm window top bar color
+		iterm_bg=220000 ;
+		iterm_top="140 40 40" ;
 		;;
 	    lighthouse)
 		a_machine_prompt_main_color="${color_prefix}[43m${color_prefix}[3;30m" # yellow background
-		iterm_bg=222200 ;# iTerm console window background
-		iterm_top="180 180 180" ; # iTerm window top bar color
+		iterm_bg=302000 ;
+		iterm_top="120 100 40" ;
 		;;
 	    --) ## OTHER unknown machine
 		a_machine_prompt_main_color="${color_prefix}[41m${color_prefix}[3;37m"
-		iterm_bg=220022 ;# iTerm console window background
-		iterm_top="255 180 180" ; # iTerm window top bar color
+		iterm_bg=333333 ;
+		iterm_top="120 50 120" ;
 		;;
 	esac
     fi
