@@ -1,4 +1,6 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
+#
+#
 
 [[ -z "$PS1" ]] && return # <-- If not running interactively, don't
 # do anything. Printing any output breaks ssh and various things.
@@ -47,12 +49,17 @@ function iTermColor {
 ## If the aargument $1 is "bg", then the input $2 is a single hex color string in 00-FF format.
 ## Example, it could be FF00FF, for magenta.
     if [[ "$1" == "top" ]] ; then
-	echo -e "\033]6;1;bg;red;brightness;$2\a" ; ## title bar of iTerm
-	echo -e "\033]6;1;bg;green;brightness;$3\a" ; ## title bar of iTerm
-	echo -e "\033]6;1;bg;blue;brightness;$4\a" ## title bar of iTerm
+	[[ -n "$2" ]] && echo -e "\033]6;1;bg;red;brightness;$2\a" ; ## title bar of iTerm
+	[[ -n "$3" ]] && echo -e "\033]6;1;bg;green;brightness;$3\a" ; ## title bar of iTerm
+	[[ -n "$4" ]] && echo -e "\033]6;1;bg;blue;brightness;$4\a" ## title bar of iTerm
     elif [[ "$1" == "bg" ]] ; then
-	echo -e "\033]Ph$2\033\\" ; ## Set the iTerm background. $2 must be like FF00FF
+	[[ -n "$2" ]] && echo -e "\033]Ph$2\033\\" ; ## Set the iTerm background. $2 must be like FF00FF
     fi
+}
+
+function agwReColorTerminal {
+    iTermColor "bg" ${iterm_bg} ; iTermColor "top" ${iterm_top}
+    echo "Re-coloring the terminal..."
 }
 
 #echo -e "\033]Pg4040ff\033\\"
@@ -67,31 +74,40 @@ if [[ -n "$color_prompt" ]] ; then
 	## LOCAL machine gets a specific color...
 	#a_machine_prompt_main_color="$color_prefix[44m$color_prefix[3;33m" ## Blue background, white foreground
 	a_machine_prompt_main_color="${color_prefix}[1;32m" ## Bold green text
+	
+	#iTermColor "top" 180 180 180
+
 	##[[ $TERM_PROGRAM == iTerm ]] && 
-	#iterm_bg=001100 # iTerm console window background
+	iterm_bg=003300 # iTerm console window background
+	iterm_top="180 180 180"
     else
 	## Ok, we are SSHed into a remote machine...
 	case "$HOSTNAME"
 	    in
 	    nausicaa)
 		a_machine_prompt_main_color="${color_prefix}[1;35m" ; ## 1;35m == Bold magenta
-		iterm_bg=001100 ;# iTerm console window background
+		iterm_bg=002255 ;# iTerm console window background
+		iterm_top="180 180 180" ; # iTerm window top bar color
 		;;
 	    catbus)
 		a_machine_prompt_main_color="${color_prefix}[1;34m"
 		iterm_bg=000022 ;# iTerm console window background
+		iterm_top="180 180 180" ; # iTerm window top bar color
 		;;
 	    bueno)
 		a_machine_prompt_main_color="${color_prefix}[44m${color_prefix}[3;36m" # cyan text / blue background
 		iterm_bg=220000 ;# iTerm console window background
+		iterm_top="180 180 180" ; # iTerm window top bar color
 		;;
 	    lighthouse)
 		a_machine_prompt_main_color="${color_prefix}[43m${color_prefix}[3;30m" # yellow background
 		iterm_bg=222200 ;# iTerm console window background
+		iterm_top="180 180 180" ; # iTerm window top bar color
 		;;
-	    --)
+	    --) ## OTHER unknown machine
 		a_machine_prompt_main_color="${color_prefix}[41m${color_prefix}[3;37m"
 		iterm_bg=220022 ;# iTerm console window background
+		iterm_top="255 180 180" ; # iTerm window top bar color
 		;;
 	esac
     fi
@@ -100,8 +116,7 @@ if [[ -n "$color_prompt" ]] ; then
 fi
 # ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
 
-
-
+agwReColorTerminal
 
 if [[ -z "$STY" ]] && [[ "$HOSTNAME" == 'nausicaa' ]] ; then
     echo -e "${a_warning_color}*\n*\n* Remember to resume the screen session on this machine!!!\n*\n*${a_end_color}"
