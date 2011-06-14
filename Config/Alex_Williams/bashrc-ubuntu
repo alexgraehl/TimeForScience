@@ -75,7 +75,7 @@ if [[ -n "$color_prompt" ]] ; then
 
 	##[[ $TERM_PROGRAM == iTerm ]] && 
 	iterm_bg=000000 # iTerm console window background
-	iterm_top="120 50 120"
+	iterm_top="180 180 180"
     else
 	## Ok, we are SSHed into a remote machine...
 	case "$HOSTNAME"
