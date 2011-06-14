@@ -18,7 +18,7 @@
 ##    From {{etyl|ang|en}} {{term|pund|lang=ang}}, from {{proto|Germanic|pundan|lang=en}}, an early borrowing from {{etyl|la|en}} {{term|pondo|pondō|lang=la|by weight}}
 
 
-## usage: ./program_name.pl enwiktionary-latest-pages-articles.xml 
+## usage: ./program_name.pl enwiktionary-latest-pages-articles.xml  > SOME_OUTPUT_FILE
 
 ## expected tab-delimited output with three columns:
 # line number //// type_of_thing (word or etymology) //// content
