@@ -1,8 +1,5 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
-
-
-
-[[ $BASH_PLATFORM_SPECIFIC_FILE_IS_ALREADY_INCLUDED ]] && return ## Return early if this file was ALREADY included
+[[ -n "$BASH_PLATFORM_SPECIFIC_FILE_IS_ALREADY_INCLUDED" ]] && return ## Return early if this file was ALREADY included
 
 if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
 
@@ -15,19 +12,17 @@ if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We a
 
 case "$TERM" in
     xterm-color|xterm-256color)	color_prompt=1 ;;
-    *)	                        color_prompt=0 ;;
+    *)	                        ;;
 esac
 
 if [[ "$OSTYPE" == darwin10* ]] ; then isMac=1 ; fi
-
-if [[ -n `ps x | grep 'MacOS/iTerm' | grep -v 'grep'` ]] ; then export TERM_PROGRAM=iTerm ;
-else                                                             export TERM_PROGRAM=Apple_Terminal ; fi
-
 if [[ "$HOSTNAME" == "Guinea-Beast.local" ]]; then isAGWHomeMachine=1 ; fi
+
+if [[ -n `ps x | grep 'MacOS/iTerm' | grep -v 'grep'` ]] ; then export TERM_PROGRAM=iTerm ; fi
+#else                                                            export TERM_PROGRAM=Apple_Terminal ; fi
 
 if [[ 'Alex' == "$USER" ]] ; then UCSF_USER='alexgw' ; ## Expected username is "alexgw" and not "Alex" on the UCSF servers
 else UCSF_USER="$USER" ; fi
-
 
 if [[ -n "$color_prompt" ]] ; then
     color_prefix="\033" ## <-- \033 works everywhere. \e works on Linux
@@ -42,6 +37,5 @@ else
     a_warning_color=''
     a_end_color=''
 fi
-
 
 BASH_PLATFORM_SPECIFIC_FILE_IS_ALREADY_INCLUDED=1

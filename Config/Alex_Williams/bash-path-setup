@@ -17,10 +17,6 @@ export PATH=$PATH:/work/Apps/bin:${HOME}/bin ## System-wide "Science" bin, plus 
 # Cole Trapnell's RNASeq suite: BOWTIE, TOPHAT, CUFFLINKS
 export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
  
-# UCSF: CISTEMATIC
-#export CISTEMATIC_ROOT=/work/Apps/Bio/cistematic
-
-# UCSF: CISTEMATIC PYTHONPATH
 #export PYTHONPATH=${PYTHONPATH}:$CISTEMATIC_ROOT/core:$CISTEMATIC_ROOT/db:$CISTEMATIC_ROOT/experiments:$CISTEMATIC_ROOT/genomes:$CISTEMATIC_ROOT/programs:$CISTEMATIC_ROOT/stat
 #export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.6/dist-packages
 #export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.6
@@ -42,11 +38,9 @@ export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST 
 # 	;;
 # esac
 
+export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience ## Location of the TIME FOR SCIENCE directory
 
-export TFSDIR=$HOME/TimeForScience ## Location of the TIME FOR SCIENCE directory
-export TIME_FOR_SCIENCE_DIR=$TFSDIR ## another name
-
-export PATH=$TFSDIR/Lab_Code/Perl/Tools:$TFSDIR/Lab_Code/Perl/Scientific:$TFSDIR/Lab_Code/Python/Tools:$TFSDIR/Lab_Code/Shell:$TFSDIR/Lab_Code/R:${PATH} ## <-- Priority!
+export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH} ## <-- Priority!
 export PATH=${HOME}/bin:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST
 export PATH=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:${PATH} ## <-- PRIORITY on the path
 export PATH=/work/Apps/bin:/home/Common/opt/bin:/opt/bin:/sw/bin:$PATH  ## <-- PRIORITY at the FRONT of the path

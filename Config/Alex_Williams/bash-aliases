@@ -13,7 +13,7 @@ alias SET_BUENOCOLOR="echo -n ''"
 
 ## Searches both the R source and the current directory (and any subdirectories!)
 ## Note that it only looks for files with a ".R" ending!!!!!!!
-if [[ $isMac -eq 1 ]] ; then
+if [[ -n "$isMac" ]] ; then
     function ff {
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
 	    "$*" \
@@ -22,21 +22,8 @@ if [[ $isMac -eq 1 ]] ; then
 	    "/home/alexgw/TimeForScience" \
 	    ./
     }
-#    alias SET_NAUCOLOR="osascript -e 'tell front window of app \"Terminal\" to set background color to {0,0,0,-20750}' &> /dev/null"
-#    alias SET_LOCALCOLOR="osascript -e 'tell front window of app \"Terminal\" to set background color to {14000,1500,1500,-20750}' &> /dev/null"
-
-#    alias SET_BUENOCOLOR="osascript -e 'tell front window of app \"Terminal\" to set background color to {1500,1500,15000,-20750}' &> /dev/null"
-#    alias SET_LIGHTHOUSECOLOR="osascript -e 'tell front window of app \"Terminal\" to set background color to {14000,8000,1500,-20750}' &> /dev/null"
-
-#    if [[ isAGWHomeMachine -ne 1 ]]; then
-   # only works with Terminal, not iTerm
-    # This causes the terminal background colors to be set on a per-machine basis
-#	osascript -e 'tell front window of app "Terminal" to set background color to {14000,1500,1500,-20750}' &> /dev/null ## only set the color when we are at WORK, not when we are on my home machine!
-#    fi
-
 else
-    ## Must be different between mac/unix
-    function ff {
+    function ff {     ## Annoyingly, grep is different between mac/unix
 	grep --color=always -T \
 	    --ignore-case \
 	    --recursive \
@@ -259,12 +246,12 @@ function workup { ## Update mercurial work directories
     hg --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives" pull && hg --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives" update && echo "[Done] updating work project archive repository"
 }
 
-alias sciencecom='hg commit --user ${USER} --cwd "${TFSDIR}" -m "Commit by ${USER}" && hg push --cwd ${TFSDIR} && echo "[Done] commiting and pushing TimeForScience repository"'
-alias scienceup='hg --cwd "${TFSDIR}" pull           && hg --cwd "${TFSDIR}" update           && echo "[Done] updating TimeForScience repository"'
+alias sciencecom='hg commit --user ${USER} --cwd "${TIME_FOR_SCIENCE_DIR}" -m "Commit by ${USER}" && hg push --cwd ${TIME_FOR_SCIENCE_DIR} && echo "[Done] commiting and pushing TimeForScience repository"'
+alias scienceup='hg --cwd "${TIME_FOR_SCIENCE_DIR}" pull           && hg --cwd "${TIME_FOR_SCIENCE_DIR}" update           && echo "[Done] updating TimeForScience repository"'
 
 
 alias science="scienceup ; sciencecom ; workup ; workcom"
-alias sciencestat='hg --cwd ${TFSDIR} status'
+alias sciencestat='hg --cwd ${TIME_FOR_SCIENCE_DIR} status'
 
 
 alias nau='SET_NAUCOLOR ; ssh  $UCSF_USER@nausicaa.ucsf.edu'
@@ -293,11 +280,11 @@ export PAGER=less
 [[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)" # make "less" friendly for non-text input files
 
 # Things related to "LESS"
-export LESSOPEN="|${TFSDIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
+export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
 # lesspipe_basic.sh casues less to transparently decompress gzipped files before showing them
 # Old:  '|/usr/bin/lesspipe.sh %s'
 
-alias magicless='env LESSOPEN="|${TFSDIR}/Config/1_Shell_Config/lesspipe_advanced.sh %s" /usr/bin/less -S --RAW-CONTROL-CHARS -f --IGNORE-CASE'
+alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_advanced.sh %s" /usr/bin/less -S --RAW-CONTROL-CHARS -f --IGNORE-CASE'
 # It's less, but it "magically" handles gzipped files and automatically runs ".tab" files through sheet.pl
 # Note that this only magically happens if the files are passed in on the command line--otherwise you have
 # to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
@@ -345,3 +332,10 @@ alias backon='~/TimeForScience/Config/Alex_Williams/unix_scripts/crashplan-backu
 
 
 
+function n {
+    echo -e  "$color_prefix[30m black $color_prefix[31mred $color_prefix[32mgreen $color_prefix[33myellow $color_prefix[34mblue $color_prefix[35mmagenta $color_prefix[36mcyan $color_prefix[37mwhite"
+}
+
+function zzz {
+    echo -e "${a_echo_color}>>> BASH: Loading .bashrc...${a_end_color}"
+}
