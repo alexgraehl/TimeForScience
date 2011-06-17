@@ -170,9 +170,9 @@ if [[ -f /Applications/Emacs.app/Contents/MacOS/Emacs ]]; then
     echo -e "${a_echo_color}>>> BASH: Note: alising 'e' to the Mac Application version of emacs.${a_end_color}"
     alias e='/Applications/Emacs.app/Contents/MacOS/Emacs -nw'
 elif [[ isMac -eq 1 ]]; then
-    alias e='emacs --daemon ; emacsclient -a "emacs"'
+    alias e='emacsclient -c --alternate-editor=""'
 else
-    alias e='emacs --daemon ; emacsclient -c -a "emacs"'
+    alias e='emacsclient -c --alternate-editor=""'
     #alias e='emacs -nw'
 fi
 
