@@ -10,9 +10,6 @@ fi
 
 echo -e "${a_echo_color}>>> BASH: Loading bash-path-setup...${a_end_color}"
 
-## Clear out the initial path
-export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/X11/bin
-export PATH=$PATH:/work/Apps/bin:${HOME}/bin ## System-wide "Science" bin, plus user-specific bin
 
 # Cole Trapnell's RNASeq suite: BOWTIE, TOPHAT, CUFFLINKS
 export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
@@ -39,6 +36,13 @@ export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST 
 # esac
 
 export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience ## Location of the TIME FOR SCIENCE directory
+
+export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/
+
+## Clear out the initial path
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/X11/bin ## <-- clear out initial path!!
+export PATH=$PATH:/work/Apps/bin:${HOME}/bin ## System-wide "Science" bin, plus user-specific bin
+
 
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH} ## <-- Priority!
 export PATH=${HOME}/bin:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST
