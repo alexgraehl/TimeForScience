@@ -102,9 +102,9 @@ echo \">>> LINES Count characters on each line: cat FILENAME | awk '{print lengt
 [[ -n "$color_prompt" && (-n "$isMac") ]] && AGW_LS_COLOR_OPT=' -G ' ## Mac: Color option is -G
 [[ -n "$color_prompt" && (-z "$isMac") ]] && AGW_LS_COLOR_OPT=' --color=auto ' ## Ubuntu: color is --color=auto
 
-alias l='/bin/ls -F ${AGW_LS_COLOR_OPT}'
-alias ls='/bin/ls -F ${AGW_LS_COLOR_OPT}'
-alias ll='/bin/ls -lh -A -F ${AGW_LS_COLOR_OPT}'
+alias ls='/bin/ls --indicator-style=slash ${AGW_LS_COLOR_OPT}'
+alias l='ls'
+alias ll='/bin/ls -lh --almost-all --classify ${AGW_LS_COLOR_OPT}'
 alias p='pwd -P'
 alias tc='randomize_terminal_color.pl -cycle'
 #alias cd='pushd'
