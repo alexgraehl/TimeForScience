@@ -54,11 +54,9 @@ if(defined($arg_cols))
    }
 }
 
-if(defined($list))
-{
-   my $file_list = &openFile($list);
-   while(<$file_list>)
-   {
+if(defined($list)) {
+   my $file_list = &openFile($list); ## not sure what this "list" really is. It's a scalar, anyway. openFile is defined in libfile.
+   while(<$file_list>) {
       chomp;
       push(@files, $_);
    }
@@ -79,23 +77,16 @@ my $num_files = scalar(@files);
 
 my @max_tuple;
 
-for(my $j = 0; $j < $num_files; $j++)
-{
-   $verbose and print STDERR "(", $j+1, "/$num_files). ",
-                             "Collecting every key from file '$files[$j]'...";
+for(my $j = 0; $j < $num_files; $j++) {
+   $verbose and print STDERR "(", $j+1, "/$num_files). ", "Collecting every key from file '$files[$j]'...";
 
    my $file     = &openFile($files[$j]);
-
    my $key_cols = defined($cols[$j]) ? $cols[$j] : \@global_cols;
-
    my @sorted_key_cols = sort { $a <=> $b; } @{$key_cols};
-
    my %file_keys;
-
    my @file_keys;
 
-   while(<$file>)
-   {
+   while(<$file>) {
       my @tuple = split($delim);
 
       chomp($tuple[$#tuple]);
@@ -230,24 +221,18 @@ $verbose and print STDERR " done.\n";
 
 exit(0);
 
-sub parseColsFromArgs
-{
+sub parseColsFromArgs {
    my ($args) = @_;
-
    my @cols;
-
    my $fileno = undef;
-
    while(@{$args}) {
-      my $arg = shift @{$args};
-      if($arg =~ /^-(\d+)/) {
-         $fileno = int($1) - 1;
-         $arg = shift @{$args};
-         my @col_list = split(',', $arg);
-         foreach my $col (@col_list) {
-            push(@{$cols[$fileno]}, $col - 1);
-         }
-      }
+       my $arg = shift @{$args};
+       if ($arg =~ /^-(\d+)/) {
+	   $fileno = int($1) - 1;
+	   $arg = shift @{$args};
+	   my @col_list = split(',', $arg);
+	   foreach my $col (@col_list) {    push(@{$cols[$fileno]}, $col - 1); }
+       }
    }
    return \@cols;
 }
