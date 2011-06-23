@@ -218,6 +218,10 @@ sub getFileReaderMethod($) {
 	return "zcat $filename |"; # Transparently read from gzipped files
     }
 
+    if ($filename =~ /\.bz$/ or $filename =~ /\.bz2$/) {
+	return "bzcat $filename |"; # Transparently read from bzipped files
+    }
+
     return "< $filename"; # <-- "<" is the default reader method
 }
 ##------------------------------------------------------------------------
@@ -227,7 +231,6 @@ sub getFileWriterMethod($;$) {
     # Looks at the extension of a file and finds a suitable
     # way to read it. Transparently handles gzipped files, for example.
     my ($filename, $shouldAppend) = @_;
-
     if (!defined($shouldAppend)) { $shouldAppend = 0; }
 
     if (!defined($filename)) {
@@ -243,6 +246,10 @@ Trying to proceed anyway...\n";
     # Transparently write to gzipped files
     if ($filename =~ /\.gz$/ or $filename =~ /\.Z$/) {
 	return " | gzip -c $writeString $filename";
+    }
+
+    if ($filename =~ /\.bz$/ or $filename =~ /\.bz2$/) {
+	return " | bzip2 -c $writeString $filename";
     }
 
     return "$writeString $filename"; # <-- this is the default writer method
