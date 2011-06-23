@@ -99,12 +99,12 @@ echo \">>> LINES Count characters on each line: cat FILENAME | awk '{print lengt
 
 #pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
 
-[[ -n "$color_prompt" && (-n "$isMac") ]] && AGW_LS_COLOR_OPT=' -G ' ## Mac: Color option is -G
-[[ -n "$color_prompt" && (-z "$isMac") ]] && AGW_LS_COLOR_OPT=' --color=auto ' ## Ubuntu: color is --color=auto
+[[ -n "$color_prompt" && (-n "$isMac") ]] && AGW_LS_OPT=' -F -G ' ## Mac: Color option is -G
+[[ -n "$color_prompt" && (-z "$isMac") ]] && AGW_LS_OPT=' --indicator-style=slash --color=auto ' ## Ubuntu: color is --color=auto
 
-alias ls='/bin/ls --indicator-style=slash ${AGW_LS_COLOR_OPT}'
+alias ls='/bin/ls ${AGW_LS_OPT}'
 alias l='ls'
-alias ll='/bin/ls -lh --almost-all --classify ${AGW_LS_COLOR_OPT}'
+alias ll='/bin/ls -l -h -A -F ${AGW_LS_OPT}'
 alias p='pwd -P'
 alias tc='randomize_terminal_color.pl -cycle'
 #alias cd='pushd'
