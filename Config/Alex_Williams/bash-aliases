@@ -99,8 +99,8 @@ echo \">>> LINES Count characters on each line: cat FILENAME | awk '{print lengt
 
 #pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
 
-[[ -n "$color_prompt" && (-n "$isMac") ]] && AGW_LS_OPT=' -F -G ' ## Mac: Color option is -G
-[[ -n "$color_prompt" && (-z "$isMac") ]] && AGW_LS_OPT=' --indicator-style=slash --color=auto ' ## Ubuntu: color is --color=auto
+[[ "$color_prompt" && "$isMac" ]] && AGW_LS_OPT=' -F -G ' ## Mac: Color option is -G
+[[ "$color_prompt" && (-z "$isMac") ]] && AGW_LS_OPT=' --indicator-style=slash --color=auto ' ## Ubuntu: color is --color=auto
 
 alias ls='/bin/ls ${AGW_LS_OPT}'
 alias l='ls'
