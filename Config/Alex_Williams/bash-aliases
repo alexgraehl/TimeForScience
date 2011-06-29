@@ -216,23 +216,15 @@ alias workstat='hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" status ; hg --cwd "
 
 function workcom {
     ## Note that "push" will always complain on Nausicaa or Catbus, because those are the MASTER repositiories
-    hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}/Common/Code" -m "Commit by ${USER}" ;
-    hg push --cwd "${BINF_CORE_WORK_DIR}/Common/Code" ;
-
-    hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives" -m "Commit by ${USER}" ;
-    hg push --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives" ;
-
-    hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}/Common/Data" -m "Commit by ${USER}" ;
-    hg push --cwd "${BINF_CORE_WORK_DIR}/Common/Data" ;
-
+    hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}" -m "Commit by ${USER}" ;
+    hg push --cwd "${BINF_CORE_WORK_DIR}" ;
     echo "[Done] committing work repository"  # && hg push --cwd ${BINF_CODE}'
 }
 
 function workup { ## Update mercurial work directories
-    hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" pull && hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" update && echo "[Done] updating work code repository"
-    hg --cwd "${BINF_CORE_WORK_DIR}/Common/Data" pull && hg --cwd "${BINF_CORE_WORK_DIR}/Common/Data" update && echo "[Done] updating work data repository"
-    hg --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives" pull && hg --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives" update && echo "[Done] updating work project archive repository"
+    hg --cwd "${BINF_CORE_WORK_DIR}" pull && hg --cwd "${BINF_CORE_WORK_DIR}" update && echo "[Done] updating work repository"
 }
+
 
 alias sciencecom='hg commit --user ${USER} --cwd "${TIME_FOR_SCIENCE_DIR}" -m "Commit by ${USER}" && hg push --cwd ${TIME_FOR_SCIENCE_DIR} && echo "[Done] commiting and pushing TimeForScience repository"'
 alias scienceup='hg --cwd "${TIME_FOR_SCIENCE_DIR}" pull           && hg --cwd "${TIME_FOR_SCIENCE_DIR}" update           && echo "[Done] updating TimeForScience repository"'
