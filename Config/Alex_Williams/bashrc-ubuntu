@@ -208,7 +208,8 @@ bind "\C-s:history-search-forward"
 # Allows per-machine settinsg.
 #export LOCAL_EN0_MAC=`ifconfig en0 | grep -i ether | sed 's/.*ether //' | sed 's/[ ]*$//'`
 
-umask 0007 # <-- give users and groups full access to files I create, but give no access to other users.
+umask u=rwx,g=rwx,o=rx # <-- give users and groups full access to files I create, and let other users READ and EXECUTE
+#umask 0007 # <-- give users and groups full access to files I create, but give no access to other users.
 # 0 = "full access", 7 = "no access"
 
 # Add IJKL navigation to supplement/replace the arrow keys
