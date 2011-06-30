@@ -133,7 +133,14 @@ print "4. Note that if you want to save this custom track or send it to others, 
 print "\n";
 
 
+#if ($makeBigWig) {
+#samtools pileup -f /work/Common/Data/hg19wholeGenomeFasta/hg19.fa ./accepted_hits.bam | awk '{print $1, $2-1, $2, $4}' > mywiggle.bed
+#samtools pileup -f /work/Common/Data/hg19wholeGenomeFasta/hg19.fa ./accepted_hits.bam | awk '{print $1, $2-1, $2, $4}' > mywiggle.bed
 
+print "\nWe should consider also making BIGWIG files. The code for doing so is in the source here, but isn't hooked up yet.\n";
 
+my $genome_fasta = "/work/Common/Data/Genome/hg19.fa";
 
-    
+#samtools pileup -f /work/Common/Data/hg19wholeGenomeFasta/hg19.fa ./accepted_hits.bam | awk '{print $1, $2-1, $2, $4}' > mywiggle.bed ; wigToBigWig wiggle.bed /work/Common/Data/Genome/hg19wholeGenomeFasta/hg19.fa.fai w_acceptedHitsBigWig.bw
+
+# samtools rmdup -s sample.bam sample.nodup.bam
