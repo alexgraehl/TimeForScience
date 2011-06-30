@@ -30,6 +30,7 @@ use strict;  use warnings;  use diagnostics;
 # genomeCoverageBed -bg -ibam sample.sorted.bam -g chromsizes.txt > sample.bedgraph
 # # 4. Convert the BedGraph file to BigWig
 # bedGraphToBigWig sample.bedgraph chromsizes.txt sample.bw
+my $thingToTypeForBrowser = qq{track type=bam name="Control_EB" color=0,128,255 bigDataUrl="http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"};
 
 
 print STDERR "This is a script that will generate UCSC-genome-browser-ready BAM files.\n"
@@ -41,6 +42,13 @@ print STDERR "This is a script that will generate UCSC-genome-browser-ready BAM 
     . " 1. YOURFILE.bam\n"
     . " 1. sorted_YOURFILE.bam (sorted version of the previous file)\n"
     . " 1. sorted_YOURFILE.bam.bai (BAM index file)\n"
+    . "\n"
+    . "Then you will just need to make a genome browser track description for those two files, perhaps like this sample one:\n"
+    . "\n"
+    . "  $thingToTypeForBrowser" . "\n"
+    . "\n"
+    . "  (Note that there is no need to mention the .bam.bai file in the track description,\n"
+    . "   but it is implicitly used by the Genome Browser must be present!)\n"
     . "\n"
     . "This script just runs the instructions found at:\n"
     . "      http://genome.ucsc.edu/goldenPath/help/bam.html\n"
@@ -113,7 +121,6 @@ print "2. Make sure that the files are READABLE by everyone, and that the direct
     . "   your files in a regular web browser.\n";
 print "\n";
 
-my $thingToTypeForBrowser = qq{track type=bam name="Control_EB" bigDataUrl="http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"};
 print "3. Then you can go to the genome browser gateway page (http://genome.ucsc.edu/cgi-bin/hgGateway)\n"
     . "   and click the \"add custom tracks\" button near the top. Then, in \"Paste URLs or data\", type\n"
     . "   " . $thingToTypeForBrowser . "\n"
@@ -122,7 +129,7 @@ print "\n";
 print "4. Note that if you want to save this custom track or send it to others, you will need\n"
     . "   a custom genome browser SESSION---just copying / saving the URL is not sufficient!\n";
 #print "Assuming that your files are hosted on lighthouse, here are the lines to paste into the table browser to make things work:\n";
-#print "track type=bam name="Control_EB" bigDataUrl=http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"
+#print "track type=bam name="Control_EB" color=0,128,255 bigDataUrl=http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"
 print "\n";
 
 
