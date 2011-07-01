@@ -397,9 +397,9 @@ make.clean <- function(varnames.vec) {
 ## ==============================================
 file.path.that.exists.agw <- function(..., missing.message="File not found.") {
      thePath <- file.path(...)
-     if (!file.exists(thePath)) {
+     if (!all(file.exists(thePath))) {
           warning(missing.message)
-          assert.agw(file.exists(thePath), paste("(Could not find a file at <", thePath, ">). Check the spelling and capitalization. file.path.agw was called with 'must.exist.already=TRUE'. This means that it ensures that a file ALREADY EXISTS at the same time that it constructs the file path. If you don't need to also test that a file exists (for example, you would NOT want to require a file to exist if you were just writing an output file), then remove this must.exist.already option.", missing.message, sep=''))
+          assert.agw(all(file.exists(thePath)), paste("(Could not find a file at <", thePath, ">). Check the spelling and capitalization. file.path.agw was called with 'must.exist.already=TRUE'. This means that it ensures that a file ALREADY EXISTS at the same time that it constructs the file path. If you don't need to also test that a file exists (for example, you would NOT want to require a file to exist if you were just writing an output file), then remove this must.exist.already option.", missing.message, sep=''))
      }
      return(thePath)
 }
