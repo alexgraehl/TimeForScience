@@ -141,6 +141,6 @@ print "\nWe should consider also making BIGWIG files. The code for doing so is i
 
 my $genome_fasta = "/work/Common/Data/Genome/hg19.fa";
 
-#samtools pileup -f /work/Common/Data/hg19wholeGenomeFasta/hg19.fa ./accepted_hits.bam | awk '{print $1, $2-1, $2, $4}' > mywiggle.bed ; wigToBigWig wiggle.bed /work/Common/Data/Genome/hg19wholeGenomeFasta/hg19.fa.fai w_acceptedHitsBigWig.bw
+#samtools pileup -f /work/Common/Data/hg19wholeGenomeFasta/hg19.fa ./accepted_hits.bam | awk '{print $1, $2-1, $2, $4}' > mywiggle.bed ; wigToBigWig mywiggle.bed /work/Common/Data/Genome/hg19wholeGenomeFasta/hg19.fa.fai w_acceptedHitsBigWig.bw
 
 # samtools rmdup -s sample.bam sample.nodup.bam
