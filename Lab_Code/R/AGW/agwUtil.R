@@ -245,9 +245,9 @@ log.agw <- function(..., log=TRUE) {
 ## ==============================================
 ## Like "length" and "dim" together at last!
 ## Gives you some basic data on whatever variable you passed in.
+## Also useful: "str"
 ## ==============================================
 huh <- function(x) {
-
      if (is.null(x)) {
           print.magenta.agw("  The variable is NULL!")
      } else if (is.list(x)) {
