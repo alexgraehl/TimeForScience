@@ -4,113 +4,139 @@
 
 ## by Alex Williams, Feb. 2011
 
-use strict;  use warnings;  use diagnostics;
-
 ## Convert SAM or BAM to Genome Browser format
 
+use strict;  use warnings;  use diagnostics;
 
-## wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/bigWigToBedGraph
+use Getopt::Long;
+use File::Basename;
 
-## BEDTOOLS
-## git clone https://github.com/arq5x/bedtools.git
-## cd bedtools
-## make clean
-## make all
+sub printUsageAndQuit() {
+    print STDOUT <DATA>;
+    exit(0);
+}
 
+sub datePrint($) {
+    my $d = `date`;
+    chomp($d);
+    print $d . ":\t" . $_[0];
+}
 
-## Chrom sizes!
-## samtools view -H nodup.bam | awk '/@SQ/ {OFS="\t"; gsub("SN:", "", $2); gsub("LN:", "", $3); print $2, $3}' > chromsizes.tab
+my $genomeFastaFile = undef;
+my $faiFile = undef; ## <-- "fai" means genome "fasta index (fai)" file
+my $makeWig = 1; ## By default, generate a bigwig track too. Specify "nowig" to avoid this.
 
-# Workflow:
-# # 1. Convert SAM to BAM
-# samtools view -S -b -o sample.bam sample.sam
-# # 2. Sort the BAM file
-# samtools sort sample.bam sample.sorted
-# # 3. Create BedGraph coverage file
-# genomeCoverageBed -bg -ibam sample.sorted.bam -g chromsizes.txt > sample.bedgraph
-# # 4. Convert the BedGraph file to BigWig
-# bedGraphToBigWig sample.bedgraph chromsizes.txt sample.bw
-my $thingToTypeForBrowser = qq{track type=bam name="Control_EB" color=0,128,255 bigDataUrl="http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"};
+GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
+	   , "wig!" => \$makeWig ## specify "--nowig" to avoid making a wiggle track
+	   , "fasta=s" => \$genomeFastaFile
+    ) or printUsageAndQuit();
 
+unless (scalar(@ARGV) == 1) { die "ARGUMENT ERROR: This script takes exactly one non-named argument: one single file name of a BAM or SAM file!\n[Quitting now.]\n"; }
 
-print STDERR "This is a script that will generate UCSC-genome-browser-ready BAM files.\n"
-    . "It will convert / produce the UCSC-ready files from any SAM or BAM file you want.\n"
-    . "The BAM/SAM files can be HUGE (10+ GB), but can be hosted locally. Then you tell the UCSC Genome Browser\n"
-    . "where your BAM files are, and it magically uses the BAM files from your local web server, without copying the entire file.\n"
-    . "\n"
-    . "Files that are generated from the input YOURFILE.sam:\n"
-    . " 1. YOURFILE.bam\n"
-    . " 1. sorted_YOURFILE.bam (sorted version of the previous file)\n"
-    . " 1. sorted_YOURFILE.bam.bai (BAM index file)\n"
-    . "\n"
-    . "Then you will just need to make a genome browser track description for those two files, perhaps like this sample one:\n"
-    . "\n"
-    . "  $thingToTypeForBrowser" . "\n"
-    . "\n"
-    . "  (Note that there is no need to mention the .bam.bai file in the track description,\n"
-    . "   but it is implicitly used by the Genome Browser must be present!)\n"
-    . "\n"
-    . "This script just runs the instructions found at:\n"
-    . "      http://genome.ucsc.edu/goldenPath/help/bam.html\n"
-    . "\n"
-    . "Note also that <samtools> must be installed. You can install that with apt-get install samtools, if it isn't already installed.\n"
-    . "\nThis script will probably take about 10 minutes to run on its single input file.\n";
+if ($makeWig) {
+    ## If we want to make a wiggle track, we will need a FAI fasta index file.
+    if (!(-r $genomeFastaFile) or !(-e $genomeFastaFile)) {
+	die "We could not read the specified --fasta file (genome sequence file) at:\n   $genomeFastaFile\n   Please check to make sure this is a valid and readable fasta file!\n";
+    }
 
-
-unless (scalar(@ARGV) == 1) { die "ARGUMENT ERROR: This script takes exactly one argument: one single file name of a BAM or SAM file!\n[Quitting now.]\n"; }
-
-my $file = $ARGV[0];
-
-unless (-e $file) { die "ARGUMENT ERROR: The argument to this program must be a single BAM/SAM file that already exists.\n"; }
-unless (-r $file) { die "FILE ERROR: The argument to this program must be a single file that already exists AND is also readable. We couldn't read the file <$file> though!\n"; }
-unless (not (-z $file)) { die "FILE ERROR: The file <$file> was 0-length. It's not a real BAM/SAM file!\n"; }
-
-# Everything about BAM -> browser is described here http://genome.ucsc.edu/goldenPath/help/bam.html
-
-my $fileIsSAM = ($file =~ m/\.sam$/i);
-if ($fileIsSAM) { print "<$file> appears to be a SAM file.\n"; }
-
-my $fileIsBAM = ($file =~ m/\.bam$/i);
-if ($fileIsBAM) { print "<$file> appears to be a BAM (Binary SAM) file.\n"; }
-
-if (!$fileIsBAM && !$fileIsSAM) { die "FILE ERROR: File must be sequence data in either SAM or BAM format!\n"; }
-
-
-my $bamFilename;
-
-if ($fileIsSAM) {
-    ## User specified a SAM file, so we're going to CONVERT it to a BAM file. Samtools must be installed for this to work!
-    $bamFilename = $file;
-    $bamFilename =~ s/\.sam$/\.bam/i;
-    if (not(-e $bamFilename)) {
-	print "Time to make the bam file named <$bamFilename> from the input SAM file that was named <$file>... this will take a minute or two...\n";
-	system("samtools view -S -b $file > $bamFilename");
-    } else {
-	print "Not remaking the BAM file named <$bamFilename>, because it already existed.\n";
+    $faiFile = ($genomeFastaFile . ".fai");
+    
+    if (!(-e $faiFile)) {
+	print STDERR "There wasn't already a \".fai\" file where the .fasta file was located, so we are now automatically genearting the fasta index file <$faiFile> from the specified genome fasta file <$genomeFastaFile>...\n";
+	system(qq{samtools faidx $genomeFastaFile});
+	print STDERR "Done. Wrote <$faiFile> to the filesystem.";
     }
 }
 
-
-if ($fileIsBAM) {
-    $bamFilename = $file; # that was easy, the user's specified file was ALREADY a bam file
+print STDERR "File to be processed by convert_SAM_or_BAM_for_Genome_Browser:\n";
+foreach (@ARGV) {
+    print STDERR "  - $_\n";
 }
 
-my $bamPrefixWithoutFileExtension = $bamFilename;
+my $originalInputFilename = $ARGV[0];
+
+## wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/bigWigToBedGraph
+
+my $thingToTypeForBrowser = qq{track type=bam name="Control_EB" color=0,128,255 bigDataUrl="http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"};
+
+unless (-e $originalInputFilename) { die "ARGUMENT ERROR: The argument to this program must be a single BAM/SAM file that already exists.\n"; }
+unless (-r $originalInputFilename) { die "FILE ERROR: The argument to this program must be a single file that already exists AND is also readable. We couldn't read the file <$originalInputFilename> though!\n"; }
+unless (not (-z $originalInputFilename)) { die "FILE ERROR: The file <$originalInputFilename> was 0-length. It's not a real BAM/SAM file!\n"; }
+
+# Everything about BAM -> browser is described here http://genome.ucsc.edu/goldenPath/help/bam.html
+
+my $fileIsSAM = ($originalInputFilename =~ m/\.sam$/i);
+my $fileIsBAM = ($originalInputFilename =~ m/\.bam$/i);
+my $bamFilename = undef;
+
+if ($fileIsSAM) {
+    print "<$originalInputFilename> appears to be a SAM file.\n";
+    ## User specified a SAM file, so we're going to CONVERT it to a BAM file. Samtools must be installed for this to work!
+    $bamFilename = $originalInputFilename;
+    $bamFilename =~ s/\.sam$/\.bam/i;
+    if (not(-e $bamFilename)) {
+	print "Time to make the bam file named <$bamFilename> from the input SAM file that was named <$originalInputFilename>... this will take a minute or two...\n";
+	system("samtools view -S -b $originalInputFilename > $bamFilename");
+    } else {
+	print "Not remaking the BAM file named <$bamFilename>, because it already existed.\n";
+    }
+} elsif ($fileIsBAM) {
+    print "<$originalInputFilename> appears to be a BAM (Binary SAM) file.\n";
+    $bamFilename = $originalInputFilename; # that was easy, the user's specified file was ALREADY a bam file
+} else {
+    die "INPUT FILE ERROR: input file <$originalInputFilename> must be sequence data in either SAM or BAM format!\n";
+}
+
+my $bamPrefixWithoutFileExtension = basename($bamFilename);
 $bamPrefixWithoutFileExtension =~ s/\.bam$//i;
+$bamPrefixWithoutFileExtension =~ s/[\/:;,]/_/g; ## slashes and ':;,' characters go to underscores
 
-my $sortedOutNameWithoutFileExtension = "sorted_${bamPrefixWithoutFileExtension}";
-my $sortCmd = "samtools sort $bamFilename $sortedOutNameWithoutFileExtension"; ## <-- automatically adds the ".bam" extension for some weird reason
-print("Ok, we're going to run the samtools sort command now...\n>> Running the command: $sortCmd\n...\n");
-system($sortCmd);
+my $sortBamOutfile   = "Browser_sorted_${bamPrefixWithoutFileExtension}";
+my $bamIndexOutfile  = "Browser_sorted_${bamPrefixWithoutFileExtension}.bai";
+my $wiggleBedTmpFile = "Browser_tmp.${bamPrefixWithoutFileExtension}.wiggle_track.bed";
+my $bigWigOutFile    = "Browser_${bamPrefixWithoutFileExtension}.bigwig.bw";
 
-my $indexCmd = "samtools index ${sortedOutNameWithoutFileExtension}.bam";
-print("Ok, we're going to run the samtools index command now...\n>> Running the command: $indexCmd\n...\n");
-system($indexCmd);
 
-print "DONE!\n\n";
+if (-e $sortBamOutfile and -e $bamIndexOutfile) {
+    print STDERR "We are NOT continuing with the sorted-BAM-file generation, because such a file already exists. Remove it if you want to recompute it!\n"
+} else {
+    my $sortCmd = "samtools sort $bamFilename $sortBamOutfile"; ## <-- automatically adds the ".bam" extension for some weird reason
+    print(">> Running the SAMTOOLS sort command: $sortCmd\n...\n");
+    system($sortCmd);
+    
+    my $indexCmd = "samtools index ${sortBamOutfile}.bam";
+    print(">>Running the SAMTOOLS index command: $indexCmd\n...\n");
+    system($indexCmd);
+}
+
+if ($makeWig) {
+    if (-e $bigWigOutFile) {
+	print STDERR "We are NOT continuing with the generation of a bigwig file, because the bigwig file $bigWigOutFile already exists. Remove it if you want to recompute it!\n";
+    } else {
+	print "Now generating a BIG WIG browser wiggle track (this is slow, and takes up to an hour per accepted_hits.bam file!)...\n";
+	
+	my $wigCmd1 = (qq{samtools pileup -f $genomeFastaFile  $bamFilename }
+		       . qq(  | awk '{print \$1, \$2-1, \$2, \$4}' )
+		       . qq{    > $wiggleBedTmpFile});
+	
+	my $wigCmd2 = (qq{wigToBigWig $wiggleBedTmpFile $faiFile $bigWigOutFile});
+	
+	datePrint(": Now running this command:\n  $wigCmd1\n");
+	system($wigCmd1);
+	datePrint("Now running this command:\n  $wigCmd2\n");
+	system($wigCmd2);
+    }
+} else {
+    print STDERR qq{Skipping the generation of a bigWig file, because "--nowig" was specified on the command line.\n};
+}
+
+
+
+
+datePrint("[DONE]\n\n");
 print "Here are the final output files that you will probably want to put on your server:\n"
-    . " - ${sortedOutNameWithoutFileExtension}.bam\n"
-    . " - ${sortedOutNameWithoutFileExtension}.bam.bai\n";
+    . " - ${sortBamOutfile}.bam\n"
+    . " - ${sortBamOutfile}.bam.bai\n";
 print "\n";
 print "1. You will probably want to move these files to your web server now.\n"
     . "   For my server, the command: scp sorted* lighthouse.ucsf.edu:\n"
@@ -133,14 +159,63 @@ print "4. Note that if you want to save this custom track or send it to others, 
 print "\n";
 
 
-#if ($makeBigWig) {
-#samtools pileup -f /work/Common/Data/hg19wholeGenomeFasta/hg19.fa ./accepted_hits.bam | awk '{print $1, $2-1, $2, $4}' > mywiggle.bed
-#samtools pileup -f /work/Common/Data/hg19wholeGenomeFasta/hg19.fa ./accepted_hits.bam | awk '{print $1, $2-1, $2, $4}' > mywiggle.bed
 
-print "\nWe should consider also making BIGWIG files. The code for doing so is in the source here, but isn't hooked up yet.\n";
+__DATA__
 
-my $genome_fasta = "/work/Common/Data/Genome/hg19.fa";
+convert_SAM_or_BAM_for_Genome_Browser.pl --fai=fasta_index_file <INPUT_SAM_FILE>
 
-#samtools pileup -f /work/Common/Data/hg19wholeGenomeFasta/hg19.fa ./accepted_hits.bam | awk '{print $1, $2-1, $2, $4}' > mywiggle.bed ; wigToBigWig mywiggle.bed /work/Common/Data/Genome/hg19wholeGenomeFasta/hg19.fa.fai w_acceptedHitsBigWig.bw
+Process a SAM or BAM alignment file to generate files for the UCSC Genome Browser.
 
-# samtools rmdup -s sample.bam sample.nodup.bam
+This is a script that will generate UCSC-genome-browser-ready BAM files.
+It will convert / produce the UCSC-ready files from any SAM or BAM file you want.
+The BAM/SAM files can be HUGE (10+ GB), but can be hosted locally. Then you tell the UCSC Genome Browser
+where your BAM files are, and it magically uses the BAM files from your local web server, without copying the entire file.
+
+Inputs:
+   1. --fai=<fasta.index.file.fa.fai>
+   2. A SAM or BAM file, with aligned reads to a reference genome.
+
+Output: 2 files:
+    1. Generates a big pileup track (bigBed format).
+    2. A bigWig format file for the UCSC genome browser. The "fai" fasta index file is required in order to generate this bigWig file.
+
+These files can be viewed in the genome browser.
+
+
+OPTIONS:
+
+   --fai=filename: Required UNLESS you specify "--nowig"
+                   A fasta index file. Format is: some_species.fai or some_species.fa.fai
+
+   --nowig: Add this to NOT generate a wiggle track.
+            Generating a wiggle track is SLOW.
+            Also, if you specify --nowig, then you no longer need to specify
+            a "fai" fasta index file.
+
+EXAMPLES:
+
+ convert_SAM_or_BAM_for_Genome_Browser.pl --fasta=/Genomes/Mouse/mm9.fa  alignment.bam
+ convert_SAM_or_BAM_for_Genome_Browser.pl --fasta=/Genomes/HS/hg19.fa  alignment.sam
+ convert_SAM_or_BAM_for_Genome_Browser.pl --nowig  alignment.bam
+
+Files that are generated from the input YOURFILE.sam:
+ 1. Browser_sorted_YOURFILE.bam (sorted version of the BAM/SAM file)
+ 2. Browser_sorted_YOURFILE.bam.bai (BAM index file)
+ 3. Browser_tmp.YOURFILE.wiggle_track.bed (regular wiggle track -- BED file)
+ 4. Browser.YOURFILE.bigwig.bed (bigWig file for Genome Browser)
+
+Then you will just need to make a genome browser track description for those two files, perhaps like this sample one:
+
+track type=bam name="Control_EB" color=0,128,255 bigDataUrl="http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"
+
+  (Note that there is no need to mention the .bam.bai file in the track description,
+   but it is implicitly used by the Genome Browser and must be present!)
+
+This script just runs the instructions found at:
+      http://genome.ucsc.edu/goldenPath/help/bam.html
+
+Note also that <samtools> must be installed. You can install that with apt-get install samtools, if it is not already installed.
+
+This script will probably take about 30 minutes (!) to run on a single 5 GB input SAM file.
+
+Generating the bigWig file is SLOW. You can prevent this by specifying --nowig.
