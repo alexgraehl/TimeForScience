@@ -134,8 +134,21 @@ alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv /tmp/${USER}/Tras
 ## "showoff" makes it so that everyone can a+rx any directories and a+r any files.
 ## Note that we don't want to make it so everyone can execute *files* necessarily, just folders
 ## ("Executing" a folder means you can "ls" it and see what's inside.)
-function showoff { chmod -R a+r $1 ; find $1 -type d -type d -exec chmod a+x \{\} \; ; }
-function sudoshowoff { sudo chmod -R a+r $1 ; sudo find $1 -type d -exec sudo chmod a+x \{\} \; ; }
+function showoff {
+    for var in "$@"
+    do
+	echo "showoff: Using chmod -R to allow ANY USER to browse \"$var\""
+	chmod -R a+r "$var" ; find "$var" -type d -type d -exec chmod a+x \{\} \; ;
+    done
+}
+
+function sudoshowoff {
+    for var in "$@"
+    do
+	echo "sudoshowoff: Using chmod -R to allow ANY USER to browse \"$var\""
+	sudo chmod -R a+r "$var" ; sudo find "$var" -type d -type d -exec sudo chmod a+x \{\} \; ;
+    done
+}
 
 ## Mac-specific commands:
 alias invisible='SetFile -a V' ## Mac-only: Make a file/folder invisible to the Finder
@@ -319,3 +332,26 @@ function n {
 function zzz {
     echo -e "${a_echo_color}>>> BASH: Loading .bashrc...${a_end_color}"
 }
+
+function mini {
+    for var in "$@"
+    do
+	echo "Going to add \"$var\" to the new mini.tar file."
+    done
+    if [[ -f "mini.tar" || -f "mini.tar.bz2" ]] ; then
+	echo "Either mini.tar or mini.tar.bz2 already exists. This is forbidden--you cannot create the archive to overwrite the current mini.tar!!! Delete it and compress again." ;
+	return;
+    else
+	tar --bzip2 -cvf "mini.tar.bz2" $@
+    fi
+}
+
+function unmini {
+    tar --bzip2 --keep-old-files -xvf $1
+}
+
+
+
+
+
+
