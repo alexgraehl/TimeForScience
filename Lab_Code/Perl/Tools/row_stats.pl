@@ -110,8 +110,7 @@ if ($verbose && ($numNonNumericInHeader == 0) && ($numItemsInHeader > 0) ) {
 }
 
 
-while(<FILE>)
-{
+while(<FILE>) {
   chomp;
 
   my @row = split(/\t/);
