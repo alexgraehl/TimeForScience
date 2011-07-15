@@ -57,6 +57,15 @@ echo \">>> R: Need to un-list things? Use unlist! \" ; \
 echo \">>> R: Perpendicular axis labels: las=2 (1=horiz, 3=vertical) \" ; \
 echo \">>> R: Draw beyond graph region: par(xpd=T/F/NA) \" ; \
 echo \">>> R: Figure out attributes of a variable: attr(x, 'theAttribute'); Works even when names()/attributes() does not! \" ; \
+echo \">>> R: Inspect object: str(...) \" ; \
+echo \">>> R: Totally blank plot: plot(c(0,1),c(0,1),ann=F,bty='n',type='n',xaxt='n',yaxt='n') \" ; \
+echo \">>> R: Cut things into bins, like a histogram: cut(...) \" ; \
+echo \">>> R: Factor -> Integers: unclass(...)\" ; \
+echo \">>> R: Perpendicular axis: par(las=2) (1 = horiz, 3 = vertical)\" ; \
+echo \">>> R: Draw BEYOND the axes / plot region: par(xpd=...)\" ; \
+echo \">>> R: Show package contents: ls('package:some_package_name_here')\" ; \
+echo \">>> R: Show versions of installed packages: sessionInfo(...)\" ; \
+echo \">>> R: Collapse a list down to a basic vector: unlist(...)\" ; \
 echo \" \" ; \
 echo \">>> NIX: Check Linux version: cat /etc/*-release\" ; \
 echo \">>> NIX: Set system time on Ubuntu: sudo ntpdate-debian\" ; \
