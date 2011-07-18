@@ -398,7 +398,13 @@ make.clean <- function(varnames.vec) {
 file.path.that.exists.agw <- function(..., missing.message="File not found.") {
      thePath <- file.path(...)
      print(file.exists(thePath))
-     assert.agw(all(file.exists(thePath)), paste("(Could not find a file in at least one of the files in <", paste(thePath, collapse=', '), ">). Check the spelling and capitalization. file.path.that.exists.agw was called with 'must.exist.already=TRUE'. This means that it ensures that a file ALREADY EXISTS at the same time that it constructs the file path. If you don't need to also test that a file exists (for example, you would NOT want to require a file to exist if you were just writing an output file), then remove this must.exist.already option.", missing.message, sep=''))
+     if (!all(file.exists(thePath))) {
+          print.red.agw(missing.message)
+          print.red.agw("Could not find a required file! 'file.path.that.exists.agw' was called. This function requires that every file passed in must alredy exist!")
+          print.red.agw("Number of files that we could not find: ", sum(!file.exists(thePath)))
+          print.red.agw("Filenames that could not be found: ", paste(thePath[!file.exists(thePath)], collapse=", "))
+          assert.agw(all(file.exists(thePath)), missing.message)
+     }
      return(thePath)
 }
 
