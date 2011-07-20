@@ -31,7 +31,7 @@ GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
 	   , "fasta=s" => \$genomeFastaFile
     ) or printUsageAndQuit();
 
-unless (scalar(@ARGV) == 1) { die "ARGUMENT ERROR: This script takes exactly one non-named argument: one single file name of a BAM or SAM file!\n[Quitting now.]\n"; }
+unless (scalar(@ARGV) == 1) { die "ARGUMENT ERROR: This script takes the name of a genome fasta file with --fasta=/location/to/species.fa and then exactly one non-named argument: one single file name of a BAM or SAM file!\nExample: convert_SAM_or_BAM_for_Genome_Browser.pl --fasta=/path/to/fasta/hg19.fa mySamFile.sam\n[Quitting now.]\n"; }
 
 if ($makeWig) {
     ## If we want to make a wiggle track, we will need a FAI fasta index file.
