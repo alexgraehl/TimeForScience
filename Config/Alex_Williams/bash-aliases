@@ -343,15 +343,19 @@ function zzz {
 }
 
 function mini {
-    for var in "$@"
-    do
-	echo "Going to add \"$var\" to the new mini.tar file."
-    done
-    if [[ -f "mini.tar" || -f "mini.tar.bz2" ]] ; then
-	echo "Either mini.tar or mini.tar.bz2 already exists. This is forbidden--you cannot create the archive to overwrite the current mini.tar!!! Delete it and compress again." ;
-	return;
+    if [[ "$#" == 1 ]] ; then theCompressedBasename="$1";
+    else theCompressedBasename="Archive";
+    fi
+
+    if [[ -f "${theCompressedBasename}.tar" || -f "${theCompressedBasename}.tar.bz2" ]] ; then
+	echo "mini: HALTING: Cannot create a new archive---either ${theCompressedBasename}.tar or ${theCompressedBasename}.tar.bz2 already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive!!! Delete it and compress again." ;
+	return ;
     else
-	tar --bzip2 -cvf "mini.tar.bz2" $@
+	if [[ "$#" -gt 1 ]] ; then echo "Adding a total of $# files to the archive." ; fi
+	for var in "$@"; do echo " * Archiving $var --> ${theCompressedBasename}.tar.bz2" ; done
+	echo "[TAR] command running now..." ;
+	tar --bzip2 -cvf "${theCompressedBasename}.tar.bz2" $@ ;
+	echo "[Done]" ;
     fi
 }
 
