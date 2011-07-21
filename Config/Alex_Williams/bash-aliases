@@ -14,15 +14,17 @@ alias SET_BUENOCOLOR="echo -n ''"
 ## Searches both the R source and the current directory (and any subdirectories!)
 ## Note that it only looks for files with a ".R" ending!!!!!!!
 if [[ -n "$isMac" ]] ; then
+    ## It *is* a mac!
     function ff {
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
 	    "$*" \
 	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
 	    "${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode" \
-	    "/home/alexgw/TimeForScience" \
+	    "/Users/alexgw/TimeForScience" \
 	    ./
     }
 else
+    ## Not the mac!
     function ff {     ## Annoyingly, grep is different between mac/unix
 	grep --color=always -T \
 	    --ignore-case \
@@ -191,7 +193,7 @@ alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
 if [[ -f /Applications/Emacs.app/Contents/MacOS/Emacs ]]; then
     echo -e "${a_echo_color}>>> BASH: Note: alising 'e' to the Mac Application version of emacs.${a_end_color}"
     alias e='/Applications/Emacs.app/Contents/MacOS/Emacs -nw'
-elif [[ isMac -eq 1 ]]; then
+elif [[ -n "$isMac" ]]; then
     alias e='emacsclient -c --alternate-editor=""'
 else
     alias e='emacsclient -c --alternate-editor=""'

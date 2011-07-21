@@ -15,7 +15,7 @@ case "$TERM" in
     *)	                        ;;
 esac
 
-if [[ "$OSTYPE" == darwin10* ]] ; then isMac=1 ; fi
+if [[ "$OSTYPE" == darwin* ]] ; then isMac=1 ; fi
 if [[ "$HOSTNAME" == "Guinea-Beast.local" ]]; then isAGWHomeMachine=1 ; fi
 
 if [[ -n `ps x | grep 'MacOS/iTerm' | grep -v 'grep'` ]] ; then export TERM_PROGRAM=iTerm ; fi
