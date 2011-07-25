@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
-#use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
 #use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstats.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
 use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstring.pl";
 
 use POSIX qw(ceil floor); # import the ceil(ing) and floor functions for handling fractions/integers
@@ -61,7 +61,7 @@ sub main() { # Main program
 		if($num_cols != $prev_cols) {
 		  # If there is a different number of columns on this line, then
 		  # re-parse the ranges! (to handle -1 properly, and things like that)
-		  @cols = &parseRanges($fieldInput, $num_cols, -1);
+		  @cols = parseRanges($fieldInput, $num_cols, -1); ## <-- this is a function in libfile.pl
 		  foreach my $i (@cols) {
 			$colHash{$i} = 1; # sets up the hash
 		  }
