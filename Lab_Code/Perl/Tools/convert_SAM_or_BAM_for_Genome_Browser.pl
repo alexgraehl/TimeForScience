@@ -162,7 +162,7 @@ print "\n";
 
 __DATA__
 
-convert_SAM_or_BAM_for_Genome_Browser.pl --fai=fasta_index_file <INPUT_SAM_FILE>
+convert_SAM_or_BAM_for_Genome_Browser.pl --fasta=<genome_fasta_file> <INPUT_SAM_FILE>
 
 Process a SAM or BAM alignment file to generate files for the UCSC Genome Browser.
 
@@ -172,8 +172,11 @@ The BAM/SAM files can be HUGE (10+ GB), but can be hosted locally. Then you tell
 where your BAM files are, and it magically uses the BAM files from your local web server, without copying the entire file.
 
 Inputs:
-   1. --fai=<fasta.index.file.fa.fai>
+   1. --fasta=<genome.fasta.file.fa> . The genome of the species in question. Used to generate wig files.
    2. A SAM or BAM file, with aligned reads to a reference genome.
+
+Note: if you do not have a genome fasta file, you can omit generating the wig files by saying --nowig instead
+of specifying a fasta file.
 
 Output: 2 files:
     1. Generates a big pileup track (bigBed format).
