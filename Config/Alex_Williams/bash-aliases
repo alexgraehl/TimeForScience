@@ -268,7 +268,6 @@ alias chef='ssh $UCSF_USER@chef.compbio.ucsf.edu ; agwReColorTerminal' ## QB3 cl
 case "$HOSTNAME" in
     nausicaa)
 	alias nau="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
-	alias workup="echo -e -n '$a_warning_color' ; echo 'No need to update: this machine is already the Mercurial main root. You cannot update anything from it, since there is nowhere to pull changes from.' ; echo -e -n '$a_end_color'"
 	;;
     catbus)
 	alias catbus="echo -e -n '$a_warning_color' ; echo 'This machine *is* catbus already!' ; echo -e -n '$a_end_color'"
