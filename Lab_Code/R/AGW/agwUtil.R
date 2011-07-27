@@ -400,7 +400,7 @@ file.path.that.exists.agw <- function(..., missing.message="File not found.") {
      print(file.exists(thePath))
      if (!all(file.exists(thePath))) {
           print.red.agw(missing.message)
-          print.red.agw("Could not find a required file! 'file.path.that.exists.agw' was called. This function requires that every file passed in must alredy exist!")
+          print.red.agw("Could not find a required file! 'file.path.that.exists.agw' was called. This function requires that every file passed in must already exist!")
           print.red.agw("Number of files that we could not find: ", sum(!file.exists(thePath)))
           print.red.agw("Filenames that could not be found: ", paste(thePath[!file.exists(thePath)], collapse=", "))
           assert.agw(all(file.exists(thePath)), missing.message)
