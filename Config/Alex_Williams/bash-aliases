@@ -225,7 +225,7 @@ alias gitdiff="git difftool"
 
 alias hgcom="hg commit -u '${USER}' -m 'Changes committed by ${USER}' && echo '[Done] committing changes locally with Mercurial.'"
 alias hgpush="hg commit -u '${USER}' -m 'Changes committed by ${USER}' && hg push && echo '[Done] pushing changes to the remote server with Mercurial.'"
-alias hgpull="hg pull && hg update && echo '[Done] pulling remote changes and updating the local Mercurial repository.'"
+alias hgpull="hg pull ; hg update && echo '[Done] pulling remote changes and updating the local Mercurial repository.'"
 alias hgup="hg update && echo '[Done] updating local changes in Mercurial'"
 alias hgs="hg status"
 
@@ -238,15 +238,12 @@ function hglog {
 
 alias workstat='hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" status ; hg --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives status"'
 
-function workcom {
-    ## Note that "push" will always complain on Nausicaa or Catbus, because those are the MASTER repositiories
-    hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}" -m "Commit by ${USER}" ;
-    hg push --cwd "${BINF_CORE_WORK_DIR}" ;
-    echo "[Done] committing work repository"  # && hg push --cwd ${BINF_CODE}'
+function workcom { ## Note that "push" will always complain on Nausicaa or Catbus, because those are the MASTER repositiories
+    hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}" -m "Commit by ${USER}" && hg push --cwd "${BINF_CORE_WORK_DIR}" && echo "[Done] committing work repository"
 }
 
 function workup { ## Update mercurial work directories
-    hg --cwd "${BINF_CORE_WORK_DIR}" pull && hg --cwd "${BINF_CORE_WORK_DIR}" update && echo "[Done] updating work repository"
+    hg --cwd "${BINF_CORE_WORK_DIR}" pull ; hg --cwd "${BINF_CORE_WORK_DIR}" update && echo "[Done] updating work repository"
 }
 
 
