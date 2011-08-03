@@ -1536,7 +1536,7 @@ system.agw <- function(...
      numPrefixSpaces <- 1 + nchar(syscallPrefix) # <-- how many spaces required to indent the following lines of the combined system call properly?
      prefixWhitespace <- paste(rep(' ', numPrefixSpaces), collapse='') ## <-- a whitespace region to indent things properly
 
-     if (time) { print.color.agw(paste("[", Sys.time(), "] ", sep=''), fg=fgColor, log=log, newline=F) } ## <-- note the lack of a newline!
+     if (time) { print.color.agw(paste("[", Sys.time(), "] ", "\n", sep=''), fg=fgColor, log=log, newline=F) } ## <-- note the lack of a newline!
      
      if (formatted) {
           formattedCmd = gsub("    ", paste("\n", prefixWhitespace, sep=''), theCommand, perl=TRUE) ## <-- four spaces becomes a newline
@@ -1551,7 +1551,7 @@ system.agw <- function(...
           exitCode <- system(theCommand, wait=wait)  ## <-- the unix error/success code
      }
 
-     if (time) { print.color.agw(paste("Done at [", Sys.time(), "]", sep=''), fg=fgColor, log=log, newline=TRUE) }
+     if (time) { print.color.agw(paste("Done at [", Sys.time(), "]", "\n", sep=''), fg=fgColor, log=log, newline=TRUE) }
      
      if (requireZeroExitCode) {
           assert.agw(exitCode == 0, paste("Uh oh! The exit code for the command was NOT zero (zero indicates a success in most utilities)! Instead, the exit code was: ", exitCode, "\n", sep=''))
