@@ -254,7 +254,7 @@ alias scienceup='hg --cwd "${TIME_FOR_SCIENCE_DIR}" pull           && hg --cwd "
 alias science="scienceup ; sciencecom ; workup ; workcom"
 alias sciencestat='hg --cwd ${TIME_FOR_SCIENCE_DIR} status'
 
-
+alias agwReColorTerminal=''
 alias nau='SET_NAUCOLOR ; ssh  $UCSF_USER@nausicaa.ucsf.edu ; agwReColorTerminal'
 alias catbus='ssh $UCSF_USER@catbus.gladstone.internal ; agwReColorTerminal'
 alias lighthouse='SET_LIGHTHOUSECOLOR ; ssh  $UCSF_USER@lighthouse.ucsf.edu ; agwReColorTerminal' ## Database machine
