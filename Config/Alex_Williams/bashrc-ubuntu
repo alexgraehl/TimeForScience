@@ -33,34 +33,32 @@ if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-aliases ]]; then
     source ~/TimeForScience/Config/Alex_Williams/bash-aliases
 fi
 
-
 #iterm_bg=000000
 #iterm_title_r255=200
 #iterm_title_g255=0
 #iterm_title_b255=0
 
+# function iTermColor {
+# # Set the Mac application "iTerm2" to have a custom title bar or a custom background
+# # Argument $1 is either "top" or "bg"
+# ## If the argument $1 is "top", then:
+# ##   $2/$3/$4 are R/G/B, which can range from 0 to 255
+# ##   This will, on the mac, set the iTerm2 title bar's color
+# ## If the aargument $1 is "bg", then the input $2 is a single hex color string in 00-FF format.
+# ## Example, it could be FF00FF, for magenta.
+#     if [[ "$1" == "top" ]] ; then
+# 	[[ -n "$2" ]] && echo -e "\033]6;1;bg;red;brightness;$2\a" ; ## title bar of iTerm
+# 	[[ -n "$3" ]] && echo -e "\033]6;1;bg;green;brightness;$3\a" ; ## title bar of iTerm
+# 	[[ -n "$4" ]] && echo -e "\033]6;1;bg;blue;brightness;$4\a" ## title bar of iTerm
+#     elif [[ "$1" == "bg" ]] ; then
+# 	[[ -n "$2" ]] && echo -e "\033]Ph$2\033\\" ; ## Set the iTerm background. $2 must be like FF00FF
+#     fi
+# }
 
-function iTermColor {
-# Set the Mac application "iTerm2" to have a custom title bar or a custom background
-# Argument $1 is either "top" or "bg"
-## If the argument $1 is "top", then:
-##   $2/$3/$4 are R/G/B, which can range from 0 to 255
-##   This will, on the mac, set the iTerm2 title bar's color
-## If the aargument $1 is "bg", then the input $2 is a single hex color string in 00-FF format.
-## Example, it could be FF00FF, for magenta.
-    if [[ "$1" == "top" ]] ; then
-	[[ -n "$2" ]] && echo -e "\033]6;1;bg;red;brightness;$2\a" ; ## title bar of iTerm
-	[[ -n "$3" ]] && echo -e "\033]6;1;bg;green;brightness;$3\a" ; ## title bar of iTerm
-	[[ -n "$4" ]] && echo -e "\033]6;1;bg;blue;brightness;$4\a" ## title bar of iTerm
-    elif [[ "$1" == "bg" ]] ; then
-	[[ -n "$2" ]] && echo -e "\033]Ph$2\033\\" ; ## Set the iTerm background. $2 must be like FF00FF
-    fi
-}
-
-function agwReColorTerminal {
-    iTermColor "bg" ${iterm_bg} ; iTermColor "top" ${iterm_top}
-    echo "Re-coloring the terminal..."
-}
+# function agwReColorTerminal {
+#     iTermColor "bg" ${iterm_bg} ; iTermColor "top" ${iterm_top}
+#     echo "Re-coloring the terminal..."
+# }
 
 
 # ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
@@ -70,10 +68,6 @@ if [[ -n "$color_prompt" ]] ; then
 	## LOCAL machine gets a specific color...
 	#a_machine_prompt_main_color="$color_prefix[44m$color_prefix[3;33m" ## Blue background, white foreground
 	a_machine_prompt_main_color="${color_prefix}[1;32m" ## Bold green text
-	
-	#iTermColor "top" 180 180 180
-
-	##[[ $TERM_PROGRAM == iTerm ]] && 
 	iterm_bg=000000 # iTerm console window background
 	iterm_top="180 180 180"
     else
@@ -112,7 +106,7 @@ if [[ -n "$color_prompt" ]] ; then
 fi
 # ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
 
-agwReColorTerminal
+#agwReColorTerminal
 
 if [[ -z "$STY" ]] && [[ "$HOSTNAME" == 'nausicaa' ]] ; then
     echo -e "${a_warning_color}*\n*\n* Remember to resume the screen session on this machine!!!\n*\n*${a_end_color}"
