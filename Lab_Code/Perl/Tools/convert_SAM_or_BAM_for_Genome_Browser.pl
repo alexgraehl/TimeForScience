@@ -96,7 +96,7 @@ $bamPrefixWithoutFileExtension =~ s/[\/:;,]/_/g; ## slashes and ':;,' characters
 
 my $sortBamFilePrefix  = "Browser_sorted_${bamPrefixWithoutFileExtension}";
 my $bamIndexOutfile    = "Browser_sorted_${bamPrefixWithoutFileExtension}.bam.bai";
-my $wigIntemediateFile = "Browser_tmp.${bamPrefixWithoutFileExtension}.wig";
+my $wigIntermediateFile = "Browser_tmp.${bamPrefixWithoutFileExtension}.wig";
 my $bigWigOutFile      = "Browser_${bamPrefixWithoutFileExtension}.bigwig.bw";
 
 if ((-e "${sortBamFilePrefix}.bam") and (-e $bamIndexOutfile)) {
@@ -115,20 +115,20 @@ if ($makeWig) {
     if (-e $bigWigOutFile) {
 	print STDOUT "[Skipping] We are NOT continuing with the generation of a bigwig file, because the bigwig file $bigWigOutFile already exists. Remove it if you want to recompute it!\n";
     } else {
-	print "Now generating a BIG WIG browser wiggle track (this is slow, and takes up to an hour per accepted_hits.bam file!)...\n";
+	print "Now generating a BIG WIG browser wiggle track named $wigIntermediateFile (this is slow, and can take up to an hour per input RNASeq file!)...\n";
 	
-	if (-e $wigIntemediateFile) {
-	    print STDOUT "[Skipping] We are NOT creating another wiggle bed temp file, because the file $wigIntemediateFile already exists. Remove it if you want to recompute it.\n";
+	if (-e $wigIntermediateFile) {
+	    print STDOUT "[Skipping] We are NOT creating the wiggle temp file <$wigIntermediateFile>, because it already exists. Remove it if you want to recompute it.\n";
 	} else {
 	    my $wigCmd1 = (qq{samtools pileup -f $genomeFastaFile  $bamFilename }
 			   . qq(  | awk '{print \$1, \$2-1, \$2, \$4}' )
-			   . qq{    > $wigIntemediateFile});
+			   . qq{    > $wigIntermediateFile});
 	    datePrint(": Now running this command:\n  $wigCmd1\n");
 	    system($wigCmd1);
 	}
 
 	## -clip means "allow weird errant entries off the end of the chromosome, rather than exploding". This is important, because otherwise wigToBigWig will quit with errors like "something went off the end of chr12_random"
-	my $wigCmd2 = (qq{wigToBigWig -clip $wigIntemediateFile $chrSizeFile $bigWigOutFile});
+	my $wigCmd2 = (qq{wigToBigWig -clip $wigIntermediateFile $chrSizeFile $bigWigOutFile});
 	datePrint("Now running this command:\n  $wigCmd2\n");
 	system($wigCmd2);
     }
