@@ -94,19 +94,21 @@ my $bamPrefixWithoutFileExtension = basename($bamFilename);
 $bamPrefixWithoutFileExtension =~ s/\.bam$//i;
 $bamPrefixWithoutFileExtension =~ s/[\/:;,]/_/g; ## slashes and ':;,' characters go to underscores
 
-my $sortBamFilePrefix  = "Browser_sorted_${bamPrefixWithoutFileExtension}";
-my $bamIndexOutfile    = "Browser_sorted_${bamPrefixWithoutFileExtension}.bam.bai";
+my $browserTrackDescriptionFile = "Browser_Track_Descriptions.txt";
+my $sortBamFilePrefix   = "Browser_sorted_${bamPrefixWithoutFileExtension}";
+my $sortBamFullFilename = "${sortBamFilePrefix}.bam";
+my $bamIndexOutfile     = "${sortBamFilePrefix}.bam.bai";
 my $wigIntermediateFile = "Browser_tmp.${bamPrefixWithoutFileExtension}.wig";
-my $bigWigOutFile      = "Browser_${bamPrefixWithoutFileExtension}.bigwig.bw";
+my $bigWigOutFile       = "Browser_${bamPrefixWithoutFileExtension}.bigwig.bw";
 
-if ((-e "${sortBamFilePrefix}.bam") and (-e $bamIndexOutfile)) {
+if ((-e $sortBamFullFilename) and (-e $bamIndexOutfile)) {
     print STDOUT "[Skipping] We are NOT continuing with the sorted-BAM-file generation, because such a file already exists. Remove it if you want to recompute it!\n"
 } else {
-    my $sortCmd = "samtools sort $bamFilename $sortBamFilePrefix"; ## <-- automatically adds the ".bam" extension for some weird reason
+    my $sortCmd = "samtools sort $bamFilename $sortBamFilePrefix"; ## <-- Note: this should NOT have the .bam extension, because samtools automatically adds the ".bam" extension
     print(">> Running the SAMTOOLS sort command: $sortCmd\n...\n");
     system($sortCmd);
     
-    my $indexCmd = "samtools index ${sortBamFilePrefix}.bam";
+    my $indexCmd = "samtools index ${sortBamFullFilename}";
     print(">> Running the SAMTOOLS index command: $indexCmd\n...\n");
     system($indexCmd);
 }
@@ -139,10 +141,30 @@ if ($makeWig) {
 
 
 
+
+sub browserTrackString($$) {
+    my ($type, $filename) = @_; ## input arguments: type must be bigWig or bigBed
+    if ($type ne "bigWig" and $type ne "bigBed") { die "Sorry, we only know how to write BIGWIG and BIGBED files. Problem!\n"; }
+    my $redColor = "255,0,0";
+    my $blueColor = "0,0,255";
+    my $url = "http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/YOUR_FILE_LOCATION/${filename}";
+    my $str = qq{track type=${type} name="${filename} (${type})" description="${filename} (${type})" bigDataUrl="${url}" visibility=2 colorByStrand="$redColor $blueColor"\n};
+    return($str);
+}
+
+
+open FILE, ">>", $browserTrackDescriptionFile or die $!; ## APPEND TO THE FILE!!!
+print FILE "\n";
+print FILE browserTrackString("bigBed", ${sortBamFullFilename});
+print FILE browserTrackString("bigWig", ${bigWigOutFile});
+print FILE "\n";
+close(FILE);
+
 datePrint("[DONE]\n\n");
 print "Here are the final output files that you will probably want to put on your server:\n"
-    . " - ${sortBamFilePrefix}.bam\n"
-    . " - ${sortBamFilePrefix}.bam.bai\n";
+    . " - ${sortBamFullFilename}\n"
+    . " - ${bamIndexOutfile}\n"
+    . " - ${bigWigOutFile}\n";
 print "\n";
 print "1. You will probably want to move these files to your web server now.\n"
     . "   For my server, the command: scp sorted* lighthouse.ucsf.edu:\n"
