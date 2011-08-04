@@ -23,7 +23,7 @@ sub datePrint($) {
 }
 
 my $genomeFastaFile = undef;
-my $faiFile = undef; ## <-- "fai" means genome "fasta index (fai)" file
+my $chrSizeFile = undef; ## <-- "fai" means genome "fasta index (fai)" file
 my $makeWig = 1; ## By default, generate a bigwig track too. Specify "nowig" to avoid this.
 
 GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
@@ -31,26 +31,29 @@ GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
 	   , "fasta=s" => \$genomeFastaFile
     ) or printUsageAndQuit();
 
-unless (scalar(@ARGV) == 1) { die "ARGUMENT ERROR: This script takes the name of a genome fasta file with --fasta=/location/to/species.fa and then exactly one non-named argument: one single file name of a BAM or SAM file!\nExample: convert_SAM_or_BAM_for_Genome_Browser.pl --fasta=/path/to/fasta/hg19.fa mySamFile.sam\n[Quitting now.]\n"; }
+if (scalar(@ARGV) != 1) { die "ARGUMENT ERROR: This script takes the name of a genome fasta file with --fasta=/location/to/species.fa and then exactly one non-named argument: one single file name of a BAM or SAM file!\nExample: convert_SAM_or_BAM_for_Genome_Browser.pl --fasta=/path/to/fasta/hg19.fa mySamFile.sam\n[Quitting now.]\n"; }
+
+
 
 if ($makeWig) {
+    if (!defined($genomeFastaFile)) { die "ARGUMENT ERROR: You must supply an input genome fasta file (with --fasta=/location/to/species.fa) for computing the wiggle tracks, OR you can specify --nowig on the command line to disable wiggle track generation."; }
     ## If we want to make a wiggle track, we will need a FAI fasta index file.
     if (!(-r $genomeFastaFile) or !(-e $genomeFastaFile)) {
 	die "We could not read the specified --fasta file (genome sequence file) at:\n   $genomeFastaFile\n   Please check to make sure this is a valid and readable fasta file!\n";
     }
 
-    $faiFile = ($genomeFastaFile . ".fai");
+    $chrSizeFile = ($genomeFastaFile . ".fai");
     
-    if (!(-e $faiFile)) {
-	print STDERR "There wasn't already a \".fai\" file where the .fasta file was located, so we are now automatically genearting the fasta index file <$faiFile> from the specified genome fasta file <$genomeFastaFile>...\n";
+    if (!(-e $chrSizeFile)) {
+	print STDOUT "There wasn't already a \".fai\" file where the .fasta file was located, so we are now automatically genearting the fasta index file <$chrSizeFile> from the specified genome fasta file <$genomeFastaFile>...\n";
 	system(qq{samtools faidx $genomeFastaFile});
-	print STDERR "Done. Wrote <$faiFile> to the filesystem.";
+	print STDOUT "Done. Wrote <$chrSizeFile> to the filesystem.";
     }
 }
 
-print STDERR "File to be processed by convert_SAM_or_BAM_for_Genome_Browser:\n";
+print STDOUT "File to be processed by convert_SAM_or_BAM_for_Genome_Browser:\n";
 foreach (@ARGV) {
-    print STDERR "  - $_\n";
+    print STDOUT "  - $_\n";
 }
 
 my $originalInputFilename = $ARGV[0];
@@ -91,43 +94,46 @@ my $bamPrefixWithoutFileExtension = basename($bamFilename);
 $bamPrefixWithoutFileExtension =~ s/\.bam$//i;
 $bamPrefixWithoutFileExtension =~ s/[\/:;,]/_/g; ## slashes and ':;,' characters go to underscores
 
-my $sortBamOutfile   = "Browser_sorted_${bamPrefixWithoutFileExtension}";
-my $bamIndexOutfile  = "Browser_sorted_${bamPrefixWithoutFileExtension}.bai";
-my $wiggleBedTmpFile = "Browser_tmp.${bamPrefixWithoutFileExtension}.wiggle_track.bed";
-my $bigWigOutFile    = "Browser_${bamPrefixWithoutFileExtension}.bigwig.bw";
+my $sortBamFilePrefix  = "Browser_sorted_${bamPrefixWithoutFileExtension}";
+my $bamIndexOutfile    = "Browser_sorted_${bamPrefixWithoutFileExtension}.bam.bai";
+my $wigIntemediateFile = "Browser_tmp.${bamPrefixWithoutFileExtension}.wig";
+my $bigWigOutFile      = "Browser_${bamPrefixWithoutFileExtension}.bigwig.bw";
 
-
-if (-e $sortBamOutfile and -e $bamIndexOutfile) {
-    print STDERR "We are NOT continuing with the sorted-BAM-file generation, because such a file already exists. Remove it if you want to recompute it!\n"
+if ((-e "${sortBamFilePrefix}.bam") and (-e $bamIndexOutfile)) {
+    print STDOUT "[Skipping] We are NOT continuing with the sorted-BAM-file generation, because such a file already exists. Remove it if you want to recompute it!\n"
 } else {
-    my $sortCmd = "samtools sort $bamFilename $sortBamOutfile"; ## <-- automatically adds the ".bam" extension for some weird reason
+    my $sortCmd = "samtools sort $bamFilename $sortBamFilePrefix"; ## <-- automatically adds the ".bam" extension for some weird reason
     print(">> Running the SAMTOOLS sort command: $sortCmd\n...\n");
     system($sortCmd);
     
-    my $indexCmd = "samtools index ${sortBamOutfile}.bam";
-    print(">>Running the SAMTOOLS index command: $indexCmd\n...\n");
+    my $indexCmd = "samtools index ${sortBamFilePrefix}.bam";
+    print(">> Running the SAMTOOLS index command: $indexCmd\n...\n");
     system($indexCmd);
 }
 
 if ($makeWig) {
     if (-e $bigWigOutFile) {
-	print STDERR "We are NOT continuing with the generation of a bigwig file, because the bigwig file $bigWigOutFile already exists. Remove it if you want to recompute it!\n";
+	print STDOUT "[Skipping] We are NOT continuing with the generation of a bigwig file, because the bigwig file $bigWigOutFile already exists. Remove it if you want to recompute it!\n";
     } else {
 	print "Now generating a BIG WIG browser wiggle track (this is slow, and takes up to an hour per accepted_hits.bam file!)...\n";
 	
-	my $wigCmd1 = (qq{samtools pileup -f $genomeFastaFile  $bamFilename }
-		       . qq(  | awk '{print \$1, \$2-1, \$2, \$4}' )
-		       . qq{    > $wiggleBedTmpFile});
-	
-	my $wigCmd2 = (qq{wigToBigWig $wiggleBedTmpFile $faiFile $bigWigOutFile});
-	
-	datePrint(": Now running this command:\n  $wigCmd1\n");
-	system($wigCmd1);
+	if (-e $wigIntemediateFile) {
+	    print STDOUT "[Skipping] We are NOT creating another wiggle bed temp file, because the file $wigIntemediateFile already exists. Remove it if you want to recompute it.\n";
+	} else {
+	    my $wigCmd1 = (qq{samtools pileup -f $genomeFastaFile  $bamFilename }
+			   . qq(  | awk '{print \$1, \$2-1, \$2, \$4}' )
+			   . qq{    > $wigIntemediateFile});
+	    datePrint(": Now running this command:\n  $wigCmd1\n");
+	    system($wigCmd1);
+	}
+
+	## -clip means "allow weird errant entries off the end of the chromosome, rather than exploding"
+	my $wigCmd2 = (qq{wigToBigWig -clip $wigIntemediateFile $chrSizeFile $bigWigOutFile});
 	datePrint("Now running this command:\n  $wigCmd2\n");
 	system($wigCmd2);
     }
 } else {
-    print STDERR qq{Skipping the generation of a bigWig file, because "--nowig" was specified on the command line.\n};
+    print STDOUT qq{[Skipping] the generation of a bigWig file, because "--nowig" was specified on the command line.\n};
 }
 
 
@@ -135,8 +141,8 @@ if ($makeWig) {
 
 datePrint("[DONE]\n\n");
 print "Here are the final output files that you will probably want to put on your server:\n"
-    . " - ${sortBamOutfile}.bam\n"
-    . " - ${sortBamOutfile}.bam.bai\n";
+    . " - ${sortBamFilePrefix}.bam\n"
+    . " - ${sortBamFilePrefix}.bam.bai\n";
 print "\n";
 print "1. You will probably want to move these files to your web server now.\n"
     . "   For my server, the command: scp sorted* lighthouse.ucsf.edu:\n"
