@@ -40,7 +40,7 @@ my ($reverse) = 0;
 my ($uppercase) = 0;
 my $hit = 0;
 my $tmp;
-my @fill_lines;
+my @fill_lines = ();
 my $merge=0;
 my $syn_file = "$ENV{JOIN_SYNONYMS}";
 my %syn_pairs;
@@ -147,14 +147,11 @@ while(@ARGV)
     }
 }
 
-if(defined(@fill_lines) and $#fill_lines>=0) {
-    if(not(defined($fill)) or length($fill) == 0)
-    {
+if (scalar(@fill_lines) > 0) {
+    if (!defined($fill) or (length($fill) == 0)) {
 	$fill = join($delim_out, @fill_lines);
-    }
-    else
-    {
-	$fill .= $delim_out . join($delim_out, @fill_lines);
+    } else {
+	$fill .= ($delim_out . join($delim_out, @fill_lines));
     }
 }
 
