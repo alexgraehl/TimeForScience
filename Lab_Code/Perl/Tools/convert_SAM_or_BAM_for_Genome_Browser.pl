@@ -127,7 +127,7 @@ if ($makeWig) {
 	    system($wigCmd1);
 	}
 
-	## -clip means "allow weird errant entries off the end of the chromosome, rather than exploding"
+	## -clip means "allow weird errant entries off the end of the chromosome, rather than exploding". This is important, because otherwise wigToBigWig will quit with errors like "something went off the end of chr12_random"
 	my $wigCmd2 = (qq{wigToBigWig -clip $wigIntemediateFile $chrSizeFile $bigWigOutFile});
 	datePrint("Now running this command:\n  $wigCmd2\n");
 	system($wigCmd2);
