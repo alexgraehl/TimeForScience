@@ -147,8 +147,11 @@ sub browserTrackString($$) {
     if ($type ne "bigWig" and $type ne "bigBed") { die "Sorry, we only know how to write BIGWIG and BIGBED files. Problem!\n"; }
     my $redColor = "255,0,0";
     my $blueColor = "0,0,255";
+    my $color;
+    if ($type eq "bigWig") { $color = qq{color="$redColor"}; }
+    if ($type eq "bigBed") { $color = qq{colorByStrand="$redColor $blueColor"}; }
     my $url = "http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/YOUR_FILE_LOCATION/${filename}";
-    my $str = qq{track type=${type} name="${filename} (${type})" description="${filename} (${type})" bigDataUrl="${url}" visibility=2 colorByStrand="$redColor $blueColor"\n};
+    my $str = qq{track type=${type} name="${filename} (${type})" description="${filename} (${type})" bigDataUrl="${url}" visibility=2 ${color}\n};
     return($str);
 }
 
