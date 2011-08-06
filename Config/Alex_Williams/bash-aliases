@@ -69,6 +69,7 @@ echo \">>> R: Show package contents: ls('package:some_package_name_here')\" ; \
 echo \">>> R: Show versions of installed packages: sessionInfo(...)\" ; \
 echo \">>> R: Collapse a list down to a basic vector: unlist(...)\" ; \
 echo \" \" ; \
+echo \">>> NIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z  \" ; \
 echo \">>> NIX: Check Linux version: cat /etc/*-release\" ; \
 echo \">>> NIX: Set system time on Ubuntu: sudo ntpdate-debian\" ; \
 echo \">>> NIX: Set system time on Ubuntu: sudo ntpdate-debian\" ; \
