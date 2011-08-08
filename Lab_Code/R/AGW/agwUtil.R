@@ -396,16 +396,15 @@ make.clean <- function(varnames.vec) {
 ## missing.message (optional argument): An additional warning message to print out in the event that the file does NOT exist.
 ## ==============================================
 file.path.that.exists.agw <- function(..., missing.message="File not found.") {
-     thePath <- file.path(...)
-     print(file.exists(thePath))
-     if (!all(file.exists(thePath))) {
+     paths.vec <- file.path(...)
+     if (!all(file.exists(paths.vec))) {
           print.red.agw(missing.message)
           print.red.agw("Could not find a required file! 'file.path.that.exists.agw' was called. This function requires that every file passed in must already exist!")
-          print.red.agw("Number of files that we could not find: ", sum(!file.exists(thePath)))
-          print.red.agw("Filenames that could not be found: ", paste(thePath[!file.exists(thePath)], collapse=", "))
-          assert.agw(all(file.exists(thePath)), missing.message)
+          print.red.agw("Number of files that we could not find: ", sum(!file.exists(paths.vec)))
+          print.red.agw("Filenames that could not be found: ", paste(paths.vec[!file.exists(paths.vec)], collapse=", "))
+          assert.agw(all(file.exists(paths.vec)), missing.message)
      }
-     return(thePath)
+     return(paths.vec) # might be more than one path
 }
 
 
