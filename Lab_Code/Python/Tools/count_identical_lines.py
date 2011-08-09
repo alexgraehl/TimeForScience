@@ -4,6 +4,14 @@
 ALEX_PROGRAM_USAGE_TEXT='''
 Duplicate counter. For fasta / fastq / csfasta files.
 
+Note that this is really ONLY intended for incredibly large files. Otherwise it will surely be faster to run:
+
+ sort YOURFILE | uniq -c
+
+As it turns out, it only takes about 5 times longer to use the UNIX sort on a 2.2 GB file using "sort THEFILE | uniq -q"
+
+So you can probably just use that no matter what.
+
 Remember to output to STDOUT!
 '''
 
@@ -19,20 +27,6 @@ import pdb; #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-d
 log = None
 LOG_FILE_NAME = "sim.log.txt"
 TERMINAL_WIDTH = 80
-
-def logWrite(message):
-    global log
-    if (log is None):
-        try:
-            log = open(LOG_FILE_NAME, 'w')
-        except:
-            print("ERROR (Possibly due to lack of permissions in this directory?): Could not open the following output file required for logging status: " + LOG_FILE_NAME)
-            raise
-        pass
-    #message = textwrap.fill(message, TERMINAL_WIDTH)
-    log.write(message + "\n") ## actually write to the log FILE
-    sys.stdout.write(message + "\n") ## ...and print to the screen
-    return
 
 def usageAndQuit(exitCode, message=None):
     message = textwrap.fill(message, TERMINAL_WIDTH)
@@ -56,8 +50,7 @@ def usageAndQuit(exitCode, message=None):
 
 
 if __name__ == "__main__":
-    random.seed()
-
+    sys.stderr.write("Note that you can get the same results, only sorted, with the following UNIX commands: sort YOURFILE | uniq -c > OUTPUT_FILE\nThat is about 5 times slower on a 2.2 GB file (15 minutes vs 3 minutes), but that isn't typically a huge deal.\n")
     try:
         opts, args = getopt.gnu_getopt(sys.argv[1:], "hwi:d"
                                        , ["help", "warn"
@@ -91,7 +84,7 @@ if __name__ == "__main__":
         try:
             theFile = open(inputFilename, 'r') ## The annotated bed file MUST have the "GTF" gene annotation so we know which reads are associated with which genes.
         except:
-            logWrite("ERROR (Possibly due to lack of permissions in this directory?): Could not open the following output file required for logging status: " + LOG_FILE_NAME)
+            sys.stderr.write("ERROR (Possibly due to lack of permissions in this directory?): Could not open the following output file required for logging status: " + LOG_FILE_NAME)
             raise
         pass
 
@@ -112,10 +105,10 @@ if __name__ == "__main__":
     theFile.close()
     
     for key, value in theHash.iteritems():
-        sys.stdout.write("" + key.rstrip() + "\t" + str(value) + "\n")
+        sys.stdout.write(str(value) + "\t" + key.rstrip() + "\n")
         pass
 
-    logWrite("[Done -- Successful exit from simulator. Read a total of " + str(lineNum) + " lines.]")
+    sys.stderr.write("[Done -- Successful exit from simulator. Read a total of " + str(lineNum) + " lines.]")
     log.close() ## Finally, close the diagnostic log file that we've been writing messages to this whole time
     pass
 
