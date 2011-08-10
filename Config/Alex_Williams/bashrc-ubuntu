@@ -167,7 +167,7 @@ fi
 export CLICOLOR='Yes'
 export LS_OPTIONS='--color=auto'
 ## LS_COLORS *with* an underscore is for Ubuntu
-export LS_COLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:ex=01;31' 
+export LS_COLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=43;31;03:ex=01;31' 
 ## LSCOLORS *without* an underscore is for Mac OS X
 export LSCOLORS=FxgxCxDxBxegedabagacad
 #if [[ -n "$isMac" ]] ; then

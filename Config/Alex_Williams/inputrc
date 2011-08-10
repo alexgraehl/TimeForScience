@@ -9,7 +9,15 @@ set mark-symlinked-directories on
 
 set completion-ignore-case on
 
+set match-hidden-files on
+set page-completions off  ## This way we won't get a multi-screen PAGER appearing with the possible completion for things when there are tons of completions
+set completion-query-items 1000 ## Don't ask about autocomplete unless there are a TON of possibilities
+set show-all-if-ambiguous on
+set show-all-if-unmodified on
 
+
+#shopt -s cdspell # minor errors in the spelling of a directory component in a cd command will be corrected
+#shopt -s lithist # if the cmdhist option is enabled, multi-line commands are saved to the history with embedded newlines rather than using semicolon separators where possible
 
 ## This means that when you hit "tab" to auto-complete,
 ## and there is more than one completion, instead of just
@@ -21,8 +29,7 @@ set meta-flag on
 set input-meta on
 set output-meta on
 
-set show-all-if-ambiguous on
-set show-all-if-unmodified on
+
 set visible-stats on
 
 "\e[1~": beginning-of-line
