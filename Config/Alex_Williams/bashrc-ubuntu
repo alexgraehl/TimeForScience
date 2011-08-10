@@ -2,6 +2,7 @@
 #
 #
 
+
 [[ -z "$PS1" ]] && return # <-- If not running interactively, don't
 # do anything. Printing any output breaks ssh and various things.
 # This is why this line is important at the very top!
