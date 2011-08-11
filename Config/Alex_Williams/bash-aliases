@@ -73,12 +73,11 @@ echo \" \" ; \
 echo \">>> NIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z  \" ; \
 echo \">>> NIX: Check Linux version: cat /etc/*-release\" ; \
 echo \">>> NIX: Set system time on Ubuntu: sudo ntpdate-debian\" ; \
-echo \">>> NIX: Set system time on Ubuntu: sudo ntpdate-debian\" ; \
 echo \">>> NIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles\" ; \
-echo \">>> PKG/NIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs\" ; \
-echo \">>> APT PKG: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ; \
-echo \">>> APT PKG: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string>\" ; \
-echo \">>> APT PKG: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ; \
+echo \">>> NIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs\" ; \
+echo \">>> NIX / INSTALL: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ; \
+echo \">>> NIX / INSTALL: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string>\" ; \
+echo \">>> NIX / INSTALL: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ; \
 echo \">>> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub \" ; \
 echo \"                         to server ~/.ssh/authorized_keys  \" ; \
 echo \">>> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work):\" ; \
