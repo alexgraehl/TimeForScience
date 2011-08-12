@@ -165,7 +165,7 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
 
      scale01 <- function(x, low = min(x), high = max(x)) { return((x - low)/(high - low)) }
 
-     layout(matrix(c(1,2,3), byrow=T, ncol=1), heights=c(lcm(6),lcm(12),1) )
+     layout(matrix(c(1,2,3), byrow=T, ncol=1), heights=c(lcm(6),lcm(12),1) ) # <-- we plot THREE things, stacked vertically
 
      # ==========================================
      # ======================================
@@ -176,6 +176,7 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      mean.raw <- mean(mmm, na.rm=TRUE)
      median.raw <- median(mmm, na.rm=TRUE)
 
+     ## This is the FIRST of three "layout" sub-items (which are stacked vertically). It's a text description of what is being plotted.
      textDescriptionPlotAGW(paste("Heatmap with ", length(mmm)
                                   , " values, in ", nrow(mmm)
                                   , " rows and "
@@ -190,6 +191,7 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      # ==========================================
      # ======================================
 
+     ## This is the SECOND of three layout things. It's a histogram
      
      par(mar=c("bottom"=3, "left"=9.5, "top"=5, "right"=15.5))
 
@@ -235,9 +237,6 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
           col <- col[1:totalColors]
      }
 
-     ## ===============================
-     ## ===============================
-     ## ===============================
      ## Draw the KEY / LEGEND histogram
      
      ## Draw the background for the "legend" histogram
@@ -277,6 +276,10 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      # ==========================================
      # ==========================================
      # ======================================
+
+     ## This is the THIRD thing being plotted, and is the real heatmap. If you want a heatmap that doesn't use layout/mfrow/etc., you can just copy out this code here.
+     ## This is the "meat" of the heatmap generation.
+     
      par(mar=c("bottom"=25, "left"=8, "top"=8, "right"=20), cex.main=2.2)
      par(cex = 0.5) ## Expansion factor
      #image(m, axes=F, main=main, col=col)
