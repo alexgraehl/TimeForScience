@@ -120,8 +120,9 @@ pdf.for.heatmap.agw <- function(file=file, mat=NULL, numRows=NULL, width="should
 ## It can be 8 or more inches wide and look OK.
 ## =================================================================
 heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colorStyle=NULL, main, title="", cexRow=NULL, cexCol=1.5, maxNumLabels=1000, col.names=NULL, row.names=NULL, cluster.rows=FALSE) {
-     ## M: a matrix to plot
+     ## mmm: a matrix to plot
      ## Breaks: the number of histogram breaks, used for the color scheme
+     ## labRow / labCol are row/column labels. You can probably override them... not sure. It may also default to the names from mmm?
      ## maxNumLabels: do not print labels if there are more than this many labels ***with actual non-blank content***
 
      print.agw("heatmap.agw: Now generating a \"heatmap.agw\" figure. If you get a \"figure region too large\" error,")
