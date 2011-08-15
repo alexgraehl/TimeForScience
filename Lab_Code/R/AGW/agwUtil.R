@@ -588,12 +588,14 @@ agwRectangularLayoutForNItems <- function(n) {
 ## around this axis.
 ## =================================================================
 agwSymmetricAxis <- function(dataPoints) {
-     top <- max(dataPoints)
-     bot <- min(dataPoints)
+     top <- max(dataPoints, na.rm=T)
+     bot <- min(dataPoints, na.rm=T)
+     if (is.na(top)) { top=1; warning("No non-NA data points were passed to agwSymmetricAxis") }
+     if (is.na(bot)) { bot=-1; warning("No non-NA data points were passed to agwSymmetricAxis") }
      if (top >= 0 && bot >= 0) { return(c(bot, top)) }
      if (top <= 0 && bot <= 0) { return(c(bot, top)) }
      else {
-          absBiggest <- max(abs(top), abs(bot))
+          absBiggest <- max(abs(top), abs(bot), na.rm=T)
           return(c(-absBiggest, absBiggest))
      }
 }
