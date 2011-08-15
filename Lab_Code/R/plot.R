@@ -876,7 +876,7 @@ Example Usage:
     if (is.null(o$avglwd)) o$avglwd <- par("lwd")
   }
   if (plotStderr || plotStderrFill) {
-    stderr <- function(x) sd(x, na.rm=TRUE) / sqrt(sum(!is.na(x)))
+    stderr <- function(x) sd(x, na.rm=TRUE) / sqrt(sum(x, na.rm=T))
     curvesSe <- apply(curvesOnMesh, 1, stderr)
     curvesSe[is.na(curvesSe)] <- 0
     if (plotStderr) {
