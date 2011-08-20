@@ -313,7 +313,7 @@ listExtract.agw <- function(listOfLists, key) {
 make.agw <- function(varname, thingToRunIfVariableIsNotFound, varToCheckInsteadOfVarname) {
      mkdir.agw(MAKE.AGW.SUBDIR)
      filename <- file.path(MAKE.AGW.SUBDIR, paste("tmp.make.", varname, ".RData.tmp", sep=''))
-
+     
      if (!exists("z.agw.make.files")) { z.agw.make.files <<- c() }
      if (!exists("z.agw.make.vars")) {  z.agw.make.vars  <<- c() }
      z.agw.make.files <<- union(z.agw.make.files, filename)
