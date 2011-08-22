@@ -16,29 +16,6 @@ if (!exists("print.agw")) {
 }
 
 
-## Plotting-related functions.
-
-### ===============================================================================
-## Just a plain rectangle with a bunch of (wrapped) text in it.
-## wraplen: the number of characters before we wrap text
-## leftMartin: the left margin. Ranges from 0-1. 0 = no margin, 1 = figure is only margin, and no text can be printed
-## topMargin: the top start location. Ranges from 0-1. 0 means "start at the top, no margin" and 1.0 means "don't show the text, it's all margin"
-### ===============================================================================
-textDescriptionPlotAGW <- function(text, wraplen=60, leftMargin=0.15, topMargin=0.01, cex=1) {
-     prevMar <- par()$mar  ;  par(mar=c(0,0,0,0)) ## no margins for this plot...
-     wordwrap <- function(str, len) {
-          modStr <- (strsplit(str, "\n"))[[1]]
-          return(paste(strwrap(modStr, width=len), collapse="\n"))
-     }
-     plot(c, axes=F, xlab=NA, ylab=NA, type='n', frame.plot=F)
-     text(x=leftMargin, y=(1-topMargin), adj=c(0,1), cex=cex, labels=wordwrap(text, len=wraplen))
-     par(mar=prevMar) ## restore the old margins...
-}
-
-
-
-
-
 ## =================================================================
 ## Colors -- gradient, like heat.colors
 ## =================================================================
