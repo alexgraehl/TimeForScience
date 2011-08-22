@@ -1330,8 +1330,6 @@ system.agw <- function(...
 ## leftMartin: the left margin. Ranges from 0-1. 0 = no margin, 1 = figure is only margin, and no text can be printed
 ## topMargin: the top start location. Ranges from 0-1. 0 means "start at the top, no margin" and 1.0 means "don't show the text, it's all margin"
 ### ===============================================================================
-plot.text.only.agw <- function(...) { return(textDescriptionPlotAGW) }
-
 textDescriptionPlotAGW <- function(text, wraplen=60, leftMargin=0.15, topMargin=0.01, cex=1) {
      prevMar <- par()$mar  ;  par(mar=c(0,0,0,0)) ## no margins for this plot...
      wordwrap <- function(str, len) {
@@ -1343,4 +1341,6 @@ textDescriptionPlotAGW <- function(text, wraplen=60, leftMargin=0.15, topMargin=
      par(mar=prevMar) ## restore the old margins...
 }
 
-
+plot.text.only.agw <- function(...) {
+     textDescriptionPlotAGW(...)
+}
