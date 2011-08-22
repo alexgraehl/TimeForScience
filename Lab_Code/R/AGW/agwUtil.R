@@ -173,10 +173,6 @@ assert.agw <- function(assertionAGW=NULL
 }
 
 
-
-
-
-
 ## ==============================================
 ## t.test, but returns NA instead of stopping with an error if you give it values
 ## that don't make sense for a t.test (for example: variance of zero data)
@@ -190,7 +186,7 @@ t.test.no.errors.agw <- function(...) {
 ## ==============================================
 ## From: https://stat.ethz.ch/pipermail/r-help/2008-February/154172.html
 ## ==============================================
-try.or.return.default <- function(tryThis, default=NA) {
+try.or.return.default.agw <- function(tryThis, default=NA) {
      result <- default
      tryCatch(result <- tryThis
               , error=function(e) {}) # don't do anything with errors...
@@ -200,7 +196,7 @@ try.or.return.default <- function(tryThis, default=NA) {
 ## ==============================================
 ## From: https://stat.ethz.ch/pipermail/r-help/2008-February/154172.html
 ## ==============================================
-fail.with.default <- function(default=NULL, theFunc, ...) {
+fail.with.default.agw <- function(default=NULL, theFunc, ...) {
      function(...) try_default(theFunc(...), default)
 }
 
@@ -409,32 +405,10 @@ file.path.that.exists.agw <- function(..., missing.message="File not found.") {
 
 
 ## ==============================================
-## Tells you if your copy of R is 32-bit
-## ==============================================
-is.32.bit <- function() {
-     return (4 == .Machine$sizeof.pointer)
-}
-
-## ==============================================
-## Tells you if your copy of R is 64-bit
-## ==============================================
-is.64.bit <- function() {
-     return (8 == .Machine$sizeof.pointer)
-}
-
-
+is.32.bit <- function() { return (4 == .Machine$sizeof.pointer) } ## Tells you if your copy of R is 32-bit
+is.64.bit <- function() { return (8 == .Machine$sizeof.pointer) } ## Tells you if your copy of R is 64-bit
 ## ==============================================
 ## Similar to "source"
-## ==============================================
-sourceSettingsFile.agw <- function(pattern="^1_Settings_.*\\.R$") {
-     ## Loads up a local file i nthe current directory whose name matches the "pattern"
-     ## Used if you have project-specific settings--put them in the "settings" file.
-     settings.filename <- list.files(pattern = pattern)  ## project-specific settings
-     assert.agw(1 == length(settings.filename), "More than one potential settings file was found. There must be exactly one file that matches the pattern for searching for a settings file!")
-     source(settings.filename) ## project-specific settings
-}
-
-
 ## ==============================================
 ## Provides a boolean list of indices to be removed from a vector /data frame / whatever.
 ## Throws an error if you have specified nonexistent names, unless you say ignore.mismatch=TRUE.
@@ -450,6 +424,7 @@ toOmitNames.agw <- function(allNames, omitThese, ignore.mismatch=FALSE) {
                print.magenta.agw("=========================================")
                print.magenta.agw("===================")
                print.red.agw("Error: The function \"", (match.call())[[1]], "\" was told to remove a name that did *not* exist in the input.")
+
                print.red.agw("       In other words, one of the items in omitThese was NOT also present in allNames.")
                print.red.agw("       Here is allNames:") ;     print(allNames)
                print.red.agw("       And here is omitThese:"); print(omitThese)
@@ -683,74 +658,6 @@ agwMatrixLinesWithEnoughData <- function(inputMatrix, minN=1) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-agwPreparePlot <- function(directory=NULL, file=NULL, filetype="png", pointsize=DEFAULT.POINTSIZE, width=NULL, height=NULL, res=SCREEN.RES.DPI, verbose=TRUE, func=NULL, fullPath=NULL, ...) {
-     # Height and width should be given in PIXELS, even for pdfs. If you want to make your 8.5-by-11 pdf the right
-     # size image-wise, you should call it like:  agwPreparePlot(.. , res=72, width=(8.5*72), height=(11*72))
-     agwFinishPlot() ## <-- finish a plot if there was already one
-     
-     completeFilename <- NULL
-     
-     if (is.null(file) && is.null(fullPath)) {
-          if (verbose) { cat(paste(">>>> agwPreparePlot: Status message: About to plot to the standard screen.\n")) }
-          
-     } else {    ## Ok, the user DOES want output to a file...
-          if (!is.null(fullPath)) {
-               completeFilename <- paste(fullPath, '.', filetype, sep='')
-          } else {
-               stopifnot(!is.null(directory))
-               stopifnot(!is.null(file))
-               completeFilename <- paste(directory, '/', file, '.', filetype, sep='')
-          }
-          
-          if (verbose) { cat(paste(">>>> agwPreparePlot: Status message: About to plot to the file <", completeFilename, ">...", "\n", sep='')) }
-          
-          if (!is.null(directory) && !(file.exists(directory))) {
-               cat(agwGlue("\n\n\n>>>> agwPreparePlot: ERROR: Quitting, because the directory \"", directory, "\" did not exist!\n>>>>        You will need to manually create it!\n"))
-               stop(agwGlue("ERROR: agwPreparePlot: Quitting early because directory \"", directory, "\" does not exist! You will need to manually create it!"))
-          }
-          ## Note: you probably want to call agwFinishPlot after you make your plot!
-          if ("png" == filetype) {
-               if (is.null(width)) { width <- STANDARD.PLOT.WIDTH; }
-               if (is.null(height)) { height <- STANDARD.PLOT.HEIGHT; }
-               png(filename=completeFilename, pointsize=pointsize
-                   , width=width, height=height, res=res)
-          } else if ("pdf" == filetype) {
-               ## width and height are assumed to have been
-               ## given in PIXELS
-               pdf(file=completeFilename, pointsize=pointsize, width=(width/res), height=(height/res))
-          } else {
-               stop("agwPreparePlot: Sorry, only PNG and PDF filetypes are supported for now!!!")
-          }
-     }
-     
-     if (!is.null(func)) {  ## If there is a function to call, then call it!
-          func(...) ;
-     }
-     gvGLOBAL.LAST.PLOT <<- file ;
-}
-
-agwFinishPlot <- function() {
-     if (length(dev.list()) > 0) {
-          dev.off();
-     }
-     gvGLOBAL.LAST.PLOT <<- NULL
-}
-
-
 ## ====================================================
 ## ====================================================
 ## Prints with logging-to-file behavior by default
@@ -821,67 +728,6 @@ print.color.agw <- function(..., newline=T, log=F, fg=NULL, bg=NULL) {
      }
 }
 
-
-
-
-
-
-
-
-##
-## ##
-## ## ##
-## ## ## ## ## ## ## ## COMMON R CONSTANTS (NOT VARIABLES!) ## ## ## ## ## ## ## ##
-## =================================================================
-
-
-
-
-## ==============================================
-## ## ## ## ## ## ## ## COMMON FUNCTIONS ## ## ## ## ## ## ## ##
-## ## ##
-## ##
-##
-
-
-
-## =================================================================
-
-agwSrc <- function(filename) {
-     source(filename)
-}
-
-agwSrcAndRun <- function(filename) {
-     # Loads the source file "filename"
-     # Then it executes a function with the same name as the filename, except with "_main()" instead of ".R".
-
-     # If that ..._main() function does not exist, then this function stops.
-
-     # If you just want to load a file, use "source(filename)" or "agwSrc"
-
-     agwSrc(filename)
-     filenameOnlyFromPath <- gsub(".*/", "", filename) # strip all the slashes, leaving us only with the filename name
-     
-     mainFunctionName <- gsub(".R", "_main", filenameOnlyFromPath)
-
-     if (!exists(mainFunctionName)) {
-          print("Was trying to find the main function named:")
-          print(mainFunctionName)
-          stopifnot(exists(mainFunctionName))
-     }
-     eval(parse(text=paste(mainFunctionName, "()", sep=''))) # <-- actually call the "filename"_main() function!
-}
-
-
-## =================================================================
-agwMax <- function(...) {
-     return(max(..., na.rm=TRUE))
-}
-
-agwMin <- function(...) {
-     return(min(..., na.rm=TRUE))
-}
-
 ## =================================================================
 
 agwNames <- function(thingToExamineInDetail) {
@@ -909,74 +755,60 @@ agwNames <- function(thingToExamineInDetail) {
 
 ## =================================================================
 
-## Like the built-in R "grep", but it returns the actual
-## elements found, instead of the indices  where the elements
-## were found. (So it is like UNIX grep in this regard.)
-agwGrep <- function(what, where, ...) {
-     z <- grep(what, where, ...)
-     return(where[z])
-}
-
-## Same as "agwGrep" above, but ignoring case
-agwGrepi <- function(what, where, ...) {
-     return(agwGrep(what, where, ..., ignore.case=TRUE))
-}
-
-## =================================================================
-
-
-agwPreparePlot <- function(directory=NULL, file=NULL, filetype="png", pointsize=DEFAULT.POINTSIZE, width=NULL, height=NULL, res=SCREEN.RES.DPI, verbose=TRUE, func=NULL, fullPath=NULL, ...) {
-     # Height and width should be given in PIXELS, even for pdfs. If you want to make your 8.5-by-11 pdf the right
-     # size image-wise, you should call it like:  agwPreparePlot(.. , res=72, width=(8.5*72), height=(11*72))
-     agwFinishPlot() ## <-- finish a plot if there was already one
+## agwPreparePlot <- function(directory=NULL, file=NULL, filetype="png", pointsize=DEFAULT.POINTSIZE, width=NULL, height=NULL, res=SCREEN.RES.DPI, verbose=TRUE, func=NULL, fullPath=NULL, ...) {
+##      # Height and width should be given in PIXELS, even for pdfs. If you want to make your 8.5-by-11 pdf the right
+##      # size image-wise, you should call it like:  agwPreparePlot(.. , res=72, width=(8.5*72), height=(11*72))
+##      agwFinishPlot() ## <-- finish a plot if there was already one
      
-     completeFilename <- NULL
+##      completeFilename <- NULL
      
-     if (is.null(file) && is.null(fullPath)) {
-          if (verbose) { cat(paste(">>>> agwPreparePlot: Status message: About to plot to the standard screen.\n")) }
+##      if (is.null(file) && is.null(fullPath)) {
+##           if (verbose) { cat(paste(">>>> agwPreparePlot: Status message: About to plot to the standard screen.\n")) }
           
-     } else {    ## Ok, the user DOES want output to a file...
-          if (!is.null(fullPath)) {
-               completeFilename <- paste(fullPath, '.', filetype, sep='')
-          } else {
-               stopifnot(!is.null(directory))
-               stopifnot(!is.null(file))
-               completeFilename <- paste(directory, '/', file, '.', filetype, sep='')
-          }
+##      } else {    ## Ok, the user DOES want output to a file...
+##           if (!is.null(fullPath)) {
+##                completeFilename <- paste(fullPath, '.', filetype, sep='')
+##           } else {
+##                stopifnot(!is.null(directory))
+##                stopifnot(!is.null(file))
+##                completeFilename <- paste(directory, '/', file, '.', filetype, sep='')
+##           }
           
-          if (verbose) { cat(paste(">>>> agwPreparePlot: Status message: About to plot to the file <", completeFilename, ">...", "\n", sep='')) }
+##           if (verbose) { cat(paste(">>>> agwPreparePlot: Status message: About to plot to the file <", completeFilename, ">...", "\n", sep='')) }
           
-          if (!is.null(directory) && !(file.exists(directory))) {
-               cat(agwGlue("\n\n\n>>>> agwPreparePlot: ERROR: Quitting, because the directory \"", directory, "\" did not exist!\n>>>>        You will need to manually create it!\n"))
-               stop(agwGlue("ERROR: agwPreparePlot: Quitting early because directory \"", directory, "\" does not exist! You will need to manually create it!"))
-          }
-          ## Note: you probably want to call agwFinishPlot after you make your plot!
-          if ("png" == filetype) {
-               if (is.null(width)) { width <- STANDARD.PLOT.WIDTH; }
-               if (is.null(height)) { height <- STANDARD.PLOT.HEIGHT; }
-               png(filename=completeFilename, pointsize=pointsize
-                   , width=width, height=height, res=res)
-          } else if ("pdf" == filetype) {
-               ## width and height are assumed to have been
-               ## given in PIXELS
-               pdf(file=completeFilename, pointsize=pointsize, width=(width/res), height=(height/res))
-          } else {
-               stop("agwPreparePlot: Sorry, only PNG and PDF filetypes are supported for now!!!")
-          }
-     }
+##           if (!is.null(directory) && !(file.exists(directory))) {
+##                cat(agwGlue("\n\n\n>>>> agwPreparePlot: ERROR: Quitting, because the directory \"", directory, "\" did not exist!\n>>>>        You will need to manually create it!\n"))
+##                stop(agwGlue("ERROR: agwPreparePlot: Quitting early because directory \"", directory, "\" does not exist! You will need to manually create it!"))
+##           }
+##           ## Note: you probably want to call agwFinishPlot after you make your plot!
+##           if ("png" == filetype) {
+##                if (is.null(width)) { width <- STANDARD.PLOT.WIDTH; }
+##                if (is.null(height)) { height <- STANDARD.PLOT.HEIGHT; }
+##                png(filename=completeFilename, pointsize=pointsize
+##                    , width=width, height=height, res=res)
+##           } else if ("pdf" == filetype) {
+##                ## width and height are assumed to have been
+##                ## given in PIXELS
+##                pdf(file=completeFilename, pointsize=pointsize, width=(width/res), height=(height/res))
+##           } else {
+##                stop("agwPreparePlot: Sorry, only PNG and PDF filetypes are supported for now!!!")
+##           }
+##      }
      
-     if (!is.null(func)) {  ## If there is a function to call, then call it!
-          func(...) ;
-     }
-     gvGLOBAL.LAST.PLOT <<- file ;
-}
+##      if (!is.null(func)) {  ## If there is a function to call, then call it!
+##           func(...) ;
+##      }
+##      gvGLOBAL.LAST.PLOT <<- file ;
+## }
 
-agwFinishPlot <- function() {
-     if (length(dev.list()) > 0) {
-          dev.off();
-     }
-     gvGLOBAL.LAST.PLOT <<- NULL
-}
+## agwFinishPlot <- function() {
+##      if (length(dev.list()) > 0) {
+##           dev.off();
+##      }
+##      gvGLOBAL.LAST.PLOT <<- NULL
+## }
+
+
 
 ## =================================================================
 
@@ -1019,7 +851,7 @@ agwPerlGSub <- function(...) { ## case-sensitive!
 ## Clamps the values in a vector to certain minimums / maximums
 agwClampVec <- function(x, min=NULL, max=NULL) {
      ## There is a probably a better way to do this...
-     if (max < min) { stop("ERROR in arguments to agwClamp: max is greater than min!"); }
+     stopifnot(max <= min) # if (max < min) { stop("ERROR in arguments to agwClamp: max is greater than min!"); }
      if (!is.null(min)) { x[x < min] = min }
      if (!is.null(max)) { x[x > max] = max }
      return(x);
@@ -1418,23 +1250,6 @@ agwRemoveNAFromBoth <- function(xVec = NULL, yVec = NULL) {
 ## =================================================================
 ## =================================================================
 
-gvDEPENDENCY.NETWORK <- agwNewHash()
-agwAddRule <- function(target=NULL, dependsOn=NULL) {
-     ## Prereqs can be a vector or a single item.
-     ## It should be textual! Everything here has to be also defined
-     ## in agwGlobalLoad or it won't work!
-     existingDependencies = agwHashGet(gvDEPENDENCY.NETWORK, target)
-     if (is.null(existingDependencies)) {
-          print("Adding a new rule...")
-     } else {
-          print("Modifying an old rule...")
-     }
-     agwHashPut(gvDEPENDENCY.NETWORK, target, union(existingDependencies, dependsOn))
-}
-
-## =================================================================
-## =================================================================
-
 agwHasContent <- function(vName) {
      ## Pass in the NAME of a variable, not a variable!!
      ## Returns TRUE if there is some data that isn't NA or NULL
@@ -1447,20 +1262,11 @@ agwHasContent <- function(vName) {
      if (!exists(vName)) { return(FALSE); }
      v <- eval(parse(text=vName))
      if (length(v) == 0) { return(FALSE); }
-     if (is.null(v)) {     return(FALSE); }
+     if (is.null(v) || is.na(v)) {     return(FALSE); }
      if (typeof(v) != "environment") { ## <-- hashes should not (and cannot) be checked for NA-ness
           if (length(v) == 1 && is.na(v)) { return(FALSE); }
      }
      return(TRUE);
-}
-
-## =================================================================
-
-agwFillRect <- function(size=NA, col="#FF000055") {
-     # Basically just fill the background of a plot.
-     # You should pick "size" such that it's a big number
-     # that covers the biggest extent of the graph.
-     rect(xleft=-size, xright=size, ybottom=-size, ytop=size, col=col, border=NA)
 }
 
 ## =================================================================
@@ -1522,7 +1328,7 @@ system.agw <- function(...
                        , requireZeroExitCode=FALSE ## Aborts on a non-zero exit code
                        , dryrun=FALSE
                        , wait=TRUE
-                       , log=FALSE ## Should we log to the output file with "log.agw"
+                       , log=FALSE ## Should we log to the output file?
                        , time=FALSE ## Should we print the time?
                        ) {
      
@@ -1560,29 +1366,6 @@ system.agw <- function(...
      
      return(exitCode)
 }
-
-
-
-
-
-##
-## ##
-## ## ##
-## ## ## ## ## ## ## ## COMMON FUNCTIONS ## ## ## ## ## ## ## ##
-## ==============================================
-
-
-## Name summing: sum(sapply(strsplit("abgcdefg",'')[[1]],function(x){as.integer(charToRaw(x))}))
-
-
-
-
-
-
-##sum(sapply(strsplit(colnames(tplot.mat.sorted.by.max)[ncol(tplot.mat.sorted.by.max)],'')[[1]],function(x){as.integer(charToRaw(x))}))
-##strAmt <- sum(sapply(strsplit("abgcdefgg",'')[[1]],function(x){as.integer(charToRaw(x))}))
-##sapply(strAmt,function(a){ rgb((a*37) %% 255, (a*13) %% 255, (a*17) %% 255, maxColorValue=255) })
-##rgb((strAmt*37) %% 255, (strAmt*13) %% 255, (strAmt*17) %% 255, maxColorValue=255)
 
 
 
