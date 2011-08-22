@@ -447,9 +447,6 @@ omitColumnsByName.agw <- function(mat, namesToRemoveVec, ignore.mismatch=FALSE) 
      return(mat[ , toOmitNames.agw(colnames(mat), namesToRemoveVec, ignore.mismatch=ignore.mismatch)])
 }     
 
-
-
-
 ## =================================================================
 ## Shows the detailed information of all the sub-items of a list.
 ## It's like a more thorough version of "names(...)"
@@ -475,16 +472,6 @@ agwNames <- function(thingToExamineInDetail) {
      return(v)
 }
 
-## =================================================================
-## Like the built-in R "grep", but it returns the actual
-## elements found, instead of the indices  where the elements
-## were found. (So it is like UNIX grep in this regard.)
-## =================================================================
-agwGrep <- function(inWhat, inWhere, ...) {
-     z <- grep(inWhat, inWhere, ...)
-     return(inWhere[z])
-}
-
 
 ## =================================================================
 ## Calculate numbers that correspond to a particular character string. Sums together all the ascii (maybe ascii, anyway) numerical values for the letters in a string, and returns a final number. Then this number gets used by "fullColorGroups" to color the bars on the graph.
@@ -507,42 +494,6 @@ agwColorsFromStrings <- function(inputVectorOfStrings, saturation=1, value=1, al
      return(fullColorGroups);
 }
 ## =================================================================
-
-
-
-
-## =================================================================
-## Used to fake a typing system in R, so we can distinguish between
-## the millions of various objects that should and should not be used
-## in various instances.
-## Usually indicates that you should simplify the required arguments
-## to a function, but can be useful to catch errors in passing around
-## large lists with many sub-elements.
-## =================================================================
-agwSetType <- function(someList, theType) {
-     assert.agw(!is.na(theType) && !is.null(theType) && is.list(someList))
-     assert.agw(!is.na(theType) && !is.null(theType) && is.character(theType) && (length(theType) == 1) && (nchar(theType) > 0))
-     someList$"z.type.system.agw" <- theType
-}
-
-## =================================================================
-## Used to fake a typing system in R, so we can distinguish between
-## the millions of various objects that should and should not be used
-## in various instances.
-## Usually indicates that you should simplify the required arguments
-## to a function, but can be useful to catch errors in passing around
-## large lists with many sub-elements.
-## =================================================================
-agwAssertType <- function(someList, requiredType) {
-     actualType <- someList$"z.type.system.agw"
-     assert.agw(!is.na(actualType))
-     assert.agw(!is.null(actualType))
-     assert.agw(is.character(actualType))
-     assert.agw(nchar(actualType) > 0)
-     assert.agw(identical(actualType, requiredType))
-}
-
-
 
 ## =================================================================
 ## Returns a multi-plot layout for however many items you want
