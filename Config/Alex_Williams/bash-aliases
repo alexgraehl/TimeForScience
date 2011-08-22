@@ -53,6 +53,7 @@ PAREN_OPEN='('
 alias cheat="echo \">>> Find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \;\" ; \
 echo \">>> DIFF directories:   diff -rq DIR1 DIR2\" ; \
 echo \" \" ; \
+echo \">>> Python debugger: Crashing program? Run python -m pdb YOURPROG --yourargs . 'c' continues execution.\" ; \
 echo \">>> R: Install new package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...))\" ; \
 echo \">>> R: sessionInfo(): show package versions. ls('package:something') shows package details.\" ; \
 echo \">>> R: t.test failing? Use tryCatch: tryCatch(something, error=function() { return('NA'); }); \" ; \
