@@ -262,7 +262,7 @@ if($verbose) {
     print STDERR "join.pl: Reading relations from ", ($file2 eq '-') ? "standard input" : "file <$file2>";
 }
 
-my $commentChar = '#';
+#my $commentChar = '#';
 
 my $numDuplicateKeysRead = 0; # how many duplicate keys were read from $file2?
 my $maxDuplicateKeyWarnings = 10; # how many times to nag the user about multiple keys?
@@ -270,7 +270,7 @@ my $maxDuplicateKeyWarnings = 10; # how many times to nag the user about multipl
 my $header_data='';
 my $line=0;
 while(<$fileRef2>) {
-    if((not($skip_empty_lines) or /\S/) and not(/^\s*$commentChar/)) {
+    if((not($skip_empty_lines) or /\S/)) { # and not(/^\s*$commentChar/)) {
 	$line++;
 	if($line==1 and $header==2) { $header_data = $_; }
 	@tmp = split($delim_in2);
@@ -343,7 +343,7 @@ if($verbose) { print STDERR "join.pl: Joining on file <$file1>\n"; }
 $loops = 0;
 my $found;
 while(<$fileRef1>) {
-    if((not($skip_empty_lines) or /\S/) and not(/^\s*${commentChar}/)) {
+    if((not($skip_empty_lines) or /\S/)) { # and not(/^\s*${commentChar}/)) {
 	@tmp = split($delim_in1);
 	chomp($tmp[$#tmp]);
 	$key='';
