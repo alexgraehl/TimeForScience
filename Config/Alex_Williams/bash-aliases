@@ -50,9 +50,18 @@ function delve {
 
 BRACKET_OPEN='{'
 PAREN_OPEN='('
+
+alias c2="echo \"Zom\" \
+\$'\\n' \
+\"om\"  \
+\$'\\n' \
+\"fjsdoiafjoasdfjiodsafjioajfoi\" \
+"
+
 alias cheat="echo \">>> Find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \;\" ; \
 echo \">>> DIFF directories:   diff -rq DIR1 DIR2\" ; \
 echo \" \" ; \
+echo \">>> Literal tab in bash: \$'\\t' \" ; \
 echo \">>> Python debugger: Crashing program? Run python -m pdb YOURPROG --yourargs . 'c' continues execution.\" ; \
 echo \">>> R: Install new package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...))\" ; \
 echo \">>> R: sessionInfo(): show package versions. ls('package:something') shows package details.\" ; \
