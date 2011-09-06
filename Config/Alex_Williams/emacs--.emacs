@@ -368,6 +368,68 @@
 (global-set-key (kbd "M--") '(lambda () "Close this window"   (interactive) (delete-window) (message "Just ran delete-window (M-0)! (Note: the buffer is still active. Use <C-x b> to find it)")))
 
 
+(defun expand-region-to-whole-lines ()
+  "Expand the region to make it encompass whole lines.
+If the region is not active, activate the current line."
+  (if (not mark-active)
+      ;; Create region from current line
+      (progn 
+        (beginning-of-line)
+        (set-mark (point))
+        (end-of-line))
+    ;; The mark is active, expand region
+    (let ((beg (region-beginning))
+          (end (region-end)))
+      (goto-char beg)
+      (beginning-of-line)
+      (set-mark (point))
+      (goto-char end)
+      (unless (bolp) (end-of-line)))))
+
+(defun smart-tab ()
+  "This smart tab is minibuffer compliant: it acts as usual in
+the minibuffer. Else, if mark is active, indents region. Else if
+point is at the end of a symbol, expands it. Else indents the
+current line."
+  (interactive)
+  (if (minibufferp)
+      (minibuffer-complete)
+    (if mark-active
+        (indent-region (region-beginning)
+                       (region-end))
+      (if (looking-at "\\_>")
+          (dabbrev-expand nil)
+        (indent-for-tab-command)))))
+
+
+(defun my-comment-region ()
+  "Comment or uncomment region after expanding it to whole lines."
+  (interactive)
+  (save-excursion
+    (expand-region-to-whole-lines)
+    (comment-or-uncomment-region (region-beginning) (region-end))))
+
+(defun my-increase-left-margin ()
+  "Increase left margin in region after expanding it to whole lines."
+  (interactive)
+  (let (deactivate-mark)
+    (expand-region-to-whole-lines)
+    (increase-left-margin (region-beginning) (region-end) nil)))
+
+(defun my-decrease-left-margin ()
+  "Decrease left margin in region after expanding it to whole lines."
+  (interactive)
+  (let (deactivate-mark)
+    (expand-region-to-whole-lines)
+    (decrease-left-margin (region-beginning) (region-end) nil)))
+
+
+(global-set-key (kbd "M-{") '(lambda () "Decrease left margin..." (interactive) (my-decrease-left-margin)));;(decrease-left-margin (region-beginning) (region-end) nil)))
+(global-set-key (kbd "M-}") '(lambda () "Increase left margin..." (interactive) (my-increase-left-margin)));;(increase-left-margin (region-beginning) (region-end) nil)))
+
+
+
+
 (global-set-key [(meta m)] '(lambda () "Next pane..." (interactive) (other-window 1)))
 
 (global-set-key [(shift meta m)] '(lambda () "Previous pane..." (interactive) (other-window -1)))
