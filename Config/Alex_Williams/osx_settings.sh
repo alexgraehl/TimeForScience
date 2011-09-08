@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # List is mostly collected from here: https://github.com/mathiasbynens/dotfiles/blob/master/.osx
 # With some modifications.
 
