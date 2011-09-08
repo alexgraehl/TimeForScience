@@ -3,11 +3,11 @@
 # List is mostly collected from here: https://github.com/mathiasbynens/dotfiles/blob/master/.osx
 # With some modifications.
 
-# Enable the 2D Dock
-defaults write com.apple.dock no-glass -bool true
+# 2D dock (true) or glass-ified dock (false)
+defaults write com.apple.dock no-glass -bool false
 
-# Disable menu bar transparency
-defaults write -g AppleEnableMenuBarTransparency -bool false
+# Disable(false) or enable(true) menu bar transparency
+defaults write -g AppleEnableMenuBarTransparency -bool true
 
 # Expand save panel by default
 defaults write -g NSNavPanelExpandedStateForSaveMode -bool true
@@ -15,8 +15,9 @@ defaults write -g NSNavPanelExpandedStateForSaveMode -bool true
 # Expand print panel by default
 defaults write -g PMPrintingExpandedStateForPrint -bool true
 
-##### Disable shadow in screenshots
-##### defaults write com.apple.screencapture disable-shadow -bool true
+# Disable(true) or Enable(false) shadow in screenshots
+#defaults write com.apple.screencapture disable-shadow -bool true
+defaults write com.apple.screencapture disable-shadow -bool false
 
 # Enable highlight hover effect for the grid view of a stack (Dock)
 defaults write com.apple.dock mouse-over-hilte-stack -bool true
@@ -27,8 +28,8 @@ defaults write -g ApplePressAndHoldEnabled -bool false
 # Disable auto-correct
 ######### defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
 
-# Disable window animations
-defaults write NSGlobalDomain NSAutomaticWindowAnimationsEnabled -bool false
+# Disable (false) or enable (true) window animations
+defaults write NSGlobalDomain NSAutomaticWindowAnimationsEnabled -bool true
 
 # Disable disk image verification
 defaults write com.apple.frameworks.diskimages skip-verify -bool true
