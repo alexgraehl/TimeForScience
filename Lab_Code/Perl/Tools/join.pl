@@ -89,6 +89,7 @@ while(@ARGV)
 	    }
 	} else {
 	    $fill = $arg; ## fill with this text
+	    $fill =~ s/[\\]t/\t/g; ## any time you see "slash t" replace it with an actual tab!
 	    $outer = 1;
 	}
     } elsif ($arg eq '-ob' or $arg eq '--outer_blank') {
