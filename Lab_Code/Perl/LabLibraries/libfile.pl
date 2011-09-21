@@ -210,8 +210,15 @@ sub getFileReaderMethod($) {
     if (!defined($filename)) {
 	print STDERR "ERROR in a call to getFileReaderMethod() inside <libfile.pl>: You should pass in a file name to the function getFileReaderMethod in libfile.pl\n";
     }
-    if (not -f $filename) {
-	print STDERR "WARNING: The file named <$filename> that was sent to getFileReaderMethod() to be read by code in libfile.pl was not found!!! Trying to proceed anyway...\n";
+
+    if ($filename =~ /^\/dev\// ) {
+	# If the filename starts with "/dev/", then it probably means:
+	# The person was using SUBSHELLS in bash, so there was no ACTUAL file with this name, it was a mysterious temporary file.
+	# This is expected behavior.
+    } else {
+	if (not -f $filename) {
+	    print STDERR "WARNING: The file named <$filename> that was sent to getFileReaderMethod() to be read by code in libfile.pl was not found! Trying to proceed anyway...\nIf you were using subshells (the <(...) notation in bash), then this is expected.";
+	}
     }
 
     if ($filename =~ /\.gz$/ or $filename =~ /\.Z$/ or $filename =~ /\.zip$/) {
