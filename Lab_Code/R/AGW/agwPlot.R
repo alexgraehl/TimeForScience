@@ -101,7 +101,11 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      ## Breaks: the number of histogram breaks, used for the color scheme
      ## labRow / labCol are row/column labels. You can probably override them... not sure. It may also default to the names from mmm?
      ## maxNumLabels: do not print labels if there are more than this many labels ***with actual non-blank content***
+     ## ** colorStyle is recommended for easily changing the color scheme. It accepts anything that "colors.agw" takes:
+     ##        colorStyle="greenwhitered" or "greenblackred" or "blueblackyellow" or "blueblackyellow2"
+     ##                   or "gray" or "brown" or "sepia" or "heat"
 
+     
      print.agw("heatmap.agw: Now generating a \"heatmap.agw\" figure. If you get a \"figure region too large\" error,")
      print.agw("             that means your PDF/PNG wasn't big enough to fit the heatmap. This can be solved by using")
      print.agw("             a bigger pdf width or by using \"pdf.for.heatmap.agw\" to auto-compute the bounds.")
@@ -188,7 +192,7 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
 
      if (!missing(colorStyle) && !is.null(colorStyle)) {
           assert.agw(length(colorStyle) == 1, "colorStyle needs to be a string like blueblackyellow. The user can pass in a string here to automagically pick the color scheme. Or they can specify it manually with \"col\".")
-          ## ColorStyle is a CHARACTER vector
+          ## ColorStyle is a CHARACTER vector. Options include "greenwhitered" "blueblackyellow" and "blueblackyellow2" and "gray" and "sepia" . "heat" is also popular.
           col <- colors.agw(n = length(breaks)-1, type=colorStyle)
      }
 
