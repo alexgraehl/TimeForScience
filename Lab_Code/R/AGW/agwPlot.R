@@ -31,26 +31,36 @@ colors.agw <- function(n = 12, type="blueblackyellow", reverse=FALSE) {
 
      type <- tolower(type)
 
-     if (type == "greenwhitered") { ## green -> white -> red
+     if (type == "greenwhitered") { ## green -> white -> red. Don't use this is possible--use "blueblackyellow"! Colorblind people can't see this.
           col1 <- rev(hsv(h=rev(0.3+0.20*range1), s=range1, v=(1.0 - 0.2*range1)))
           col2 <- (hsv(h=rev(0.0+0.15*range2), s=range2, v=(1.0 - 0.15*range2)))
           col <- c(col1, col2)
-     } else if (type == "greenblackred") { ## green -> black -> red
+     } else if (type == "greenblackred") { ## green -> black -> red . Don't use this is possible--use "blueblackyellow"! Colorblind people can't see this.
           col1 <- rev(hsv(h=rev(0.3+0.20*range1), s=rev(1.0-0.2*range1), v=range1))
           col2 <- (hsv(h=rev(0.0+0.10*range2), s=rev(1.0-0.2*range2), v=range2))
           col <- c(col1, col2)
-     } else if (type == "blueblackyellow") { ## blue -> black -> yellow
+     } else if (type == "blueblackyellow") { ## blue -> black -> yellow . Note: this is somewhat uglier than "blueblackyellow2"!
           col1 <- rev(hsv(h=rev(0.6+0.20*range1), s=rev(1.0-0.2*range1), v=range1))
           col2 <- (hsv(h=rev(0.15+0.10*range2), s=rev(1.0-0.2*range2), v=range2))
           col <- c(col1, col2)
-     } else if (type == "blueblackyellow2") { ## blue -> black -> yellow, hand-picked
+     } else if (type == "blueblackyellow2") { ## blue -> black -> yellow, hand-picked. Looks better than blueblackyellow!
           stopifnot(n == 11)
           col <- c("#00C8FF", "#00AAF5", "#0082D7", "#2464A8", "#004064", "black", "#646400","#919114","#B6B61E","#D7D728","#FFFF00")
      } else if (grepl("^gr[ea]y", type)) { col <- gray(colRange01) }
      else if (grepl("^brown", type))   { col <- rev(hsv(h=rev(0.2*colRange01), s=colRange01, v=(1.0 - 0.7*colRange01))) }
      else if (grepl("^sepia", type))   { col <- rev(hsv(h=rev(0.3*colRange01), s=colRange01, v=rev(colRange01))) }
-     else if (grepl("^heat", type))    { col <- heat.colors(n) }
-     else {
+     else if (grepl("^heat", type))    {  ## Nicer heatmap colors
+          if (n == 2) {
+               col <- c("#000066", "#FFFF99")
+          } else if (n >= 10) {
+               col <- c("black", "#330033", "#440044", "#550055", "#770044", "darkred", heat.colors(n-6))
+          } else {
+               col <- c("#330033", "#770044", heat.colors(n-2))
+          }
+          #col <- col[1:n]
+     } else if (grepl("^oldheat", type)) {
+          col <- heat.colors(n) ## R's very-bright heatmap colors
+     } else {
           print(paste("An unrecognized color gradient type (<", type, ">) was passed into colorGradientAGW:", sep=''))
           print(type)
           stopifnot(paste("Color type is not recognized. Try something like \"gray.colors\"") == 999)
@@ -190,6 +200,10 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      ## Alternative color scale chosen by Alex, blue to yellow (black in the middle):
      ##, col=c("#00C8FF", "#00AAF5", "#0082D7", "#2464A8", "#004064", "black", "#646400","#919114","#B6B61E","#D7D728","#FFFF00") ## blue to yellow
 
+     if ((missing(col) || is.null(col)) && (missing(colorStyle) || is.null(colorStyle))) {
+          ## If the color AND colorStyle both were not specified, use regular heatmap style
+          colorStyle = "heat"
+     }
      if (!missing(colorStyle) && !is.null(colorStyle)) {
           assert.agw(length(colorStyle) == 1, "colorStyle needs to be a string like blueblackyellow. The user can pass in a string here to automagically pick the color scheme. Or they can specify it manually with \"col\".")
           ## ColorStyle is a CHARACTER vector. Options include "greenwhitered" "blueblackyellow" and "blueblackyellow2" and "gray" and "sepia" . "heat" is also popular.
@@ -206,19 +220,6 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
           }
      }
      
-     if (missing(col) || is.null(col)) {
-          ## If the color was not specified...
-          totalColors <- length(breaks)-1
-          if (totalColors == 2) {
-               col <- c("#000066", "#FFFF99")
-          } else if (totalColors >= 10) {
-               col <- c("#330033", "#440044", "#550055", "#770044", "darkred", heat.colors(totalColors-6))
-          } else {
-               col <- c("#330033", "#770044", heat.colors(totalColors-2))
-          }
-          col <- col[1:totalColors]
-     }
-
      ## Draw the KEY / LEGEND histogram
      
      ## Draw the background for the "legend" histogram
