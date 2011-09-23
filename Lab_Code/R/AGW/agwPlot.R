@@ -369,13 +369,13 @@ plot.multi.agw <- function(type.func, plot.func) {
 ## various car brands over time, with several wiggly lines.
 ## Note that you don't specify the X-axis: it is auto-set to be one integer per Y data point.
 
-## This appears to be basically a reimplementation of "MAPlot," so you should probably
+## This appears to be basically a reimplementation of "matplot," so you should probably
 ## use that instead.
 
 ### ===============================================================================
 plotLinesFromMatrixColumnsAgw <- function(mm=NULL, ..., ylim=NULL, col="black", lwd=1, lty=1) {
 
-     ## This is probably a duplication of the built-in function "Matplot"!
+     ## This is probably a duplication of the built-in function "matplot"!
 
      warning("I don't think plotLinesFromMatrixColumnsAgw is probably a good function---you should probably just use the built-in function <matplot> instead!!")
      if (!is.matrix(mm) && is.vector(mm) && (length(mm) > 0)) {
