@@ -48,6 +48,13 @@ function delve {
     find ./ -iname "*$**"
 }
 
+function vncnau {
+    # Forwards nausicaa's ports to the localhost
+    ssh -L 590$*:localhost:590$* -p 22 alexgw@nausicaa.ucsf.edu -N
+}
+
+
+
 BRACKET_OPEN='{'
 PAREN_OPEN='('
 
