@@ -54,8 +54,14 @@ function vncnau {
     ssh -L 590$*:localhost:590$* -p 22 alexgw@nausicaa.ucsf.edu -N
 }
 
+function vnccat {
+    # Forwards nausicaa's ports to the localhost
+    echo "Now forwarding port 590$* ... you should launch your VNC client now and connect to localhost:$*"
+    ssh -L 590$*:localhost:590$* -p 22 alexgw@catbus.gladstone.internal -N
+}
+
 function vncstart {
-    vncserver -geometry 1024x768 -depth 24
+    vncserver -geometry 1600x1000 -depth 16
 }
 
 
