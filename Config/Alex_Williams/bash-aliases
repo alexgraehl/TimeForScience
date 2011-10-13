@@ -54,6 +54,10 @@ function vncnau {
     ssh -L 590$*:localhost:590$* -p 22 alexgw@nausicaa.ucsf.edu -N
 }
 
+function vncstart {
+    vncserver -geometry 1024x768 -depth 24
+}
+
 
 
 BRACKET_OPEN='{'
