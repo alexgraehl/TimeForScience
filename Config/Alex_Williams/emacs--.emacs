@@ -188,7 +188,7 @@
 (if (system-type-is-darwin)
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
-      (setq should-load-ess t)
+      ;(setq should-load-ess t) ; damn, it broke again
       ))
 
 (if (system-type-is-gnu)
