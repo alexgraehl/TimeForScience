@@ -17,12 +17,16 @@
 
 if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]] ; then
     source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
+elif [[ -f /work/Common/Code/TimeForScience/Config/Alex_Williams/bash-platform-specific ]] ; then
+    source /work/Common/Code/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
 
 echo -e "${a_echo_color}>>> BASH: Loading .bashrc...${a_end_color}" ## <-- comes after the colors are set up in platform-specific fashion
 
 if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-path-setup ]] ; then
     source ~/TimeForScience/Config/Alex_Williams/bash-path-setup
+elif [[ -f /work/Common/Code/TimeForScience/Config/Alex_Williams/bash-path-setup ]] ; then
+    source /work/Common/Code/TimeForScience/Config/Alex_Williams/bash-path-setup
 fi
 
 # Alias definitions.
@@ -32,6 +36,8 @@ fi
 # Sets up the aliases whether or not this shell is interactive
 if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-aliases ]]; then
     source ~/TimeForScience/Config/Alex_Williams/bash-aliases
+elif [[ -f /work/Common/Code/TimeForScience/Config/Alex_Williams/bash-aliases ]] ; then
+    source /work/Common/Code/TimeForScience/Config/Alex_Williams/bash-aliases
 fi
 
 #iterm_bg=000000
