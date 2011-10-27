@@ -95,6 +95,8 @@ alias cheat="echo \
 \">>> R: Show versions of installed packages: sessionInfo(...) \" ${NL}\
 \">>> R: Collapse a list down to a basic vector: unlist(...) \" ${NL}\
 \" \" ${NL}\
+\">>> NIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
+\">>> NIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
 \">>> NIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
 \">>> NIX: Check Linux version: cat /etc/*-release \" ${NL}\
 \">>> NIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
