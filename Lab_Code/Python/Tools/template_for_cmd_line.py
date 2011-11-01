@@ -44,7 +44,8 @@ if __name__ == "__main__":
     print "Getting ready to handle command line arguments..."
     handleCommandLineOptions()
     print "Handled the command line arguments!"
-
+    print("Here is the value for globalOptions.filename: " + globalOptions.filename)
+    print("Note that that the global variable containing that attribute cannot be modified unless you set 'global globalOptions' in the code")
     lineNum = 0
     try:
         fff = open('some_file', 'r')
@@ -53,14 +54,17 @@ if __name__ == "__main__":
 
     for line in fff:
         lineNum += 1
-        l = line.split("\t")
+        ldelim = line.split("\t")
+        if (lineNum % 1000 == 0):
+            print("Writing every 1000th line...")
+            pass
         pass
     
-    if (lineNum % 1000 == 0):
-        print("Writing every 1000th line...")
-        pass
+
 
     fff.close()
+
+
 
     pass
 
