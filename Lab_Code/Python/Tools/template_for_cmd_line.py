@@ -20,6 +20,8 @@ globalOptions = None
 globalArgs    = None
 
 def handleCommandLineOptions():
+    global globalArgs    ## must have this here in order to ASSIGN globally!
+    global globalOptions ## must have this here in order to ASSIGN globally!
     parser = optparse.OptionParser("usage: %prog [options]", version='%prog version 1.0')
     parser.add_option("-f", "--file", dest="filename", help="write report to FILE", metavar="FILE")
     parser.add_option("-N", "--name", dest="username", default="John Doe", type="string", help="specify a username to run as")
