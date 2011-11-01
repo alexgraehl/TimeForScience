@@ -1,9 +1,7 @@
 #!/usr/bin/python
 
 '''
-Note: argparse requires Python 2.7. Hence, we use optparse here so that our scripts work with older Python installations (like Ubuntu 10.x)
-
-http://docs.python.org/release/2.5.2/lib/module-optparse.html
+Note: we use the 'optparse' module to parse command line arguments, becuase the superior 'argparse' requires Python 2.7 (which is not present in older distributions, like Ubuntu 10.x) http://docs.python.org/release/2.5.2/lib/module-optparse.html
 
 A python program.
 '''
@@ -44,6 +42,24 @@ if __name__ == "__main__":
     print "Getting ready to handle command line arguments..."
     handleCommandLineOptions()
     print "Handled the command line arguments!"
+
+    lineNum = 0
+    try:
+        fff = open('some_file', 'r')
+    except:
+        raise
+
+    for line in fff:
+        lineNum += 1
+        l = line.split("\t")
+        pass
+    
+    if (lineNum % 1000 == 0):
+        print("Writing every 1000th line...")
+        pass
+
+    fff.close()
+
     pass
 
 
