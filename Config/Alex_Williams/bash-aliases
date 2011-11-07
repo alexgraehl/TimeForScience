@@ -100,6 +100,7 @@ alias cheat="echo \
 \">>> R: Show package contents: ls('package:some_package_name_here') \" ${NL}\
 \">>> R: Show versions of installed packages: sessionInfo(...) \" ${NL}\
 \">>> R: Collapse a list down to a basic vector: unlist(...) \" ${NL}\
+\">>> R: make libraries usable by non-root users: sudo chmod -R a+r /usr/local/lib/R ; sudo find /usr/local/lib/R -type d | sudo xargs chmod a+x \" ${NL}\
 \" \" ${NL}\
 \">>> NIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
 \">>> NIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
