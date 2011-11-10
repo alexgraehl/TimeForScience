@@ -1038,6 +1038,7 @@ agwMatrixLinesWithEnoughData <- function(inputMatrix, minN=1) {
 agwMatrixFromLists <- function(inList) {
      ### Makes a vector with maybe-different-length lists.
      ### Pads the extra values with NA.
+     ### All matrices must be of the same type
      ## Does NOT MATCH things up by row names!
      longestRowLength <- max(sapply(inList, length))
      tempVec <- vector()
@@ -1047,6 +1048,32 @@ agwMatrixFromLists <- function(inList) {
           tempVec <- append(tempVec, v)
      }
      return( matrix(tempVec, nrow=length(inList), ncol=longestRowLength, byrow=TRUE) )
+}
+
+## =================================================================
+## Input: a LIST of vectors. So this would be valid: listOfVectors=list(c(a=1,b=2,c=3), c(a=4,z=5,f=6))
+##        The input vectors have to have **unique names** for each element.
+## Output: the above data would provide a merged matrix, like:
+##       VEC1      VEC2
+##  a     1         4
+##  b     2        <NA>
+##  c     3        <NA>
+##  f    <NA>       6
+##  z    <NA>       5
+## Note that the order of rows is just the default sort order. Usually this means alphabetical sort.
+## This is like "merge" but it accepts any number of arguments, and is a bit more limited in scope since it only does vectors.
+agwMatrixMatch <- function(listOfVectors) {
+     assert.agw(is.list(listOfVectors), "Input must be a list. The elements of this list must be vectors. i.e., list(c(a=1,b=2,c=3), c(a=4,z=5,f=6)) . Note that we use the names(...) of the vector to match things up, so these vectors should also all have non-null names.")
+     assert.agw(all(sapply(listOfVectors, is.vector)), "All the items in the list of vectors have to be vectors!")
+     assert.agw(all(sapply(listOfVectors, function(v) { !is.null(names(v)) })), "All the items in the list of vectors have to have names. But at least one of them did not have names associated with its values!")
+     assert.agw(all(sapply(listOfVectors, function(v) { !any(duplicated(names(v))) })), "Dang, we don't know how to deal with DUPLICATED names in the vectors! All the names(...) must be unique.")
+     allNames <- sort(unique(unlist(lapply(listOfVectors, names)))) ## every element in listOfVectors must be a vector! with names!
+     theMat  <- matrix(NA, ncol=length(listOfVectors), nrow=length(allNames))
+     rownames(theMat) <- allNames
+     for (i in seq(from=1, to=ncol(theMat), by=1)) {
+          theMat[, i] <- listOfVectors[[i]][allNames] ## note that any name requested that is NOT present will show up as 'NA' in the final 'theMat'
+     }
+     return(theMat)
 }
 
 
