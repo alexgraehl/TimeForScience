@@ -80,6 +80,8 @@ join.left.outer.agw <- function(left.mat, right.mat, both.key, left.key, right.k
      ## It always returns the data from left.mat, no matter whether it has a key in right.mat or not.
      ## Accepts the special name "rownames()", which means that instead of looking for a column index,
      ## we use the rownames
+
+     ## This is pretty much just a re-invention of "merge" .
      
      SPECIAL_CASE_ROWNAME_STRING <- "rownames()"
      
@@ -288,6 +290,7 @@ huh <- function(x) {
 ## If you say "silent=TRUE" then it does nothing---this can be used to control printing for debugging
 ## ==============================================
 listExtract.agw <- function(listOfLists, key) {
+     ## maybe this is the same as "unlist?"
      return(sapply(listOfLists, "[[", key))
 }
 #sapply(a2,"[[","ensembl_ID")
@@ -527,86 +530,8 @@ agwSymmetricAxis <- function(dataPoints) {
 }
 
 
-## =================================================================
-## Pass in the NAME of a variable, not a variable!!
-## Returns TRUE if there is some data that isn't NA or NULL
-## in this structure or variable.
-## Returns FALSE if the structure is length zero, if no
-## such variable exists, or if the variable is set to NA or NULL.
-## So here are some things returning false:
-##  list()     NA     NULL     vector(length=0)
-## =================================================================
-agwHasContent <- function(vName) {
-     stopifnot(typeof(vName) == "character")
-     if (!exists(vName)) { return(FALSE); }
-     v <- eval(parse(text=vName))
-     if (length(v) == 0) { return(FALSE); }
-     if (is.null(v)) {     return(FALSE); }
-     if (typeof(v) != "environment") { ## <-- hashes should not (and cannot) be checked for NA-ness
-          if (length(v) == 1 && is.na(v)) { return(FALSE); }
-     }
-     return(TRUE);
-}
 
 
-
-agwRemoveNAFromBoth <- function(xVec = NULL, yVec = NULL) {
-     ## You pass in a list of x-coordinates and a list of y-coordinates.
-     ## If *either* the x or the y is NA, then *both* the elements are skipped.
-     ## Otherwise, both elements are included. In the end, a list consisting of the xVec and yVec
-     ## where *neither* element was NA is returned.
-     ## In other words:
-     ## if x = c(1,2,NA, 3)
-     ## and y = (c(NA, 4, 5, 6)
-     ## Then this function will return a list(x=c(2,3),y=c(4,6))
-     if (length(xVec) != length(yVec)) {
-          agwPrint("First (X) Vector length: ", length(xVec))
-          agwPrint("Second (Y) Vector length: ", length(yVec))
-          stop("The vectors passed into agwRemoveNAForPlot(...) must be the same length!")
-     }
-     elementsToKeepVec <- (!is.na(xVec) & !is.na(yVec))
-     return( list(  x = xVec[elementsToKeepVec]
-                  , y = yVec[elementsToKeepVec] ) )
-}
-
-
-
-
-
-
-agwMatrixFromLists <- function(inList) {
-     ### Makes a vector with maybe-different-length lists.
-     ### Pads the extra values with NA
-     longestRowLength <- max(sapply(inList, length))
-     tempVec <- vector()
-     for (i in 1:length(inList)) {
-          thisVecLen <- length(inList[[i]])
-          v <- c(inList[[i]], rep(NA, longestRowLength-thisVecLen))
-          tempVec <- append(tempVec, v)
-     }
-     return( matrix(tempVec, nrow=length(inList), ncol=longestRowLength, byrow=TRUE) )
-}
-
-
-
-agwMatrixWithoutMissingLines <- function(inputMatrix) {
-     ## Given an input matrix, returns that same matrix minus any rows and columns
-     ## that are *all* NA. As long as there is at least one non-NA element, we
-     ## leave that row or column.
-     return(inputMatrix[ which(apply(inputMatrix, BY.ROW, function(a) !all(is.na(a))))
-                        ,which(apply(inputMatrix, BY.COL, function(b) !all(is.na(b))))])
-}
-
-## If you want to reduce a matrix in size by removing the rows
-## and columns that don't have enough data points, then you should
-## use this function.
-## In the case of "minN=1", it is identical to "agwMatrixWithoutNALines"
-agwMatrixLinesWithEnoughData <- function(inputMatrix, minN=1) {
-     ## Given an input matrix, returns that same matrix minus any rows and columns
-     ## without at least "minN" non-NA elements.
-     return(inputMatrix[ which(apply(inputMatrix, BY.ROW, function(a) (sum(!is.na(a)) >= minN)))
-                        ,which(apply(inputMatrix, BY.COL, function(b) (sum(!is.na(b)) >= minN)))])
-}
 
 
 ## ====================================================
@@ -1109,11 +1034,11 @@ agwMatrixLinesWithEnoughData <- function(inputMatrix, minN=1) {
                         ,which(apply(inputMatrix, BY.COL, function(b) (sum(!is.na(b)) >= minN)))])
 }
 
-## =================================================================
 
 agwMatrixFromLists <- function(inList) {
      ### Makes a vector with maybe-different-length lists.
-     ### Pads the extra values with NA
+     ### Pads the extra values with NA.
+     ## Does NOT MATCH things up by row names!
      longestRowLength <- max(sapply(inList, length))
      tempVec <- vector()
      for (i in 1:length(inList)) {
@@ -1123,6 +1048,7 @@ agwMatrixFromLists <- function(inList) {
      }
      return( matrix(tempVec, nrow=length(inList), ncol=longestRowLength, byrow=TRUE) )
 }
+
 
 ## =================================================================
 agwPlotLinesViolinDensity <- function(inVec, col="#00000077",scaleToY=NULL, mirror=TRUE, border=NA) {
