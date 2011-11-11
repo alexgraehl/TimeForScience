@@ -102,6 +102,9 @@ alias cheat="echo \
 \">>> R: Collapse a list down to a basic vector: unlist(...) \" ${NL}\
 \">>> R: make libraries usable by non-root users: sudo chmod -R a+r /usr/local/lib/R ; sudo find /usr/local/lib/R -type d | sudo xargs chmod a+x \" ${NL}\
 \" \" ${NL}\
+\">>> Shell: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
+\">>> Shell: Redirect stdout+stderr to a pipe: CMD 2>&1 | less -S \" ${NL}\
+\" \" ${NL}\
 \">>> NIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
 \">>> NIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
 \">>> NIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
