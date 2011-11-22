@@ -386,10 +386,12 @@ function zzz {
 ## If you give it multiple files, the output is in Archive.tar.gz
 ## To extract a "mini" archive, use "unmini" .
 function mini {
-    if [[ "$#" == 1 ]] ; then theCompressedBasename="$1";
+    if [[ "$#" == 1 ]] ; then theCompressedBasename="$1"; ## If you pass it one argument, then that argument will also be the filename
     else theCompressedBasename="Archive";
     fi
-
+    
+    theCompressedBasename=`echo "$theCompressedBasename" | sed "s/[/]//"` ## Let's remove any slashes from the name of the *output*. That way if someone types "mini MyDir/" it will generate "MyDir.tar.bz2" and NOT "MyDir/.tar.bz2"
+    
     if [[ -f "${theCompressedBasename}.tar" || -f "${theCompressedBasename}.tar.bz2" ]] ; then
 	echo "mini: HALTING: Cannot create a new archive---either ${theCompressedBasename}.tar or ${theCompressedBasename}.tar.bz2 already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive!!! Delete it and compress again." ;
 	return ;
