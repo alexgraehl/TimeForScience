@@ -1,0 +1,56 @@
+# -*-Sh-*-  <-- Tells emacs what syntax highlighting to use
+
+set horizontal-scroll-mode off
+set mark-directories       on
+
+
+#set mark-symlinked-directories on
+## Fixes it so that tab-completion automatically adds a '/' to symlinked directories, just like real directories.
+
+set completion-ignore-case on
+
+set match-hidden-files on
+set page-completions off  ## This way we won't get a multi-screen PAGER appearing with the possible completion for things when there are tons of completions
+set completion-query-items 1000 ## Don't ask about autocomplete unless there are a TON of possibilities
+set show-all-if-ambiguous on
+set show-all-if-unmodified on
+
+
+#shopt -s cdspell # minor errors in the spelling of a directory component in a cd command will be corrected
+#shopt -s lithist # if the cmdhist option is enabled, multi-line commands are saved to the history with embedded newlines rather than using semicolon separators where possible
+
+## This means that when you hit "tab" to auto-complete,
+## and there is more than one completion, instead of just
+## showing you the ENTIRE name, it shows "..." and then the
+## part that is *different*
+set completion-prefix-display-length 6
+
+set meta-flag on
+set input-meta on
+set output-meta on
+
+
+set visible-stats on
+
+"\e[1~": beginning-of-line
+"\e[4~": end-of-line
+"\e[5~": beginning-of-history
+"\e[6~": end-of-history
+"\e[3~": delete-char
+"\e[2~": quoted-insert
+"\e[5C": forward-word
+"\e[5D": backward-word
+"\e\e[C": forward-word
+"\e\e[D": backward-word
+
+"\ej": backward-char
+"\el": forward-char
+
+"\eJ": backward-word
+"\eL": forward-word
+
+"\ei": previous-history
+"\ek": next-history
+
+
+
