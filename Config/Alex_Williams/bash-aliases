@@ -105,6 +105,7 @@ alias cheat="echo \
 \">>> Shell: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
 \">>> Shell: Redirect stdout+stderr to a pipe: CMD 2>&1 | less -S \" ${NL}\
 \" \" ${NL}\
+\">>> NIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
 \">>> NIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
 \">>> NIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
 \">>> NIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
