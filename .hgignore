@@ -1,0 +1,14 @@
+syntax: glob
+
+.DS_Store
+
+*.swp
+*~.nib
+
+*.pbxuser
+*.perspective
+*.perspectivev3
+
+
+
+Lab_Code/StamTools
