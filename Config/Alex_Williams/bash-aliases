@@ -400,14 +400,14 @@ function mini {
 	if [[ "$#" -gt 1 ]] ; then echo "Adding a total of $# files to the archive." ; fi
 	for var in "$@"; do echo " * Archiving $var --> ${theCompressedBasename}.tar.bz2" ; done
 	echo "[TAR] command running now..." ;
-	tar --bzip2 -cvf "${theCompressedBasename}.tar.bz2" $@ ;
+	ionice -c3 tar --bzip2 -cvf "${theCompressedBasename}.tar.bz2" $@ ;
 	echo "[Done]" ;
     fi
 }
 
 ## Extracts a "mini"-fied archive.
 function unmini {
-    tar --bzip2 --keep-old-files -xvf $1
+    ionice -c3 tar --bzip2 --keep-old-files -xvf $1
 }
 
 
