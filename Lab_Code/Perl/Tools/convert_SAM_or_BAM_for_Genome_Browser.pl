@@ -23,7 +23,7 @@ sub datePrint($) {
 }
 
 my $genomeFastaFile = undef;
-my $chrSizeFile = undef; ## <-- "fai" means genome "fasta index (fai)" file
+my $faiFile = undef;  ## <-- "fai" means genome "fasta index (fai)" file
 my $makeWig = 1; ## By default, generate a bigwig track too. Specify "nowig" to avoid this.
 
 GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
@@ -42,12 +42,12 @@ if ($makeWig) {
 	die "We could not read the specified --fasta file (genome sequence file) at:\n   $genomeFastaFile\n   Please check to make sure this is a valid and readable fasta file!\n";
     }
 
-    $chrSizeFile = ($genomeFastaFile . ".fai");
+    $faiFile = ($genomeFastaFile . ".fai");  ## <-- "fai" means genome "fasta index (fai)" file
     
-    if (!(-e $chrSizeFile)) {
-	print STDOUT "There wasn't already a \".fai\" file where the .fasta file was located, so we are now automatically genearting the fasta index file <$chrSizeFile> from the specified genome fasta file <$genomeFastaFile>...\n";
+    if (!(-e $faiFile)) {
+	print STDOUT "There wasn't already a \".fai\" file where the .fasta file was located, so we are now automatically genearting the fasta index file <$faiFile> from the specified genome fasta file <$genomeFastaFile>...\n";
 	system(qq{samtools faidx $genomeFastaFile});
-	print STDOUT "Done. Wrote <$chrSizeFile> to the filesystem.";
+	print STDOUT "Done. Wrote <$faiFile> to the filesystem.";
     }
 }
 
@@ -94,12 +94,12 @@ my $bamPrefixWithoutFileExtension = basename($bamFilename);
 $bamPrefixWithoutFileExtension =~ s/\.bam$//i;
 $bamPrefixWithoutFileExtension =~ s/[\/:;,]/_/g; ## slashes and ':;,' characters go to underscores
 
-my $browserTrackDescriptionFile = "Browser_Track_Descriptions.txt";
-my $sortBamFilePrefix   = "Browser_sorted_${bamPrefixWithoutFileExtension}";
+my $browserTrackDescriptionFile = "Browser_Track_Descriptions.${bamPrefixWithoutFileExtension}.txt";
+my $sortBamFilePrefix   = "Browser_sorted.${bamPrefixWithoutFileExtension}";
 my $sortBamFullFilename = "${sortBamFilePrefix}.bam";
 my $bamIndexOutfile     = "${sortBamFilePrefix}.bam.bai";
 my $wigIntermediateFile = "Browser_tmp.${bamPrefixWithoutFileExtension}.wig";
-my $bigWigOutFile       = "Browser_${bamPrefixWithoutFileExtension}.bigwig.bw";
+my $bigWigOutFile       = "Browser.${bamPrefixWithoutFileExtension}.bigwig.bw";
 
 if ((-e $sortBamFullFilename) and (-e $bamIndexOutfile)) {
     print STDOUT "[Skipping] We are NOT continuing with the sorted-BAM-file generation, because such a file already exists. Remove it if you want to recompute it!\n"
@@ -122,7 +122,7 @@ if ($makeWig) {
 	if (-e $wigIntermediateFile) {
 	    print STDOUT "[Skipping] We are NOT creating the wiggle temp file <$wigIntermediateFile>, because it already exists. Remove it if you want to recompute it.\n";
 	} else {
-	    my $wigCmd1 = (qq{samtools pileup -f $genomeFastaFile  $bamFilename }
+	    my $wigCmd1 = (qq{samtools mpileup -f $faiFile $bamFilename }
 			   . qq(  | awk '{print \$1, \$2-1, \$2, \$4}' )
 			   . qq{    > $wigIntermediateFile});
 	    datePrint(": Now running this command:\n  $wigCmd1\n");
@@ -130,7 +130,7 @@ if ($makeWig) {
 	}
 
 	## -clip means "allow weird errant entries off the end of the chromosome, rather than exploding". This is important, because otherwise wigToBigWig will quit with errors like "something went off the end of chr12_random"
-	my $wigCmd2 = (qq{wigToBigWig -clip $wigIntermediateFile $chrSizeFile $bigWigOutFile});
+	my $wigCmd2 = (qq{wigToBigWig -clip $wigIntermediateFile $faiFile $bigWigOutFile});
 	datePrint("Now running this command:\n  $wigCmd2\n");
 	system($wigCmd2);
     }
@@ -230,6 +230,7 @@ EXAMPLES:
 
  convert_SAM_or_BAM_for_Genome_Browser.pl --fasta=/Genomes/Mouse/mm9.fa  alignment.bam
  convert_SAM_or_BAM_for_Genome_Browser.pl --fasta=/Genomes/HS/hg19.fa  alignment.sam
+ convert_SAM_or_BAM_for_Genome_Browser.pl --fasta=/work/Common/Data/Genome/hg19wholeGenomeFasta/hg19.fa  alignment.bam
  convert_SAM_or_BAM_for_Genome_Browser.pl --nowig  alignment.bam
 
 Files that are generated from the input YOURFILE.sam:
@@ -237,8 +238,11 @@ Files that are generated from the input YOURFILE.sam:
  2. Browser_sorted_YOURFILE.bam.bai (BAM index file)
  3. Browser_tmp.YOURFILE.wiggle_track.bed (regular wiggle track -- BED file)
  4. Browser.YOURFILE.bigwig.bed (bigWig file for Genome Browser)
+ 5. Browser_Track_Descriptions._YOURFILE.txt (track descriptions that you paste into the Genome Browser Custom Tracks)
 
-Then you will just need to make a genome browser track description for those two files, perhaps like this sample one:
+Then you will just need to make a genome browser track description for those two files.
+
+You can find one in file 5, the browser track description. Or make your own, like this sample one:
 
 track type=bam name="Control_EB" color=0,128,255 bigDataUrl="http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"
 
