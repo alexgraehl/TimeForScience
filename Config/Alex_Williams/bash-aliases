@@ -233,7 +233,7 @@ if [[ -f /Applications/Emacs.app/Contents/MacOS/Emacs ]]; then
     echo -e "${a_echo_color}>>> BASH: Note: alaising 'e' to the Mac Application version of emacs.${a_end_color}"
     alias e='/Applications/Emacs.app/Contents/MacOS/Emacs -nw'
 elif [[ -n "$isMac" ]]; then
-    alias e='emacsclient -nw -c --alternate-editor=""'
+    alias e='emacs '
 else
     alias e='emacsclient -nw -c --alternate-editor=""'
     #alias e='emacs -nw'
@@ -293,13 +293,16 @@ alias scienceup='hg --cwd "${TIME_FOR_SCIENCE_DIR}" pull           && hg --cwd "
 alias science="scienceup ; sciencecom ; workup ; workcom"
 alias sciencestat='hg --cwd ${TIME_FOR_SCIENCE_DIR} status'
 
+
+AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
+
 alias agwReColorTerminal=''
-alias nau='SET_NAUCOLOR ; ssh -C   $UCSF_USER@nausicaa.ucsf.edu ; agwReColorTerminal'
-alias naux='SET_NAUCOLOR ; ssh -C -Y  $UCSF_USER@nausicaa.ucsf.edu ; agwReColorTerminal'
-alias catbus='SET_CATBUSCOLOR ; ssh -C $UCSF_USER@catbus.gladstone.internal ; agwReColorTerminal'
-alias lighthouse='SET_LIGHTHOUSECOLOR ; ssh -C  $UCSF_USER@lighthouse.ucsf.edu ; agwReColorTerminal' ## Database machine
-alias bueno='SET_BUENOCOLOR ; ssh -C  $UCSF_USER@bueno.gladstone.internal ; agwReColorTerminal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
-alias chef='ssh -C $UCSF_USER@chef.compbio.ucsf.edu ; agwReColorTerminal' ## QB3 cluster head node
+alias nau='SET_NAUCOLOR ; ssh ${AGW_SSH_OPTIONS}   $UCSF_USER@nausicaa.ucsf.edu ; agwReColorTerminal'
+alias naux='SET_NAUCOLOR ; ssh ${AGW_SSH_OPTIONS} -Y  $UCSF_USER@nausicaa.ucsf.edu ; agwReColorTerminal'
+alias catbus='SET_CATBUSCOLOR ; ssh ${AGW_SSH_OPTIONS} $UCSF_USER@catbus.gladstone.internal ; agwReColorTerminal'
+alias lighthouse='SET_LIGHTHOUSECOLOR ; ssh ${AGW_SSH_OPTIONS}  $UCSF_USER@lighthouse.ucsf.edu ; agwReColorTerminal' ## Database machine
+alias bueno='SET_BUENOCOLOR ; ssh ${AGW_SSH_OPTIONS} $UCSF_USER@bueno.gladstone.internal ; agwReColorTerminal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
+alias chef='ssh ${AGW_SSH_OPTIONS} $UCSF_USER@chef.compbio.ucsf.edu ; agwReColorTerminal' ## QB3 cluster head node
 
 
 case "$HOSTNAME" in
