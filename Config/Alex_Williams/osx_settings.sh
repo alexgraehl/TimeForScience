@@ -3,6 +3,9 @@
 # List is mostly collected from here: https://github.com/mathiasbynens/dotfiles/blob/master/.osx
 # With some modifications.
 
+# Remove certain OS X Lion (10.7) animations
+#defaults write NSGlobalDomain NSAutomaticWindowAnimationsEnabled -bool NO
+
 # 2D dock (true) or glass-ified dock (false)
 defaults write com.apple.dock no-glass -bool false
 
