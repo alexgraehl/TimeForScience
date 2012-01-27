@@ -111,6 +111,7 @@ alias cheat="echo \
 \">>> NIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
 \">>> NIX: Check Linux version: cat /etc/*-release \" ${NL}\
 \">>> NIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
+\">>> NIX: Rsync transfer files: rsync --dry-run -thravz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
 \">>> NIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
 \">>> NIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
 \">>> NIX / INSTALL: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
