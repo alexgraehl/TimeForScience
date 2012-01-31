@@ -113,15 +113,15 @@
 
 (defface agwArrayFace
   '((t ( ;;:inherit font-lock-warning-face
-	:bold nil :background nil :foreground "green"))) "Indicates arrays/vectors." :group 'agwFaces)
+	:bold nil :background nil :foreground "DarkOliveGreen3"))) "Indicates arrays/vectors." :group 'agwFaces)
 
 (defface agwListFace
   '((t ( ;; inherit some-other-face
-	:bold nil :foreground "green"))) "Indicates which variables are an R list, based on the name." :group 'agwFaces)
+	:bold nil :foreground "OliveDrab3"))) "Indicates which variables are an R list, based on the name." :group 'agwFaces)
 
 (defface agwAssertionFace
   '((t ( ;; inherit some-other-face
-	:bold nil :foreground "yellow" :background "black" :underline nil))
+	:bold nil :foreground "dark slate blue" :background "black" :underline nil))
     )
   "Highlights assertions."
   :group 'agwFaces)
