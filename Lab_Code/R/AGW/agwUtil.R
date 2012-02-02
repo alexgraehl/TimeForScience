@@ -236,6 +236,12 @@ print.agw <- function(...
      }
 }
 
+
+work.log.agw <- function(...) {
+     print.agw(..., log="work.log.txt") ## A hard-coded "work log" file that would be suitable for researchers to read.
+     print.agw(..., log=TRUE) ## Also log to the screen and to the regular log
+}
+
 log.agw <- function(..., log=TRUE) {
      print.agw(..., log=log)
 }
