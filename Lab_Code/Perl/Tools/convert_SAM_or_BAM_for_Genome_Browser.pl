@@ -38,13 +38,13 @@ if (scalar(@ARGV) != 1) { die "ARGUMENT ERROR: This script takes the name of a g
 if ($makeWig) {
     if (!defined($genomeFastaFile)) { die "ARGUMENT ERROR: You must supply an input genome fasta file (with --fasta=/location/to/species.fa) for computing the wiggle tracks, OR you can specify --nowig on the command line to disable wiggle track generation."; }
     ## If we want to make a wiggle track, we will need a FAI fasta index file.
-    if (!(-r $genomeFastaFile) or !(-e $genomeFastaFile)) {
+    if (!(-r $genomeFastaFile) or !(-e $genomeFastaFile) or (-z $genomeFastaFile)) {
 	die "We could not read the specified --fasta file (genome sequence file) at:\n   $genomeFastaFile\n   Please check to make sure this is a valid and readable fasta file!\n";
     }
 
     $faiFile = ($genomeFastaFile . ".fai");  ## <-- "fai" means genome "fasta index (fai)" file
     
-    if (!(-e $faiFile)) {
+    if (!(-e $faiFile) && (-s $faiFile)) { ## -s means "return size of file" (to check for zero-length files)
 	print STDOUT "There wasn't already a \".fai\" file where the .fasta file was located, so we are now automatically genearting the fasta index file <$faiFile> from the specified genome fasta file <$genomeFastaFile>...\n";
 	system(qq{samtools faidx $genomeFastaFile}); ## generate an index file
 	print STDOUT "Done. Wrote <$faiFile> to the filesystem.";
@@ -101,7 +101,7 @@ my $bamIndexOutfile     = "${sortBamFilePrefix}.bam.bai";
 my $wigIntermediateFile = "Browser_tmp.${bamPrefixWithoutFileExtension}.wig";
 my $bigWigOutFile       = "Browser.${bamPrefixWithoutFileExtension}.bigwig.bw";
 
-if ((-e $sortBamFullFilename) and (-e $bamIndexOutfile)) {
+if ((-e $sortBamFullFilename) && (-s $sortBamFullFilename) and (-e $bamIndexOutfile) && (-s $bamIndexOutfile)) {
     print STDOUT "[Skipping] We are NOT continuing with the sorted-BAM-file generation, because such a file already exists. Remove it if you want to recompute it!\n"
 } else {
     my $sortCmd = "samtools sort $bamFilename $sortBamFilePrefix"; ## <-- Note: this should NOT have the .bam extension, because samtools automatically adds the ".bam" extension
@@ -119,8 +119,8 @@ if ($makeWig) {
     } else {
 	print "Now generating a BIG WIG browser wiggle track named $wigIntermediateFile (this is slow, and can take up to an hour per input RNASeq file!)...\n";
 	
-	if (-e $wigIntermediateFile) {
-	    print STDOUT "[Skipping] We are NOT creating the wiggle temp file <$wigIntermediateFile>, because it already exists. Remove it if you want to recompute it.\n";
+	if (-e $wigIntermediateFile && (-s $wigIntermediateFile > 0)) {
+	    print STDOUT "[Skipping] We are NOT creating the wiggle temp file <$wigIntermediateFile>, because it already exists and has non-zero size. Remove it if you want to recompute it.\n";
 	} else {
 	    my $wigCmd1 = (qq{samtools mpileup -f $faiFile $bamFilename }
 			   . qq(  | awk '{print \$1, \$2-1, \$2, \$4}' )
