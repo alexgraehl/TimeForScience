@@ -90,7 +90,7 @@ if ($fileIsSAM) {
     die "INPUT FILE ERROR: input file <$originalInputFilename> must be sequence data in either SAM or BAM format!\n";
 }
 
-my $bamPrefixWithoutFileExtension = basename($bamFilename);
+my $bamPrefixWithoutFileExtension = $bamFilename; ## Don't just get the basename: get the WHOLE PATH that led up to this file. basename($bamFilename);
 $bamPrefixWithoutFileExtension =~ s/\.bam$//i;
 $bamPrefixWithoutFileExtension =~ s/[\/:;,]/_/g; ## slashes and ':;,' characters go to underscores
 
