@@ -30,13 +30,25 @@ def handleCommandLineOptions():
     (globalOptions, globalArgs) = parser.parse_args()
 
     #pdb.set_trace()
+    print "There were this many named command line arguments (including DEFAULT values that were not specified by the user): " + str(len(globalOptions.__dict__))
     for attr, value in globalOptions.__dict__.iteritems():
-        print attr, value
+        print "   Argument <" + attr + "> = " + str(value)
         pass
 
-    if len(globalArgs) != 2:
-        parser.error("Args needs to be 2 for some reason: incorrect number of arguments")
+    print "There were also this many un-parsed command line arguments: " + str(len(globalArgs))
+    for item in globalArgs:
+        print "   Un-parsed command line argument: " + item
         pass
+
+
+    if len(globalArgs) == 1:
+        print("Probaly you want the first un-parsed input on the command line to be a filename that the user specified. So this is just globalArgs[0]. You can use this in the main function below.")
+        pass
+
+    if len(globalArgs) != 1:
+        parser.error("Args needs to be 1 for some reason: incorrect number of arguments. In other words, you didn't specify a filename (or some additional parameter) at the end of the command line invocation.")
+        pass
+
     return
 
 # Must come at the VERY END!
@@ -45,7 +57,7 @@ if __name__ == "__main__":
     handleCommandLineOptions()
     print "Handled the command line arguments!"
     print("Here is the value for globalOptions.filename: " + globalOptions.filename)
-    print("Note that that the global variable containing that attribute cannot be modified unless you set 'global globalOptions' in the code")
+    print("Note that that the global variable containing that attribute CANNOT BE MODIFIED unless you set 'global globalOptions' or 'global globalArgs' in the code below.")
     lineNum = 0
     try:
         fff = open('some_file', 'r')
