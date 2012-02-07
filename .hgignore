@@ -8,7 +8,6 @@ syntax: glob
 *.pbxuser
 *.perspective
 *.perspectivev3
-
-
+*.pyc
 
 Lab_Code/StamTools
