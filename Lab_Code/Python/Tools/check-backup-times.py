@@ -52,7 +52,7 @@ def handleCommandLineOptions():
 
 
 def writeSizesToFile(inWhere, toFile):
-    tempName = "check-backup-times-1.tmp"
+    tempName = "very-temporary-intermediate-file-check-backup-times-1.tmp"
     acmd = "find " + inWhere + " -type d -name '[a-zA-Z0-9]*' -print0 | xargs -0 du > " + tempName
 
     call(acmd, shell=True) ## find all the files and calculate their sizes
@@ -60,28 +60,28 @@ def writeSizesToFile(inWhere, toFile):
     regexpReadyName = re.sub("/", "[/]", inWhere) ## escape slashes so that SED can use them below
     regexpReadyName = re.sub(" ", "[ ]", regexpReadyName)    ## escape literal spaces so that SED can use them below
     replacePathsCmd = " sed 's/" + regexpReadyName + "//' " + tempName + " > " + toFile
-
+    
     print(replacePathsCmd)
     call(replacePathsCmd, shell=True)
+
+    os.remove(tempName)
+
     return
 
 
 # Must come at the VERY END!
 if __name__ == "__main__":
     handleCommandLineOptions()
-    #print("Note that that the global variable containing that attribute CANNOT BE MODIFIED unless you set 'global globalOptions' or 'global globalArgs' in the code below.")
-
 
     for i in range(len(globalArgs) - 1):
         if (i % 2 != 0):
-            continue  ## <-- skip the odd input arguments---note that we compare these TWO at a time!
+            continue  ## <-- Skip the odd-numbered arguments: we compare these files TWO at a time!
         
-
         fileA = "check-backup-times-z1.tmp"
         fileB = "check-backup-times-z2.tmp"
 
-        aaa = globalArgs[i]
-        bbb = globalArgs[i+1]
+        aaa = globalArgs[i]      ## Get the first directory...
+        bbb = globalArgs[i+1]    ## And the second directory...
 
         print(aaa)
         writeSizesToFile(aaa, fileA)
