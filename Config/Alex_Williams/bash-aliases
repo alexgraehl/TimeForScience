@@ -79,6 +79,7 @@ NL="\$'\\n'" # newline!
 
 #
 alias cheat="echo \
+\">>> Check directories for differences (by modification time): ionice -c3 rsync --dry-run --delete -vr /dirA /dirB \" ${NL}\
 \">>> Find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \" ${NL}\
 \">>> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
 \" \" ${NL}\
