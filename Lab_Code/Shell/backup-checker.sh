@@ -14,7 +14,7 @@ case "$HOSTNAME" in
 	;;
 
     bueno)
-	sudo ionice -c3 rsync --dry-run --delete -vr /home/ /it/bueno-backup/data/home/ >> ${STATUSFILE}
+	sudo ionice -c3 rsync --dry-run --delete -vr /home/ /it/bueno-backup/data/home/
 	;;
     *)
 	echo 'We do not know how to check backups on any machine except bueno and lighthouse...'
