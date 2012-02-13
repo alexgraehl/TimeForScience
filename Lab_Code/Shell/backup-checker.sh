@@ -1,5 +1,7 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
+sudo ionice -c3 rsync --dry-run --delete -vr /home/ /it/bueno-backup/data/home/
 
+echo "ARARA"
 
 STATUSFILE="${HOME}/backup-status-${HOSTNAME}.txt"
 CHECKSYNC=sudo ionice -c3 rsync --dry-run --delete -vr
