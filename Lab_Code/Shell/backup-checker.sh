@@ -11,8 +11,6 @@ CHECKSYNC="sudo ionice -c3 rsync --dry-run --delete -vr \
  --exclude '*.bak' \
  --exclude '\.DS_Store' "
 
-NOSYMWARN='egrep -v "kipping\snon-regular"'
-
 echo $NOSYMWARN
 
 echo ''
@@ -29,10 +27,10 @@ echo '' >> ${STATUSFILE}
 
 case "$HOSTNAME" in
     lighthouse)
-	${CHECKSYNC} --exclude "no_backup/*" --exclude "mirror_download/*" /db/ /it/lighthouse-backup/data/db/ | ${NOSYMWARN} >> ${STATUSFILE}
+	${CHECKSYNC} --exclude "no_backup/*" --exclude "mirror_download/*" /db/ /it/lighthouse-backup/data/db/ | grep -v 'non-regular' >> ${STATUSFILE}
 	;;
     bueno)
-	${CHECKSYNC}  /home/ /it/bueno-backup/data/home/ | ${NOSYMWARN} >> ${STATUSFILE}
+	${CHECKSYNC}  /home/ /it/bueno-backup/data/home/ | grep -v 'non-regular' >> ${STATUSFILE}
 	;;
     *)
 	echo 'We do not know how to check backups on any machine except bueno and lighthouse...'
