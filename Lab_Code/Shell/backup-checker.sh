@@ -4,7 +4,9 @@
 #echo "ARARA"
 
 STATUSFILE="${HOME}/backup-status-${HOSTNAME}.txt"
-CHECKSYNC="sudo ionice -c3 rsync --dry-run --delete -vr"
+CHECKSYNC="sudo ionice -c3 rsync --dry-run --delete -vr  --exclude '*.tmp' "
+NOSYMWARN=" grep -v 'kipping non-regular' "
+
 
 echo ''
 echo "About to check the backups on the machine ${HOSTNAME}..."
@@ -16,12 +18,13 @@ echo 'Starting new backup check:' >> ${STATUSFILE}
 date >> ${STATUSFILE}
 echo '' >> ${STATUSFILE}
 
+
 case "$HOSTNAME" in
     lighthouse)
-	${CHECKSYNC} /db/ /it/lighthouse-backup/data/db/ >> ${STATUSFILE}
+	${CHECKSYNC} /db/ /it/lighthouse-backup/data/db/ | ${NOSYMWARN} >> ${STATUSFILE}
 	;;
     bueno)
-	${CHECKSYNC} /home/ /it/bueno-backup/data/home/ >> ${STATUSFILE}
+	${CHECKSYNC} --exclude "mirror_download/*" /home/ /it/bueno-backup/data/home/ | ${NOSYMWARN} >> ${STATUSFILE}
 	;;
     *)
 	echo 'We do not know how to check backups on any machine except bueno and lighthouse...'
