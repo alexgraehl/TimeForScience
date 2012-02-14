@@ -414,6 +414,20 @@ file.path.that.exists.agw <- function(..., missing.message="File not found.") {
 
 
 ## ==============================================
+## Equivalent to asking "file.info$size > 0" and "file.exists" for each file.
+## Returns a TRUE/FALSE vector of the same length as the number of input arguments.
+## Example:
+##   file.has.contents.agw("/bin", "/fake/thing.tmp")
+## Result:
+###  c(TRUE, FALSE)
+file.nonzero.agw <- function(...) {
+     return(sapply(list(...)
+                   , function(x) { return(file.exists(x) && file.info(x)>0) }
+                   ))
+}
+
+
+## ==============================================
 is.32.bit <- function() { return (4 == .Machine$sizeof.pointer) } ## Tells you if your copy of R is 32-bit
 is.64.bit <- function() { return (8 == .Machine$sizeof.pointer) } ## Tells you if your copy of R is 64-bit
 ## ==============================================
