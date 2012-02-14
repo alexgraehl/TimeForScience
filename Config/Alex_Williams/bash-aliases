@@ -278,24 +278,23 @@ function hglog {
     fi
 }
 
-alias workstat='hg --cwd "${BINF_CORE_WORK_DIR}/Common/Code" status ; hg --cwd "${BINF_CORE_WORK_DIR}/Common/GICD_ProjectArchives status"'
-
-function workcom { ## Note that "push" will always complain on Nausicaa or Catbus, because those are the MASTER repositiories
-    hg commit --user ${USER} --cwd "${BINF_CORE_WORK_DIR}" -m "Commit by ${USER}" && hg push --cwd "${BINF_CORE_WORK_DIR}" && echo "[Done] committing work repository"
+function sciencecom {
+    if [[ -d "$1" ]] ; then
+	hg commit --user ${USER} --cwd "$1" -m "Commit by ${USER}" && hg push --cwd "$1" && echo "[Done] commiting and pushing TimeForScience repository" ;
+    else
+	echo "No $TIME_FOR_SCIENCE_DIR directory on this machine."
+    fi
 }
 
-function workup { ## Update mercurial work directories
-    hg --cwd "${BINF_CORE_WORK_DIR}" pull ; hg --cwd "${BINF_CORE_WORK_DIR}" update && echo "[Done] updating work repository"
+function scienceup {
+    if [[ -d "$1" ]] ; then
+	hg --cwd "$1" pull && hg --cwd "$1" update && echo "[Done] updating $1 repository"
+    else
+	echo "No mercurial repository in $1."
+    fi
 }
 
-
-alias sciencecom='hg commit --user ${USER} --cwd "${TIME_FOR_SCIENCE_DIR}" -m "Commit by ${USER}" && hg push --cwd ${TIME_FOR_SCIENCE_DIR} && echo "[Done] commiting and pushing TimeForScience repository"'
-alias scienceup='hg --cwd "${TIME_FOR_SCIENCE_DIR}" pull           && hg --cwd "${TIME_FOR_SCIENCE_DIR}" update           && echo "[Done] updating TimeForScience repository"'
-
-
-alias science="scienceup ; sciencecom ; workup ; workcom"
-alias sciencestat='hg --cwd ${TIME_FOR_SCIENCE_DIR} status'
-
+alias science="scienceup ${TIME_FOR_SCIENCE_DIR} ; sciencecom ${TIME_FOR_SCIENCE_DIR} ; scienceup ${BINF_CORE_WORK_DIR} ; sciencecom ${BINF_CORE_WORK_DIR}"
 
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
 
