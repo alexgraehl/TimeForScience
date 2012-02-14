@@ -283,6 +283,7 @@ function sciencecom {
 	hg commit --user ${USER} --cwd "$1" -m "Commit by ${USER}" && hg push --cwd "$1" && echo "[Done] commiting and pushing $1 repository" ;
     else
 	echo "No $1 repository exists on this machine."
+	return 1;
     fi
 }
 
@@ -291,10 +292,11 @@ function scienceup {
 	hg --cwd "$1" pull && hg --cwd "$1" update && echo "[Done] pulling and updating $1 repository"
     else
 	echo "No $1 repository exists on this machine."
+	return 1;
     fi
 }
 
-alias science="scienceup ${TIME_FOR_SCIENCE_DIR} ; sciencecom ${TIME_FOR_SCIENCE_DIR} ; scienceup ${BINF_CORE_WORK_DIR} ; sciencecom ${BINF_CORE_WORK_DIR}"
+alias science="scienceup ${TIME_FOR_SCIENCE_DIR} && sciencecom ${TIME_FOR_SCIENCE_DIR} ; scienceup ${BINF_CORE_WORK_DIR} && sciencecom ${BINF_CORE_WORK_DIR}"
 
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
 
