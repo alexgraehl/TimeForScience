@@ -27,10 +27,17 @@ echo '' >> ${STATUSFILE}
 
 case "$HOSTNAME" in
     lighthouse)
-	${CHECKSYNC} --exclude "no_backup/*" --exclude "mirror_download/*" /db/ /it/lighthouse-backup/data/db/ | grep -v 'non-regular' >> ${STATUSFILE}
+	${CHECKSYNC} --exclude "no_backup/*" --exclude "mirror_download/*" /db/ /it/${HOSTNAME}-backup/data/db/ | grep -v 'non-regular' >> ${STATUSFILE}
 	;;
     bueno)
-	${CHECKSYNC}  /home/ /it/bueno-backup/data/home/ | grep -v 'non-regular' >> ${STATUSFILE}
+	${CHECKSYNC}  /home/ /it/${HOSTNAME}-backup/data/home/ | grep -v 'non-regular' >> ${STATUSFILE}
+	;;
+    nausicaa)
+	${CHECKSYNC}  /home/ /it/${HOSTNAME}-backup/data/home/ | grep -v 'non-regular' >> ${STATUSFILE}.home.txt
+	${CHECKSYNC}  /work/ /it/${HOSTNAME}-backup/data/work/ | grep -v 'non-regular' >> ${STATUSFILE}.work.txt
+	;;
+    catbus)
+	${CHECKSYNC}  /bigdata/ /it/${HOSTNAME}-backup/data/bigdata/ | grep -v 'non-regular' >> ${STATUSFILE}
 	;;
     *)
 	echo 'We do not know how to check backups on any machine except bueno and lighthouse...'
