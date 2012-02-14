@@ -4,7 +4,13 @@
 #echo "ARARA"
 
 STATUSFILE="${HOME}/backup-status-${HOSTNAME}.txt"
-CHECKSYNC="sudo ionice -c3 rsync --dry-run --delete -vr  --exclude '*.tmp' "
+CHECKSYNC="sudo ionice -c3 rsync --dry-run --delete -vr \
+ --exclude '*.tmp' \
+ --cvs-exclude \
+ --exclude '*~' \
+ --exclude '*.bak' \
+ --exclude '\.DS_Store' "
+
 NOSYMWARN=" grep -v 'kipping non-regular' "
 
 
