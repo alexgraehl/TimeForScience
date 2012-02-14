@@ -11,11 +11,13 @@ CHECKSYNC="sudo ionice -c3 rsync --dry-run --delete -vr \
  --exclude '*.bak' \
  --exclude '\.DS_Store' "
 
-NOSYMWARN=" grep -v 'kipping non-regular' "
+NOSYMWARN='egrep -v "kipping\snon-regular"'
 
+echo $NOSYMWARN
 
 echo ''
 echo "About to check the backups on the machine ${HOSTNAME}..."
+echo "Note: REQUIRES SUDO ACCESS. You will have to type your password in order for rsync to run here."
 date
 echo ''
 
@@ -27,10 +29,10 @@ echo '' >> ${STATUSFILE}
 
 case "$HOSTNAME" in
     lighthouse)
-	${CHECKSYNC} /db/ /it/lighthouse-backup/data/db/ | ${NOSYMWARN} >> ${STATUSFILE}
+	${CHECKSYNC} --exclude "no_backup/*" --exclude "mirror_download/*" /db/ /it/lighthouse-backup/data/db/ | ${NOSYMWARN} >> ${STATUSFILE}
 	;;
     bueno)
-	${CHECKSYNC} --exclude "mirror_download/*" /home/ /it/bueno-backup/data/home/ | ${NOSYMWARN} >> ${STATUSFILE}
+	${CHECKSYNC}  /home/ /it/bueno-backup/data/home/ | ${NOSYMWARN} >> ${STATUSFILE}
 	;;
     *)
 	echo 'We do not know how to check backups on any machine except bueno and lighthouse...'
