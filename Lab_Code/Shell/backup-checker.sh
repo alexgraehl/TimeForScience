@@ -3,7 +3,9 @@
 
 #echo "ARARA"
 
-STATUSFILE="${HOME}/backup-status-${HOSTNAME}.txt"
+HN=`hostname`
+
+STATUSFILE="${HOME}/backup-status-${HN}.txt"
 CHECKSYNC="sudo ionice -c3 rsync --dry-run --delete -vr \
  --exclude '*.tmp' \
  --cvs-exclude \
@@ -14,7 +16,7 @@ CHECKSYNC="sudo ionice -c3 rsync --dry-run --delete -vr \
 echo $NOSYMWARN
 
 echo ''
-echo "About to check the backups on the machine ${HOSTNAME}..."
+echo "About to check the backups on the machine ${HN}..."
 echo "Note: REQUIRES SUDO ACCESS. You will have to type your password in order for rsync to run here."
 date
 echo ''
@@ -25,22 +27,22 @@ date >> ${STATUSFILE}
 echo '' >> ${STATUSFILE}
 
 
-case "$HOSTNAME" in
+case "$HN" in
     lighthouse)
-	${CHECKSYNC} --exclude "no_backup/*" --exclude "mirror_download/*" /db/ /it/${HOSTNAME}-backup/data/db/ | grep -v 'non-regular' >> ${STATUSFILE}
+	${CHECKSYNC} --exclude "no_backup/*" --exclude "mirror_download/*" /db/ /it/${HN}-backup/data/db/ | grep -v 'non-regular' >> ${STATUSFILE}
 	;;
     bueno)
-	${CHECKSYNC}  /home/ /it/${HOSTNAME}-backup/data/home/ | grep -v 'non-regular' >> ${STATUSFILE}
+	${CHECKSYNC}  /home/ /it/${HN}-backup/data/home/ | grep -v 'non-regular' >> ${STATUSFILE}
 	;;
     nausicaa)
-	${CHECKSYNC}  /home/ /it/${HOSTNAME}-backup/data/home/ | grep -v 'non-regular' >> ${STATUSFILE}.home.txt
-	${CHECKSYNC}  /work/ /it/${HOSTNAME}-backup/data/work/ | grep -v 'non-regular' >> ${STATUSFILE}.work.txt
+	${CHECKSYNC}  /home/ /it/${HN}-backup/data/home/ | grep -v 'non-regular' >> ${STATUSFILE}.home.txt
+	${CHECKSYNC}  /work/ /it/${HN}-backup/data/work/ | grep -v 'non-regular' >> ${STATUSFILE}.work.txt
 	;;
     catbus)
-	${CHECKSYNC}  /bigdata/ /it/${HOSTNAME}-backup/data/bigdata/ | grep -v 'non-regular' >> ${STATUSFILE}
+	${CHECKSYNC}  /bigdata/ /it/${HN}-backup/data/bigdata/ | grep -v 'non-regular' >> ${STATUSFILE}
 	;;
     *)
-	echo 'We do not know how to check backups on any machine except bueno and lighthouse...'
+	"We do not know how to check backups on any machine except <bueno>, <catbus>, <nausicaa> and <lighthouse>. This machine was <$HN>."
 	;;
 esac
 
