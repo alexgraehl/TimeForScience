@@ -296,7 +296,7 @@ function scienceup {
     fi
 }
 
-alias science="scienceup ${TIME_FOR_SCIENCE_DIR} && sciencecom ${TIME_FOR_SCIENCE_DIR} ; scienceup ${BINF_CORE_WORK_DIR} && sciencecom ${BINF_CORE_WORK_DIR}"
+alias science="scienceup ${TIME_FOR_SCIENCE_DIR} ; sciencecom ${TIME_FOR_SCIENCE_DIR} ; scienceup ${BINF_CORE_WORK_DIR} ; sciencecom ${BINF_CORE_WORK_DIR}"
 
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
 
