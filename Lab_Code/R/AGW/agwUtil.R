@@ -1259,7 +1259,7 @@ system.agw <- function(...
      exitCode <- 0
      if (!dryrun) {
           if (bash) {
-               ## Run it through BASH. This allows the '<( ... )' construction.
+               ## Run it through BASH instead of SH. This allows the '<( ... )' construction. (Example: >>># cat <(zcat somezippedfile.gz) #<<< <-- makes a "magical" temporary file to store the output of zcat somezippedfile.gz )
                exitCode <- system(paste("bash -c ", base::shQuote(theCommand, type='sh'), sep=''), wait=wait)  ## <-- the unix error/success code
           } else {
                ## Run it through the default shell, /bin/sh.
