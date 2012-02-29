@@ -41,12 +41,9 @@ export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/
 
 ## Clear out the initial path
 export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/sbin:/usr/X11/bin ## <-- clear out initial path!!
-export PATH=$PATH:/work/Apps/bin:${HOME}/bin ## System-wide "Science" bin, plus user-specific bin
-
 export PATH=$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH} ## <-- Priority!
-export PATH=${HOME}/bin:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST
-export PATH=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:${PATH} ## <-- PRIORITY on the path
-export PATH=/work/Apps/bin:/home/Common/opt/bin:/opt/bin:/sw/bin:$PATH  ## <-- PRIORITY at the FRONT of the path
+export PATH=/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin:/opt/bin:/sw/bin:${PATH} ## <-- PRIORITY on the path
+export PATH=${HOME}/bin:/work/Apps/bin:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 
 export PERL5LIB=/usr/local/lib/perl5/site_perl/5.12.1/
 export PERLLIB=${PERL5LIB}
