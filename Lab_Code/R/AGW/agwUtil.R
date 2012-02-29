@@ -1232,6 +1232,7 @@ system.agw <- function(...
                        , wait=TRUE
                        , log=FALSE ## Should we log to the output file?
                        , time=FALSE ## Should we print the time?
+                       , bash=FALSE ## Should we use /bin/bash (FALSE means use the terrible default shell)
                        ) {
      
      theCommand <- paste(..., sep=sep) ## Default is to just mash all the input arguments together with no spaces.
@@ -1257,7 +1258,13 @@ system.agw <- function(...
 
      exitCode <- 0
      if (!dryrun) {
-          exitCode <- system(theCommand, wait=wait)  ## <-- the unix error/success code
+          if (bash) {
+               ## Run it through BASH. This allows the '<( ... )' construction.
+               exitCode <- system(paste("bash -c ", base::shQuote(theCommand, type='sh'), sep=''), wait=wait)  ## <-- the unix error/success code
+          } else {
+               ## Run it through the default shell, /bin/sh.
+               exitCode <- system(theCommand, wait=wait)  ## <-- the unix error/success code
+          }
      }
 
      if (time) { print.color.agw(paste("Done at [", Sys.time(), "]", "\n", sep=''), fg=fgColor, log=log, newline=TRUE) }
