@@ -211,10 +211,10 @@ sub getFileReaderMethod($) {
 	print STDERR "ERROR in a call to getFileReaderMethod() inside <libfile.pl>: You should pass in a file name to the function getFileReaderMethod in libfile.pl\n";
     }
 
-    if ($filename =~ /^\/dev\// ) {
-	# If the filename starts with "/dev/", then it probably means:
+    if ($filename =~ /^\/dev\/fd/ ) {
+	# If the filename starts with "/dev/fd", then it probably means:
 	# The person was using SUBSHELLS in bash, so there was no ACTUAL file with this name, it was a mysterious temporary file.
-	# This is expected behavior.
+	# This is expected behavior. A SUBSHELL is the thing you get when you say something like <(zcat something) in bash. You can treat it like a file.
     } else {
 	if (not -f $filename) {
 	    print STDERR "WARNING: The file named <$filename> that was sent to getFileReaderMethod() to be read by code in libfile.pl was not found! Trying to proceed anyway...\nIf you were using subshells (the <(...) notation in bash), then this is expected.";
@@ -1463,8 +1463,7 @@ sub evalRegex
 ##                dies if an unrecognized argument is encountered (default)
 ##
 ##------------------------------------------------------------------------
-sub parseArgs
-{
+sub parseArgs {
     my ($args, $flag_tuples, $store_extra) = @_;
     $store_extra = defined($store_extra) ? $store_extra : 0;
 
@@ -1475,68 +1474,50 @@ sub parseArgs
     my @extra;
 
     # Store the defaults in the options.
-    for(my $i = 0; $i < scalar(@f); $i++)
-    {
+    for(my $i = 0; $i < scalar(@f); $i++) {
 	my ($flag, $type, $default, $eats) = ($f[$i][0],$f[$i][1],$f[$i][2],$f[$i][3]);
 	$options{$flag} = $default;
     }
 
-    while(@args)
-    {
+    while(@args) {
 	my $arg = shift @args;
-	if($arg eq '--help')
-	{
+	if($arg eq '--help') {
 	    @args    = ();
 	    $options{'--help'} = 1;
-	}
-	else
-	{
+	} else {
 	    my $matched_arg = 0;
-	    for(my $i = 0; $i < scalar(@f); $i++)
-	    {
-		my ($flag, $type, $default, $eats) = ($f[$i][0],$f[$i][1],$f[$i][2],$f[$i][3]);
-
-		if(($flag =~ /^--file/ and ((-f $arg) or ($arg eq '-'))) or
-		   ($arg eq $flag)) {
+	    for (my $i = 0; $i < scalar(@f); $i++) {
+		my ($flag, $type, $default, $eats) = ($f[$i][0], $f[$i][1], $f[$i][2], $f[$i][3]);
+		
+		my $argIsFileDescriptor = ($arg =~ /^\/dev\/fd/); ## something located in "/dev/fd" means it's a bash SUBSHELL file descriptor (not a "real" file). A SUBSHELL is the thing you get when you say something like <(zcat something) in bash. You can treat it like a file.
+		
+		if (($flag =~ /^--file/ and ((-f $arg) or ($arg eq '-') or $argIsFileDescriptor)) or ($arg eq $flag)) {
 		    $matched_arg = 1;
 		    my $value = $arg;
-		    if(defined($eats))
-		    {
+		    if(defined($eats)) {
 			$value = $eats;
-		    }
-		    elsif(not($flag =~ /^--file/))
-		    {
+		    } elsif(not($flag =~ /^--file/)) {
 			$value = shift @args;
 		    }
-
-		    if($type eq 'scalar')
-		    {
+		    
+		    if ($type eq 'scalar') {
 			$options{$flag} = $value;
-		    }
-		    elsif($type eq 'list')
-		    {
-			if(not(defined($option_overwritten{$flag})))
-			{
+		    } elsif ($type eq 'list') {
+			if (not(defined($option_overwritten{$flag}))) {
 			    my @empty_list;
 			    $options{$flag} = \@empty_list;
 			}
 			my $list = $options{$flag};
 			push(@{$list}, $value);
-		    }
-		    elsif($type eq 'set')
-		    {
-			if(not(defined($option_overwritten{$flag})))
-			{
+		    } elsif ($type eq 'set') {
+			if (not(defined($option_overwritten{$flag}))) {
 			    my %empty_set;
 			    $options{$flag} = \%empty_set;
 			}
 			my $set = $options{$flag};
 			$$set{$value} = 1;
-		    }
-		    elsif($type eq 'map')
-		    {
-			if(not(defined($option_overwritten{$flag})))
-			{
+		    } elsif ($type eq 'map') {
+			if(not(defined($option_overwritten{$flag}))) {
 			    my %empty_map;
 			    $options{$flag} = \%empty_map;
 			}
@@ -1547,15 +1528,11 @@ sub parseArgs
 		    $option_overwritten{$flag} = 1;
 		}
 	    }
-	    if(not($matched_arg))
-	    {
-		if($store_extra)
-		{
+	    if(not($matched_arg)) {
+		if($store_extra) {
 		    push(@extra, $arg);
-		}
-		else
-		{
-		    die("Bad argument '$arg' given");
+		} else {
+		    die("libfile.pl warning: Bad argument '$arg' given. This was not recognized as a file, a valid argument, or a special file descriptor (like '-' for STDIN, for example). Check your aguments to make sure you gave them correctly.");
 		}
 	    }
 	}

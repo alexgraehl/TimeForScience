@@ -112,7 +112,7 @@ sub ComputeLog10HyperPValue
     if ($k > $n) { return -$INFINITY; }
     if ($n-$k > $N-$K)
     {
-		print STDERR "more failures than black balls in urn:k=$k n=$n K=$K N=$N";
+	print STDERR "more failures than black balls in urn:k=$k n=$n K=$K N=$N";
 		return 0;
     }
     if ($k > $K)
@@ -1566,6 +1566,11 @@ sub binUsingShimazakiShinomoto {
 sub getShimazakiShinomotoJitter {
 	my ($counts, $delta) = @_;
 	my ($n,$mean,$stdev) = &vec_stats($counts);
+
+	if ($delta == 0.0) {
+	    print STDERR "libstats.pl: STDERR: Warning: 'getShimazakiShinomotoJitter(<N=$n, MEAN=$mean, STDEV=$stdev>, DELTA=$delta)' tried to use a delta of 0. This is not allowed---delta was set to 1.0 instead.\n";
+	    $delta = 1.0; # Don't allow division by zero, please!
+	}
 	my $jitter = (2.0*$mean - $stdev*$stdev) / $delta / $delta;
 	return $jitter;
 }
