@@ -384,6 +384,8 @@ OPTIONS are:
 
 -h HEADERS: Number of header rows to ignore.
 
+-s NUMBER: Significant figures. Example: -s 3 (would output results like 1.23 instead of 1.234567)
+
 -m METHOD: Set the bin determination method. Allowed values for METHOD are:
     s - use the Shimazaki-Shinomoto iterative method (default)
     i - compute bin width as a function of the inter-quartile range
