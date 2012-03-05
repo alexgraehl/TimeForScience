@@ -1258,6 +1258,10 @@ system.agw <- function(...
 
      exitCode <- 0
      if (!dryrun) {
+          if (is.null(theCommand) || (nchar(theCommand) == 0)) {
+               warning("system.agw was called with a blank argument. We are not actually going to run this (nonexistent) command.)")
+          }
+          
           if (bash) {
                ## Run it through BASH instead of SH. This allows the '<( ... )' construction. (Example: >>># cat <(zcat somezippedfile.gz) #<<< <-- makes a "magical" temporary file to store the output of zcat somezippedfile.gz )
                exitCode <- system(paste("bash -c ", base::shQuote(theCommand, type='sh'), sep=''), wait=wait)  ## <-- the unix error/success code
