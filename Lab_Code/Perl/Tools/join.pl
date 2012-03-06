@@ -301,8 +301,7 @@ while(<$fileRef2>) {
 	    $numDuplicateKeysRead++;
 	    if ($verbose && ($numDuplicateKeysRead <= $maxDuplicateKeyWarnings)) {
 		# only print this error if we are in VERBOSE mode.
-		print STDERR "\njoin.pl: WARNING: More than one line with the key \"$key\" was found in file <$file2>.\n"
-		    .          "         We will only use the LAST row with this key.\n";
+		print STDERR "\njoin.pl: WARNING: Multiple lines with the key \"$key\" were found in <$file2>. We will only use the LAST row with this key\n";
 	    }
 	}
 	$values{$key} = $tmp;
