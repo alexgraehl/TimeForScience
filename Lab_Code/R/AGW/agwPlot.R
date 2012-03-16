@@ -373,30 +373,30 @@ plot.multi.agw <- function(type.func, plot.func) {
 ## use that instead.
 
 ### ===============================================================================
-plotLinesFromMatrixColumnsAgw <- function(mm=NULL, ..., ylim=NULL, col="black", lwd=1, lty=1) {
+## plotLinesFromMatrixColumnsAgw <- function(mm=NULL, ..., ylim=NULL, col="black", lwd=1, lty=1) {
 
-     ## This is probably a duplication of the built-in function "matplot"!
+##      ## This is probably a duplication of the built-in function "matplot"!
 
-     warning("I don't think plotLinesFromMatrixColumnsAgw is probably a good function---you should probably just use the built-in function <matplot> instead!!")
-     if (!is.matrix(mm) && is.vector(mm) && (length(mm) > 0)) {
-          warning("plotLinesFromMatrixColumnsAgw: the input matrix was actually a one-dimensional vector! Trying to work around this...")
-          mm <- matrix( mm , byrow=FALSE, ncol=1)
-     }
-     assert.agw(!is.null(mm) && is.matrix(mm), "Problem! Input to plotLinesFromMatrixColumnsAgw must be a non-null matrix!")
-     if (length(col) < ncol(mm)) { col <- c(col, rep("#00000088", times=ncol(mm))) } ## default fallback color is semi-transparent black
-     plot(  x=(1:nrow(mm))
-          , y=mm[,1, drop=TRUE]
-          , type='l'
-          , ylim=ylim
-          , ...
-          , lwd=lwd, lty=lty, col=col[1])
-     for (i in 2:ncol(mm)) {
-          lines(  x=(1:nrow(mm))
-                , y=(mm[,i, drop=TRUE]), lwd=lwd, lty=lty, col=col[i])
-     }
-}
-### ===============================================================================
-### ===============================================================================
+##      warning("I don't think plotLinesFromMatrixColumnsAgw is probably a good function---you should probably just use the built-in function <matplot> instead!!")
+##      if (!is.matrix(mm) && is.vector(mm) && (length(mm) > 0)) {
+##           warning("plotLinesFromMatrixColumnsAgw: the input matrix was actually a one-dimensional vector! Trying to work around this...")
+##           mm <- matrix( mm , byrow=FALSE, ncol=1)
+##      }
+##      #assert.agw(!is.null(mm) && is.matrix(mm), "Problem! Input to plotLinesFromMatrixColumnsAgw must be a non-null matrix!")
+##      if (length(col) < ncol(mm)) { col <- c(col, rep("#00000088", times=ncol(mm))) } ## default fallback color is semi-transparent black
+##      plot(  x=(1:nrow(mm))
+##           , y=mm[,1, drop=TRUE]
+##           , type='l'
+##           , ylim=ylim
+##           , ...
+##           , lwd=lwd, lty=lty, col=col[1])
+##      for (i in 2:ncol(mm)) {
+##           lines(  x=(1:nrow(mm))
+##                 , y=(mm[,i, drop=TRUE]), lwd=lwd, lty=lty, col=col[i])
+##      }
+## }
+## ### ===============================================================================
+## ### ===============================================================================
 
 
 
