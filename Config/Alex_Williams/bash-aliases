@@ -125,8 +125,9 @@ alias cheat="echo \
 \">>> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): \" ${NL}\
 \"          sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ${NL}\
 \" \" ${NL}\
-\">>> BASH: Foreach / rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
 \">>> ZIP: Zip a folder: zip -r ARCHIVENAME FOLDER \" ${NL}\
+\">>> BASH: Foreach / rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
+\">>> BASH: redirect STDERR & STDOUT both to console and to a file: THECMD 2>&1 | tee --append your.log.file\" ${NL}\
 \">>> BASH: See a function definition:   type FUNCTIONNAME \" ${NL}\
 \">>> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ${NL}\
 \">>> REGEXP Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \$ work \" ${NL}\
