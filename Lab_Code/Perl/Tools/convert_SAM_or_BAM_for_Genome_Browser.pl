@@ -213,6 +213,14 @@ It will convert / produce the UCSC-ready files from any SAM or BAM file you want
 The BAM/SAM files can be HUGE (10+ GB), but can be hosted locally. Then you tell the UCSC Genome Browser
 where your BAM files are, and it magically uses the BAM files from your local web server, without copying the entire file.
 
+Requres the following additional software:
+    * <samtools> must be installed (to sort the bam files)
+        - You can install it with `apt-get install samtools`
+
+If you want a wiggle track, which you most likely do (if you do not, you can specify `--nowig`):
+    * <genomeCoverageBed> must be installed
+    * <wigToBigWig> must be installed
+
 Inputs:
    1. --fasta=<genome.fasta.file.fa> . The genome of the species in question. Used to generate wig files.
    2. A SAM or BAM file, with aligned reads to a reference genome.
@@ -222,10 +230,10 @@ of specifying a fasta file.
 
 Output: 2 files:
     1. Generates a big pileup track (bigBed format).
-    2. A bigWig format file for the UCSC genome browser. The "fai" fasta index file is required in order to generate this bigWig file.
+    2. A bigWig format file for the UCSC genome browser.
+       The ".fai" fasta index file is required in order to generate this bigWig file.
 
 These files can be viewed in the genome browser.
-
 
 OPTIONS:
 
@@ -247,7 +255,7 @@ EXAMPLES:
 Files that are generated from the input YOURFILE.sam:
  1. Browser_sorted_YOURFILE.bam (sorted version of the BAM/SAM file) (track type=bam)
  2. Browser_sorted_YOURFILE.bam.bai (BAM index file)
- 3. Browser_tmp.YOURFILE.wiggle_track.bed (regular wiggle track -- BED file. Can be deleted.)
+ 3. Browser_tmp.YOURFILE.bedgraph (bedgraph intermediate file used to make the bigwig. Can be deleted!)
  4. Browser.YOURFILE.bigwig.bw (bigWig file for Genome Browser)
  5. Browser_Track_Descriptions._YOURFILE.txt (track descriptions that you paste into the Genome Browser Custom Tracks)
 
@@ -262,8 +270,6 @@ track type=bam name="Control_EB" color=0,128,255 bigDataUrl="http://lighthouse.u
 
 This script just runs the instructions found at:
       http://genome.ucsc.edu/goldenPath/help/bam.html
-
-Note also that <samtools> must be installed. You can install that with apt-get install samtools, if it is not already installed.
 
 This script will probably take about 30 minutes (!) to run on a single 5 GB input SAM file.
 
