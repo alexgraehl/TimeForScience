@@ -25,9 +25,11 @@ sub datePrint($) {
 my $genomeFastaFile = undef;
 my $faiFile = undef;  ## <-- "fai" means genome "fasta index (fai)" file
 my $makeWig = 1; ## By default, generate a bigwig track too. Specify "nowig" to avoid this.
+my $assumeFileIsAlreadySorted = 0; ## By default, assume the input SAM/BAM file will still require sorting.
 
 GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
 	   , "wig!" => \$makeWig ## specify "--nowig" to avoid making a wiggle track
+	   , "alreadysorted" => \$assumeFileIsAlreadySorted ## for BAM files only. Note that you CAN'T actually rely on the SORTED=COORDINATE text at the top of the BAM file sadly!!
 	   , "fasta=s" => \$genomeFastaFile
     ) or printUsageAndQuit();
 
@@ -105,13 +107,18 @@ my $bigWigOutFile       = "Browser.${bamPrefixWithoutFileExtension}.bigwig.bw";
 if ((-e $sortBamFullFilename) && (-s $sortBamFullFilename) and (-e $bamIndexOutfile) && (-s $bamIndexOutfile)) {
     print STDOUT "[Skipping] We are NOT continuing with the sorted-BAM-file generation, because such a file already exists. Remove it if you want to recompute it!\n"
 } else {
-    my $sortCmd = "samtools sort $bamFilename $sortBamFilePrefix"; ## <-- Note: this should NOT have the .bam extension, because samtools automatically adds the ".bam" extension
-    print(">> Running the SAMTOOLS sort command: $sortCmd\n...\n");
-    system($sortCmd);
-    
-    my $indexCmd = "samtools index ${sortBamFullFilename}";
-    print(">> Running the SAMTOOLS index command: $indexCmd\n...\n");
-    system($indexCmd);
+
+    if ($assumeFileIsAlreadySorted) {
+	print(">> Assuming that the file <$bamFilename> is already sorted---we will make a symlink to <$sortBamFullFilename> rather than re-sorting it.\n");
+	system("ln -s $bamFilename $sortBamFullFilename");
+    } else {
+	my $sortCmd = "samtools sort $bamFilename $sortBamFilePrefix"; ## <-- Note: this should NOT have the .bam extension, because samtools automatically adds the ".bam" extension
+	print(">> Running the SAMTOOLS sort command: $sortCmd\n...\n");
+	system($sortCmd);
+	my $indexCmd = "samtools index ${sortBamFullFilename}";
+	print(">> Running the SAMTOOLS index command: $indexCmd\n...\n");
+	system($indexCmd);
+    }
 }
 
 if ($makeWig) {
@@ -204,9 +211,13 @@ print "\n";
 
 __DATA__
 
-convert_SAM_or_BAM_for_Genome_Browser.pl --fasta=<genome_fasta_file> <INPUT_SAM_FILE>
+convert_SAM_or_BAM_for_Genome_Browser.pl --fasta=<genome_fasta_file> <INPUT BAM / SAM FILE>
 
-Process a SAM or BAM alignment file to generate files for the UCSC Genome Browser.
+Processes a SAM or BAM alignment file to generate files for the UCSC Genome Browser.
+
+Options:
+    * --nowig: If you do not want to generate a wiggle track, you can say `--nowig` and omit the --fasta file.
+    * --alreadysorted: If your file is already coordinate-sorted, then you can say `--alreadysorted` to avoid re-sorting it.
 
 This is a script that will generate UCSC-genome-browser-ready BAM files.
 It will convert / produce the UCSC-ready files from any SAM or BAM file you want.
