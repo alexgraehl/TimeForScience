@@ -98,8 +98,9 @@ my $browserTrackDescriptionFile = "Browser_Track_Descriptions.${bamPrefixWithout
 my $sortBamFilePrefix   = "Browser_sorted.${bamPrefixWithoutFileExtension}";
 my $sortBamFullFilename = "${sortBamFilePrefix}.bam";
 my $bamIndexOutfile     = "${sortBamFilePrefix}.bam.bai";
-my $wigIntermediateFile = "Browser_tmp.${bamPrefixWithoutFileExtension}.wig";
+my $bedGraphIntermediateFile = "Browser_tmp.${bamPrefixWithoutFileExtension}.bedgraph";
 my $bigWigOutFile       = "Browser.${bamPrefixWithoutFileExtension}.bigwig.bw";
+
 
 if ((-e $sortBamFullFilename) && (-s $sortBamFullFilename) and (-e $bamIndexOutfile) && (-s $bamIndexOutfile)) {
     print STDOUT "[Skipping] We are NOT continuing with the sorted-BAM-file generation, because such a file already exists. Remove it if you want to recompute it!\n"
@@ -117,20 +118,26 @@ if ($makeWig) {
     if (-e $bigWigOutFile) {
 	print STDOUT "[Skipping] We are NOT continuing with the generation of a bigwig file, because the bigwig file $bigWigOutFile already exists. Remove it if you want to recompute it!\n";
     } else {
-	print "Now generating a BIG WIG browser wiggle track named $wigIntermediateFile (this is slow, and can take up to an hour per input RNASeq file!)...\n";
+	print "Now generating a BIG WIG browser wiggle track named $bedGraphIntermediateFile (this is slow, and can take up to an hour per input RNASeq file!)...\n";
 	
-	if (-e $wigIntermediateFile && (-s $wigIntermediateFile > 0)) {
-	    print STDOUT "[Skipping] We are NOT creating the wiggle temp file <$wigIntermediateFile>, because it already exists and has non-zero size. Remove it if you want to recompute it.\n";
+	if (-e $bedGraphIntermediateFile && (-s $bedGraphIntermediateFile > 0)) {
+	    print STDOUT "[Skipping] We are NOT creating the wiggle temp file <$bedGraphIntermediateFile>, because it already exists and has non-zero size. Remove it if you want to recompute it.\n";
 	} else {
-	    my $wigCmd1 = (qq{samtools mpileup -f $faiFile $bamFilename }
-			   . qq(  | awk '{print \$1, \$2-1, \$2, \$4}' )
-			   . qq{    > $wigIntermediateFile}); ## <-- generates a wig file
+ 	    ## Note: genomeCoverageBed REQUIRES that the input bam file be sorted by position. Luckily, we just sorted it!
+ 	    ## The "-g" genome file needs the chromosome sizes. Luckily, this is information we can find in the ".fai" file!
+	    my $wigCmd1 = (qq{genomeCoverageBed -split -bg -ibam $sortBamFullFilename -g $faiFile > $bedGraphIntermediateFile});
+	    # genomeCoverageBed -split -bg -ibam accepted_hits.sorted.bam -g dm3.chrom.sizes > accepted_hits.bedgraph
+	    # wigToBigWig accepted_hits.bedgraph dm3.chrom.sizes myfile.bw
+
+	    #my $wigCmd1 = (qq{samtools mpileup -f $faiFile $sortBamFullFilename }
+	    #		   . qq(  | awk '{print \$1, \$2-1, \$2, \$4}' )
+	    #		   . qq{    > $bedGraphIntermediateFile}); ## <-- generates a wig file
 	    datePrint(": Now running this command:\n  $wigCmd1\n"); 
 	    system($wigCmd1);
 	}
 
 	## -clip means "allow weird errant entries off the end of the chromosome, rather than exploding". This is important, because otherwise wigToBigWig will quit with errors like "something went off the end of chr12_random"
-	my $wigCmd2 = (qq{wigToBigWig -clip $wigIntermediateFile $faiFile $bigWigOutFile});
+	my $wigCmd2 = (qq{wigToBigWig -clip $bedGraphIntermediateFile $faiFile $bigWigOutFile});
 	datePrint("Now running this command:\n  $wigCmd2\n");
 	system($wigCmd2); ## makes a BIGWIG file from the WIG file
     }
