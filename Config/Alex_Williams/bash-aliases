@@ -18,7 +18,7 @@ if [[ -n "$isMac" ]] ; then
     ## It *is* a mac!
     function ff {
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
-	    "$*" \
+	    "$@" \
 	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
 	    "${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode" \
 	    "/Users/alexgw/TimeForScience" \
@@ -35,7 +35,7 @@ else
 	    --exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="CVS" --exclude-dir="[bB]ackup*" \
 	    --binary-files=without-match \
 	    --include=*.R --include=*.pl --include=*.py \
-	    "$*" \
+	    "$@" \
 	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
 	    "${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode" \
 	    "/home/alexgw/TimeForScience"
@@ -45,7 +45,7 @@ fi
 function delve {
     ## Finds, in any subdirectories, any files that have a name that matches the input text.
     ## Sort of like a poor man's "locate"
-    find ./ -iname "*$**"
+    find ./ -iname "*$@*"
 }
 
 function vncnau {
@@ -215,12 +215,12 @@ alias version="lsb_release -a" # Tells you which version of Ubuntu you are runni
 alias res="source ~/.bashrc" ## Re-load the source file
 
 function mac2unix { # Convert a Mac-style line-ending file to a UNIX one. Useful for when you save a file in Excel and then UNIX won't read it.
-    if [[ -f "$1" ]] ; then cat $1 | tr '\r' '\n' ## if a filename is passed in, then auto-cat that file
+    if [[ -f "$1" ]] ; then cat "$1" | tr '\r' '\n' ## if a filename is passed in, then auto-cat that file
     else tr '\r' '\n' ; fi ## otherwise it's probably part of a cmdline pipe
 }
 
 function dos2unix { # Convert a Windows-style line-ending file to a UNIX one. Useful for when you save a file in Excel and then UNIX won't read it.
-    if [[ -f "$1" ]] ; then cat $1 | tr -d '\r' ## if a filename is passed in, then auto-cat that file
+    if [[ -f "$1" ]] ; then cat "$1" | tr -d '\r' ## if a filename is passed in, then auto-cat that file
     else tr -d '\r'; fi ## otherwise it's probably part of a cmdline pipe
 }
 
@@ -276,7 +276,7 @@ alias hgs="hg status"
 function hglog {
     hg status
     if [[ $? == "0" ]] ; then  ## <-- only check the log if there is actually a mercurial repo here!
-	hg log -p --color=always $* | s
+	hg log -p --color=always "$@" | s
     fi
 }
 
@@ -348,28 +348,28 @@ alias sweep='trash.pl *.tmp *.temp' ## Sweep out the .tmp files
 
 function s { ## <-- this needs to come BEFORE the other things that use less!
     # "s" uses "magicless" to run files through sheet.pl
-    magicless --LINE-NUMBERS --status-column $*
+    magicless --LINE-NUMBERS --status-column "$@"
 }
 
 function sf {
     # Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
-    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always | s
+    /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always | s
 }
 
 function s1 {
-    # like sf, but shorter columns # Can only view ONE file, unlike "ss"
-    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always --trunc=15 | s
+    # like sf, but shorter columns # Can only view ONE file, unlike "s"
+    /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always --trunc=15 | s
 }
 
 function s2 {
-    # like sf, but shorter columns # Can only view ONE file, unlike "ss"
-    /usr/bin/less --RAW-CONTROL-CHARS $1 | sheet.pl --color=always --trunc=25 | s
+    # like sf, but shorter columns # Can only view ONE file, unlike "s"
+    /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always --trunc=25 | s
 }
 
 function v {
     # Use sheet.py to view a file or list of files. These files cannot be gzipped, however.
     # Must be python2.6, and not python 3, currently
-    python `which sheet.py` $*
+    python `which sheet.py` "$@"
 }
 
 
