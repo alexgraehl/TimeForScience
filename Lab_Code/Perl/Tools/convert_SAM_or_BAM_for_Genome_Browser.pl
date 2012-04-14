@@ -248,8 +248,8 @@ These files can be viewed in the genome browser.
 
 OPTIONS:
 
-   --fai=filename: Required UNLESS you specify "--nowig"
-                   A fasta index file. Format is: some_species.fai or some_species.fa.fai
+   --fasta=filename: Required UNLESS you specify "--nowig"
+                   A fasta file. Format is: some_species.fa.
 
    --nowig: Add this to NOT generate a wiggle track.
             Generating a wiggle track is SLOW.
