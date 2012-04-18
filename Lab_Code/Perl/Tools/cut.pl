@@ -27,6 +27,13 @@ if(exists($args{'--help'}))
    exit(0);
 }
 
+
+if(exists($args{'-k'})) {
+    print STDOUT "-k is not a valid option! Try -f for the ordering.";
+    print STDOUT <DATA>;
+    exit(1);
+}
+
 my $verbose         = not($args{'-q'});
 my $fields          = $args{'-f'};
 my $delim           = $args{'-d'};
