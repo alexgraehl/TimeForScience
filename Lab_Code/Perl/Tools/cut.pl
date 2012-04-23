@@ -28,7 +28,7 @@ if(exists($args{'--help'}))
 }
 
 
-if(exists($args{'-k'})) {
+if(defined($args{'-k'})) {
     print STDOUT "-k is not a valid option! Try -f for the ordering.";
     print STDOUT <DATA>;
     exit(1);
