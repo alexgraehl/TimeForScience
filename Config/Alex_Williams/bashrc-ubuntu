@@ -145,7 +145,8 @@ fi
 
 
 if [[ -n "$color_prompt" ]]; then
-    PS1="\[${a_machine_prompt_main_color}\][\$(date +[%d]%H:%M)] [\u@\h:\W]\$\[\033[0m\]\[${a_end_color}\] "
+    ## previously: \u@ <-- user at host
+    PS1="\[${a_machine_prompt_main_color}\]\$(date +[%d]%H:%M) \u@\h:\W]\$\[\033[0m\]\[${a_end_color} "
     #alias ls='ls --color=auto'
     #alias dir='dir --color=auto'
     #alias vdir='vdir --color=auto'
