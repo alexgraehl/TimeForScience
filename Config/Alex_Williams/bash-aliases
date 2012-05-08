@@ -133,8 +133,9 @@ alias cheat="echo \
 \">>> REGEXP Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \$ work \" ${NL}\
 \">>> REGEXP EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
 \" \" ${NL}\
-\">>> RNASEQ SAM --> BAM:  samtools view -bS in.sam > out.bam; \" ${NL}\
-\">>> RNASEQ BAM --> SAM:  samtools view -h  in.bam > out.sam; \" ${NL}\
+\">>> RNASEQ SAM --> BAM:  samtools view -bS in.sam > out.bam \" ${NL}\
+\">>> RNASEQ BAM --> SAM:  samtools view -h  in.bam > out.sam \" ${NL}\
+\">>> RNASEQ sorting and setting the 'sorted' flag:  java -Xmx2g  -jar `which SortSam.jar` INPUT=in.sam SORT_ORDER=coordinate OUTPUT=out_sorted.sam \" ${NL}\
 \">>> RNASEQ View BAM header: samtools view -H  in.bam \" ${NL}\
 \">>> RNASEQ Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ${NL}\
 \">>> DNA Reverse-complement:  perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
