@@ -11,10 +11,13 @@ use strict;  use warnings;
 use Getopt::Long;
 use File::Basename;
 
-my $assumeFileIsAlreadySorted = 0; ## By default, assume the input SAM/BAM file will still require sorting.
+my $isDryRun = 0;
+
+
 my $shouldSort = 1;
 my $shouldFilterMappedOnly = 1;
-my $isDryRun = 1;
+my $shouldRemoveDupes = 1;
+my $shouldCalculateSummary = 1;
 
 
 sub printUsageAndQuit() { ## Function for printing the "you used the wrong arguments to this program" error message
@@ -37,26 +40,27 @@ sub alexSystemCall($) {
 
 
 my $SAMTOOLS_PATH = `which samtools`;  chomp($SAMTOOLS_PATH);
-my $PICARD_PATH   = `which SortSam.jar`;  chomp($PICARD_PATH);
+my $SORTSAM_PATH   = `which SortSam.jar`;  chomp($SORTSAM_PATH);
 my $GIGABYTES_FOR_PICARD = 2;
-
-if (length($SAMTOOLS_PATH) <= 1) {
-    die "Could not find <samtools> in the \$PATH. Make sure the <samtools> executable is somewhere in your \$PATH. You should be able to type \"samtools\" and run the command; if that is not the case, then this program won't run either. You can install samtools using apt-get.\n";
-}
-
-if (length($PICARD_PATH) <= 1) {
-    die "Could not find <SortSam.jar> (part of the Picard suite) in the \$PATH. Make sure the <SortSam.jar> java applet is somewhere in your \$PATH. You should be able to type \"SortSam.jar\" and get a weird java error message; if that is not the case, then this program won't run either. For installation instructions, check http://picard.sourceforge.net/.\n";
-}
+my $MARKDUPLICATES_PATH = `which MarkDuplicates.jar`; chomp($MARKDUPLICATES_PATH);
+my $ULIMIT_RESULT = 1024; ## result of running the shell command ulimit -n. Since this is a shell built-in, it can, for some reason, not be run like a real command, so backticks don't work. `ulimit -n`; chomp($ULIMIT_RESULT);
 
 
 
 GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
 	   , "sort!" => \$shouldSort ## specify "--nosort" to avoid sorting
 	   , "mapfilter!" => \$shouldFilterMappedOnly ## specify "--nomapfilter" to avoid filtering out the unmappable reads
+	   , "keepdupes" => sub { $shouldRemoveDupes = 0; }
 	   , "dry|dryrun|dryRun|dry_run|dry-run" => sub { $isDryRun = 1; }
     ) or printUsageAndQuit();
 
 if (scalar(@ARGV) < 1) { die "ARGUMENT ERROR: This script requires at least one filename---you need to give it a BAM or SAM file to operate on.\n"; }
+
+## Below: Check for the location of some required binaries.
+## We depend on samtools & the Picard suite being installed already.
+if (length($SAMTOOLS_PATH) <= 1) { die "Could not find <samtools> in the \$PATH. Make sure the <samtools> executable is somewhere in your \$PATH. You should be able to type \"samtools\" and run the command; if that is not the case, then this program won't run either. You can install samtools using apt-get.\n"; }
+if (length($SORTSAM_PATH) <= 1) {  die "Could not find <SortSam.jar> (part of the Picard suite) in the \$PATH. Make sure the <SortSam.jar> java applet is somewhere in your \$PATH. You should be able to type \"SortSam.jar\" and get a weird java error message; if that is not the case, then this program won't run either. For installation instructions, check http://picard.sourceforge.net/.\n"; }
+if (length($MARKDUPLICATES_PATH) <= 1) {  die "Could not find <Markduplicates.jar> (part of the Picard suite) in the \$PATH. Make sure the <MarkDuplicates.jar> java applet is somewhere in your \$PATH. You should be able to type \"MarkDuplicates.jar\" and get a weird java error message; if that is not the case, then this program won't run either. For installation instructions, check http://picard.sourceforge.net/.\n"; }
 
 print STDOUT "The following files will be processed by rnaseq_filter_agw:\n";
 foreach my $tmp (@ARGV) {
@@ -83,38 +87,77 @@ foreach my $file (@ARGV) {
     }
 
     datePrint("Now processing the file <$file>...\n");
-    my $filteredFile = $file . ".filtered.tmp";
-    my $sortedFile = $file . ".sorted.tmp";
+    my $filteredFile     = "$file.filtered_mapped_only.tmp.bam";
+    my $sortedFile       = "$file.sorted_by_coord.tmp.bam";
+    my $dedupFile        = "$file.no.duplicates.tmp.bam";
+    my $summaryStatsFile = "$file.summary.stats.txt";
+    my $latest           = "latest_file_to_operate_on.tmp.bam"; ## This is a temporary symlink that gets updated
     
-    my $fileTypeOption = ($isSam ? " -S " : " "); ## SAM files require the "-S" option in order to be viewed in samtools. By default, a BAM file (no option) is expected.
-    my $countAllReadsCmd = qq{${SAMTOOLS_PATH} view $fileTypeOption $file | wc -l };
-
-    my $sortCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${PICARD_PATH} }
-		   . qq{ INPUT=${file} } ## Picard SortSam.jar accepts both SAM and BAM files as input!
+    ## Note: Picard sorting takes both SAM *and* BAM files, and outputs to BAM. So from here on out, we will be operating on BAM files only.
+    my $sortCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${SORTSAM_PATH} }
+		   . qq{ INPUT=${latest} } ## Picard SortSam.jar accepts both SAM and BAM files as input!
 		   . qq{ SORT_ORDER=coordinate }
 		   . qq{ OUTPUT=${sortedFile} });
-
-    my $filterMappedOnlyCmd = (qq{samtools view ${fileTypeOption} -h -F 4 $file }
-			       . qq{ > $filteredFile });
     
-
-    alexSystemCall($countAllReadsCmd);
-    alexSystemCall($sortCmd);
-    alexSystemCall($filterMappedOnlyCmd);
+    my $countAllReadsCmd = qq{${SAMTOOLS_PATH} view ${latest} | wc -l };
     
+    my $filterMappedOnlyCmd = (qq{samtools view -h -F 4 $latest } ## <-- only include the mapped (mapping flag is "4" apparently) reads
+			       . qq{ | samtools view -bS - } ## <-- Convert back to BAM
+			       . qq{ > $filteredFile });   ## <-- output file location
+    my $maxFileHandles = int(0.8 * $ULIMIT_RESULT); ## This is for the MAX_FILE_HANDLES_FOR_READ_ENDS_MAP parameter for MarkDuplicates: From the Picard docs: "Maximum number of file handles to keep open when spilling read ends to disk. Set this number a little lower than the per-process maximum number of file that may be open. This number can be found by executing the 'ulimit -n' command on a Unix system. Default value: 8000."
+    my $dedupCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${MARKDUPLICATES_PATH} }
+		    . qq{ INPUT=${latest} } ## Picard SortSam.jar accepts both SAM and BAM files as input!
+		    . qq{ REMOVE_DUPLICATES=TRUE }
+		    . qq{ MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=$maxFileHandles }
+		    . qq{ OPTICAL_DUPLICATE_PIXEL_DISTANCE=100 } ## <-- 100 is default
+		    . qq{ OUTPUT=${dedupFile} });
+    
+    my $RM_CMD = "/bin/rm --preserve-root --force $latest";
+    
+    ### Now to actually RUN the various things ###
+    if (!$shouldSort) {
+	if (!$isBam) {
+	    die "If you specified to NOT sort, then you have to input a BAM file. SAM files are not allowed when there is no sorting. Sorry. We could fix this by adding some kind of samtools convert-to-bam here.\n";
+	}
+    }
+
+    alexSystemCall("${RM_CMD} && ln -s $file $latest");
+    if ($shouldSort) {
+	alexSystemCall($sortCmd);
+	alexSystemCall("${RM_CMD} && ln -s $sortedFile $latest");
+    }
+
+
+    my $numReadsBeforeWeFiddledWithTheFile = "UNDEFINED";
+    if ($shouldCalculateSummary) { 
+	# Count the number of reads in the file BEFORE we filter
+	# but AFTER we run the sorting command, to make sure the file is a BAM file.
+	$numReadsBeforeWeFiddledWithTheFile = `$countAllReadsCmd`;
+    }
+
+    if ($shouldFilterMappedOnly) {
+	alexSystemCall($filterMappedOnlyCmd);
+	alexSystemCall("${RM_CMD} && ln -s $filteredFile $latest");
+    }
+
+    if ($shouldCalculateSummary) { 
+	open FILE, ">", $summaryStatsFile or die $!; { ## Note: OVERWRITING this summary file.
+	    print FILE "Number of reads found in <$file> before any filtering: " . $numReadsBeforeWeFiddledWithTheFile . "\n"; 
+	    print FILE "\n";
+	} close(FILE);
+    }
+
+    if ($shouldRemoveDupes) {
+	alexSystemCall($dedupCmd);
+	alexSystemCall("${RM_CMD} && ln -s $dedupFile $latest");
+    }
+
     #system(qq{samtools faidx $genomeFastaFile}); ## generate an index file
     #print STDOUT "Done. Wrote <$faiFile> to the filesystem.";    
 
     datePrint("[Done] with <$file>.\n\n");
     $numFilesSuccessfullyProcessed++;
 }
-
-# open FILE, ">>", $browserTrackDescriptionFile or die $!; ## APPEND TO THE FILE!!!
-# print FILE "\n";
-# print FILE browserTrackString("bam", ${sortBamFullFilename});
-# print FILE browserTrackString("bigWig", ${bigWigOutFile});
-# print FILE "\n";
-# close(FILE);
 
 datePrint("[DONE]\n\n");
 
