@@ -89,7 +89,8 @@ foreach my $file (@ARGV) {
     datePrint("Now processing the file <$file>...\n");
     my $filteredFile     = "$file.filtered_mapped_only.tmp.bam";
     my $sortedFile       = "$file.sorted_by_coord.tmp.bam";
-    my $dedupFile        = "$file.no.duplicates.tmp.bam";
+    my $dedupFile        = "$file.no_duplicates.tmp.bam";
+    my $dedupExtraMetricsFile = "$file.no_duplicates.extra.txt";
     my $summaryStatsFile = "$file.summary.stats.txt";
     my $latest           = "latest_file_to_operate_on.tmp.bam"; ## This is a temporary symlink that gets updated
     
@@ -110,6 +111,7 @@ foreach my $file (@ARGV) {
 		    . qq{ REMOVE_DUPLICATES=TRUE }
 		    . qq{ MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=$maxFileHandles }
 		    . qq{ OPTICAL_DUPLICATE_PIXEL_DISTANCE=100 } ## <-- 100 is default
+		    . qq{ METRICS_FILE=${dedupExtraMetricsFile} }
 		    . qq{ OUTPUT=${dedupFile} });
     
     my $RM_CMD = "/bin/rm --preserve-root --force $latest";
