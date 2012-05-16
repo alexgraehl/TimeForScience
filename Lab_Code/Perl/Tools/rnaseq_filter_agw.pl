@@ -1,12 +1,18 @@
 #!/usr/bin/perl
 
 ## This script handles a few basic processing steps for an aligned SAM or BAM file.
+## For example: sorting by coordinate order and generating a .BAI index file.
+## The input to this script is any number of SAM or BAM files, and the output is, for each input file:
+##   - Output one sorted, indexed, filtered BAM file
+##   - Output one .BAI index file
+## If you give it an input file "input_name.sam", then the output filenames will be:
+##   - "input_name.processed.bam" and "input_name.processed.bai"
 ## by Alex Williams, May 2012
 
-
-
+## Run it with --help to see a FULL description (or scroll down to the bottom of this script)
 
 use strict;  use warnings;
+use English '-no_match_vars';
 
 use Getopt::Long;
 use File::Basename;
@@ -28,7 +34,7 @@ my $SORTSAM_PATH   = `which SortSam.jar`;  chomp($SORTSAM_PATH);
 my $GIGABYTES_FOR_PICARD = 2;
 my $MARKDUPLICATES_PATH = `which MarkDuplicates.jar`; chomp($MARKDUPLICATES_PATH);
 my $ULIMIT_RESULT = 1024; ## result of running the shell command ulimit -n. Since this is a shell built-in, it can, for some reason, not be run like a real command, so backticks don't work. `ulimit -n`; chomp($ULIMIT_RESULT);
-my $latest           = "latest_file_to_operate_on.tmp.bam"; ## This is a temporary symlink that gets updated
+my $latest           = "latest_file_to_operate_on." . $PID . ".tmp.bam"; ## This is a temporary symlink that gets updated. It uses the $PID (process ID) to make it a unique temp file between runs of the program
 
 sub printUsageAndQuit() { ## Function for printing the "you used the wrong arguments to this program" error message
     print STDOUT <DATA>;
@@ -80,6 +86,7 @@ GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
 	   , "keepdupes" => sub { $shouldRemoveDupes = 0; }
 #	   , "f|fasta" => \$genomeFastaFile ## used for generating the index
 	   , "noindex" => sub { $shouldGenerateIndex = 0; }
+	   , "nosummary" => sub { $shouldCalculateSummary = 0; }
 	   , "keep|keepall!" => \$keepAllReads
 	   , "dry|dryrun|dryRun|dry_run|dry-run" => \$isDryRun
     ) or printUsageAndQuit();
@@ -197,7 +204,7 @@ foreach my $file (@ARGV) {
     $prefix =~ s/.[bs]am$//i; ## remove the original .bam or .sam prefix!
     my $finalBAM = "${prefix}.processed.bam";
     my $finalIndex = "${prefix}.processed.bai";
-
+    
     if ($shouldGenerateIndex) {
 	## This should always be the LAST step
 	alexSystemCall(qq{samtools index ${fileToMakeIndexFrom} ${finalIndex} });
@@ -219,6 +226,8 @@ foreach my $file (@ARGV) {
 	datePrint("[Done] with <$file>. Generated the output file <${finalBAM}>\n\n");
     }
     $numFilesSuccessfullyProcessed++;
+
+    alexSystemCall(qq{/bin/rm --preserve-root --force $latest });
 }
 
 datePrint("*************************************************************\n");
