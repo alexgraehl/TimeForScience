@@ -1,15 +1,23 @@
 #!/usr/bin/perl
 
+## rnaseq_filter_agw.pl
+## by Alex Williams, May 2012
+
 ## This script handles a few basic processing steps for an aligned SAM or BAM file.
+
+## DETAILED README IS AT THE BOTTOM OF THIS FILE! SCROLL DOWN!
+## (Or run this script with "--help" to see the full description.)
+
 ## For example: sorting by coordinate order and generating a .BAI index file.
 ## The input to this script is any number of SAM or BAM files, and the output is, for each input file:
 ##   - Output one sorted, indexed, filtered BAM file
 ##   - Output one .BAI index file
 ## If you give it an input file "input_name.sam", then the output filenames will be:
 ##   - "input_name.processed.bam" and "input_name.processed.bai"
-## by Alex Williams, May 2012
 
-## Run it with --help to see a FULL description (or scroll down to the bottom of this script)
+## TO DO:
+## - Should write the steps that are performed to the "summary" file. Currently the summary just has the number of reads in the before-processing file.
+
 
 use strict;  use warnings;
 use English '-no_match_vars';
@@ -18,15 +26,12 @@ use Getopt::Long;
 use File::Basename;
 
 my $isDryRun = 0;
-
-
 my $shouldSort = 1;
 my $shouldFilterMappedOnly = 1;
 my $shouldRemoveDupes = 1;
 my $shouldCalculateSummary = 1;
 my $shouldGenerateIndex = 1;
 #my $genomeFastaFile = undef;
-
 my $keepAllReads = 0;
 
 my $SAMTOOLS_PATH = `which samtools`;  chomp($SAMTOOLS_PATH);
@@ -73,9 +78,9 @@ sub alexSystemCall($) {
 sub verifyToolPathsOrDie() {
     # Below: Check for the location of some required binaries.
     # We depend on samtools & the Picard suite being installed already.
-    if (length($SAMTOOLS_PATH) <= 1) { die "Could not find <samtools> in the \$PATH. Make sure the <samtools> executable is somewhere in your \$PATH. You should be able to type \"samtools\" and run the command; if that is not the case, then this program won't run either. You can install samtools using apt-get.\n"; }
-    if (length($SORTSAM_PATH) <= 1) {  die "Could not find <SortSam.jar> (part of the Picard suite) in the \$PATH. Make sure the <SortSam.jar> java applet is somewhere in your \$PATH. You should be able to type \"SortSam.jar\" and get a weird java error message; if that is not the case, then this program won't run either. For installation instructions, check http://picard.sourceforge.net/.\n"; }
-    if (length($MARKDUPLICATES_PATH) <= 1) {  die "Could not find <Markduplicates.jar> (part of the Picard suite) in the \$PATH. Make sure the <MarkDuplicates.jar> java applet is somewhere in your \$PATH. You should be able to type \"MarkDuplicates.jar\" and get a weird java error message; if that is not the case, then this program won't run either. For installation instructions, check http://picard.sourceforge.net/.\n"; }
+    if (length($SAMTOOLS_PATH) <= 1) { die "Could not find <samtools> in the \$PATH. Make sure the <samtools> executable is somewhere in your \$PATH. You should be able to type \"samtools\" and run the command; if that is not the case, then this program won't run either.\nYou should be able to install samtools with the command `sudo apt-get samtools`.\n"; }
+    if (length($SORTSAM_PATH) <= 1) {  die "Could not find <SortSam.jar> (part of the Picard suite) in the \$PATH. Make sure the <SortSam.jar> java applet is somewhere in your \$PATH. You should be able to type \"SortSam.jar\" and get a weird java error message; if that is not the case, then this program won't run either. For installation instructions, check http://picard.sourceforge.net/.\nNote that SortSam.jar is PROBABLY not in your default path; try running `locate -i SortSam.jar` to find it. Then add it to somewhere that's in your path. \n"; }
+    if (length($MARKDUPLICATES_PATH) <= 1) {  die "Could not find <Markduplicates.jar> (part of the Picard suite) in the \$PATH. Make sure the <MarkDuplicates.jar> java applet is somewhere in your \$PATH. You should be able to type \"MarkDuplicates.jar\" and get a weird java error message; if that is not the case, then this program won't run either. For installation instructions, check http://picard.sourceforge.net/.\nNote that MarkDuplicates.jar is PROBABLY not in your default path; try running `locate -i MarkDuplicates.jar` to find it. Then add it to somewhere that's in your path.\n"; }
 }
 
 
@@ -239,54 +244,37 @@ datePrint("[DONE]\n\n");
 
 __DATA__
 
-rnaseq_filter_agw.pl --fasta=<genome_fasta_file> <INPUT BAM / SAM FILE>
+rnaseq_filter_agw.pl   [bam/sam files]
 
-Processes a SAM or BAM alignment file to generate SORTED, INDEXED, AND FILTERED BAM files.
-
+Processes any number of input SAM or BAM alignment files, and
+generates SORTED, INDEXED, AND FILTERED ouptut BAM files.
 The output is always a BAM file, regardless of the input.
+
+Example:   rnaseq_filter_agw.pl  test.bam samtest2.sam test3.bam
+
+Output: For the example above, the output filenames would be:
+   BAM: "test.processed.bam" and "samtest2.processed.bam" and "test3.processed.bam"
+   BAI: "test.processed.bai" and "samtest2.processed.bai" and "test3.processed.bai"
+
+By default, the filtering steps remover unmapped reads and duplicate reads. If you want
+to be very conservative and keep every read, specify "--keepall" on the command line.
 
 OPTIONS:
    --keep or --keepall: Do NOT remove any reads. Just sort & index.
-
-   --dryrun : Print what *would* be done, but do not actually perform any filtering.
+   --dryrun:            Print what *would* be done, without doing it.
 
 FINE-TUNING OPTIONS:
-   --noindex : Do not generate a bam index (Default: generate a ".bai" index file.)
-
-   --nosort : Do not sort the input file (Default: output is sorted.)
-
-   --nomapfilter: Do not remove the unmapped reads (Default: unmapped reads are removed.)
-
-
-
-This is a script that will ****************
-************************
-************************
-************************
+   --noindex:     Do not generate a bam index (Default: generates a ".bai" index file)
+   --nosort:      Do not sort the input file (Default: output is sorted)
+   --nomapfilter: Do not remove the unmapped reads (Default: unmappable reads are removed)
 
 Requres the following additional software:
+    * These programs must be in your $PATH (even the Picard JARs must be on the path!)
     * <samtools> must be installed (to filter the bam files)
         - You can install it with `apt-get install samtools`
-    * <Picard> must be installed in order to properly sort the sam/bam files. samtools is not ideal because it does not set the sort flag at the top of the file.
+    * <Picard> must be installed in order to properly sort the sam/bam files.
+        - Specifically, we use SortSam.jar and MarkDuplicates.jar.
+        - (samtools is not ideal because it does not set the sort flag at the top of the file)
         - Check at http://picard.sourceforge.net/
+    * If you cannot find SortSam.jar or MarkDuplicates.jar, try "locate -i SortSam.jar" .
 
-If you want a wiggle track, which you most likely do (if you do not, you can specify `--nowig`):
-    * <genomeCoverageBed> must be installed
-    * <wigToBigWig> must be installed
-
-Inputs:
-   *************
-
-Output: 
- **********
-
-These files can be viewed in the genome browser.
-
-
-EXAMPLES:
-
- rnaseq_filter_agw *******************
- ??
-
-Files that are generated from the input YOURFILE.sam:
- ** ?
