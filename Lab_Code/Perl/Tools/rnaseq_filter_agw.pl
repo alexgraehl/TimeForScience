@@ -25,6 +25,10 @@ use English '-no_match_vars';
 use Getopt::Long;
 use File::Basename;
 
+my $VERSION = "0.1.0"; ## Which version of the program is this. Change this if you update the program significantly.
+
+my $SUCCESS_STATUS = 0; ## <-- this should be ZERO
+
 my $isDryRun = 0;
 my $shouldSort = 1;
 my $shouldFilterMappedOnly = 1;
@@ -39,12 +43,19 @@ my $SORTSAM_PATH   = `which SortSam.jar`;  chomp($SORTSAM_PATH);
 my $GIGABYTES_FOR_PICARD = 2;
 my $MARKDUPLICATES_PATH = `which MarkDuplicates.jar`; chomp($MARKDUPLICATES_PATH);
 my $ULIMIT_RESULT = 1024; ## result of running the shell command ulimit -n. Since this is a shell built-in, it can, for some reason, not be run like a real command, so backticks don't work. `ulimit -n`; chomp($ULIMIT_RESULT);
-my $latest           = "latest_file_to_operate_on." . $PID . ".tmp.bam"; ## This is a temporary symlink that gets updated. It uses the $PID (process ID) to make it a unique temp file between runs of the program
+
+
+my @successfullyMadeFiles = (); # No files generated yet.
+my @failedFiles = (); # No files generated yet.
+
+
 
 sub printUsageAndQuit() { ## Function for printing the "you used the wrong arguments to this program" error message
     print STDOUT <DATA>;
     exit(0);
 }
+
+sub printVersionAndQuit() { print STDOUT "rnaseq_filter_agw.pl: Version $VERSION\n"; exit(0); }
 
 sub datePrint($) { my $d = `date`; chomp($d); print $d . ":\t" . $_[0]; } ## Timestamping function that is like "print" except with a timestamp at the beginning of the line. Use it instead of "print."
 
@@ -55,7 +66,14 @@ sub alexSystemCall($) {
     } else {
 	datePrint("Executing command: $cmd\n");
     }
-    if (!$isDryRun) { system($cmd); }
+    if (!$isDryRun) { return(system($cmd)); }
+    else { return $SUCCESS_STATUS; } ## assume that
+}
+
+sub reportCommandFailure($$) {
+    my ($cmd, $fileThatFailed) = @_;
+    datePrint("[ERROR]: In the processing for <$fileThatFailed>, this command failed: $cmd\n" . "We are skipping to the next file now.\n");
+    push(@failedFiles, $fileThatFailed);
 }
 
 # sub verifyFastaIndexFileOrDie() {
@@ -93,6 +111,7 @@ GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
 	   , "noindex" => sub { $shouldGenerateIndex = 0; }
 	   , "nosummary" => sub { $shouldCalculateSummary = 0; }
 	   , "keep|keepall!" => \$keepAllReads
+	   , "v|V|version|Version" => sub { printVersionAndQuit(); }
 	   , "dry|dryrun|dryRun|dry_run|dry-run" => \$isDryRun
     ) or printUsageAndQuit();
 
@@ -118,7 +137,8 @@ my $numFilesNotOK = 0;
 
 #use diagnostics;
 
-my @outFiles = (); # No files generated yet.
+
+my $latest = undef; ## keep track of which file we should be operating on. This is important in case we skip steps, which can happen if the user specifies certain flags to this program
 
 foreach my $file (@ARGV) {
     my $fileOK = 1; # Assume the file is something we can read, unless we hear otherwise...
@@ -141,17 +161,53 @@ foreach my $file (@ARGV) {
     my $dedupExtraMetricsFile = "$file.no_duplicates.extra.txt";
     my $summaryStatsFile = "$file.summary.stats.txt";
     
+    ### Now to actually RUN the various things ###
+    if (!$shouldSort) {
+	if (!$isBam) {
+	    die "If you specified to NOT sort, then you have to input a BAM file. SAM files are not allowed when there is no sorting. Sorry. We could fix this by adding some kind of samtools convert-to-bam here.\n";
+	}
+    }
+
+    $latest = $file; ## the latest thing to operate on is the original input file
+    
     ## Note: Picard sorting takes both SAM *and* BAM files, and outputs to BAM. So from here on out, we will be operating on BAM files only.
     my $sortCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${SORTSAM_PATH} }
 		   . qq{ INPUT=${latest} } ## Picard SortSam.jar accepts both SAM and BAM files as input!
 		   . qq{ SORT_ORDER=coordinate }
 		   . qq{ OUTPUT=${sortedFile} });
-    
+    if ($shouldSort) {
+	my $result = alexSystemCall($sortCmd);	
+	
+	if ($result == $SUCCESS_STATUS) {
+	    $latest = $sortedFile;
+	} else {
+	    reportCommandFailure($sortCmd, $file);
+	    datePrint("DEBUGGING MESSAGE FROM ALEX: Maybe the input file didn't have a SAM/BAM *header* line? The header is REQUIRED for sorting---check your input file ($file) and make sure it has header lines. If it doesn't, then you'll need to re-header the file with samtools (`samtools reheader <in.header.sam> <in.bam>`).\n");
+	    next;
+	}
+    }
+
+    my $numReadsBeforeWeFiddledWithTheFile = "UNDEFINED";
     my $countAllReadsCmd = qq{${SAMTOOLS_PATH} view ${latest} | wc -l };
-    
+    if ($shouldCalculateSummary) { 
+	# Count the number of reads in the file BEFORE we filter
+	# but AFTER we run the sorting command, to make sure the file is a BAM file.
+	$numReadsBeforeWeFiddledWithTheFile = `$countAllReadsCmd`;
+    }
+
     my $filterMappedOnlyCmd = (qq{samtools view -h -F 4 $latest } ## <-- only include the mapped (mapping flag is "4" apparently) reads
 			       . qq{ | samtools view -bS - } ## <-- Convert back to BAM
 			       . qq{ > $filteredFile });   ## <-- output file location
+    if ($shouldFilterMappedOnly) {
+	my $result = alexSystemCall($filterMappedOnlyCmd);
+	if ($result == $SUCCESS_STATUS) {
+	    $latest = $filteredFile;
+	} else {
+	    reportCommandFailure($filterMappedOnlyCmd, $file);
+	    next;
+	}
+    }
+
     my $maxFileHandles = int(0.8 * $ULIMIT_RESULT); ## This is for the MAX_FILE_HANDLES_FOR_READ_ENDS_MAP parameter for MarkDuplicates: From the Picard docs: "Maximum number of file handles to keep open when spilling read ends to disk. Set this number a little lower than the per-process maximum number of file that may be open. This number can be found by executing the 'ulimit -n' command on a Unix system. Default value: 8000."
     my $dedupCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${MARKDUPLICATES_PATH} }
 		    . qq{ INPUT=${latest} } ## Picard SortSam.jar accepts both SAM and BAM files as input!
@@ -160,48 +216,14 @@ foreach my $file (@ARGV) {
 		    . qq{ OPTICAL_DUPLICATE_PIXEL_DISTANCE=100 } ## <-- 100 is default
 		    . qq{ METRICS_FILE=${dedupExtraMetricsFile} }
 		    . qq{ OUTPUT=${dedupFile} });
-
-
-
-    sub updateSymlinkToPointTo($) {
-	## We always want each subsequent command to operate on the MOST RECENT file.
-	## Sometimes, the user doesn't want to run every step in the pipeline. So steps are skipped.
-	## We use this symlink to keep track of which file to work on.
-	## In retrospect, we could probably do this with a variable instead, it would probably be safer than using the filesystem.
-	my ($target) = @_;
-	my $RM_CMD = "/bin/rm --preserve-root --force $latest";
-	alexSystemCall("${RM_CMD} && ln -s ${target} $latest");
-    }
-    
-    ### Now to actually RUN the various things ###
-    if (!$shouldSort) {
-	if (!$isBam) {
-	    die "If you specified to NOT sort, then you have to input a BAM file. SAM files are not allowed when there is no sorting. Sorry. We could fix this by adding some kind of samtools convert-to-bam here.\n";
-	}
-    }
-
-    updateSymlinkToPointTo($file);
-    
-    if ($shouldSort) {
-	alexSystemCall($sortCmd);	
-	updateSymlinkToPointTo($sortedFile);
-    }
-
-    my $numReadsBeforeWeFiddledWithTheFile = "UNDEFINED";
-    if ($shouldCalculateSummary) { 
-	# Count the number of reads in the file BEFORE we filter
-	# but AFTER we run the sorting command, to make sure the file is a BAM file.
-	$numReadsBeforeWeFiddledWithTheFile = `$countAllReadsCmd`;
-    }
-
-    if ($shouldFilterMappedOnly) {
-	alexSystemCall($filterMappedOnlyCmd);
-	updateSymlinkToPointTo($filteredFile);
-    }
-
     if ($shouldRemoveDupes) {
-	alexSystemCall($dedupCmd);
-	updateSymlinkToPointTo($dedupFile);
+	my $result = alexSystemCall($dedupCmd);
+	if ($result == $SUCCESS_STATUS) {
+	    $latest = $dedupFile;
+	} else {
+	    reportCommandFailure($dedupCmd, $file);
+	    next;
+	}
     }
 
     my $fileToMakeIndexFrom = readlink "$latest";
@@ -212,8 +234,15 @@ foreach my $file (@ARGV) {
     
     if ($shouldGenerateIndex) {
 	## This should always be the LAST step
-	alexSystemCall(qq{samtools index ${fileToMakeIndexFrom} ${finalIndex} });
-	alexSystemCall(qq{ mv -f $fileToMakeIndexFrom $finalBAM });
+	
+	my $indexCmd = qq{samtools index ${fileToMakeIndexFrom} ${finalIndex} };
+	my $result = alexSystemCall($indexCmd);
+	if ($result == $SUCCESS_STATUS) { 
+	    alexSystemCall(qq{ mv -f $fileToMakeIndexFrom $finalBAM });
+	} else {
+	    reportCommandFailure($dedupCmd, $file);
+	    next;
+	}
     }
 
     if ($shouldCalculateSummary) { 
@@ -223,23 +252,35 @@ foreach my $file (@ARGV) {
 	} close(FILE);
     }
 
-    push(@outFiles, $finalBAM);
+    push(@successfullyMadeFiles, $finalBAM);
     if ($shouldGenerateIndex) {
 	datePrint("[Done] with <$file>. Generated the output files <${finalBAM}> and <${finalIndex}>\n\n");
-	push(@outFiles, $finalIndex);
+	push(@successfullyMadeFiles, $finalIndex);
     } else {
 	datePrint("[Done] with <$file>. Generated the output file <${finalBAM}>\n\n");
     }
     $numFilesSuccessfullyProcessed++;
-
-    alexSystemCall(qq{/bin/rm --preserve-root --force $latest });
 }
 
-datePrint("*************************************************************\n");
-datePrint("Successfully generated the following files:\n");
-foreach (@outFiles) {
-    datePrint("  - $_\n");
+
+if (scalar(@successfullyMadeFiles) > 0) {
+    datePrint("*************************************************************\n");
+    datePrint("Successfully generated the following files:\n");
+    foreach (@successfullyMadeFiles) {
+	datePrint("  - $_\n");
+    }
 }
+
+
+if (scalar(@failedFiles) > 0) {
+    ## If any files FAILED to be processed, then let's report them at the very end here.
+    datePrint("*************************************************************\n");
+    datePrint("FAILED TO PROCESS THE FOLLOWING FILES (see console log for more details:\n");
+    foreach (@failedFiles) {
+	datePrint("FAILED:  - $_\n");
+    }
+}
+
 datePrint("[DONE]\n\n");
 
 __DATA__
