@@ -44,11 +44,8 @@ my $GIGABYTES_FOR_PICARD = 2;
 my $MARKDUPLICATES_PATH = `which MarkDuplicates.jar`; chomp($MARKDUPLICATES_PATH);
 my $ULIMIT_RESULT = 1024; ## result of running the shell command ulimit -n. Since this is a shell built-in, it can, for some reason, not be run like a real command, so backticks don't work. `ulimit -n`; chomp($ULIMIT_RESULT);
 
-
 my @successfullyMadeFiles = (); # No files generated yet.
 my @failedFiles = (); # No files generated yet.
-
-
 
 sub printUsageAndQuit() { ## Function for printing the "you used the wrong arguments to this program" error message
     print STDOUT <DATA>;
@@ -135,12 +132,8 @@ verifyToolPathsOrDie();
 my $numFilesSuccessfullyProcessed = 0;
 my $numFilesNotOK = 0;
 
-#use diagnostics;
-
-
-my $latest = undef; ## keep track of which file we should be operating on. This is important in case we skip steps, which can happen if the user specifies certain flags to this program
-
 foreach my $file (@ARGV) {
+    my $latest = undef; ## keep track of which file we should be operating on. This is important in case we skip steps, which can happen if the user specifies certain flags to this program
     my $fileOK = 1; # Assume the file is something we can read, unless we hear otherwise...
     my $isSam = ($file =~ m/[.]sam$/i);
     my $isBam = ($file =~ m/[.]bam$/i);
