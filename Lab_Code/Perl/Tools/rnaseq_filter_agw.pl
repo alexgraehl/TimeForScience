@@ -67,6 +67,13 @@ sub alexSystemCall($) {
     else { return $SUCCESS_STATUS; } ## assume that
 }
 
+sub appendToSummaryFile($$) {
+    my ($whatToWrite, $filename) = @_;
+    open FILE, ">>", $filename or die $!; { ## Note: APPENDING TO this summary file.
+	print FILE $whatToWrite;
+    } close(FILE);
+}
+
 sub reportCommandFailure($$) {
     my ($cmd, $fileThatFailed) = @_;
     datePrint("[ERROR]: In the processing for <$fileThatFailed>, this command failed: $cmd\n" . "We are skipping to the next file now.\n");
@@ -133,6 +140,7 @@ my $numFilesSuccessfullyProcessed = 0;
 my $numFilesNotOK = 0;
 
 foreach my $file (@ARGV) {
+    my $prefix = $file; $prefix =~ s/.[bs]am$//i; ## remove the original .bam or .sam prefix!
     my $latest = undef; ## keep track of which file we should be operating on. This is important in case we skip steps, which can happen if the user specifies certain flags to this program
     my $fileOK = 1; # Assume the file is something we can read, unless we hear otherwise...
     my $isSam = ($file =~ m/[.]sam$/i);
@@ -154,6 +162,10 @@ foreach my $file (@ARGV) {
     my $dedupExtraMetricsFile = "$file.no_duplicates.extra.txt";
     my $summaryStatsFile = "$file.summary.stats.txt";
     
+    open FILE, ">", $summaryStatsFile or die $!; { ## <-- Note: NOT APPENDING -- clearing out the file
+	print FILE "Summary file for <$file>:\n";
+    } close(FILE);
+
     ### Now to actually RUN the various things ###
     if (!$shouldSort) {
 	if (!$isBam) {
@@ -173,21 +185,25 @@ foreach my $file (@ARGV) {
 	
 	if ($result == $SUCCESS_STATUS) {
 	    $latest = $sortedFile;
+	    appendToSummaryFile("Sorted <$file> with Picard SortSam.jar.\n  Command was: $sortCmd\n", $summaryStatsFile);
 	} else {
 	    reportCommandFailure($sortCmd, $file);
 	    datePrint("DEBUGGING MESSAGE FROM ALEX: Maybe the input file didn't have a SAM/BAM *header* line? The header is REQUIRED for sorting---check your input file ($file) and make sure it has header lines. If it doesn't, then you'll need to re-header the file with samtools (`samtools reheader <in.header.sam> <in.bam>`).\n");
 	    next;
 	}
+
+	my $numReadsBeforeWeFiddledWithTheFile = "UNDEFINED";
+	my $countAllReadsCmd = qq{${SAMTOOLS_PATH} view ${sortedFile} | wc -l };
+	if ($shouldCalculateSummary) { 
+	    # Count the number of reads in the file BEFORE we filter
+	    # but AFTER we run the sorting command, to make sure the file is a BAM file.
+	    $numReadsBeforeWeFiddledWithTheFile = `$countAllReadsCmd`;
+	    appendToSummaryFile(("\nNumber of reads found in <$file> before any filtering: " . $numReadsBeforeWeFiddledWithTheFile . "\n\n"), $summaryStatsFile);
+	}
     }
 
-    my $numReadsBeforeWeFiddledWithTheFile = "UNDEFINED";
-    my $countAllReadsCmd = qq{${SAMTOOLS_PATH} view ${latest} | wc -l };
-    if ($shouldCalculateSummary) { 
-	# Count the number of reads in the file BEFORE we filter
-	# but AFTER we run the sorting command, to make sure the file is a BAM file.
-	$numReadsBeforeWeFiddledWithTheFile = `$countAllReadsCmd`;
-    }
 
+    
     my $filterMappedOnlyCmd = (qq{samtools view -h -F 4 $latest } ## <-- only include the mapped (mapping flag is "4" apparently) reads
 			       . qq{ | samtools view -bS - } ## <-- Convert back to BAM
 			       . qq{ > $filteredFile });   ## <-- output file location
@@ -195,12 +211,13 @@ foreach my $file (@ARGV) {
 	my $result = alexSystemCall($filterMappedOnlyCmd);
 	if ($result == $SUCCESS_STATUS) {
 	    $latest = $filteredFile;
+	    appendToSummaryFile("Removed unmapped reads.\n  Command was: $filterMappedOnlyCmd\n", $summaryStatsFile);
 	} else {
 	    reportCommandFailure($filterMappedOnlyCmd, $file);
 	    next;
 	}
     }
-
+    
     my $maxFileHandles = int(0.8 * $ULIMIT_RESULT); ## This is for the MAX_FILE_HANDLES_FOR_READ_ENDS_MAP parameter for MarkDuplicates: From the Picard docs: "Maximum number of file handles to keep open when spilling read ends to disk. Set this number a little lower than the per-process maximum number of file that may be open. This number can be found by executing the 'ulimit -n' command on a Unix system. Default value: 8000."
     my $dedupCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${MARKDUPLICATES_PATH} }
 		    . qq{ INPUT=${latest} } ## Picard SortSam.jar accepts both SAM and BAM files as input!
@@ -213,38 +230,28 @@ foreach my $file (@ARGV) {
 	my $result = alexSystemCall($dedupCmd);
 	if ($result == $SUCCESS_STATUS) {
 	    $latest = $dedupFile;
+	    appendToSummaryFile("Removed duplicate reads.\n  Command was: $dedupCmd\n", $summaryStatsFile);
 	} else {
 	    reportCommandFailure($dedupCmd, $file);
 	    next;
 	}
     }
 
-    my $fileToMakeIndexFrom = readlink "$latest";
-    my $prefix = $file;
-    $prefix =~ s/.[bs]am$//i; ## remove the original .bam or .sam prefix!
     my $finalBAM = "${prefix}.processed.bam";
     my $finalIndex = "${prefix}.processed.bai";
     
     if ($shouldGenerateIndex) {
 	## This should always be the LAST step
-	
-	my $indexCmd = qq{samtools index ${fileToMakeIndexFrom} ${finalIndex} };
+	my $indexCmd = qq{samtools index ${latest} ${finalIndex} };
 	my $result = alexSystemCall($indexCmd);
 	if ($result == $SUCCESS_STATUS) { 
-	    alexSystemCall(qq{ mv -f $fileToMakeIndexFrom $finalBAM });
+	    alexSystemCall(qq{ mv -f ${latest} $finalBAM });
 	} else {
 	    reportCommandFailure($dedupCmd, $file);
 	    next;
 	}
     }
-
-    if ($shouldCalculateSummary) { 
-	open FILE, ">", $summaryStatsFile or die $!; { ## Note: OVERWRITING this summary file.
-	    print FILE "Number of reads found in <$file> before any filtering: " . $numReadsBeforeWeFiddledWithTheFile . "\n"; 
-	    print FILE "\n";
-	} close(FILE);
-    }
-
+    
     push(@successfullyMadeFiles, $finalBAM);
     if ($shouldGenerateIndex) {
 	datePrint("[Done] with <$file>. Generated the output files <${finalBAM}> and <${finalIndex}>\n\n");
@@ -263,7 +270,6 @@ if (scalar(@successfullyMadeFiles) > 0) {
 	datePrint("  - $_\n");
     }
 }
-
 
 if (scalar(@failedFiles) > 0) {
     ## If any files FAILED to be processed, then let's report them at the very end here.
