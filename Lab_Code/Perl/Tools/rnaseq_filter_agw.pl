@@ -247,7 +247,7 @@ foreach my $file (@ARGV) {
 	if ($result == $SUCCESS_STATUS) { 
 	    alexSystemCall(qq{ mv -f ${latest} $finalBAM });
 	} else {
-	    reportCommandFailure($dedupCmd, $file);
+	    reportCommandFailure($indexCmd, $file);
 	    next;
 	}
     }
