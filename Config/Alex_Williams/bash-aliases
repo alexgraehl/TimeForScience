@@ -147,7 +147,7 @@ alias cheat="echo \
 \">>> LINES: REPEATABLE RANDOM subset: perl -e 'srand(123456); while(<>){ print if (rand() < 0.5);}' theFile.txt \" ${NL}\
 \">>> LINES: Range from N to M, inclusive (starts at 1):  sed -n N,Mp INPUTFILE  or  for a HUGE file: sed -n '(N+1)q;N,Mp' <-- quit on line (N+1) \" ${NL}\
 \">>> LINES: Every Xth, starting with line Y (starts at 1, not 0): awk 'NR%X==Y' FILE \" ${NL}\
-\">>> LINES based on perl expr: perl -e '$n = 0; while(<>) { if ($n%2 == 0) { print $_; }; $n++; }' \" ${NL}\
+\">>> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">>> LINES Count characters on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
 "
 
