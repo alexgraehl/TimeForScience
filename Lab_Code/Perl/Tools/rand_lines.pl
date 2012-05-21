@@ -90,7 +90,6 @@ $verbose && $allowDupes && print STDERR ("Allowing duplicate lines to be picked.
 my @x = (); ## array of indices of which line to pick
 
 if (!$allowDupes) {
-
     #use List::Util qw(first max maxstr min minstr reduce shuffle sum);
     ## We could have, instead, just used "shuffle" to perl-style shuffle the array! Note that we would have to
     ## figure out how srand interacts with shuffle. (To make sure we get the same results each time.)"
@@ -113,7 +112,6 @@ if (!$allowDupes) {
     }
     #for (my $i = 0
 }
-
 
 
 ## DEBUGGING: print the indices that we chose randomly
@@ -147,7 +145,11 @@ Examples:
 
         rand_lines.pl --randseed=123 -n 10 SOME_FILE.txt > always_same_10_random_lines.txt
 
-        rand_lines.pl -
+To get random items out of a FASTQ file--which has each group of 4 consecutive lines as
+as single logical record, use -r 4. This is somewhat slow on large files (maybe a minute per
+million lines), but still faster than writing a new script yourself!
+        rand_lines.pl -r 4 --randseed=12345 -n 1000000 FASTQFILE.fq > MILLION_LINES.fq
+
 Supports more-than-one-line-per-record files. So it can deal with, for example, FASTA files.
 
 Options:
