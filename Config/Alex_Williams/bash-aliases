@@ -80,7 +80,7 @@ NL="\$'\\n'" # newline!
 #
 alias cheat="echo \
 \">>> Check directories for differences (by modification time): ionice -c3 rsync --dry-run --delete -vr /dirA /dirB \" ${NL}\
-\">>> Find all .R files in a directory:   find ./ -name \"*.R\" -exec ls \'{}\' \" ${NL}\
+\">>> Find all .R files in a directory:   find ./ -name \\\"*.R\\\" -exec ls \'{}\' \" ${NL}\
 \">>> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
 \" \" ${NL}\
 \">>> Literal tab in bash: \$'\\t' \" ${NL}\
@@ -130,6 +130,7 @@ alias cheat="echo \
 \">>> BASH: redirect STDERR & STDOUT both to console and to a file: THECMD 2>&1 | tee --append your.log.file\" ${NL}\
 \">>> BASH: See a function definition:   type FUNCTIONNAME \" ${NL}\
 \">>> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ${NL}\
+\">>> XARGS/FIND: find . -name SOMEFILE -print0 | xargs -0 -I {} sh -c \\\"echo {}; thing {} | piped here | wc -l\\\" \" ${NL}\
 \">>> REGEXP Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \$ work \" ${NL}\
 \">>> REGEXP EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
 \" \" ${NL}\
