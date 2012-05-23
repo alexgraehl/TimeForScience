@@ -140,8 +140,9 @@ alias cheat="echo \
 \">>> RNASEQ Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ${NL}\
 \">>> DNA Reverse-complement:  perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
 \">>> APACHE error log: sudo less -S /var/log/apache2/error.log \" ${NL}\
-\">>> OS X Dictionary: /usr/share/dict/words \" ${NL}\
-\">>> OS X Image type convert: mkdir -p PNGS_TO_JPEG; sips -s format jpeg *.png --out PNGS_TO_JPEG \" ${NL}\
+\">>> Mac OS X Dictionary: /usr/share/dict/words \" ${NL}\
+\">>> Mac OS X Image type convert: mkdir -p PNGS_TO_JPEG; sips -s format jpeg *.png --out PNGS_TO_JPEG \" ${NL}\
+\">>> Mac OS X recursively clear the worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
 \">>> COPROC: coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ${NL}\
 \">>> AWK / FASTQ: Truncate a fastq file to length 19: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
 \">>> LINES: RANDOM subset (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'print if (rand() < 0.5);' theFile.txt \" ${NL}\
@@ -156,7 +157,7 @@ alias cheat="echo \
 
 #pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
 
-[[ "$color_prompt" && "$isMac" ]] && AGW_LS_OPT=' -F -G ' ## Mac: Color option is -G
+[[ "$color_prompt" && "$isMac" ]] && AGW_LS_OPT=' -F -G -@ ' ## Mac: Color option is -G. Also, on a Mac, show the extended attributes (-@)
 [[ "$color_prompt" && (-z "$isMac") ]] && AGW_LS_OPT=' --indicator-style=slash --color=auto ' ## Ubuntu: color is --color=auto
 
 alias ls='/bin/ls ${AGW_LS_OPT}'
