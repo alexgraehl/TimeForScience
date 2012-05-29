@@ -77,6 +77,10 @@ PAREN_OPEN='('
 
 NL="\$'\\n'" # newline!
 
+alias maccheat="echo \
+\">>> No safari page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
+"
+
 #
 alias cheat="echo \
 \">>> Check directories for differences (by modification time): ionice -c3 rsync --dry-run --delete -vr /dirA /dirB \" ${NL}\
