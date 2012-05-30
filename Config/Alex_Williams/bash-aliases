@@ -79,6 +79,8 @@ NL="\$'\\n'" # newline!
 
 alias maccheat="echo \
 \">>> No safari page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
+\">>> Filesystem: show what files are being read/written: sudo fs_usage \" ${NL}\
+\">>> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
 "
 
 #
