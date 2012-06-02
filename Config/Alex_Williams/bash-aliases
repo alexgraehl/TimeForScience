@@ -81,9 +81,10 @@ alias maccheat="echo \
 \">>> No safari page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
 \">>> Filesystem: show what files are being read/written: sudo fs_usage \" ${NL}\
 \">>> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
+\">>> Mac OS X show weird file flags: ls -l -@ \" ${NL}\
+\">>> Mac OS X recursively clear worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
 "
 
-#
 alias cheat="echo \
 \">>> Check directories for differences (by modification time): ionice -c3 rsync --dry-run --delete -vr /dirA /dirB \" ${NL}\
 \">>> Find all .R files in a directory:   find ./ -name \\\"*.R\\\" -exec ls \'{}\' \" ${NL}\
@@ -149,7 +150,6 @@ alias cheat="echo \
 \">>> APACHE error log: sudo less -S /var/log/apache2/error.log \" ${NL}\
 \">>> Mac OS X Dictionary: /usr/share/dict/words \" ${NL}\
 \">>> Mac OS X Image type convert: mkdir -p PNGS_TO_JPEG; sips -s format jpeg *.png --out PNGS_TO_JPEG \" ${NL}\
-\">>> Mac OS X recursively clear the worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
 \">>> COPROC: coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ${NL}\
 \">>> AWK / FASTQ: Truncate a fastq file to length 19: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
 \">>> LINES: RANDOM subset (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'print if (rand() < 0.5);' theFile.txt \" ${NL}\
