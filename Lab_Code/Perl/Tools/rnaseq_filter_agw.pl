@@ -284,10 +284,13 @@ datePrint("[DONE]\n\n");
 
 __DATA__
 
-rnaseq_filter_agw.pl   [bam/sam files]
+rnaseq_filter_agw.pl   [any number of bam/sam files may be specified here]
 
-Processes any number of input SAM or BAM alignment files, and
-generates SORTED, INDEXED, AND FILTERED ouptut BAM files.
+Processes any number of input SAM or BAM alignment files, and by default:
+   - Removes any UNMAPPED reads
+   - SORTS the files in COORDINATE order
+   - Generates an output BAM file and a BAI index file.
+
 The output is always a BAM file, regardless of the input.
 
 Example:   rnaseq_filter_agw.pl  test.bam samtest2.sam test3.bam
@@ -296,8 +299,9 @@ Output: For the example above, the output filenames would be:
    BAM: "test.processed.bam" and "samtest2.processed.bam" and "test3.processed.bam"
    BAI: "test.processed.bai" and "samtest2.processed.bai" and "test3.processed.bai"
 
-By default, the filtering steps remover unmapped reads and duplicate reads. If you want
-to be very conservative and keep every read, specify "--keepall" on the command line.
+Note that this is a DESTRUCTIVE operation that removes reads:
+   * If you want to keep EVERY read, specify "--keepall" on the command line.
+   * Otherwise, unmapped reads are removed and duplicates are collapsed down to one.
 
 OPTIONS:
    --keep or --keepall: Do NOT remove any reads. Just sort & index.
@@ -308,9 +312,9 @@ FINE-TUNING OPTIONS:
    --nosort:      Do not sort the input file (Default: output is sorted)
    --nomapfilter: Do not remove the unmapped reads (Default: unmappable reads are removed)
 
-Requres the following additional software:
+Requires the following additional programs to already be installed AND in your $PATH:
     * These programs must be in your $PATH (even the Picard JARs must be on the path!)
-    * <samtools> must be installed (to filter the bam files)
+    * <samtools> must be installed (this is used to remove the unmapped reads)
         - You can install it with `apt-get install samtools`
     * <Picard> must be installed in order to properly sort the sam/bam files.
         - Specifically, we use SortSam.jar and MarkDuplicates.jar.
