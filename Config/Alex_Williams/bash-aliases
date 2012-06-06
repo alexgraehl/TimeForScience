@@ -83,6 +83,7 @@ alias maccheat="echo \
 \">>> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
 \">>> Mac OS X show weird file flags: ls -l -@ \" ${NL}\
 \">>> Mac OS X recursively clear worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
+\">>> Mac OS X show library: chflags nohidden ~/Library/ \" ${NL}\
 "
 
 alias cheat="echo \
