@@ -293,7 +293,7 @@ function hglog {
 
 function sciencecom {
     if [[ -d "$1" ]] ; then
-	hg commit --user ${USER} --cwd "$1" -m "Commit by ${USER}" && hg push --cwd "$1" && echo "[Done] commiting and pushing $1 repository" ;
+	hg commit --user ${USER} --cwd "$1" -m "Commit by ${USER}" ; hg push --cwd "$1" ; echo "[Done] commiting and pushing $1 repository" ;
     else
 	echo "No $1 repository exists on this machine."
 	return 1;
@@ -302,7 +302,7 @@ function sciencecom {
 
 function scienceup {
     if [[ -d "$1" ]] ; then
-	hg --cwd "$1" pull && hg --cwd "$1" update && echo "[Done] pulling and updating $1 repository"
+	hg --cwd "$1" pull ; hg --cwd "$1" update ; echo "[Done] pulling and updating $1 repository"
     else
 	echo "No $1 repository exists on this machine."
 	return 1;
