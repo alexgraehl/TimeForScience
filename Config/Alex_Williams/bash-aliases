@@ -78,12 +78,16 @@ PAREN_OPEN='('
 NL="\$'\\n'" # newline!
 
 alias maccheat="echo \
-\">>> No safari page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
+\">>> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
 \">>> Filesystem: show what files are being read/written: sudo fs_usage \" ${NL}\
 \">>> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
 \">>> Mac OS X show weird file flags: ls -l -@ \" ${NL}\
 \">>> Mac OS X recursively clear worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
 \">>> Mac OS X show library: chflags nohidden ~/Library/ \" ${NL}\
+\">>> Image SIPS: PNG -> JPEG: mkdir outjpegs; sips -s format jpeg *.png --out outjpegs \" ${NL}\
+\">>> Imagemagick convert recursive: find ./ -name \\\"*.jp*\\\" -print0 | xargs -0 -I{} convert -resize 1024x768 -quality 85 {} {} \" ${NL}\
+\">>> Mac batch change modification time: find . -print0 | xargs -0 SetFile -d '12/31/2012 12:00:00 PM' \" ${NL}\
+\">>>  \" ${NL}\
 "
 
 alias cheat="echo \
@@ -159,6 +163,7 @@ alias cheat="echo \
 \">>> LINES: Every Xth, starting with line Y (starts at 1, not 0): awk 'NR%X==Y' FILE \" ${NL}\
 \">>> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">>> LINES Count characters on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
+\">>>  \" ${NL}\
 "
 
 # Shell navigation / commands
