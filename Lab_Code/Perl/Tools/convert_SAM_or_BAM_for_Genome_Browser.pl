@@ -215,6 +215,8 @@ convert_SAM_or_BAM_for_Genome_Browser.pl --fasta=<genome_fasta_file> <INPUT BAM 
 
 Processes a SAM or BAM alignment file to generate files for the UCSC Genome Browser.
 
+To handle MULTIPLE files in the Bash shell, try this: for f in `ls */accepted_hits.bam`; do convert_SAM_or_BAM_for_Genome_Browser.pl $f; done
+
 Options:
     * --nowig: If you do not want to generate a wiggle track, you can say `--nowig` and omit the --fasta file.
     * --alreadysorted: If your file is already coordinate-sorted, then you can say `--alreadysorted` to avoid re-sorting it.
