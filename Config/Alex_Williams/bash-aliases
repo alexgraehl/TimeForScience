@@ -118,8 +118,10 @@ alias cheat="echo \
 \" \" ${NL}\
 \">>> Shell: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
 \">>> Shell: Redirect stdout+stderr to a pipe: CMD 2>&1 | less -S \" ${NL}\
+\">>> Shell: Modify variable: newV=\\\$(sed -e's/a/1/; s/b/2/; s/c/3/' <<< \\\$oldV) \" ${NL}\
 \" \" ${NL}\
 \">>> AWK: sum numbers in a column 1 of a file: cat THEFILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
+\">>> NIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
 \">>> NIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
 \">>> NIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
 \">>> NIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
