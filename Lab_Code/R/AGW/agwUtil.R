@@ -1097,6 +1097,39 @@ agwMatrixMatch <- function(listOfVectors) {
 }
 
 
+agwMatrixMeanByCertainColumns <- function(in.mat, column.group.ids.vec) {
+     ## groupmean / matrix by group mean / matrix average by column / groupaverage / colaverage
+     ## in.mat: an input matrix
+     ## column.group.ids.vec: a correspondence for each COLUMN to which group it's in.
+     ## Example input:
+     ## matrix:   GroupA  GroupA   GroupB   GroupC
+     ##               1       3         7      NA
+     ##               0       NA        8       8
+     ## input column.group.ids.vec:
+     ##    c("GroupA", "GroupA", "GroupB", "GroupC")
+     ## output:
+     ## matrix:   GroupA   GroupB   GroupC
+     ##              2        7        NA
+     ##              0        8         8        <-- replaced by MEANS, removing NA when required
+     assert.agw(length(column.group.ids.vec == ncol(in.mat)), "Must be one group ID per column of the input matrix.")
+     groupMeansPerGene.list <- list()
+     uniqueGroupIDs <- unique(column.group.ids.vec)
+     for (ggg in uniqueGroupIDs) {
+          colIndicesThatMatchThisGroup <- which(column.group.ids.vec == ggg)
+          assert.agw((length(colIndicesThatMatchThisGroup) > 0), "No groups matched? Weird, this should be impossible.")
+          subsetThisGroupOnly.mat <- in.mat[ , which(column.group.ids.vec == ggg), drop=F]
+          theseMeans.vec <- rowMeans(subsetThisGroupOnly.mat, na.rm=T)
+          theseMeans.vec[!is.finite(theseMeans.vec)] <- NA
+          groupMeansPerGene.list[[ggg]] <- theseMeans.vec
+     }
+     final.mat <- sapply(groupMeansPerGene.list, cbind)
+     rownames(final.mat) <- rownames(in.mat)
+     colnames(final.mat) <- uniqueGroupIDs
+     return(final.mat) ## <-- now all the columns for the SAME group ID have been collapsed down to their mean value!
+}
+
+
+
 ## =================================================================
 agwPlotLinesViolinDensity <- function(inVec, col="#00000077",scaleToY=NULL, mirror=TRUE, border=NA) {
      ## Given an input vector of values, it calculates the
