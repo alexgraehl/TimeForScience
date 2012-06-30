@@ -174,6 +174,7 @@ foreach my $file (@ARGV) {
     }
 
     $latest = $file; ## the latest thing to operate on is the original input file
+    my $numReadsBeforeWeFiddledWithTheFile = "UNDEFINED";
     
     ## Note: Picard sorting takes both SAM *and* BAM files, and outputs to BAM. So from here on out, we will be operating on BAM files only.
     my $sortCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${SORTSAM_PATH} }
@@ -191,8 +192,7 @@ foreach my $file (@ARGV) {
 	    datePrint("DEBUGGING MESSAGE FROM ALEX: Maybe the input file didn't have a SAM/BAM *header* line? The header is REQUIRED for sorting---check your input file ($file) and make sure it has header lines. If it doesn't, then you'll need to re-header the file with samtools (`samtools reheader <in.header.sam> <in.bam>`).\n");
 	    next;
 	}
-
-	my $numReadsBeforeWeFiddledWithTheFile = "UNDEFINED";
+	
 	my $countAllReadsCmd = qq{${SAMTOOLS_PATH} view ${sortedFile} | wc -l };
 	if ($shouldCalculateSummary) { 
 	    # Count the number of reads in the file BEFORE we filter
@@ -236,6 +236,20 @@ foreach my $file (@ARGV) {
 	    next;
 	}
     }
+
+    my $numReadsAfterProcessing = "UNDEFINED";
+    my $countAllReadsAfterProcessingCmd = qq{${SAMTOOLS_PATH} view ${latest} | wc -l };
+    if ($shouldCalculateSummary) { 
+	# Count the number of reads in the file BEFORE we filter
+	# but AFTER we run the sorting command, to make sure the file is a BAM file.
+	$numReadsAfterProcessing = `$countAllReadsAfterProcessingCmd`;
+	appendToSummaryFile(("\nNumber of reads found in <$file> after filtering: " . $numReadsAfterProcessing . "\n\n"), $summaryStatsFile);
+
+	my $fractRemaining = sprintf "%.3f", $numReadsAfterProcessing/$numReadsBeforeWeFiddledWithTheFile;
+	appendToSummaryFile(("\n(The fraction of remaining reads is: " . $fractRemaining . " )\n\n"), $summaryStatsFile);
+    }
+
+
 
     my $finalBAM = "${prefix}.processed.bam";
     my $finalIndex = "${prefix}.processed.bai";
