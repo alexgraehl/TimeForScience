@@ -174,7 +174,6 @@ foreach my $file (@ARGV) {
     }
 
     $latest = $file; ## the latest thing to operate on is the original input file
-    my $numReadsBeforeWeFiddledWithTheFile = "UNDEFINED";
     
     ## Note: Picard sorting takes both SAM *and* BAM files, and outputs to BAM. So from here on out, we will be operating on BAM files only.
     my $sortCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${SORTSAM_PATH} }
@@ -193,16 +192,16 @@ foreach my $file (@ARGV) {
 	    next;
 	}
 	
-	my $countAllReadsCmd = qq{${SAMTOOLS_PATH} view ${sortedFile} | wc -l };
-	if ($shouldCalculateSummary) { 
-	    # Count the number of reads in the file BEFORE we filter
-	    # but AFTER we run the sorting command, to make sure the file is a BAM file.
-	    $numReadsBeforeWeFiddledWithTheFile = `$countAllReadsCmd`;
-	    appendToSummaryFile(("\nNumber of reads found in <$file> before any filtering: " . $numReadsBeforeWeFiddledWithTheFile . "\n\n"), $summaryStatsFile);
-	}
     }
-
-
+    
+    my $numReadsBeforeWeFiddledWithTheFile = "UNDEFINED";
+    my $countAllReadsCmd = qq{${SAMTOOLS_PATH} view ${latest} | wc -l };
+    if ($shouldCalculateSummary) { 
+	# Count the number of reads in the file BEFORE we filter
+	# but AFTER we run the sorting command, to make sure the file is a BAM file.
+	$numReadsBeforeWeFiddledWithTheFile = `$countAllReadsCmd`;
+	appendToSummaryFile(("\nNumber of reads found in <$file> before any filtering: " . $numReadsBeforeWeFiddledWithTheFile . "\n\n"), $summaryStatsFile);
+    }
     
     my $filterMappedOnlyCmd = (qq{samtools view -h -F 4 $latest } ## <-- only include the mapped (mapping flag is "4" apparently) reads
 			       . qq{ | samtools view -bS - } ## <-- Convert back to BAM
