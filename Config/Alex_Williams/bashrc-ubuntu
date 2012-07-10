@@ -145,8 +145,8 @@ fi
 
 
 if [[ -n "$color_prompt" ]]; then
-    ## previously: \u@ <-- user at host
-    PS1="\[${a_machine_prompt_main_color}\]\$(date +[%d]%H:%M) \u@\h:\W]\$\[\033[0m\]\[${a_end_color} "
+    PS1="$(date +[%d]%H:%M) \u@\h:\W]\$ "
+    #PS1="\[${a_machine_prompt_main_color}\]\$(date +[%d]%H:%M) \u@\h:\W]\$\[\033[0m\]\[${a_end_color} "
     #alias ls='ls --color=auto'
     #alias dir='dir --color=auto'
     #alias vdir='vdir --color=auto'
@@ -155,7 +155,7 @@ if [[ -n "$color_prompt" ]]; then
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
 else
-    PS1="[\$(date +%H:%M)] [\u@\h:\W]\$ "
+    PS1="$(date +[%d]%H:%M) \u@\h:\W]\$ "
 fi
 
 # enable color support of ls
