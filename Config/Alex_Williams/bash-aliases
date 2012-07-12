@@ -151,7 +151,8 @@ alias cheat="echo \
 \">>> BASH: See a function definition:   type FUNCTIONNAME \" ${NL}\
 \">>> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ${NL}\
 \">>> XARGS/FIND: find . -name SOMEFILE -print0 | xargs -0 -I {} sh -c \\\"echo {}; thing {} | piped here | wc -l\\\" \" ${NL}\
-\">>> REGEXP Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \$ work \" ${NL}\
+\">>> REGEXP Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \\\$ work \" ${NL}\
+\">>> UNIX/Perl fast sort with ONE header line: cat FILE | perl -e 'print scalar (<>); print sort <>' > OUTFILE \" ${NL}\
 \">>> REGEXP EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
 \" \" ${NL}\
 \">>> RNASEQ SAM --> BAM:  samtools view -bS in.sam > out.bam \" ${NL}\
