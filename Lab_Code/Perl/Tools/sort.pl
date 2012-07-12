@@ -22,6 +22,8 @@
 
 use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
 
+use Scalar::Util qw(looks_like_number);
+
 use strict;
 use warnings;
 
@@ -112,17 +114,17 @@ exit(0);
 sub fancyCompare {
    my $x = $$a[1];
    my $y = $$b[1];
-   my $n = scalar(@{$x});
-   my $m = scalar(@{$y});
-   return &fancyCompareRecursive($x, $y, 0, ($n > $m ? $m : $n), 0);
+   my $n = scalar(@{$x}); ## size
+   my $m = scalar(@{$y}); ## size
+   return fancyCompareRecursive($x, $y, 0, ($n > $m ? $m : $n), 0);
 }
 
 sub fancyCompareRev {
    my $x = $$a[1];
    my $y = $$b[1];
-   my $n = scalar(@{$x});
-   my $m = scalar(@{$y});
-   return &fancyCompareRecursive($x, $y, 0, ($n > $m ? $m : $n), 1);
+   my $n = scalar(@{$x}); ## size
+   my $m = scalar(@{$y}); ## size
+   return fancyCompareRecursive($x, $y, 0, ($n > $m ? $m : $n), 1); ## REVERSE
 }
 
 sub fancyCompareRecursive {
@@ -130,17 +132,20 @@ sub fancyCompareRecursive {
    my $result;
    if ($i >= $n) {
       $result = 0;
-   } elsif (&isEmpty($$x[$i]) and &isEmpty($$y[$i])) {
-      $result = &fancyCompareRecursive($x, $y, $i+1, $n, $rev);
-   }
-   elsif (&isEmpty($$y[$i])) {
+   } elsif (isEmpty($$x[$i]) and isEmpty($$y[$i])) {
+      $result = fancyCompareRecursive($x, $y, $i+1, $n, $rev);
+   } elsif (isEmpty($$y[$i])) {
       $result = -1;
-   } elsif (&isEmpty($$x[$i])) {
+   } elsif (isEmpty($$x[$i])) {
       $result = 1;
-   } elsif ($$x[$i] == $$y[$i]) {
-      $result = &fancyCompareRecursive($x, $y, $i+1, $n, $rev);
+   } elsif ( looks_like_number($$x[$i]) ? ($$x[$i] == $$y[$i]) : ($$x[$i] eq $$y[$i]) ) {
+       # if it looks like a number, then compare it NUMERICALLY, otherwise compare it TEXTUALLY
+      $result = fancyCompareRecursive($x, $y, $i+1, $n, $rev);
    } else {
-      $result = ($rev ? -1 : 1) * ($$x[$i] > $$y[$i] ? 1 : -1);
+       my $comping = looks_like_number($$x[$i]) ? ($$x[$i] > $$y[$i] ? 1 : -1) : ($$x[$i] gt $$y[$i] ? 1 : -1);
+       # if it looks like a number, then compare it NUMERICALLY, otherwise compare it TEXTUALLY
+
+       $result = ($rev ? -1 : 1) * $comping;
    }
    return $result;
 }
