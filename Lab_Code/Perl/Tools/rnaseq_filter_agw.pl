@@ -80,23 +80,6 @@ sub reportCommandFailure($$) {
     push(@failedFiles, $fileThatFailed);
 }
 
-# sub verifyFastaIndexFileOrDie() {
-#     if ($shouldGenerateIndex) {
-# 	if (!defined($genomeFastaFile)) {
-# 	    die "ARGUMENT ERROR: If you want to generate an index (.bai) file, you need to specify a fasta file on the command line using the --fasta=FILENAME option.\n"
-# 		. "Or you can OMIT generating a fasta file by specifiying the option --noindex .\n"
-# 		. "You did not specify a fasta file.\n";
-# 	}
-# 	if ((not -e $genomeFastaFile) or (not -r $genomeFastaFile)) {
-# 	    die "ARGUMENT / FILE READING ERROR: We need a valid genome fasta file in order to generate an index index (.bai) file.\n"
-# 		. "The file you specified cannot be read or does not exist. Here is the file you specified as the fasta file:\n"
-# 		. "   >  $genomeFastaFile \n"
-# 		. "Please double-check to make sure that file actually exists and is readable!\n"
-# 		. "Alternatively, you can decide not to make an index at all by specifiying --noindex.\n";
-# 	}
-#     }
-# }
-
 sub verifyToolPathsOrDie() {
     # Below: Check for the location of some required binaries.
     # We depend on samtools & the Picard suite being installed already.
@@ -112,8 +95,8 @@ GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
 	   , "mapfilter!" => \$shouldFilterMappedOnly ## specify "--nomapfilter" to avoid filtering out the unmappable reads
 	   , "keepdupes" => sub { $shouldRemoveDupes = 0; }
 #	   , "f|fasta" => \$genomeFastaFile ## used for generating the index
-	   , "noindex" => sub { $shouldGenerateIndex = 0; }
-	   , "nosummary" => sub { $shouldCalculateSummary = 0; }
+	   , "index!" => \$shouldGenerateIndex
+	   , "summary!" => \$shouldCalculateSummary
 	   , "keep|keepall!" => \$keepAllReads
 	   , "v|V|version|Version" => sub { printVersionAndQuit(); }
 	   , "dry|dryrun|dryRun|dry_run|dry-run" => \$isDryRun
@@ -130,6 +113,7 @@ if ($keepAllReads) {
     print STDOUT "We are running in the MOST CONSERVATIVE mode, where we DO NOT REMOVE ANY READS.\n";
     print STDOUT "   * Unmapped reads will be RETAINED.\n";
     print STDOUT "   * Duplicate-location reads will be RETAINED.\n";
+    print STDOUT "If you specified 'nomapfilter', that option is now OVERRIDDEN.\n";
     $shouldRemoveDupes = 0;
     $shouldFilterMappedOnly = 0;
 }
@@ -247,8 +231,6 @@ foreach my $file (@ARGV) {
 	my $fractRemaining = sprintf "%.3f", $numReadsAfterProcessing/$numReadsBeforeWeFiddledWithTheFile;
 	appendToSummaryFile(("\n(The fraction of remaining reads is: " . $fractRemaining . " )\n\n"), $summaryStatsFile);
     }
-
-
 
     my $finalBAM = "${prefix}.processed.bam";
     my $finalIndex = "${prefix}.processed.bai";
