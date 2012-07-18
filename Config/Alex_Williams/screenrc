@@ -1,5 +1,7 @@
 # -*-Sh-*-  <-- Tells emacs what syntax highlighting to use
 
+# Note: tmux is another "screen-like" program I could probably be using
+
 # http://gentoo-wiki.com/TIP_Using_screen
 
 # The following lines allow SCREEN to run in 256 colors
@@ -25,15 +27,13 @@ defbce "on"  # erase background with current bg color (useful for 256 color term
 
 shell -$SHELL
 
+### ============ Make a "tab bar" at the bottom ===========
 hardstatus alwayslastline
-
 # The way this works:
 # For the "tab bar":
-# THe first %{= gW} is the tabs BEFORE the active tab, the second is for the active tab, and the last is for the tabs AFTER the active one
+# The first %{= gW} is the tabs BEFORE the active tab, the second is for the active tab, and the last is for the tabs AFTER the active one
 hardstatus string ' %{bW}%-Lw%{rW}%n %t%{bW}%+Lw'
-
 # old status:  hardstatus string ' %{bW}%-Lw%{rW}%50>%n%f* %t%{bW}%+Lw'
-
 
 bind x  # Remove the "screen lock" key command
 bind ^x  # Remove the "screen lock" key command
@@ -61,11 +61,12 @@ bind ^r source "${HOME}/.screenrc"  # reload the screenrc!
 # Example: to make it white text on magenta background: %{= mW}
 caption always "%{yb}Screen %n : %t"
 
-defscrollback 5000
+## Scrollback buffer
+defscrollback 50000
 
 #shell tcsh
 
-# Set the "escape" character to ctrl-o instead of the default, which is ctrl-a
+# Set the "escape" character to ctrl-o instead of the default, which is ctrl-a. Now it won't fight with "Ctrl-A='go to beginning of line!'"
 escape ^Oo
 
 
