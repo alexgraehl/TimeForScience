@@ -96,12 +96,12 @@ my $bamPrefixWithoutFileExtension = $bamFilename; ## Don't just get the basename
 $bamPrefixWithoutFileExtension =~ s/\.bam$//i;
 $bamPrefixWithoutFileExtension =~ s/[\/:;,]/_/g; ## slashes and ':;,' characters go to underscores
 
-my $browserTrackDescriptionFile = "Browser_Track_Descriptions.${bamPrefixWithoutFileExtension}.txt";
-my $sortBamFilePrefix   = "Browser_sorted.${bamPrefixWithoutFileExtension}";
+my $browserTrackDescriptionFile = "Browser.Track.Descriptions.${bamPrefixWithoutFileExtension}.txt";
+my $sortBamFilePrefix   = "Browser.sort.${bamPrefixWithoutFileExtension}";
 my $sortBamFullFilename = "${sortBamFilePrefix}.bam";
 my $bamIndexOutfile     = "${sortBamFilePrefix}.bam.bai";
-my $bedGraphIntermediateFile = "Browser_tmp.${bamPrefixWithoutFileExtension}.bedgraph";
-my $bigWigOutFile       = "Browser.${bamPrefixWithoutFileExtension}.bigwig.bw";
+my $bedGraphIntermediateFile = "Browser.tmp.${bamPrefixWithoutFileExtension}.bedgraph";
+my $bigWigOutFile       = "Browser.${bamPrefixWithoutFileExtension}.bw";
 
 
 if ((-e $sortBamFullFilename) && (-s $sortBamFullFilename) and (-e $bamIndexOutfile) && (-s $bamIndexOutfile)) {
@@ -159,18 +159,23 @@ if ($makeWig) {
 sub browserTrackString($$) {
     my ($type, $filename) = @_; ## input arguments: type must be bigWig or bam
     if ($type ne "bigWig" and $type ne "bam") { die "Sorry, we only know how to write BIGWIG and BAM files. Problem!\n"; }
-    my $redColor = "255,0,0";
-    my $blueColor = "0,0,255";
+    my $redColor = "255,0,0";  ## R, G, B, from 0 to 255
+    my $blueColor = "0,0,255"; ## R, G, B, from 0 to 255
     my $color;
-    if ($type eq "bigWig") { $color = qq{color="$redColor"}; }
-    if ($type eq "bam") { $color = qq{colorByStrand="$redColor $blueColor"}; }
-
+    my $parenthetical = "NA"; ## <-- a user-visible additional comment that goes at the end of the track name
+    if ($type eq "bigWig") { $color = qq{color="$redColor"}; $parenthetical = qq{}; }
+    if ($type eq "bam") { $color = qq{colorByStrand="$redColor $blueColor"}; $parenthetical = qq{ (reads)}; }
+    
     my $visStatus = "full";
-    if ($type eq "bam") { $visStatus = qq{pack}; }
-    if ($type eq "bigWig") { $visStatus = qq{full}; }
+    if ($type eq "bam") { $visStatus = qq{dense}; } ## bam tracks are DENSE (almost totally hidden) by default
+    if ($type eq "bigWig") { $visStatus = qq{full}; } ## bigwig tracks are FULL (shown) by default
 
+    my $cleanedUpName = $filename;
+    $cleanedUpName =~ s/\.bam$//i; $cleanedUpName =~ s/\.bw$//i; ## remove file extensions
+    $cleanedUpName =~ s/.accepted_hits//i; $cleanedUpName =~ s/.sort//i; $cleanedUpName =~ s/Browser.//i;
+    
     my $url = "http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/YOUR_FILE_LOCATION/${filename}";
-    my $str = qq{track type=${type} name="${filename} (${type})" description="${filename} (${type})" bigDataUrl="${url}" visibility=${visStatus} ${color}\n};
+    my $str = qq{track type=${type} name="${cleanedUpName}${parenthetical}" description="${cleanedUpName}${parenthetical}" bigDataUrl="${url}" visibility=${visStatus} ${color}\n};
     return($str);
 }
 
