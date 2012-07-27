@@ -71,6 +71,7 @@ sub appendToSummaryFile($$) {
     my ($whatToWrite, $filename) = @_;
     open FILE, ">>", $filename or die $!; { ## Note: APPENDING TO this summary file.
 	print FILE $whatToWrite;
+	print STDERR $whatToWrite;
     } close(FILE);
 }
 
@@ -136,28 +137,40 @@ foreach my $file (@ARGV) {
     if (!$fileOK) {
 	datePrint("We could not read valid SAM/BAM data from <$file>  (Please double-check this file path.)\n");
 	$numFilesNotOK++;
-	next; # Skip to next iteration of the loop
+	next; # Go to the next file...
     }
 
     datePrint("Now processing the file <$file>...\n");
-    my $filteredFile     = "$file.filtered_mapped_only.tmp.bam";
+    my $filteredFile     = "$file.filtered.tmp.bam";
     my $sortedFile       = "$file.sorted_by_coord.tmp.bam";
     my $dedupFile        = "$file.no_duplicates.tmp.bam";
     my $dedupExtraMetricsFile = "$file.no_duplicates.extra.txt";
     my $summaryStatsFile = "$file.summary.stats.txt";
     
-    open FILE, ">", $summaryStatsFile or die $!; { ## <-- Note: NOT APPENDING -- clearing out the file
+    open FILE, ">", $summaryStatsFile or die $!; { ## <-- Note: NOT APPENDING -- clearing out the file completely!!!
 	print FILE "Summary file for <$file>:\n";
     } close(FILE);
 
-    ### Now to actually RUN the various things ###
-    if (!$shouldSort) {
-	if (!$isBam) {
-	    die "If you specified to NOT sort, then you have to input a BAM file. SAM files are not allowed when there is no sorting. Sorry. We could fix this by adding some kind of samtools convert-to-bam here.\n";
-	}
-    }
+    $latest = $file; ## "$latest" is a variable that holds the filename of the MOST RECENT file. It needs to constantly be updated as we change the filenames after processing files. To start, it's the base $file name.
 
-    $latest = $file; ## the latest thing to operate on is the original input file
+    ### Now to actually RUN the various things ###
+
+
+    if (!$isBam) {
+	appendToSummaryFile("As the very first step, converting SAM --> BAM for file <$latest>...\n", $summaryStatsFile);
+	my $bamName = $latest;
+	$bamName =~ s/[.]sam$/.bam/;
+	my $convertToBamCmd = qq{samtools view -bS ${latest} > ${bamName} };
+	my $result = alexSystemCall($convertToBamCmd);
+	if ($result == $SUCCESS_STATUS) {
+	    $latest = $bamName;
+	    appendToSummaryFile("Converted SAM --> BAM.\n  Command was: $convertToBamCmd\n", $summaryStatsFile);
+	} else {
+	    reportCommandFailure($convertToBamCmd, $latest);
+	    next; ## go to the next file...
+	}
+
+    }
     
     ## Note: Picard sorting takes both SAM *and* BAM files, and outputs to BAM. So from here on out, we will be operating on BAM files only.
     my $sortCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${SORTSAM_PATH} }
@@ -165,27 +178,27 @@ foreach my $file (@ARGV) {
 		   . qq{ SORT_ORDER=coordinate }
 		   . qq{ OUTPUT=${sortedFile} });
     if ($shouldSort) {
-	appendToSummaryFile("Sorting <$file>...\n", $summaryStatsFile);
+	appendToSummaryFile("Sorting <$latest>...\n", $summaryStatsFile);
 	my $result = alexSystemCall($sortCmd);	
 	
 	if ($result == $SUCCESS_STATUS) {
 	    $latest = $sortedFile;
-	    appendToSummaryFile("Sorted <$file> with Picard SortSam.jar.\n  Command was: $sortCmd\n", $summaryStatsFile);
+	    appendToSummaryFile("Sorted <$latest> with Picard SortSam.jar.\n  Command was: $sortCmd\n", $summaryStatsFile);
 	} else {
-	    reportCommandFailure($sortCmd, $file);
-	    datePrint("DEBUGGING MESSAGE FROM ALEX: Maybe the input file didn't have a SAM/BAM *header* line? The header is REQUIRED for sorting---check your input file ($file) and make sure it has header lines. If it doesn't, then you'll need to re-header the file with samtools (`samtools reheader <in.header.sam> <in.bam>`).\n");
-	    next;
+	    reportCommandFailure($sortCmd, $latest);
+	    datePrint("DEBUGGING MESSAGE FROM ALEX: Maybe the input file didn't have a SAM/BAM *header* line? The header is REQUIRED for sorting---check your input file ($latest) and make sure it has header lines. If it doesn't, then you'll need to re-header the file with samtools (`samtools reheader <in.header.sam> <in.bam>`).\n");
+	    next; ## go to the next file...
 	}
 	
     }
     
     my $numReadsBeforeWeFiddledWithTheFile = "UNDEFINED";
-    my $countAllReadsCmd = qq{${SAMTOOLS_PATH} view ${latest} | wc -l };
+    my $countAllReadsCmd = qq{${SAMTOOLS_PATH} view -c ${latest} };
     if ($shouldCalculateSummary) { 
 	# Count the number of reads in the file BEFORE we filter
 	# but AFTER we run the sorting command, to make sure the file is a BAM file.
 	$numReadsBeforeWeFiddledWithTheFile = `$countAllReadsCmd`;
-	appendToSummaryFile(("\nNumber of reads found in <$file> before any filtering: " . $numReadsBeforeWeFiddledWithTheFile . "\n\n"), $summaryStatsFile);
+	appendToSummaryFile(("\nNumber of reads found in <$latest> before any filtering: " . $numReadsBeforeWeFiddledWithTheFile . "\n\n"), $summaryStatsFile);
     }
     
     ## -F means "skip flag"  (-f means "require flag")
@@ -194,23 +207,25 @@ foreach my $file (@ARGV) {
     ## -F 0x0100 means "skip the 'not primary alignment' flag" (No secondary alignments)
     ## -F 0x0200 means "skip reads that fail vendor/platform quality control"
     ## -F 0x0400 means "skip optical / PCR duplicates"
-    my $samtoolsSkipFlags = " -F 0x4  -F 0x100  -F 0x200  -F 0x400 "
-    my $filterMappedOnlyCmd = (qq{samtools view -h $samtoolsSkipFlags $latest } ## <-- only include the mapped (mapping flag is "4" apparently) reads, only include PRIMARY alignments, and skip any failing-QC reads
-			       . qq{ | samtools view -bS - } ## <-- Convert back to BAM
+    my $samtoolsSkipFlags = qq{ -F 0x4  -F 0x100  -F 0x200  -F 0x400 };
+    my $filterMappedOnlyCmd = (qq{     samtools view -hbu -F 0x4  $latest } ## <-- only include the mapped (mapping flag is "4" apparently) reads, only include PRIMARY alignments, and skip any failing-QC reads
+			       . qq{ | samtools view -hbu -F 0x100 - } ## remove "alignment is not primary"
+			       . qq{ | samtools view -hbu -F 0x200 - } ## <-- remove "read fails QC"
+			       . qq{ | samtools view -hb -F 0x400 - } ## <-- remove "read is PCR or optical duplicate"
 			       . qq{ > $filteredFile });   ## <-- output file location
     if ($shouldFilterMappedOnly) {
 	my $result = alexSystemCall($filterMappedOnlyCmd);
 	if ($result == $SUCCESS_STATUS) {
 	    $latest = $filteredFile;
-	    appendToSummaryFile("samtools: removed reads with certain flags.\n  Command was: $filterMappedOnlyCmd\n", $summaryStatsFile);
-	    appendToSummaryFile("  * Removed reads with flag 0x4 (\"sequence is unmapped\")\n", $summaryStatsFile);
-	    appendToSummaryFile("  * Removed reads with flag 0x100 (\"alignment is not primary\")\n", $summaryStatsFile);
-	    appendToSummaryFile("  * Removed reads with flag 0x200 (\"read fails platform/vendor quality checks\")\n", $summaryStatsFile);
-	    appendToSummaryFile("  * Removed reads with flag 0x400 (\"read is either a PCR or an optical duplicate\")\n", $summaryStatsFile);
-	    appendToSummaryFile("  * We specifically KEPT reads where the *mate pair* (if present) is unmapped (0x8).\n", $summaryStatsFile);
+	    appendToSummaryFile(qq{samtools: removed reads with certain flags.\n  Command was: $filterMappedOnlyCmd\n}, $summaryStatsFile);
+	    appendToSummaryFile(qq{  * Removed reads with flag 0x4 (\"sequence is unmapped\")\n}, $summaryStatsFile);
+	    appendToSummaryFile(qq{  * Removed reads with flag 0x100 (\"alignment is not primary\")\n}, $summaryStatsFile);
+	    appendToSummaryFile(qq{  * Removed reads with flag 0x200 (\"read fails platform/vendor quality checks\")\n}, $summaryStatsFile);
+	    appendToSummaryFile(qq{  * Removed reads with flag 0x400 (\"read is either a PCR or an optical duplicate\")\n}, $summaryStatsFile);
+	    appendToSummaryFile(qq{  * We specifically KEPT reads where the *mate pair* (if present) is unmapped (0x8).\n}, $summaryStatsFile);
 	} else {
-	    reportCommandFailure($filterMappedOnlyCmd, $file);
-	    next;
+	    reportCommandFailure($filterMappedOnlyCmd, $latest);
+	    next; ## go to the next file...
 	}
     }
     
@@ -228,18 +243,18 @@ foreach my $file (@ARGV) {
 	    $latest = $dedupFile;
 	    appendToSummaryFile("Removed duplicate reads.\n  Command was: $dedupCmd\n", $summaryStatsFile);
 	} else {
-	    reportCommandFailure($dedupCmd, $file);
-	    next;
+	    reportCommandFailure($dedupCmd, $latest);
+	    next; ## go to the next file...
 	}
     }
 
     my $numReadsAfterProcessing = "UNDEFINED";
-    my $countAllReadsAfterProcessingCmd = qq{${SAMTOOLS_PATH} view ${latest} | wc -l };
+    my $countAllReadsAfterProcessingCmd = qq{${SAMTOOLS_PATH} view -c ${latest} };
     if ($shouldCalculateSummary) { 
 	# Count the number of reads in the file BEFORE we filter
 	# but AFTER we run the sorting command, to make sure the file is a BAM file.
 	$numReadsAfterProcessing = `$countAllReadsAfterProcessingCmd`;
-	appendToSummaryFile(("\nNumber of reads found in <$file> after filtering: " . $numReadsAfterProcessing . "\n\n"), $summaryStatsFile);
+	appendToSummaryFile(("\nNumber of reads found in <$latest> after filtering: " . $numReadsAfterProcessing . "\n\n"), $summaryStatsFile);
 
 	my $fractRemaining = sprintf "%.3f", $numReadsAfterProcessing/$numReadsBeforeWeFiddledWithTheFile;
 	appendToSummaryFile(("\n(The fraction of remaining reads is: " . $fractRemaining . " )\n\n"), $summaryStatsFile);
@@ -255,8 +270,8 @@ foreach my $file (@ARGV) {
 	if ($result == $SUCCESS_STATUS) { 
 	    alexSystemCall(qq{ mv -f ${latest} $finalBAM });
 	} else {
-	    reportCommandFailure($indexCmd, $file);
-	    next;
+	    reportCommandFailure($indexCmd, $latest);
+	    next; ## go to the next file...
 	}
     }
     
