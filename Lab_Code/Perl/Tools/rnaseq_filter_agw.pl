@@ -165,6 +165,7 @@ foreach my $file (@ARGV) {
 		   . qq{ SORT_ORDER=coordinate }
 		   . qq{ OUTPUT=${sortedFile} });
     if ($shouldSort) {
+	appendToSummaryFile("Sorting <$file>...\n", $summaryStatsFile);
 	my $result = alexSystemCall($sortCmd);	
 	
 	if ($result == $SUCCESS_STATUS) {
@@ -187,14 +188,26 @@ foreach my $file (@ARGV) {
 	appendToSummaryFile(("\nNumber of reads found in <$file> before any filtering: " . $numReadsBeforeWeFiddledWithTheFile . "\n\n"), $summaryStatsFile);
     }
     
-    my $filterMappedOnlyCmd = (qq{samtools view -h -F 4 $latest } ## <-- only include the mapped (mapping flag is "4" apparently) reads
+    ## -F means "skip flag"  (-f means "require flag")
+    ## -F 0x0004 means "skip flag ID #4", which is "the query sequence itself is unmapped"
+    ## -F 0x0008 means skip pairs where the MATE is unmapped . We are NOT skipping these for now.
+    ## -F 0x0100 means "skip the 'not primary alignment' flag" (No secondary alignments)
+    ## -F 0x0200 means "skip reads that fail vendor/platform quality control"
+    ## -F 0x0400 means "skip optical / PCR duplicates"
+    my $samtoolsSkipFlags = " -F 0x4  -F 0x100  -F 0x200  -F 0x400 "
+    my $filterMappedOnlyCmd = (qq{samtools view -h $samtoolsSkipFlags $latest } ## <-- only include the mapped (mapping flag is "4" apparently) reads, only include PRIMARY alignments, and skip any failing-QC reads
 			       . qq{ | samtools view -bS - } ## <-- Convert back to BAM
 			       . qq{ > $filteredFile });   ## <-- output file location
     if ($shouldFilterMappedOnly) {
 	my $result = alexSystemCall($filterMappedOnlyCmd);
 	if ($result == $SUCCESS_STATUS) {
 	    $latest = $filteredFile;
-	    appendToSummaryFile("Removed unmapped reads.\n  Command was: $filterMappedOnlyCmd\n", $summaryStatsFile);
+	    appendToSummaryFile("samtools: removed reads with certain flags.\n  Command was: $filterMappedOnlyCmd\n", $summaryStatsFile);
+	    appendToSummaryFile("  * Removed reads with flag 0x4 (\"sequence is unmapped\")\n", $summaryStatsFile);
+	    appendToSummaryFile("  * Removed reads with flag 0x100 (\"alignment is not primary\")\n", $summaryStatsFile);
+	    appendToSummaryFile("  * Removed reads with flag 0x200 (\"read fails platform/vendor quality checks\")\n", $summaryStatsFile);
+	    appendToSummaryFile("  * Removed reads with flag 0x400 (\"read is either a PCR or an optical duplicate\")\n", $summaryStatsFile);
+	    appendToSummaryFile("  * We specifically KEPT reads where the *mate pair* (if present) is unmapped (0x8).\n", $summaryStatsFile);
 	} else {
 	    reportCommandFailure($filterMappedOnlyCmd, $file);
 	    next;
