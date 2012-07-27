@@ -1,23 +1,30 @@
 #!/usr/bin/python
 
-USAGE = '''%prog [options]
+USAGE = '''%prog [options] <infile.txt>   >   table.tab
 
-This is a program that takes a possibly-ragged-edged input file and outputs a totally rectangular tabular file.
-It's useful when programs output differing numbers of items for different lines, but you want to operate as if all the lines had the same number of elements.
+%prog takes a possibly-ragged-edged input file (differing number of items per line)
+and outputs a totally rectangular tabular file (same number of items per line).
 
-Note: input MUST be a file, it cannot be STDIN (i.e., you cannot directly send any UNIX pipes to this program). Output is STDOUT.
+It's particularly useful if you're going to use <paste> to combine files, as each
+input line must have the same number of lines for this to work reliably.
 
-Example:   tabular_from_ragged.py  --delim="\t"  --pad="NO_VALUE"   YOUR_FILE.txt
+Input can be a single file, or blank to read from STDIN. Output is to STDOUT.
 
-Note: we use the 'optparse' module to parse command line arguments, becuase the superior 'argparse' requires Python 2.7 (which is not present in older distributions, like Ubuntu 10.x) http://docs.python.org/release/2.5.2/lib/module-optparse.html
+The special filename '-' (hyphen) will also force reading from STDIN.
 
-A python program.
+Example 1:  tabular_from_ragged.py --delim="\t" --pad="NO_VALUE" myfile.txt > table.txt
+
+Example 2:  zcat myfile.gz | tabular_from_ragged.py > table.txt
+   * Reading from STDIN generates (and deletes) a temporary file in /tmp.
+   * (This could be slow for huge files, or if /tmp is on another filesystem.)
 '''
+
+# Note: we use the 'optparse' module to parse command line arguments, becuase the superior 'argparse' requires Python 2.7 (which is not present in older distributions, like Ubuntu 10.x) http://docs.python.org/release/2.5.2/lib/module-optparse.html
 
 import textwrap
 import sys
 import optparse
-
+import os
 import pdb; #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
 
 #import time # we just want "sleep"
@@ -41,16 +48,37 @@ def handleCommandLineOptions():
         #print attr, value
         pass
 
-    if len(globalArgs) != 1:
-        parser.error("We need one un-parsed argument (a filename to read). This program is NOT currently able to handle reading from STDIN (standard in)!")
+    if len(globalArgs) < 1:
+        sys.stderr.write("table-no-ragged.py STDERR message: Since no filenames were specified, we are reading from STDIN.\n")
+        #parser.error("We need one un-parsed argument (a filename to read). This program is NOT currently able to handle reading from STDIN (standard in)!")
         pass
+
+    if len(globalArgs) > 1:
+        parser.error("You can only specify ONE filename on the command line! You specified more than one.")
+        pass
+
     return
 
 # Must come at the VERY END!
 if __name__ == "__main__":
     handleCommandLineOptions()
 
-    theFile = globalArgs[0]
+    readingFromSTDIN = ((len(globalArgs) == 0) or (globalArgs[0] == '-')) ## "is a filename present on the command line? If not, then we're reading from STDIN"
+    
+    if readingFromSTDIN:
+        TEMPFILENAME = "/tmp/table-no-ragged-temp-file-agw-table-random-file-delete-me-please.tmp"
+        # Ok, NO filenames were specified on the command line, so we'll
+        # write STDIN to a temporary file and then read that file.
+        # This is because table-no-ragged requires TWO passes of the data, so we need a file (we can only read STDIN once).
+        theFile = TEMPFILENAME
+        ftemp = open(theFile, 'w')
+        for line in sys.stdin:
+            ftemp.write(line)
+            pass
+        ftemp.close()
+    else:
+        theFile = globalArgs[0] ## <-- the filename on the command line, if present
+        pass
 
     maxNumElementsInLine = -1
 
@@ -75,98 +103,16 @@ if __name__ == "__main__":
         pass
     fff.close()
 
+    # Try to remove the temp file, if we generated one.
+    if readingFromSTDIN:
+        if os.access(TEMPFILENAME, os.W_OK):
+            os.remove(TEMPFILENAME)
+        else:
+            sys.stderr.write("WARNING: Could NOT remove the temp file we generated named " + TEMPFILENAME + " !\n")
+            pass
+        pass
+
+
+
     pass
-
-
-
-
-
-# #!/usr/bin/python
-
-# '''
-# A python program that takes an input tab-delimited file and makes it so it doesn't have ragged ends. Everything is padded out with BLANK entries so that all lines have the same number of tabs.
-
-# Options:
-# --delim (-d): The input and output delimiter. Default is a tab
-# --fill (-x): The thing to fill ragged columns with. Default is nothing (''). Can be NA or whatever you want.
-
-# Example:
-
-# Sample Input:
-#   this
-#   is_a    file   with
-#   ragged  edges
-
-# Output of --fill="NA":
-#   this    NA     NA
-#   is_a    file   with
-#   ragged  edges  NA
-
-# Note: we use the 'optparse' module to parse command line arguments, becuase the superior 'argparse' requires Python 2.7 (which is not present in older distributions, like Ubuntu 10.x) http://docs.python.org/release/2.5.2/lib/module-optparse.html
-
-# '''
-
-# import sys
-# import optparse
-# import string
-
-# import pdb #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
-
-# import textwrap
-# #import time # we just want "sleep"
-# #import os.path
-
-
-# globalOptions = None
-# globalArgs    = None
-
-# def handleCommandLineOptions():
-#     global globalArgs    ## must have this here in order to ASSIGN globally!
-#     global globalOptions ## must have this here in order to ASSIGN globally!
-#     parser = optparse.OptionParser("usage: %prog [-d <delim>] [-x <filler>] FILENAME", version='%prog version 1.0')
-#     parser.add_option("-d", "--delim", dest="delim", default="\t", type="string", help="A delimiter between elements. Default is [tab]. Output and input delimiter are always the same.")
-#     parser.add_option("-x", "--fill", dest="fill", default="", type="string", help="The text to fill blank cells with. Default is [nothing at all]. One common value for this is NA.")
-#     (globalOptions, globalArgs) = parser.parse_args()
-
-#     if len(globalArgs) != 1:
-#         parser.error("You need to specify exactly one filename for this program to operate on.")
-#         pass
-#     return
-
-# # Must come at the VERY END!
-# if __name__ == "__main__":
-#     handleCommandLineOptions()
-#     fn = globalArgs[0] # filename
-#     lineNum = 0
-
-#     maxItemsPerLine = 0
-
-#     ## read the file once to JUST count items per line
-#     with open(fn, 'r') as fff:
-#         for line in fff:
-#             lineNum += 1
-#             splitup = line.split( globalOptions.delim )
-#             if (len(splitup) > maxItemsPerLine):
-#                 maxItemsPerLine = len(splitup)
-#                 pass
-#             pass
-#         pass
-
-#     ## read the file a second time to actually print the output
-#     with open(fn, 'r') as fff:
-#         for line in fff:
-#             splitup = line.split( globalOptions.delim )
-#             numItemsToAdd = maxItemsPerLine - len(splitup) ## number of extra columns to pad here
-            
-#             sys.stdout.write( string.join( splitup, globalOptions.delim).rstrip("\n\r") ) ## print the original string
-#             sys.stdout.write(numItemsToAdd * (globalOptions.delim + globalOptions.fill)) ## <-- print the right number of delimiters!
-#             sys.stdout.write("\n")
-#             pass
-#         pass
-
-#     pass
-
-
-
-
 
