@@ -2,17 +2,20 @@
 
 
 ALEX_PROGRAM_USAGE_TEXT='''
-Duplicate counter. For fasta / fastq / csfasta files.
+Duplicate line counter. For fasta / fastq / csfasta files.
 
-Note that this is really ONLY intended for incredibly large files. Otherwise it will surely be faster to run:
+Usage from a file: count-identical-lines.py YOURFILE.txt > out.txt
 
+Usage from STDIN:  cat YOURFILE.txt | count-identical-lines.py > out.txt
+
+You may have to use "cut" beforehand if you only want ONE column out of a file.
+
+Note that this is ONLY useful for incredibly large files. Otherwise, just use UNIX sort, like so:
  sort YOURFILE | uniq -c
 
-As it turns out, it only takes about 5 times longer to use the UNIX sort on a 2.2 GB file using "sort THEFILE | uniq -q"
+(It only takes about 5 times longer to use UNIX sort on a 2.2 GB file using "sort THEFILE | uniq -c")
 
-So you can probably just use that no matter what.
-
-Remember to output to STDOUT!
+Remember to redirect STDOUT to a file (that is, don't forget the '> out.txt' part of the command).
 '''
 
 import getopt
@@ -22,10 +25,8 @@ import re
 import random
 import textwrap
 
-import pdb; #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
+#import pdb; #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
 
-log = None
-LOG_FILE_NAME = "sim.log.txt"
 TERMINAL_WIDTH = 80
 
 def usageAndQuit(exitCode, message=None):
@@ -52,15 +53,11 @@ def usageAndQuit(exitCode, message=None):
 if __name__ == "__main__":
     sys.stderr.write("Note that you can get the same results, only sorted, with the following UNIX commands: sort YOURFILE | uniq -c > OUTPUT_FILE\nThat is about 5 times slower on a 2.2 GB file (15 minutes vs 3 minutes), but that isn't typically a huge deal.\n")
     try:
-        opts, args = getopt.gnu_getopt(sys.argv[1:], "hwi:d"
-                                       , ["help", "warn"
-                                          ]
-                                       )
-    # Docs for getopt: http://docs.python.org/library/getopt.html
+        opts, args = getopt.gnu_getopt(sys.argv[1:], "h", ["help"])
+        # Docs for getopt: http://docs.python.org/library/getopt.html
     except (getopt.GetoptError):
         usageAndQuit(1, "Encountered an unknown command line option!\n")
         raise
-    
     
     for opt, arg in opts:
         if opt in ("-h", "--help"):
@@ -71,7 +68,8 @@ if __name__ == "__main__":
         
         pass
 
-    if (len(args) == 0):
+
+    if (len(args) == 0 or args[0] == '-'): # hyphen means 'read from stdin'
         theFile = sys.stdin
     else:
         if (len(args) != 1):
@@ -80,36 +78,31 @@ if __name__ == "__main__":
             usageAndQuit(1, "ARGUMENTS ERROR: We need exactly ONE filename passed in on the command line.")
             raise
 
-        inputFilename = args[0] #"b5_test_rand.bed"
+        inputFilename = args[0]
         try:
             theFile = open(inputFilename, 'r') ## The annotated bed file MUST have the "GTF" gene annotation so we know which reads are associated with which genes.
         except:
-            sys.stderr.write("ERROR (Possibly due to lack of permissions in this directory?): Could not open the following output file required for logging status: " + LOG_FILE_NAME)
+            sys.stderr.write("ERROR: Could not open specified file " + inputFilename)
             raise
         pass
 
-    theHash = dict()
-
+    ddd = dict()
     lineNum = 0
     for line in theFile:
-        '''Read through each gene in the annotated BED file.'''
         lineNum += 1
-        
-        if (line in theHash):
-            theHash[line] += 1
+        if (line in ddd):
+            ddd[line] += 1
         else:
-            theHash[line] = 1
+            ddd[line] = 1
             pass
-
         pass
     theFile.close()
     
-    for key, value in theHash.iteritems():
-        sys.stdout.write(str(value) + "\t" + key.rstrip() + "\n")
+    for key, value in ddd.iteritems():
+        sys.stdout.write(str(value) + "\t" + key.rstrip() + "\n") # rstrip removes whitespace from right side of the key. This is important!
         pass
 
-    sys.stderr.write("[Done -- Successful exit from simulator. Read a total of " + str(lineNum) + " lines.]")
-    log.close() ## Finally, close the diagnostic log file that we've been writing messages to this whole time
+    sys.stderr.write("[Done -- Read a total of " + str(lineNum) + " lines.]")
     pass
 
 
