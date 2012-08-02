@@ -1,0 +1,62 @@
+# -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
+
+## This ONLY sets up the path, and does nothing else (Except for printing a few things at the top)
+
+## It requires the "platform specific" things
+
+if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]]; then
+    source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
+fi
+
+echo -e "${a_echo_color}>>> BASH: Loading bash-path-setup...${a_end_color}"
+
+
+ 
+#export PYTHONPATH=${PYTHONPATH}:$CISTEMATIC_ROOT/core:$CISTEMATIC_ROOT/db:$CISTEMATIC_ROOT/experiments:$CISTEMATIC_ROOT/genomes:$CISTEMATIC_ROOT/programs:$CISTEMATIC_ROOT/stat
+#export PYTHONPATH=${PYTHONPATH}:/usr/local/lib/python2.6/dist-packages
+#export PYTHONPATH=$PYTHONPATH:/usr/local/lib/python2.6
+# UCSF: BOOST
+#export BOOST_ROOT=/usr/local/boost/boost_1_41_0
+
+# More general path-related settings
+
+# case "$HOSTNAME"
+#     in
+#     nausicaa)
+# 	export SICER_DIR_ENV_VAR=/opt/Bio/sicer
+# 	;;
+#     catbus)
+# 	export SICER_DIR_ENV_VAR=/opt/Bio/sicer
+# 	;;
+#     --)
+# 	export SICER_DIR_ENV_VAR=SICER_IS_NOT_INSTALLED_ON_THIS_MACHINE_CHECK_YOUR_BASH_PROFILE_SETUP
+# 	;;
+# esac
+
+export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
+
+export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience ## Location of the TIME FOR SCIENCE directory. This is mostly Alex's code.
+
+export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/ ## <-- Used by Josh Stuart's scripts. Mostly these are enhanced perl versions of UNIX scripts, like "cut.pl" and "join.pl".
+
+# Low priority: Normal UNIX paths. Clear out the initial path here.
+export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/sbin:/usr/X11/bin:/sw/bin:/opt/bin ## <-- clear out initial path!!
+# Medium priority: lab-specific tools
+export PATH=/work/Apps/bin:/work/Apps/kent_tools:/db/projects/Common/kent_bin_local:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
+# Highest priority: things in the HOME directory or TimeForScience
+export PATH=${HOME}/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH} ## <-- Priority!
+
+export PERL5LIB=/usr/local/lib/perl5/site_perl/5.12.1/
+export PERLLIB=${PERL5LIB}
+
+if [[ $isAgwHomeMachine -eq 1 ]]; then
+    # It is the home machine! Some things are in different places, as a result
+    # Add things to Alex's home machine's path
+    export BINF_CORE_WORK_DIR="/Users/${USER}/work" # <-- set BINF_CORE work directory
+else
+    export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
+fi
+
+export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"
+# Above: Sets the "R scripts library directory" for the Bioinformatics Core R
+# scripts. Required by many R scripts.
