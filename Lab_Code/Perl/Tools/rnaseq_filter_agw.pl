@@ -135,33 +135,48 @@ foreach my $file (@ARGV) {
     }
 
     datePrint("Now processing the file <$file>...\n");
-    my $filteredFile     = "$prefix.filtered.tmp.bam";
-    my $sortedFile       = "$prefix.sorted.tmp.bam";
-    my $dedupFile        = "$prefix.no_duplicates.tmp.bam";
+    my $filteredFile          = "$prefix.filtered.tmp.bam";
+    my $sortedFile            = "$prefix.sorted.tmp.bam";
+    my $dedupFile             = "$prefix.no_duplicates.tmp.bam";
     my $dedupExtraMetricsFile = "$prefix.no_duplicates.extra.txt";
-    my $summaryStatsFile = "$prefix.summary.stats.txt";
+    my $summaryStatsFile      = "$prefix.summary.stats.txt";
     
     open FILE, ">", $summaryStatsFile or die $!; { ## <-- Note: NOT APPENDING -- clearing out the file completely!!!
 	print FILE "Summary file for <$file>:\n";
     } close(FILE);
-
+    
     $latest = $file; ## "$latest" is a variable that holds the filename of the MOST RECENT file. It needs to constantly be updated as we change the filenames after processing files. To start, it's the base $file name.
-
+    
     ### Now to actually RUN the various things ###
-
     if (!$isBam) {
 	appendToSummaryFile("Converting SAM --> BAM for file <$latest>...\n", $summaryStatsFile);
 	my $bamName = $latest; $bamName =~ s/[.]sam$/.bam/;
 	my $convertToBamCmd = qq{samtools view -bS ${latest} > ${bamName} };
-	my $result = alexSystemCall($convertToBamCmd);
-	if ($result != $SUCCESS_STATUS) { reportCommandFailure($convertToBamCmd, $latest); next; } ## go to the next file...
 
+	if (-e $bamName && (-s $bamName > 0)) { 
+	    appendToSummaryFile("The BAM file version ($bamName) of the sam file ($latest) that you specified on the command line ALREADY EXISTS. We will not be re-generating it, but will instead be using the same-named BAM file ($bamName) as input. You must MANUALLY REMOVE $bamName if you want to re-generate it.\n", $summaryStatsFile);
+	    print STDERR 
+	} else {
+	    my $result = alexSystemCall($convertToBamCmd);
+	    if ($result != $SUCCESS_STATUS) { reportCommandFailure($convertToBamCmd, $latest); next; } ## go to the next file...
+	}
 	$latest = $bamName;
 	appendToSummaryFile("Converted SAM --> BAM.\n  Command was: $convertToBamCmd\n", $summaryStatsFile);
     }
+
+
+    if (!$shouldSort) {
+	## If the user said NOT to sort the files, then let's double-check the header to make sure it says 'SO:coordinate' or else MarkDuplicates.jar
+	## will crash stupidly
+	my $sortOrder = `samtools view -H ${latest} | grep '\@HD.*SO:'`; chomp($sortOrder);
+	if (not($sortOrder =~ m/SO:coordinate/)) {
+	    print STDERR "ERROR IN <$latest>: Input file warning: When --nosort is specified, the sort order flag in the BAM file MUST be 'coordinate' (SO:coordinate).\nAnything else---including just plain 'sorted'---will cause 'MarkDuplicates.jar' to crash (this is a bug in MarkDuplicates.jar that CANNOT be solved even by forcing ASSUME_SORTED=true)! Therefore, you must run this program again WITHOUT the --nosort directive!\n\nIn your specific case, the line in the BAM header of <$latest> that SHOULD say 'SO:coordinate' actually says the following:\n  This --> $sortOrder\n\n";
+	    die "Critical problem in input files; don't specify '--nosort' on these files, as the header is screwed up! Run this command again WITHOUT --nosort!\n";
+	}
+    }
     
-    my $numReadsBeforeWeFiddledWithTheFile = `samtools view -c $latest`; chomp($numReadsBeforeWeFiddledWithTheFile);
-    appendToSummaryFile(("Number of reads in <$latest> before filtering:\t" . $numReadsBeforeWeFiddledWithTheFile . "\n"), $summaryStatsFile);
+    my $numOriginalReads = `samtools view -c $latest`; chomp($numOriginalReads);
+    appendToSummaryFile(("Number of reads in <$latest> before filtering:\t" . $numOriginalReads . "\n"), $summaryStatsFile);
     
     ## Note: Picard sorting takes both SAM *and* BAM files, and outputs to BAM. So from here on out, we will be operating on BAM files only.
     if ($shouldSort) {
@@ -169,7 +184,6 @@ foreach my $file (@ARGV) {
 	my $sortCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${SORTSAM_PATH} }
 		       . qq{ INPUT=${latest}  SORT_ORDER=coordinate  OUTPUT=${sortedFile} });
 	if (alexSystemCall($sortCmd) != $SUCCESS_STATUS) { reportCommandFailure($sortCmd, $latest); datePrint("DEBUGGING MESSAGE FROM ALEX: Maybe the input file <$latest> didn't have a *header* line? The header is REQUIRED for sorting---check your input file ($latest) and make sure it has header lines. If it doesn't, then you'll need to re-header the file with samtools (`samtools reheader <in.header.sam> <in.bam>`). (That command assumes that you already have a properly-headered SAM file somewhere.)\n"); next; } ## go to the next file...
-
 	$latest = $sortedFile; ## update the "latest" file to be this newly-sorted one
 	appendToSummaryFile("Sorted <$latest> with Picard SortSam.jar.\n  Command was: $sortCmd\n", $summaryStatsFile);
     }
@@ -182,17 +196,21 @@ foreach my $file (@ARGV) {
     my $numOpticalDuplicates = `samtools view -c -f 0x400 $latest`; chomp($numOpticalDuplicates);
     my $numMateDoesNotMap    = `samtools view -c -f 0x008 $latest`; chomp($numMateDoesNotMap); ## <-- this one only occurs in paired-end reads
 
-    appendToSummaryFile(("Number of reads that failed to map              (SAM flag 0x4):\t" . $numFailedToMap . "\n"), $summaryStatsFile);
-    appendToSummaryFile(("Number of non-primary reads                   (SAM flag 0x100):\t" . $numNonPrimary . "\n"), $summaryStatsFile);
-    appendToSummaryFile(("Number of reads that failed basic QC          (SAM flag 0x200):\t" . $numFailedBasicQC . "\n"), $summaryStatsFile);
-    appendToSummaryFile(("Number of reads that were optical duplicates  (SAM flag 0x400):\t" . $numOpticalDuplicates . "\n"), $summaryStatsFile);
-    appendToSummaryFile(("Number of reads where the mate pair did not map (SAM flag 0x8):\t" . $numMateDoesNotMap . "\n"), $summaryStatsFile);
+    appendToSummaryFile(('-'x100 . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("  > Original number of reads BEFORE any filtering                 :\t" . $numOriginalReads . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("  * Number of reads that failed to map              (SAM flag 0x4):\t" . $numFailedToMap . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("  * Number of non-primary reads                   (SAM flag 0x100):\t" . $numNonPrimary . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("  * Number of reads that failed basic QC          (SAM flag 0x200):\t" . $numFailedBasicQC . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("  * Number of reads that were optical duplicates  (SAM flag 0x400):\t" . $numOpticalDuplicates . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("  * Number of reads where the mate pair did not map (SAM flag 0x8):\t" . $numMateDoesNotMap . "\n"), $summaryStatsFile);
 
     my $totalReadsFilteredBySamtools = ($numFailedToMap + $numNonPrimary + $numFailedBasicQC + $numOpticalDuplicates + $numMateDoesNotMap);
     appendToSummaryFile(('-'x100 . "\n"), $summaryStatsFile);
     appendToSummaryFile(("Total number of reads that <samtools -F> removes:\t" . $totalReadsFilteredBySamtools . "\n"), $summaryStatsFile);
-    appendToSummaryFile(("              Out of the initial number of reads:\t" . $numReadsBeforeWeFiddledWithTheFile . "\n"), $summaryStatsFile);
-    appendToSummaryFile(("           Percentage of reads that were removed:\t" . sprintf("%.32", ($totalReadsFilteredBySamtools/$numReadsBeforeWeFiddledWithTheFile*100)) . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("              Out of the initial number of reads:\t" . $numOriginalReads . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("           Percentage of reads that were removed:\t" . sprintf("%.2f", ($totalReadsFilteredBySamtools/$numOriginalReads*100)) . "\n"), $summaryStatsFile);
+
+    appendToSummaryFile("\n\n", $summaryStatsFile);
 
     ## -F means "skip flag"  (-f means "require flag")
     ## -F 0x0004 means "skip flag ID #4", which is "the query sequence itself is unmapped"
@@ -213,7 +231,7 @@ foreach my $file (@ARGV) {
 	if ($result != $SUCCESS_STATUS) { reportCommandFailure($filterMappedOnlyCmd, $latest); next; } ## go to the next file...
 	
 	$latest = $filteredFile;
-	appendToSummaryFile(qq{samtools: removed reads with certain flags.\n  Command was: $filterMappedOnlyCmd\n}, $summaryStatsFile);
+	appendToSummaryFile(qq{samtools: removed reads with certain flags.\n  Command was: $filterMappedOnlyCmd\n\n}, $summaryStatsFile);
 	appendToSummaryFile(qq{  * Removed reads with flag 0x4 (\"sequence is unmapped\")\n}, $summaryStatsFile);
 	appendToSummaryFile(qq{  * Removed reads with flag 0x100 (\"alignment is not primary\")\n}, $summaryStatsFile);
 	appendToSummaryFile(qq{  * Removed reads with flag 0x200 (\"read fails platform/vendor quality checks\")\n}, $summaryStatsFile);
@@ -221,14 +239,17 @@ foreach my $file (@ARGV) {
 	appendToSummaryFile(qq{  * Removed reads with flag 0x8 (\"in paired-end data, the mate pair is unmapped\")\n}, $summaryStatsFile);
     }
     
+    appendToSummaryFile("\n\n", $summaryStatsFile);
+    
     my $maxFileHandles = int(0.8 * $ULIMIT_RESULT); ## This is for the MAX_FILE_HANDLES_FOR_READ_ENDS_MAP parameter for MarkDuplicates: From the Picard docs: "Maximum number of file handles to keep open when spilling read ends to disk. Set this number a little lower than the per-process maximum number of file that may be open. This number can be found by executing the 'ulimit -n' command on a Unix system. Default value: 8000."
     my $dedupCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${MARKDUPLICATES_PATH} }
-		    . qq{ INPUT=${latest} } ## Picard SortSam.jar accepts both SAM and BAM files as input!
+		    . qq{ INPUT=$latest } ## Picard SortSam.jar accepts both SAM and BAM files as input!
 		    . qq{ REMOVE_DUPLICATES=TRUE }
+		    #. ((!$shouldSort) ? qq{ ASSUME_SORTED=TRUE } : qq { }) ## <-- if we use --nosort, then ASSUME they are sorted no matter what!
 		    . qq{ MAX_FILE_HANDLES_FOR_READ_ENDS_MAP=$maxFileHandles }
 		    . qq{ OPTICAL_DUPLICATE_PIXEL_DISTANCE=100 } ## <-- 100 is default
-		    . qq{ METRICS_FILE=${dedupExtraMetricsFile} }
-		    . qq{ OUTPUT=${dedupFile} }
+		    . qq{ METRICS_FILE=$dedupExtraMetricsFile }
+		    . qq{ OUTPUT=$dedupFile }
 	);
     if ($shouldRemoveDupes) {
 	my $result = alexSystemCall($dedupCmd);
@@ -236,17 +257,22 @@ foreach my $file (@ARGV) {
 	$latest = $dedupFile;
 	appendToSummaryFile("Removed duplicate reads.\n  Command was: $dedupCmd\n", $summaryStatsFile);
 	
+	appendToSummaryFile(qq{\n\n}, $summaryStatsFile);
+	appendToSummaryFile(qq{MarkDuplicates.jar status report:\n}, $summaryStatsFile);
 	my $appendMarkDuplicatesMetricsCmd = (qq{grep -A 2 'METRICS CLASS' $dedupExtraMetricsFile >> $summaryStatsFile }
 					      . qq{ && /bin/rm $dedupExtraMetricsFile});
 	if (alexSystemCall($appendMarkDuplicatesMetricsCmd) != $SUCCESS_STATUS) { reportCommandFailure($dedupCmd, $latest); next; } ## go to the next file...
+	appendToSummaryFile(qq{\n\n}, $summaryStatsFile);
     }
 
     my $numReadsAfterProcessing = `samtools view -c $latest`; chomp($numReadsAfterProcessing);
-    appendToSummaryFile(("Number of reads in <$latest> after all filtering:\t" . $numReadsAfterProcessing . "\n"), $summaryStatsFile);
+    my $percentRemaining = sprintf("%.2f", $numReadsAfterProcessing/$numOriginalReads*100);
 
-    my $percentRemaining = sprintf("%.2f", $numReadsAfterProcessing/$numReadsBeforeWeFiddledWithTheFile*100);
-    appendToSummaryFile(("Percent of reads that passed all filters:\t" . $percentRemaining . "\n"), $summaryStatsFile);
-    appendToSummaryFile(("                         Percent removed:\t" . (100.0 - $percentRemaining) . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("Statistics about <$latest> after all filtering steps:\n"), $summaryStatsFile);
+    appendToSummaryFile(("  *      Number of reads remaining:\t" . $numReadsAfterProcessing . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("  *  ...out of this initial number:\t" . $numOriginalReads . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("  *              % reads remaining:\t" . $percentRemaining . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("  *               ...and % removed:\t" . (100.0 - $percentRemaining) . "\n"), $summaryStatsFile);
     
     my $finalBAM = "${prefix}.processed.bam";
     my $finalIndex = "${prefix}.processed.bai";
