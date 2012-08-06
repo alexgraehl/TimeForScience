@@ -26,7 +26,7 @@ my $keepAllReads = 0;
 
 my $SAMTOOLS_PATH = `which samtools`;  chomp($SAMTOOLS_PATH); ## Tries to find "samtools" on the user's $PATH
 my $SORTSAM_PATH   = `which SortSam.jar`;  chomp($SORTSAM_PATH); ## Tries to find "SortSam.jar" from the Picard suite in the user's $PATH
-my $GIGABYTES_FOR_PICARD = 2;
+my $GIGABYTES_FOR_PICARD = 8;
 my $MARKDUPLICATES_PATH = `which MarkDuplicates.jar`; chomp($MARKDUPLICATES_PATH); ## Tries to find "MarkDuplicates.jar" from the Picard suite in the user's $PATH
 my $ULIMIT_RESULT = 1024; ## result of running the shell command ulimit -n. Since this is a shell built-in, it can, for some reason, not be run like a real command, so backticks don't work. `ulimit -n`; chomp($ULIMIT_RESULT);
 
