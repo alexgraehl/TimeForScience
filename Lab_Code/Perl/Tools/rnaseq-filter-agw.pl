@@ -203,13 +203,7 @@ foreach my $file (@ARGV) {
     appendToSummaryFile(("  * Number of reads that failed basic QC          (SAM flag 0x200):\t" . $numFailedBasicQC . "\n"), $summaryStatsFile);
     appendToSummaryFile(("  * Number of reads that were optical duplicates  (SAM flag 0x400):\t" . $numOpticalDuplicates . "\n"), $summaryStatsFile);
     appendToSummaryFile(("  * Number of reads where the mate pair did not map (SAM flag 0x8):\t" . $numMateDoesNotMap . "\n"), $summaryStatsFile);
-
-    my $totalReadsFilteredBySamtools = ($numFailedToMap + $numNonPrimary + $numFailedBasicQC + $numOpticalDuplicates + $numMateDoesNotMap);
     appendToSummaryFile(('-'x100 . "\n"), $summaryStatsFile);
-    appendToSummaryFile(("Total number of reads that <samtools -F> removes:\t" . $totalReadsFilteredBySamtools . "\n"), $summaryStatsFile);
-    appendToSummaryFile(("              Out of the initial number of reads:\t" . $numOriginalReads . "\n"), $summaryStatsFile);
-    appendToSummaryFile(("           Percentage of reads that were removed:\t" . sprintf("%.2f", ($totalReadsFilteredBySamtools/$numOriginalReads*100)) . "\n"), $summaryStatsFile);
-
     appendToSummaryFile("\n\n", $summaryStatsFile);
 
     ## -F means "skip flag"  (-f means "require flag")
@@ -238,11 +232,20 @@ foreach my $file (@ARGV) {
 	appendToSummaryFile(qq{  * Removed reads with flag 0x400 (\"read is either a PCR or an optical duplicate\")\n}, $summaryStatsFile);
 	appendToSummaryFile(qq{  * Removed reads with flag 0x8 (\"in paired-end data, the mate pair is unmapped\")\n}, $summaryStatsFile);
     }
+
+    my $totalReadsAfterFiltering = `samtools view -c $latest`; chomp($totalReadsAfterFiltering);
+    my $totalReadsRemoved = ($numOriginalReads - $totalReadsAfterFiltering);
+    appendToSummaryFile(("Total number of reads that <samtools -F> removes:\t" . ($totalReadsRemoved) . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("              Out of the initial number of reads:\t" . $numOriginalReads . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("           Percentage of reads that were REMOVED:\t" . sprintf("%.2f", ($totalReadsRemoved/$numOriginalReads*100)) . "\n"), $summaryStatsFile);
+    appendToSummaryFile("\n\n", $summaryStatsFile);
+
+
     
     appendToSummaryFile("\n\n", $summaryStatsFile);
     
     my $maxFileHandles = int(0.8 * $ULIMIT_RESULT); ## This is for the MAX_FILE_HANDLES_FOR_READ_ENDS_MAP parameter for MarkDuplicates: From the Picard docs: "Maximum number of file handles to keep open when spilling read ends to disk. Set this number a little lower than the per-process maximum number of file that may be open. This number can be found by executing the 'ulimit -n' command on a Unix system. Default value: 8000."
-    my $dedupCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${MARKDUPLICATES_PATH} }
+    my $dedupPicardCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${MARKDUPLICATES_PATH} }
 		    . qq{ INPUT=$latest } ## Picard SortSam.jar accepts both SAM and BAM files as input!
 		    . qq{ REMOVE_DUPLICATES=TRUE }
 		    #. ((!$shouldSort) ? qq{ ASSUME_SORTED=TRUE } : qq { }) ## <-- if we use --nosort, then ASSUME they are sorted no matter what!
@@ -251,6 +254,9 @@ foreach my $file (@ARGV) {
 		    . qq{ METRICS_FILE=$dedupExtraMetricsFile }
 		    . qq{ OUTPUT=$dedupFile }
 	);
+
+    my $dedupCmd = qq{samtools view -H $latest > a.tmp ; samtools view $latest | sort -u -g -k3,3 -k4,4 -k7,7 -k8,8 >> a.tmp ; samtools -bS a.tmp > $dedupFile ;};
+
     if ($shouldRemoveDupes) {
 	my $result = alexSystemCall($dedupCmd);
 	if ($result != $SUCCESS_STATUS) { reportCommandFailure($dedupCmd, $latest); next; } ## go to the next file...
@@ -259,7 +265,7 @@ foreach my $file (@ARGV) {
 	
 	appendToSummaryFile(qq{\n\n}, $summaryStatsFile);
 	appendToSummaryFile(qq{MarkDuplicates.jar status report:\n}, $summaryStatsFile);
-	my $appendMarkDuplicatesMetricsCmd = (qq{grep -A 2 'METRICS CLASS' $dedupExtraMetricsFile >> $summaryStatsFile }
+	my $appendMarkDuplicatesMetricsCmd = (qq{grep -A 2 'METRICS CLASS' $dedupExtraMetricsFile | tee --append $summaryStatsFile }
 					      . qq{ && /bin/rm $dedupExtraMetricsFile});
 	if (alexSystemCall($appendMarkDuplicatesMetricsCmd) != $SUCCESS_STATUS) { reportCommandFailure($dedupCmd, $latest); next; } ## go to the next file...
 	appendToSummaryFile(qq{\n\n}, $summaryStatsFile);
