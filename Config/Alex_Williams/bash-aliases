@@ -434,6 +434,13 @@ function mini {
     else theCompressedBasename="Archive";
     fi
     
+    IONICE_EXISTS=`which programname >/dev/null`
+    if [[ $IONICE_EXISTS ]] ; then
+	AGW_IONICE='ionice -c3'
+    else
+	AGW_IONICE='' ## ionice doesn't exist on BSD or Mac OS X
+    fi
+
     theCompressedBasename=`echo "$theCompressedBasename" | sed "s/[/]//"` ## Let's remove any slashes from the name of the *output*. That way if someone types "mini MyDir/" it will generate "MyDir.tar.bz2" and NOT "MyDir/.tar.bz2"
     
     if [[ -f "${theCompressedBasename}.tar" || -f "${theCompressedBasename}.tar.bz2" ]] ; then
@@ -443,7 +450,7 @@ function mini {
 	if [[ "$#" -gt 1 ]] ; then echo "Adding a total of $# files to the archive." ; fi
 	for var in "$@"; do echo " * Archiving $var --> ${theCompressedBasename}.tar.bz2" ; done
 	echo "[TAR] command running now..." ;
-	ionice -c3 tar --bzip2 -cvf "${theCompressedBasename}.tar.bz2" $@ ;
+	${AGW_IONICE} tar --bzip2 -cvf "${theCompressedBasename}.tar.bz2" $@ ;
 	echo "[Done]" ;
     fi
 }
