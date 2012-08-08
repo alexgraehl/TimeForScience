@@ -245,7 +245,7 @@ foreach my $file (@ARGV) {
     appendToSummaryFile("\n\n", $summaryStatsFile);
     
     my $maxFileHandles = int(0.8 * $ULIMIT_RESULT); ## This is for the MAX_FILE_HANDLES_FOR_READ_ENDS_MAP parameter for MarkDuplicates: From the Picard docs: "Maximum number of file handles to keep open when spilling read ends to disk. Set this number a little lower than the per-process maximum number of file that may be open. This number can be found by executing the 'ulimit -n' command on a Unix system. Default value: 8000."
-    my $dedupPicardCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${MARKDUPLICATES_PATH} }
+    my $dedupCmd = (qq{java -Xmx${GIGABYTES_FOR_PICARD}g -jar ${MARKDUPLICATES_PATH} }
 		    . qq{ INPUT=$latest } ## Picard SortSam.jar accepts both SAM and BAM files as input!
 		    . qq{ REMOVE_DUPLICATES=TRUE }
 		    #. ((!$shouldSort) ? qq{ ASSUME_SORTED=TRUE } : qq { }) ## <-- if we use --nosort, then ASSUME they are sorted no matter what!
@@ -255,7 +255,11 @@ foreach my $file (@ARGV) {
 		    . qq{ OUTPUT=$dedupFile }
 	);
 
-    my $dedupCmd = qq{samtools view -H $latest > a.tmp ; samtools view $latest | sort -u -g -k3,3 -k4,4 -k7,7 -k8,8 >> a.tmp ; samtools -bS a.tmp > $dedupFile ;};
+    ## Maybe we can just run this UNIX command to remove duplicates. It gives SIMILAR but NOT IDENTICAL
+    ## results to the Picard "dedupCmd" up above.
+    ## (Note that if you change the Picard command, you also need to not run the $appendMarkDuplicatesMetricsCmd below anymore either)
+
+#    my $dedupCmd = qq{samtools view -H $latest > a.tmp ; samtools view $latest | sort -u -g -k3,3 -k4,4 -k7,7 -k8,8 >> a.tmp ; samtools view -bS a.tmp > $dedupFile ;};
 
     if ($shouldRemoveDupes) {
 	my $result = alexSystemCall($dedupCmd);
