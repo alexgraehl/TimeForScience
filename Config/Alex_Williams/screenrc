@@ -61,8 +61,8 @@ bind ^r source "${HOME}/.screenrc"  # reload the screenrc!
 # Example: to make it white text on magenta background: %{= mW}
 caption always "%{yb}Screen %n : %t"
 
-## Scrollback buffer
-defscrollback 50000
+## Scrollback buffer 100K lines
+defscrollback 100000
 
 #shell tcsh
 
