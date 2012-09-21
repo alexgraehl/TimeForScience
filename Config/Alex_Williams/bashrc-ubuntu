@@ -144,18 +144,26 @@ if [[ -z $debian_chroot ]] && [[ -r /etc/debian_chroot ]]; then
 fi
 
 
+#PS1="[\D{%e}=\t \h:\W]$ "
+PS1="[\D{%e}/\t:${HOSTNAME:0:3}:\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
+
+## Conditional logic IS allowed in the ps1, bizarrely!
+#PS1='$(if [[ $USER == alexgw ]]; then echo "$REGULAR_PROMPT"; else echo "$PWD%"; fi)'
+#export PS1=\$(date +%k:%M:%S)
+
 if [[ -n "$color_prompt" ]]; then
-    PS1="$(date +[%d]%H:%M) \u@\h:\W]\$ "
+    #PS1="[\d \t \u@\h:\w]$ "
+    #PS1="$(date +[%d]%H:%M) \u@\h:\W]\$ "
     #PS1="\[${a_machine_prompt_main_color}\]\$(date +[%d]%H:%M) \u@\h:\W]\$\[\033[0m\]\[${a_end_color} "
     #alias ls='ls --color=auto'
     #alias dir='dir --color=auto'
     #alias vdir='vdir --color=auto'
-    
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
 else
-    PS1="$(date +[%d]%H:%M) \u@\h:\W]\$ "
+    echo -n ''
+    #PS1="$(date +[%d]%H:%M) \u@\h:\W]\$ "
 fi
 
 # enable color support of ls
