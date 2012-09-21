@@ -379,6 +379,8 @@ alias sn='/usr/bin/less -S --LINE-NUMBERS --status-column --RAW-CONTROL-CHARS -f
 
 alias sweep='trash.pl *.tmp *.temp' ## Sweep out the .tmp files
 
+alias htop='htop --sort-key PERCENT_CPU'
+
 function s { ## <-- this needs to come BEFORE the other things that use less!
     # "s" uses "magicless" to run files through sheet.pl
     magicless --LINE-NUMBERS --status-column "$@"
