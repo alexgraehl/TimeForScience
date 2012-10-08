@@ -974,6 +974,10 @@ current line."
 ;;     (browse-kill-ring-default-keybindings))
 
 
+;; Prevent entering '<<<' from also inserting an EOF. Very annoying!
+(add-hook 'sh-set-shell-hook 'my-disable-here-document)
+(defun my-disable-here-document ()
+  (local-set-key "<" 'self-insert-command))
 
 
 (defun iswitchb-local-keys ()
