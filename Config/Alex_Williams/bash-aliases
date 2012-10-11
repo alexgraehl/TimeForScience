@@ -338,16 +338,17 @@ alias agwReColorTerminal=''
 alias nau='SET_NAUCOLOR ; ssh ${AGW_SSH_OPTIONS}   $UCSF_USER@nausicaa.ucsf.edu ; agwReColorTerminal'
 alias naux='SET_NAUCOLOR ; ssh ${AGW_SSH_OPTIONS} -Y  $UCSF_USER@nausicaa.ucsf.edu ; agwReColorTerminal'
 alias catbus='SET_CATBUSCOLOR ; ssh ${AGW_SSH_OPTIONS} $UCSF_USER@catbus.gladstone.internal ; agwReColorTerminal'
-alias lighthouse='SET_LIGHTHOUSECOLOR ; ssh ${AGW_SSH_OPTIONS}  $UCSF_USER@lighthouse.ucsf.edu ; agwReColorTerminal' ## Database machine
-alias lighthousex='SET_LIGHTHOUSECOLOR ; ssh ${AGW_SSH_OPTIONS} -Y  $UCSF_USER@lighthouse.ucsf.edu ; agwReColorTerminal' ## Database machine
-alias bueno='SET_BUENOCOLOR ; ssh ${AGW_SSH_OPTIONS} $UCSF_USER@bueno.gladstone.internal ; agwReColorTerminal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
-alias buenox='SET_BUENOCOLOR ; ssh ${AGW_SSH_OPTIONS} -Y $UCSF_USER@bueno.gladstone.internal ; agwReColorTerminal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
+alias lig='SET_LIGHTHOUSECOLOR ; ssh ${AGW_SSH_OPTIONS}  $UCSF_USER@lighthouse.ucsf.edu ; agwReColorTerminal' ## Database machine
+alias ligx='SET_LIGHTHOUSECOLOR ; ssh ${AGW_SSH_OPTIONS} -Y  $UCSF_USER@lighthouse.ucsf.edu ; agwReColorTerminal' ## Database machine
+alias bue='SET_BUENOCOLOR ; ssh ${AGW_SSH_OPTIONS} $UCSF_USER@bueno.gladstone.internal ; agwReColorTerminal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
+alias buex='SET_BUENOCOLOR ; ssh ${AGW_SSH_OPTIONS} -Y $UCSF_USER@bueno.gladstone.internal ; agwReColorTerminal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
 alias chef='ssh ${AGW_SSH_OPTIONS} $UCSF_USER@chef.compbio.ucsf.edu ; agwReColorTerminal' ## QB3 cluster head node
 
 
 case "$HOSTNAME" in
     nausicaa)
 	alias nau="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
+	alias naux="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
 	;;
     catbus)
 	alias catbus="echo -e -n '$a_warning_color' ; echo 'This machine *is* catbus already!' ; echo -e -n '$a_end_color'"
@@ -408,30 +409,22 @@ function v {
     python `which sheet.py` "$@"
 }
 
-
-
 alias huh='cat <(declare -f) <(alias)' ## uses bash subshells to show everything that is defined
-
 alias backoff='~/TimeForScience/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh off'
 alias backon='~/TimeForScience/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh on'
 
-
-
-
-function n {
+function n { # show colors
     echo -e  "$color_prefix[30m black $color_prefix[31mred $color_prefix[32mgreen $color_prefix[33myellow $color_prefix[34mblue $color_prefix[35mmagenta $color_prefix[36mcyan $color_prefix[37mwhite"
 }
-
-function zzz {
-    echo -e "${a_echo_color}>>> BASH: Loading .bashrc...${a_end_color}"
-}
-
 
 ## Mini is a function that creates a .bz2 archive of whatever you pass into it.
 ## It works in a manner similar to right-clicking and zipping a file on the Mac.
 ## If you just pass it in ONE file named FILE, then the output filename is "FILE.tar.bz2" .
 ## If you give it multiple files, the output is in Archive.tar.gz
 ## To extract a "mini" archive, use "unmini" .
+# Bugs: it ONLY WORKS IN THE CURRENT DIRECTORY! And it probably hates whitespaces.
+# maybe this will help with escaping? for f in `ls`; do printf "%q " $f; done
+# looks like 'printf' can save the day
 function mini {
     if [[ "$#" == 1 ]] ; then theCompressedBasename="$1"; ## If you pass it one argument, then that argument will also be the filename
     else theCompressedBasename="Archive";
