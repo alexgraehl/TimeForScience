@@ -67,7 +67,7 @@ my $random_number = rand();
 my $chrLenTempFile = "/tmp/chr_length_" . rand() . "-" . time() . "_from_convert_SAM_or_BAM_for_Genome_Browser.tmp";
 
 
-print STDOUT "File to be processed by convert_SAM_or_BAM_for_Genome_Browser:\n";
+print STDOUT "Files to be processed by convert_SAM_or_BAM_for_Genome_Browser:\n";
 foreach (@ARGV) {
     my $fname = $_;
     print STDOUT "  - ${fname}\n";
@@ -125,7 +125,6 @@ for my $originalInputFilename (@ARGV) {
     my $bamIndexOutfile     = "${sortBamFilePrefix}.bam.bai";
     my $bedGraphIntermediateFile = "Browser.tmp.${bamPrefixWithoutFileExtension}.bedgraph";
     my $bigWigOutFile       = "Browser.${bamPrefixWithoutFileExtension}.bw";
-
 
     if ((-e $sortBamFullFilename) && (-s $sortBamFullFilename) and (-e $bamIndexOutfile) && (-s $bamIndexOutfile)) {
 	print STDERR "[Skipping] We are NOT continuing with the sorted-BAM-file generation, because such a file already exists. Remove it if you want to recompute it!\n"
@@ -211,11 +210,11 @@ for my $originalInputFilename (@ARGV) {
 
 __DATA__
 
-convert_SAM_or_BAM_for_Genome_Browser.pl <ONE SINGLE INPUT BAM / SAM FILE>
+convert_SAM_or_BAM_for_Genome_Browser.pl <INPUT BAM / SAM FILES>
 
-Processes a SAM or BAM alignment file to generate files for the UCSC Genome Browser.
+Processes SAM or BAM alignment files to generate files for the UCSC Genome Browser.
 
-To handle MULTIPLE files in the Bash shell, try this: for f in `ls */accepted_hits.bam`; do convert_SAM_or_BAM_for_Genome_Browser.pl $f; done
+You can now specify multiple input files.
 
 Options:
     * --nowig: If you do not want to generate a wiggle track, you can say `--nowig` and omit the --fasta file.
@@ -234,14 +233,8 @@ If you want a wiggle track, which you most likely do (if you do not, you can spe
     * <genomeCoverageBed> must be installed
     * <wigToBigWig> must be installed
 
-Inputs:
-   1. A SAM or BAM file, with aligned reads to a reference genome.
-
-Note: if you do not want the bigwig file, you can omit generating it with --nowig 
-
-Output: 2 files:
-    1. Generates a big pileup track (bigBed format).
-    2. A bigWig (bw) format file for the UCSC genome browser.
+Input to program:
+    * Any number of SAM or BAM files (with aligned reads to a reference genome).
 
 These files can be viewed in the genome browser.
 
@@ -261,19 +254,19 @@ convert_SAM_or_BAM_for_Genome_Browser.pl --nowig  alignment.bam
 
 Files that are generated from the input YOURFILE.sam:
  1. Browser.sort.YOURFILE.bam (sorted version of the BAM/SAM file) (track type=bam)
- 2. Browser.sort.YOURFILE.bam.bai (BAM index file)
+ 2. Browser.sort.YOURFILE.bam.bai (BAM index file -- required for the browser)
  3. Browser.tmp.YOURFILE.bedgraph (bedgraph intermediate file used to make the bigwig. Can be deleted!)
  4. Browser.YOURFILE.bw (bigWig file for Genome Browser)
  5. Browser.Track.Descriptions.YOURFILE.txt (track descriptions that you paste into the Genome Browser Custom Tracks)
 
 Then you will just need to make a genome browser track description for those two files.
 
-You can find one in file 5, the browser track description. Or make your own, like this sample one:
+You can find a browser track description in file 5, the browser track description. Or make your own, like this sample one:
 
 track type=bam name="Control_EB" color=0,128,255 bigDataUrl="http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"
 
   (Note that there is no need to mention the .bam.bai file in the track description,
-   but it is implicitly used by the Genome Browser and must be present!)
+   *but* it is implicitly used by the Genome Browser and must be present!)
 
 This script just runs the instructions found at:
       http://genome.ucsc.edu/goldenPath/help/bam.html
