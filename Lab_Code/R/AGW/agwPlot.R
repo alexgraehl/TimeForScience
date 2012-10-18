@@ -114,8 +114,6 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      ## ** colorStyle is recommended for easily changing the color scheme. It accepts anything that "colors.agw" takes:
      ##        colorStyle="greenwhitered" or "greenblackred" or "blueblackyellow" or "blueblackyellow2"
      ##                   or "gray" or "brown" or "sepia" or "heat"
-
-     
      print.agw("heatmap.agw: Now generating a \"heatmap.agw\" figure. If you get a \"figure region too large\" error,")
      print.agw("             that means your PDF/PNG wasn't big enough to fit the heatmap. This can be solved by using")
      print.agw("             a bigger pdf width or by using \"pdf.for.heatmap.agw\" to auto-compute the bounds.")
@@ -123,8 +121,18 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      if (is.logical(cluster.rows) && cluster.rows) {
           ## If cluster.rows is true, then we will CLUSTER the rows, kind of like how regular built-in "heatmap"
           ## does it. Check the source to "heatmap" to get a sort of general idea how this works.
-          hcc <- stats::hclust(stats::dist(mmm, method="euclidean")
-                               , method="complete")
+
+
+          theDist <- stats::dist(mmm, method="euclidean")
+          maxNonNullDist <- max(theDist, na.rm=T)
+
+          numNA <- sum(is.na(theDist))
+          if (numNA > 0) {
+               warnMsg <- "Note, in heatmap.agw, there are 'NA' values in the distance matrix! This is sub-optimal, as stats::hclust can't actually handle NA values. Thus, we have an inelegant workaround: the NA values for distance are being replaced by the maximum non-NA value in the heatmap, for purposes of clustering. This usually results in an acceptable result."
+               warning(warnMsg) ; log.red.agw(warnMsg)
+               theDist[is.na(theDist)] <- maxNonNullDist ## replace any NA values with the maximum non-NA distance
+          }
+          hcc <- stats::hclust(theDist, method="complete") # Note: hclust can't handle NA values!
           dcc <- as.dendrogram(hcc)
           reordering <- order.dendrogram(dcc)
           mmm <- mmm[reordering, , drop=F] ## REORDER THE INPUT MATRIX BASED ON THE CLUSTERING
@@ -151,23 +159,16 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      
      if (is.null(labRow)) { labRow = rownames(mmm) }
      if (is.null(labCol)) { labCol = colnames(mmm) }
-
-
      stopifnot(breaks >= 3)
-
      scale01 <- function(x, low = min(x), high = max(x)) { return((x - low)/(high - low)) }
-
      layout(matrix(c(1,2,3), byrow=T, ncol=1), heights=c(lcm(6),lcm(12),1) ) # <-- we plot THREE things, stacked vertically
-
      # ==========================================
      # ======================================
 
      min.raw <- min(mmm, na.rm=TRUE)
      max.raw <- max(mmm, na.rm=TRUE)
-
      mean.raw <- mean(mmm, na.rm=TRUE)
      median.raw <- median(mmm, na.rm=TRUE)
-
      ## This is the FIRST of three "layout" sub-items (which are stacked vertically). It's a text description of what is being plotted.
      textDescriptionPlotAGW(paste("Heatmap with ", length(mmm)
                                   , " values, in ", nrow(mmm)
@@ -573,37 +574,38 @@ plot_of_character_frequency_by_position <- function(summarizedCountsFile) {
           # which is normally run on a fasta file.
           # Note: if you want to get every Nth line from a file, starting with line M:
           #    cat YOURFILE | sed -n 'N~Mp' > OUTPUTFILE
-
           dat <- read.delim(file=summarizedCountsFile, as.is=TRUE, check.names=FALSE, row.names=1, header=1)
+          RSUM_INDEX <- which(rownames(dat) == "RSUM")
+          ratios <- apply(dat, 2, function(ccc) { ccc/ccc[RSUM_INDEX] })
+          ratios <- ratios[-RSUM_INDEX,]
+          LINECOLORS <- rainbow(nrow(ratios))
 
-               RSUM_INDEX <- which(rownames(dat) == "RSUM")
-               ratios <- apply(dat, 2, function(ccc) { ccc/ccc[RSUM_INDEX] })
-               ratios <- ratios[-RSUM_INDEX,]
+          if (nrow(ratios) %in% c(4,5) && all(c("A","C","G","T") %in% rownames(dat))) {
+               IS_ACGT_PLOT <- TRUE
+               theYlab <- "Fraction of each base"
+               LINECOLORS <- c("#FF0000BB","#000000BB","#0033FFBB","gray","#33CC00BB")
+          } else {
+               IS_ACGT_PLOT <- FALSE
+               theYlab <- "Fraction of each character"
+          }
 
-               LINECOLORS <- rainbow(nrow(ratios))
+          matplot(t(ratios), type='n'
+                  , main=paste("Base frequency at each position in\n\"", summarizedCountsFile, "\"", sep='')
+                  , xlab="Position in each sequence, from the FastQ file", ylab=theYlab)
 
-               if (nrow(ratios) %in% c(4,5) && all(c("A","C","G","T") %in% rownames(dat))) {
-                              IS_ACGT_PLOT <- TRUE
-                                        theYlab <- "Fraction of each base"
-                                        LINECOLORS <- c("#FF0000BB","#000000BB","#0033FFBB","gray","#33CC00BB")
-                         } else {
-                                        IS_ACGT_PLOT <- FALSE
-                                                  theYlab <- "Fraction of each character"
-                                   }
-
-               matplot(t(ratios), type='n'
-                                    , main=paste("Base frequency at each position in\n\"", summarizedCountsFile, "\"", sep='')
-                                    , xlab="Position in each sequence, from the FastQ file", ylab=theYlab
-                                    )
-
-               if (IS_ACGT_PLOT) {
-                              abline(h=0.25, col="#333333", lty="solid", lwd=2)
-                                        abline(h=c(0.2,0.3),  col="#666666", lty="solid" , lwd=1)
-                         }
-               matplot(t(ratios), type='b', col=LINECOLORS, lty="solid", cex=0.85, pch=rownames(ratios), lwd=2, add=T)
+          if (IS_ACGT_PLOT) {
+               abline(h=0.25, col="#333333", lty="solid", lwd=2)
+               abline(h=c(0.2,0.3),  col="#666666", lty="solid" , lwd=1)
+          }
+          matplot(t(ratios), type='b', col=LINECOLORS, lty="solid", cex=0.85, pch=rownames(ratios), lwd=2, add=T)
      }
 
 
+### ===============================================================================
+### 
+### ===============================================================================
 
-########## ====================== MAIN PROGRAM BELOW ======================
+
+
+
 
