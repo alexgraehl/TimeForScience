@@ -471,9 +471,12 @@ current line."
 
 (global-set-key "\M-s" 'save-buffer)
 (global-set-key "\M-z" 'undo)
-(global-set-key "\M-e" 'recentf-open-files)
-(recentf-mode 1)
+;;(global-set-key "\M-e" 'recentf-open-files)
+;;(recentf-mode 1)  ;; Recentf is super annoying when it can't save files sometimes!
 
+
+
+;; Alex's navigation keys
 ;;         ^  Navigation Keys (ijkl)
 ;;         |  (Inverted-T navigation)
 ;;         I
