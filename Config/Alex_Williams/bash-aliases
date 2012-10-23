@@ -80,6 +80,7 @@ PAREN_OPEN='('
 NL="\$'\\n'" # newline!
 
 alias maccheat="echo \
+\">>> Mac: Check specific file io / activity: fs_usage <programname> \" ${NL}\
 \">>> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
 \">>> Filesystem: show what files are being read/written: sudo fs_usage \" ${NL}\
 \">>> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
