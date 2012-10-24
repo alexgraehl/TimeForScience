@@ -20,19 +20,6 @@ echo -e "${a_echo_color}>>> BASH: Loading bash-path-setup...${a_end_color}"
 
 # More general path-related settings
 
-# case "$HOSTNAME"
-#     in
-#     nausicaa)
-# 	export SICER_DIR_ENV_VAR=/opt/Bio/sicer
-# 	;;
-#     catbus)
-# 	export SICER_DIR_ENV_VAR=/opt/Bio/sicer
-# 	;;
-#     --)
-# 	export SICER_DIR_ENV_VAR=SICER_IS_NOT_INSTALLED_ON_THIS_MACHINE_CHECK_YOUR_BASH_PROFILE_SETUP
-# 	;;
-# esac
-
 export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
 
 export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience ## Location of the TIME FOR SCIENCE directory. This is mostly Alex's code.
@@ -43,6 +30,11 @@ export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/ ## <-- Used by Josh Stua
 export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/sbin:/usr/X11/bin:/sw/bin:/opt/bin ## <-- clear out initial path!!
 # Medium priority: lab-specific tools
 export PATH=/work/Apps/bin:/work/Apps/kent_tools:/db/projects/Common/kent_bin_local:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
+
+
+## export PATH=/opt/local/bin:/opt/local/sbin:$PATH ## This is for MacPorts. Check the .bash_profile, that's where it went
+
+
 # Highest priority: things in the HOME directory or TimeForScience
 export PATH=${HOME}/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH} ## <-- Priority!
 
