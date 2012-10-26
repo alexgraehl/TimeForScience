@@ -121,11 +121,8 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      if (is.logical(cluster.rows) && cluster.rows) {
           ## If cluster.rows is true, then we will CLUSTER the rows, kind of like how regular built-in "heatmap"
           ## does it. Check the source to "heatmap" to get a sort of general idea how this works.
-
-
           theDist <- stats::dist(mmm, method="euclidean")
           maxNonNullDist <- max(theDist, na.rm=T)
-
           numNA <- sum(is.na(theDist))
           if (numNA > 0) {
                warnMsg <- "Note, in heatmap.agw, there are 'NA' values in the distance matrix! This is sub-optimal, as stats::hclust can't actually handle NA values. Thus, we have an inelegant workaround: the NA values for distance are being replaced by the maximum non-NA value in the heatmap, for purposes of clustering. This usually results in an acceptable result."
@@ -141,7 +138,6 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      
      ## col: the SPECIFIC list of colors to pass in. Must be equal in length to (breaks - 1)
      ## colorStyle: OR you can specify the colors as a style. This is one of the strings accepted by "colors.agw"--for example, "sepia" or "gray" or "blueblackyellow"
-
      if (is.vector(mmm)) {
           mmm <- as.matrix(mmm)
      }
@@ -159,8 +155,12 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      
      if (is.null(labRow)) { labRow = rownames(mmm) }
      if (is.null(labCol)) { labCol = colnames(mmm) }
-     stopifnot(breaks >= 3)
      scale01 <- function(x, low = min(x), high = max(x)) { return((x - low)/(high - low)) }
+
+
+     mainHeatmap.mat <- t(mmm)[, nrow(mmm):1, drop=F]  ## <-- transpose AND flip, to rotate the correct way
+     
+
      layout(matrix(c(1,2,3), byrow=T, ncol=1), heights=c(lcm(6),lcm(12),1) ) # <-- we plot THREE things, stacked vertically
      # ==========================================
      # ======================================
@@ -169,6 +169,8 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      max.raw <- max(mmm, na.rm=TRUE)
      mean.raw <- mean(mmm, na.rm=TRUE)
      median.raw <- median(mmm, na.rm=TRUE)
+     MIN_RAW_OR_BREAK <- min(min.raw, breaks)
+     MAX_RAW_OR_BREAK <- max(max.raw, breaks)
      ## This is the FIRST of three "layout" sub-items (which are stacked vertically). It's a text description of what is being plotted.
      textDescriptionPlotAGW(paste("Heatmap with ", length(mmm)
                                   , " values, in ", nrow(mmm)
@@ -194,13 +196,17 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      main <- paste(main, "\n(", nrow(mmm), " rows by ", ncol(mmm), " columns)", sep='')
 
      if (missing(breaks) || is.null(breaks) || (length(breaks) == 1)) {
-          ## If breaks was not specified, OR it was a length-one scalar
+          ## If breaks was not specified, OR it was a length-one scalar, then make it into a sequence
+          if (!is.null(breaks) && (length(breaks) == 1) && breaks < 3) {
+               warning("If you specify the number of breaks as a SINGLE NUMBER (not a sequence of numbers / vector), then that number must be >= 3.")
+               stopifnot(breaks >= 3)
+          }
           breaks <- seq(min.raw, max.raw, length.out=breaks)
      }
-
+     stopifnot(length(breaks) >= 3) # breaks needs to be at least 3 elements long by this point!
+     
      ## Alternative color scale chosen by Alex, blue to yellow (black in the middle):
      ##, col=c("#00C8FF", "#00AAF5", "#0082D7", "#2464A8", "#004064", "black", "#646400","#919114","#B6B61E","#D7D728","#FFFF00") ## blue to yellow
-
      if ((missing(col) || is.null(col)) && (missing(colorStyle) || is.null(colorStyle))) {
           ## If the color AND colorStyle both were not specified, use regular heatmap style
           colorStyle = "heat"
@@ -212,40 +218,42 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      }
 
      if (missing(cexCol) || is.null(cexCol)) {
-          cexCol = 1.5
           if (nrow(mmm) > 12) {
-               cexCol=1.0
-          }
-          if (nrow(mmm) > 25) {
-               cexCol=0.8
+               cexCol=1.0 # slightly smaller text if there are more columns
+          } else if (nrow(mmm) > 25) {
+               cexCol=0.8 # even smaller text if there are > 25 columns
+          } else {
+               cexCol = 1.5 # bigger text when there are few columns
           }
      }
      
      ## Draw the KEY / LEGEND histogram
      
      ## Draw the background for the "legend" histogram
-     legendBack <- seq(min.raw, max.raw, length=length(col)) ## Heatmap Histogram!
-     image(z = matrix(legendBack, ncol = 1), col=col, breaks=breaks, xaxt="n", yaxt="n") ## This is the histogram / distribution background that goes at the top of the heatmap
      
+     TEST_AGW <- F
+
+     COLOR_ZLIM <- c(MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK)
+     
+     legendBackground.vec <- seq(MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK, length.out=length(col)) ## Heatmap Histogram!
+     image(z=matrix(legendBackground.vec, ncol = 1), col=col, breaks=breaks, zlim=COLOR_ZLIM, xaxt="n", yaxt="n") ## This is the histogram / distribution background that goes at the top of the heatmap
      par(usr = c(0, 1, 0, 1))
-     lv <- pretty(breaks)
-     xv <- scale01(as.numeric(lv), min.raw, max.raw)
-     axis(1, at=xv, labels=lv)
-
-     h <- hist(mmm, plot = FALSE, breaks=breaks)
-     hx <- scale01(breaks, min.raw, max.raw)
+     labelsPretty <- pretty(breaks)
+     xv <- scale01(as.numeric(labelsPretty), MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK)
+     axis(1, at=xv, labels=round(labelsPretty, 2))
+     
+     h <- hist(mmm, plot = FALSE, breaks=breaks) # XLIM is not used except when plotting! xlim=c(min(breaks)*1.05, max(breaks)*1.05))
+     hx <- scale01(breaks, MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK)
      hy <- c(h$counts, h$counts[length(h$counts)])
-
      #print(mean.raw)
-     #abline(v=scale01(mean.raw, min.raw, max.raw), lwd=4, col="black")
+     #abline(v=scale01(mean.raw, MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK), lwd=4, col="black")
 
      MEDIAN_LINE_WIDTH    <- 4
      HISTOGRAM_LINE_WIDTH <- 6
-     #print(median.raw)
-     abline(v=scale01(median.raw, min.raw, max.raw), lwd=2*MEDIAN_LINE_WIDTH, lty="solid", col="gray")
-     abline(v=scale01(median.raw, min.raw, max.raw), lwd=MEDIAN_LINE_WIDTH, lty="dashed", col="black")
+     abline(v=scale01(median.raw, MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK), lwd=2*MEDIAN_LINE_WIDTH, lty="solid", col="gray")
+     abline(v=scale01(median.raw, MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK), lwd=MEDIAN_LINE_WIDTH, lty="dashed", col="black")
 
-     Y_SCALE <- 0.95
+     Y_SCALE <- 0.95 ## draw the actual LINES for the "histogram" below
      lines(hx, hy/max(hy) * Y_SCALE, lwd=2*HISTOGRAM_LINE_WIDTH, type = "s", col = "white") ## Draw the actual histogram as a squiggly line
      lines(hx, hy/max(hy) * Y_SCALE, lwd=HISTOGRAM_LINE_WIDTH, type = "s", col = "black")
 
@@ -254,6 +262,7 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      title(paste("Color Key and Histogram of the Distribution of Heatmap Values\nDashed line = median value (", format(median.raw, digits=3, nsmall=1), ")", sep=''))
      mtext(side=2, paste("Count (out of ", length(mmm) ,")", sep=''), line=3)
      box(lwd=1)
+     
      ## Done drawing the "legend" histogram of values in the heatmap
      
      # ======================================
@@ -266,8 +275,7 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      
      par(mar=c("bottom"=25, "left"=8, "top"=8, "right"=20), cex.main=2.2)
      par(cex = 0.5) ## Expansion factor
-     #image(m, axes=F, main=main, col=col)
-     image(t(mmm)[, nrow(mmm):1, drop=F], axes=F, main=main, col=col) ## <-- transpose AND flip, to rotate the correct way
+     image(mainHeatmap.mat, breaks=breaks, axes=F, main=main, col=col, zlim=COLOR_ZLIM)
      # Notice that ‘image’ interprets the matrix as a table of
      # ‘f(x[i], y[j])’ values, so that the x axis corresponds to row
      # number and the y axis to column number, with column 1 at the
