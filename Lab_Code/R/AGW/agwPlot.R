@@ -91,7 +91,6 @@ pdf.for.heatmap.agw <- function(file=file, mat=NULL, numRows=NULL, width="should
      assert.agw(missing(width), "Hey! You should not specify width in pdf.for.heatmap.agw! It is always set to the same value.")
      assert.agw(missing(height), "Hey! You cannot manually specify height in pdf.for.heatmap.agw. It is auto-calculated!")
      assert.agw(is.numeric(amount), "Uh oh! Pdf.for.heatmap.agw is broken!")
-
      ALEX_HEATMAP_WIDTH_INCHES <- 15
      MAX_HEIGHT <- 80
      MIN_HEIGHT <- 12
@@ -103,10 +102,14 @@ pdf.for.heatmap.agw <- function(file=file, mat=NULL, numRows=NULL, width="should
 
 ## =================================================================
 ## Alex's Heatmap-and-histogram plot
+## This plotting function uses the "layout" split-up-the-canvas function to split the canvas in 3.
 ## For a PDF, this heatmap.agw must be at least 12 inches tall for the heatmap AND the histogram to both fit.
 ## It can be 8 or more inches wide and look OK.
+## Use "pdf.for.heatmap.agw" to generate the heatmap, or you'll get out-of-bounds errors probably!
 ## =================================================================
-heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colorStyle=NULL, main, title="", cexRow=NULL, cexCol=1.5, maxNumLabels=1000, col.names=NULL, row.names=NULL, cluster.rows=FALSE) {
+heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colorStyle=NULL
+                        , main="Heatmap", title="", cexRow=NULL, cexCol=1.5, maxNumLabels=1000
+                        , col.names=NULL, row.names=NULL, cluster.rows=FALSE) {
      ## mmm: a matrix to plot
      ## Breaks: the number of histogram breaks, used for the color scheme
      ## labRow / labCol are row/column labels. You can probably override them... not sure. It may also default to the names from mmm?
@@ -114,13 +117,15 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      ## ** colorStyle is recommended for easily changing the color scheme. It accepts anything that "colors.agw" takes:
      ##        colorStyle="greenwhitered" or "greenblackred" or "blueblackyellow" or "blueblackyellow2"
      ##                   or "gray" or "brown" or "sepia" or "heat"
+
+     ## col: the SPECIFIC list of colors to pass in. Must be equal in length to (breaks - 1)
+     ## colorStyle: OR you can specify the colors as a style. This is one of the strings accepted by "colors.agw"--for example, "sepia" or "gray" or "blueblackyellow"
+
      print.agw("heatmap.agw: Now generating a \"heatmap.agw\" figure. If you get a \"figure region too large\" error,")
      print.agw("             that means your PDF/PNG wasn't big enough to fit the heatmap. This can be solved by using")
      print.agw("             a bigger pdf width or by using \"pdf.for.heatmap.agw\" to auto-compute the bounds.")
-     
      if (is.logical(cluster.rows) && cluster.rows) {
-          ## If cluster.rows is true, then we will CLUSTER the rows, kind of like how regular built-in "heatmap"
-          ## does it. Check the source to "heatmap" to get a sort of general idea how this works.
+          ## If cluster.rows is true, then we will CLUSTER the rows, kind of like how regular built-in "heatmap" does it.
           theDist <- stats::dist(mmm, method="euclidean")
           maxNonNullDist <- max(theDist, na.rm=T)
           numNA <- sum(is.na(theDist))
@@ -133,17 +138,13 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
           dcc <- as.dendrogram(hcc)
           reordering <- order.dendrogram(dcc)
           mmm <- mmm[reordering, , drop=F] ## REORDER THE INPUT MATRIX BASED ON THE CLUSTERING
-               assert.agw(is.null(labRow) && is.null(row.names), "Uh oh! You cannot specify that you want the matrix to be re-clustered AND ALSO specify row names. This is because once you recluster, the row names will not be what you probably expect! i.e., the row names move around!")
+          assert.agw(is.null(labRow) && is.null(row.names), "Uh oh! You cannot specify that you want the matrix to be re-clustered AND ALSO specify row names. This is because once you recluster, the row names will not be what you probably expect! i.e., the row names move around!")
      }
      
-     ## col: the SPECIFIC list of colors to pass in. Must be equal in length to (breaks - 1)
-     ## colorStyle: OR you can specify the colors as a style. This is one of the strings accepted by "colors.agw"--for example, "sepia" or "gray" or "blueblackyellow"
      if (is.vector(mmm)) {
-          mmm <- as.matrix(mmm)
+          mmm <- as.matrix(mmm) ## Turn a vector into a one-column-or-something matrix, so we can assume it's a matrix below.
      }
-     stopifnot(is.matrix(mmm))
-     stopifnot(nrow(mmm) >= 1)
-     stopifnot(ncol(mmm) >= 1)
+     stopifnot(is.matrix(mmm)); stopifnot(nrow(mmm) >= 1); stopifnot(ncol(mmm) >= 1)
      
      # Generates a three-row multi-part figure.
      # Top part: the caption (title)
@@ -152,16 +153,25 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      
      if (!missing(col.names) && !is.null(col.names)) { labCol <- col.names } ## "col.names" is just an alias for "labCol"
      if (!missing(row.names) && !is.null(col.names)) { labRow <- row.names } ## "row.names" is just an alias for "labRow"
-     
      if (is.null(labRow)) { labRow = rownames(mmm) }
      if (is.null(labCol)) { labCol = colnames(mmm) }
-     scale01 <- function(x, low = min(x), high = max(x)) { return((x - low)/(high - low)) }
-
-
-     mainHeatmap.mat <- t(mmm)[, nrow(mmm):1, drop=F]  ## <-- transpose AND flip, to rotate the correct way
      
+     scale01 <- function(x, low = min(x), high = max(x)) { return((x - low)/(high - low)) } ## Scale whatever the previous range was, now from 0 to 1. So like, -49 to 738 would be rescaled 0 to 1 where -49 would now be zero, and 738 would now be 1.
 
-     layout(matrix(c(1,2,3), byrow=T, ncol=1), heights=c(lcm(6),lcm(12),1) ) # <-- we plot THREE things, stacked vertically
+     if (missing(breaks) || is.null(breaks) || (length(breaks) == 1)) {
+          ## If breaks was not specified, OR it was a length-one scalar, then make it into a sequence
+          if (!is.null(breaks) && (length(breaks) == 1) && breaks < 3) {
+               warning(paste("If you specify the number of breaks as a SINGLE NUMBER (not a sequence of numbers / vector), then that number must be >= 3. Your specified 'breaks' number was only ", breaks, ".", sep=''))
+               stopifnot(breaks >= 3)
+          }
+          breaks.vec <- seq(min.raw, max.raw, length.out=breaks)
+     } else {
+          stopifnot(is.vector(breaks)) # "If 'breaks' is specified here, it must be a vector or single number."
+          breaks.vec = breaks
+     }
+     stopifnot(length(breaks.vec) >= 3) # breaks.vec needs to be at least 3 elements long by this point!
+     
+     layout(matrix(c(1,2,3), byrow=T, ncol=1), heights=c(lcm(6),lcm(12),1) ) # <-- we plot THREE things, stacked vertically. This splits up the canvas into three sub-plots.
      # ==========================================
      # ======================================
 
@@ -169,8 +179,18 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      max.raw <- max(mmm, na.rm=TRUE)
      mean.raw <- mean(mmm, na.rm=TRUE)
      median.raw <- median(mmm, na.rm=TRUE)
-     MIN_RAW_OR_BREAK <- min(min.raw, breaks)
-     MAX_RAW_OR_BREAK <- max(max.raw, breaks)
+     numValuesOutOfBoundsBelow <- sum(mmm < min(breaks.vec))
+     numValuesOutOfBoundsAbove <- sum(mmm > max(breaks.vec))
+     outOfBoundsText = ''
+     if (numValuesOutOfBoundsAbove > 0) {
+          outOfBoundsText <- paste(outOfBoundsText, numValuesOutOfBoundsAbove, " values greater than ", max(breaks.vec), " are shown in the maximum bin in the histogram. ", sep='')
+     }
+     if (numValuesOutOfBoundsBelow > 0) {
+          outOfBoundsText <- paste(outOfBoundsText, numValuesOutOfBoundsBelow, " values less than ", min(breaks.vec), " are shown in the minimum bin in the histogram. ", sep='')
+     }
+     if (numValuesOutOfBoundsAbove > 0 || numValuesOutOfBoundsBelow > 0) {
+          outOfBoundsText <- paste(outOfBoundsText, "\n", sep='') ## Add a newline
+     }
      ## This is the FIRST of three "layout" sub-items (which are stacked vertically). It's a text description of what is being plotted.
      textDescriptionPlotAGW(paste("Heatmap with ", length(mmm)
                                   , " values, in ", nrow(mmm)
@@ -178,32 +198,17 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
                                   , ncol(mmm), " columns."
                                   , " Mean = ", format(mean.raw, digits=3, nsmall=1)
                                   , ", median = ", format(median.raw, digits=3, nsmall=1)
-                                  , ". ", title
-                                  , sep=''), wraplen=120, leftMargin=0.05, topMargin=0.05, cex=1.4)
-
+                                  , ". "
+                                  , outOfBoundsText
+                                  , title
+                                  , sep=''), wraplen=150, leftMargin=0.05, topMargin=0.05, cex=1.4)
      # ======================================
      # ==========================================
      # ==========================================
      # ======================================
 
      ## This is the SECOND of three layout things. It's a histogram
-     
      par(mar=c("bottom"=3, "left"=9.5, "top"=5, "right"=15.5))
-
-     if (missing(main) || is.null(main)) {
-          main <- "Heatmap"
-     }
-     main <- paste(main, "\n(", nrow(mmm), " rows by ", ncol(mmm), " columns)", sep='')
-
-     if (missing(breaks) || is.null(breaks) || (length(breaks) == 1)) {
-          ## If breaks was not specified, OR it was a length-one scalar, then make it into a sequence
-          if (!is.null(breaks) && (length(breaks) == 1) && breaks < 3) {
-               warning("If you specify the number of breaks as a SINGLE NUMBER (not a sequence of numbers / vector), then that number must be >= 3.")
-               stopifnot(breaks >= 3)
-          }
-          breaks <- seq(min.raw, max.raw, length.out=breaks)
-     }
-     stopifnot(length(breaks) >= 3) # breaks needs to be at least 3 elements long by this point!
      
      ## Alternative color scale chosen by Alex, blue to yellow (black in the middle):
      ##, col=c("#00C8FF", "#00AAF5", "#0082D7", "#2464A8", "#004064", "black", "#646400","#919114","#B6B61E","#D7D728","#FFFF00") ## blue to yellow
@@ -213,69 +218,63 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      }
      if (!missing(colorStyle) && !is.null(colorStyle)) {
           assert.agw(length(colorStyle) == 1, "colorStyle needs to be a string like blueblackyellow. The user can pass in a string here to automagically pick the color scheme. Or they can specify it manually with \"col\".")
-          ## ColorStyle is a CHARACTER vector. Options include "greenwhitered" "blueblackyellow" and "blueblackyellow2" and "gray" and "sepia" . "heat" is also popular.
-          col <- colors.agw(n = length(breaks)-1, type=colorStyle)
+          ## colorStyle is a CHARACTER vector. Options include "greenwhitered" "blueblackyellow" and "blueblackyellow2" and "gray" and "sepia" . "heat" is also popular.
+          col <- colors.agw(n=(length(breaks.vec)-1), type=colorStyle)
      }
-
-     if (missing(cexCol) || is.null(cexCol)) {
-          if (nrow(mmm) > 12) {
-               cexCol=1.0 # slightly smaller text if there are more columns
-          } else if (nrow(mmm) > 25) {
-               cexCol=0.8 # even smaller text if there are > 25 columns
-          } else {
-               cexCol = 1.5 # bigger text when there are few columns
-          }
-     }
-     
-     ## Draw the KEY / LEGEND histogram
      
      ## Draw the background for the "legend" histogram
-     
-     TEST_AGW <- F
+     COLOR_ZLIM <- c(min(breaks.vec), max(breaks.vec)) ## zlim has something to do with the maximum/minimum colors or something.
+     ZERO_TO_ONE_SCALE_VEC <- c(0,1,0,1) # Scales the histogram (and image!) to fit into a 0-to-1 x and y axis scale. So the left is 0, and the right is 1.0.
+     ZERO_TO_ONE_PLUS_EXTRA_ON_Y_AXIS_SCALE_VEC <- c(0,1,-0.05,1.05) # The scale should be SLIGHTLY different from the ZERO_TO_ONE_SCALE_VEC--it needs to go slightly lower and slightly higher, so as to not clip the values off the bottom & top of the histogram. Thus, instead of 0 and 1, we use -0.05 and 1.05
+     ## ============== DRAW LEGEND BACKGROUND GRADIENT =================
+     par(usr=ZERO_TO_ONE_SCALE_VEC) # Scales the histogram (and image!) to fit into a 0-to-1 x and y axis scale. So the left is 0, and the right is 1.0.
+     legendBackground.mat <- matrix(seq(min(breaks.vec), max(breaks.vec), length.out=length(col)), ncol=1)
+     image(z=legendBackground.mat, col=col, breaks=breaks.vec, zlim=COLOR_ZLIM, xaxt="n", yaxt="n") ## This is the histogram / distribution background that goes at the top of the heatmap.
 
-     COLOR_ZLIM <- c(MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK)
+     ## ============== DRAW THE 'HERE IS THE MEDIAN' VERTICAL LINE =================
+     MEDIAN_LINE_WIDTH    <- 3
+     abline(v=scale01(median.raw, min(breaks.vec), max(breaks.vec)), lwd=2*MEDIAN_LINE_WIDTH, lty="solid", col="gray")
+     abline(v=scale01(median.raw, min(breaks.vec), max(breaks.vec)), lwd=MEDIAN_LINE_WIDTH, lty="dashed", col="black")
      
-     legendBackground.vec <- seq(MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK, length.out=length(col)) ## Heatmap Histogram!
-     image(z=matrix(legendBackground.vec, ncol = 1), col=col, breaks=breaks, zlim=COLOR_ZLIM, xaxt="n", yaxt="n") ## This is the histogram / distribution background that goes at the top of the heatmap
-     par(usr = c(0, 1, 0, 1))
-     labelsPretty <- pretty(breaks)
-     xv <- scale01(as.numeric(labelsPretty), MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK)
-     axis(1, at=xv, labels=round(labelsPretty, 2))
-     
-     h <- hist(mmm, plot = FALSE, breaks=breaks) # XLIM is not used except when plotting! xlim=c(min(breaks)*1.05, max(breaks)*1.05))
-     hx <- scale01(breaks, MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK)
-     hy <- c(h$counts, h$counts[length(h$counts)])
-     #print(mean.raw)
-     #abline(v=scale01(mean.raw, MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK), lwd=4, col="black")
-
-     MEDIAN_LINE_WIDTH    <- 4
+     ## ============== DRAW THE WIGGLY HISTOGRAM LINE =================
+     par(usr=ZERO_TO_ONE_PLUS_EXTRA_ON_Y_AXIS_SCALE_VEC) # The scale should be SLIGHTLY different from the ZERO_TO_ONE_SCALE_VEC--it needs to go slightly lower and slightly higher, so as to not clip the values off the bottom & top of the histogram. Thus, instead of 0 and 1, we use -0.05 and 1.05
      HISTOGRAM_LINE_WIDTH <- 6
-     abline(v=scale01(median.raw, MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK), lwd=2*MEDIAN_LINE_WIDTH, lty="solid", col="gray")
-     abline(v=scale01(median.raw, MIN_RAW_OR_BREAK, MAX_RAW_OR_BREAK), lwd=MEDIAN_LINE_WIDTH, lty="dashed", col="black")
 
-     Y_SCALE <- 0.95 ## draw the actual LINES for the "histogram" below
-     lines(hx, hy/max(hy) * Y_SCALE, lwd=2*HISTOGRAM_LINE_WIDTH, type = "s", col = "white") ## Draw the actual histogram as a squiggly line
-     lines(hx, hy/max(hy) * Y_SCALE, lwd=HISTOGRAM_LINE_WIDTH, type = "s", col = "black")
+     #mmmWithoutOutOfBounds <- mmm;
+     #mmmWithoutOutOfBounds[ mmmWithoutOutOfBounds < min(breaks.vec) ] <- NA #min(breaks.vec) #+ 0.001
+     #mmmWithoutOutOfBounds[ mmmWithoutOutOfBounds > max(breaks.vec) ] <- NA # max(breaks.vec) #- 0.001
 
-     axis(2, at=pretty(hy)/max(hy) * Y_SCALE, pretty(hy))
-     par(cex.main=1.7)
-     title(paste("Color Key and Histogram of the Distribution of Heatmap Values\nDashed line = median value (", format(median.raw, digits=3, nsmall=1), ")", sep=''))
-     mtext(side=2, paste("Count (out of ", length(mmm) ,")", sep=''), line=3)
+     mmmClippedToBounds <- mmm
+     mmmClippedToBounds[ mmmClippedToBounds < min(breaks.vec) ] <- min(breaks.vec)
+     mmmClippedToBounds[ mmmClippedToBounds > max(breaks.vec) ] <- max(breaks.vec)
+     
+     histValues <- hist(mmmClippedToBounds, plot=FALSE, breaks=breaks.vec) # XLIM is not used except when plotting! xlim=c(min(breaks.vec)*1.05, max(breaks.vec)*1.05))
+     hx <- scale01(breaks.vec, min(breaks.vec), max(breaks.vec))
+     hy <- c(histValues$counts, histValues$counts[length(histValues$counts)])
+     scaledHy <- hy/max(hy)
+     lines(hx, scaledHy, lwd=2*HISTOGRAM_LINE_WIDTH, type="s", col="white") ## Draw the actual histogram as a squiggly line
+     lines(hx, scaledHy, lwd=HISTOGRAM_LINE_WIDTH, type="s", col="black")
+     ## ============== DRAW LEGEND AXES LABELS FOR THE HISTOGRAM / LEGEND =================
+     labelsPretty <- pretty(breaks.vec)
+     axis(1, at=scale01(as.numeric(labelsPretty), min(breaks.vec), max(breaks.vec)), labels=round(labelsPretty, 2)) ## X AXIS
+     axis(2, at=pretty(hy)/max(hy), pretty(hy))
+     ## ============== DRAW BOX AROUND THE HISTOGRAM / LEGEND =================
      box(lwd=1)
-     
-     ## Done drawing the "legend" histogram of values in the heatmap
-     
-     # ======================================
-     # ==========================================
+     ## ============== DRAW TITLE =================
+     par(cex.main=1.7) # No idea why we scale it to 1.7, but I guess that is a decent size
+     title(paste("Color Key and Histogram of the Distribution of Heatmap Values\nDashed line at median value (", format(median.raw, digits=3, nsmall=1), ")", sep=''))
+     ## ============== DRAW INFORMATIONAL TEXT AT VERY TOP OF GRAPH =================
+     mtext(side=2, paste("Count (out of ", length(mmmClippedToBounds) ," total)", sep=''), line=3)
      # ==========================================
      # ======================================
 
      ## This is the THIRD thing being plotted, and is the real heatmap. If you want a heatmap that doesn't use layout/mfrow/etc., you can just copy out this code here.
      ## This is the "meat" of the heatmap generation.
      
-     par(mar=c("bottom"=25, "left"=8, "top"=8, "right"=20), cex.main=2.2)
-     par(cex = 0.5) ## Expansion factor
-     image(mainHeatmap.mat, breaks=breaks, axes=F, main=main, col=col, zlim=COLOR_ZLIM)
+     par(mar=c("bottom"=25, "left"=8, "top"=8, "right"=20), cex.main=2.2, cex=0.5)
+     mainHeatmap.mat <- t(mmmClippedToBounds)[, nrow(mmmClippedToBounds):1, drop=F]  ## <-- transpose AND flip, to rotate the correct way
+     mainWithDimensions.string <- paste(main, "\n(", nrow(mmmClippedToBounds), " rows by ", ncol(mmmClippedToBounds), " columns)", sep='')
+     image(mainHeatmap.mat, breaks=breaks.vec, axes=F, main=mainWithDimensions.string, col=col, zlim=COLOR_ZLIM)
      # Notice that ‘image’ interprets the matrix as a table of
      # ‘f(x[i], y[j])’ values, so that the x axis corresponds to row
      # number and the y axis to column number, with column 1 at the
@@ -286,7 +285,10 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      if (!is.null(labRow)) {
           numNonBlankRows <- sum(!is.na(labRow) & (nchar(labRow) > 0)) ## Count the number of NON-BLANK rows only!
      }
-     
+
+     if (missing(cexCol) || is.null(cexCol)) {
+          cexCol <- min(2.0, 40.0/ncol(mmm))
+     }
      if (is.null(cexRow)) {
           rowNumberToUseForSizeCalculation <- nrow(mmm) ## Make the labels tiny enough to individually specify a single row
           cexRow = 1.0
@@ -320,6 +322,7 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      } else {
           bottomAxisLoc.vec <- seq(from=0, to=(ncol(mmm)-1)) / (ncol(mmm)-1)
      }
+     
      axis(1, at=bottomAxisLoc.vec, labels=labCol, tick=F, las=2, cex.axis=cexCol) # 1 = bottom axis, usually with array names
      box(lwd=1)
 
