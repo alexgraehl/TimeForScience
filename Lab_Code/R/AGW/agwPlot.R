@@ -19,18 +19,14 @@ if (!exists("print.agw")) {
 ## =================================================================
 ## Colors -- gradient, like heat.colors
 ## =================================================================
-colors.agw <- function(n = 12, type="blueblackyellow", reverse=FALSE) {
+colors.agw <- function(n=12, type="blueblackyellow", reverse=FALSE) {
      # Returns a color gradient, much like "heat.colors(...)" Several options for "type" are available.
-     stopifnot(is.numeric(n))
-     stopifnot(n >= 1)
-     
+     stopifnot(is.numeric(n)); stopifnot(n >= 1)
      totalColors <- n
      colRange01 <- (0:(totalColors-1))/(totalColors-1)
      range1 <- (0:(ceiling(totalColors / 2)-1))/(ceiling(totalColors/2)-1) ## For two-color gradients (the left half of the colors)
      range2 <- (1:(floor(totalColors / 2)))/(floor(totalColors/2))         ## For two-color gradients (the right half of the colors)
-
      type <- tolower(type)
-
      if (type == "greenwhitered") { ## green -> white -> red. Don't use this is possible--use "blueblackyellow"! Colorblind people can't see this.
           col1 <- rev(hsv(h=rev(0.3+0.20*range1), s=range1, v=(1.0 - 0.2*range1)))
           col2 <- (hsv(h=rev(0.0+0.15*range2), s=range2, v=(1.0 - 0.15*range2)))
@@ -44,28 +40,33 @@ colors.agw <- function(n = 12, type="blueblackyellow", reverse=FALSE) {
           col2 <- (hsv(h=rev(0.15+0.10*range2), s=rev(1.0-0.2*range2), v=range2))
           col <- c(col1, col2)
      } else if (type == "blueblackyellow2") { ## blue -> black -> yellow, hand-picked. Looks better than blueblackyellow!
-          stopifnot(n == 11)
-          col <- c("#00C8FF", "#00AAF5", "#0082D7", "#2464A8", "#004064", "black", "#646400","#919114","#B6B61E","#D7D728","#FFFF00")
+          left <- range1[2:length(range1)]
+          col1 <- rev(hsv(h=0.65-0.1*left, s=1.0, v=left)) ## 0.65 to 0.55 = blue
+          col2 <- (hsv(h=0.166, s=1.0, v=range2)) ## 0.166 = yellow
+          col <- c(col1, "black", col2)
+          #col <- c("#00C8FF", "#00AAF5", "#0082D7", "#2464A8", "#004064", "black", "#646400","#919114","#B6B61E","#D7D728","#FFFF00")
      } else if (grepl("^gr[ea]y", type)) { col <- gray(colRange01) }
      else if (grepl("^brown", type))   { col <- rev(hsv(h=rev(0.2*colRange01), s=colRange01, v=(1.0 - 0.7*colRange01))) }
      else if (grepl("^sepia", type))   { col <- rev(hsv(h=rev(0.3*colRange01), s=colRange01, v=rev(colRange01))) }
      else if (grepl("^heat", type))    {  ## Nicer heatmap colors
-          if (n == 2) {
+          if (totalColors == 2) {
                col <- c("#000066", "#FFFF99")
-          } else if (n >= 10) {
+          } else if (totalColors >= 10) {
                col <- c("black", "#330033", "#440044", "#550055", "#770044", "darkred", heat.colors(n-6))
           } else {
                col <- c("#330033", "#770044", heat.colors(n-2))
           }
-          #col <- col[1:n]
      } else if (grepl("^oldheat", type)) {
-          col <- heat.colors(n) ## R's very-bright heatmap colors
+          col <- heat.colors(totalColors) ## R's very-bright heatmap colors
      } else {
           print(paste("An unrecognized color gradient type (<", type, ">) was passed into colorGradientAGW:", sep=''))
           print(type)
           stopifnot(paste("Color type is not recognized. Try something like \"gray.colors\"") == 999)
      }
      if (reverse) { col <- rev(col) }
+
+     assert.agw(length(col) == totalColors)
+     
      return(col)
 }
 
@@ -107,7 +108,7 @@ pdf.for.heatmap.agw <- function(file=file, mat=NULL, numRows=NULL, width="should
 ## It can be 8 or more inches wide and look OK.
 ## Use "pdf.for.heatmap.agw" to generate the heatmap, or you'll get out-of-bounds errors probably!
 ## =================================================================
-heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colorStyle=NULL
+heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, colorVec=NULL, colorStyle="heat"
                         , main="Heatmap", title="", cexRow=NULL, cexCol=1.5, maxNumLabels=1000
                         , col.names=NULL, row.names=NULL, cluster.rows=FALSE) {
      ## mmm: a matrix to plot
@@ -118,9 +119,16 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      ##        colorStyle="greenwhitered" or "greenblackred" or "blueblackyellow" or "blueblackyellow2"
      ##                   or "gray" or "brown" or "sepia" or "heat"
 
-     ## col: the SPECIFIC list of colors to pass in. Must be equal in length to (breaks - 1)
+     ## command for testing:
+     ## NN = 40; source("~/TimeForScience/Lab_Code/R/AGW/agwPlot.R") ; m=matrix(rnorm(NN*10),ncol=NN); m[1:10,1] <- 50; m[1:5,2] <- -10; pdf.for.heatmap.agw("zog.pdf", m); heatmap.agw(m, breaks=seq(-6,6,length.out=12), colorStyle="blueBlackYellow2") ; dev.off()
+     
+     ## colorVec: the SPECIFIC list of colors to pass in. Must be equal in length to (breaks - 1)
      ## colorStyle: OR you can specify the colors as a style. This is one of the strings accepted by "colors.agw"--for example, "sepia" or "gray" or "blueblackyellow"
-
+     min.raw <- min(mmm, na.rm=TRUE)
+     max.raw <- max(mmm, na.rm=TRUE)
+     mean.raw <- mean(mmm, na.rm=TRUE)
+     median.raw <- median(mmm, na.rm=TRUE)
+     
      print.agw("heatmap.agw: Now generating a \"heatmap.agw\" figure. If you get a \"figure region too large\" error,")
      print.agw("             that means your PDF/PNG wasn't big enough to fit the heatmap. This can be solved by using")
      print.agw("             a bigger pdf width or by using \"pdf.for.heatmap.agw\" to auto-compute the bounds.")
@@ -170,17 +178,14 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
           breaks.vec = breaks
      }
      stopifnot(length(breaks.vec) >= 3) # breaks.vec needs to be at least 3 elements long by this point!
+
+     numValuesOutOfBoundsBelow <- sum(mmm < min(breaks.vec), na.rm=T)
+     numValuesOutOfBoundsAbove <- sum(mmm > max(breaks.vec), na.rm=T)
      
      layout(matrix(c(1,2,3), byrow=T, ncol=1), heights=c(lcm(6),lcm(12),1) ) # <-- we plot THREE things, stacked vertically. This splits up the canvas into three sub-plots.
      # ==========================================
      # ======================================
 
-     min.raw <- min(mmm, na.rm=TRUE)
-     max.raw <- max(mmm, na.rm=TRUE)
-     mean.raw <- mean(mmm, na.rm=TRUE)
-     median.raw <- median(mmm, na.rm=TRUE)
-     numValuesOutOfBoundsBelow <- sum(mmm < min(breaks.vec))
-     numValuesOutOfBoundsAbove <- sum(mmm > max(breaks.vec))
      outOfBoundsText = ''
      if (numValuesOutOfBoundsAbove > 0) {
           outOfBoundsText <- paste(outOfBoundsText, numValuesOutOfBoundsAbove, " values greater than ", max(breaks.vec), " are shown in the maximum bin in the histogram. ", sep='')
@@ -210,16 +215,10 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      ## This is the SECOND of three layout things. It's a histogram
      par(mar=c("bottom"=3, "left"=9.5, "top"=5, "right"=15.5))
      
-     ## Alternative color scale chosen by Alex, blue to yellow (black in the middle):
-     ##, col=c("#00C8FF", "#00AAF5", "#0082D7", "#2464A8", "#004064", "black", "#646400","#919114","#B6B61E","#D7D728","#FFFF00") ## blue to yellow
-     if ((missing(col) || is.null(col)) && (missing(colorStyle) || is.null(colorStyle))) {
-          ## If the color AND colorStyle both were not specified, use regular heatmap style
-          colorStyle = "heat"
-     }
-     if (!missing(colorStyle) && !is.null(colorStyle)) {
-          assert.agw(length(colorStyle) == 1, "colorStyle needs to be a string like blueblackyellow. The user can pass in a string here to automagically pick the color scheme. Or they can specify it manually with \"col\".")
+     if (missing(colorVec) || is.null(colorVec) || (length(colorVec) == 0)) {
+          assert.agw(length(colorStyle) == 1, "colorStyle needs to be a string like blueblackyellow. The user can pass in a string here to automagically pick the color scheme. Or they can specify it manually with \"colorVec\".")
           ## colorStyle is a CHARACTER vector. Options include "greenwhitered" "blueblackyellow" and "blueblackyellow2" and "gray" and "sepia" . "heat" is also popular.
-          col <- colors.agw(n=(length(breaks.vec)-1), type=colorStyle)
+          colorVec <- colors.agw(n=(length(breaks.vec)-1), type=colorStyle)
      }
      
      ## Draw the background for the "legend" histogram
@@ -228,8 +227,8 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      ZERO_TO_ONE_PLUS_EXTRA_ON_Y_AXIS_SCALE_VEC <- c(0,1,-0.05,1.05) # The scale should be SLIGHTLY different from the ZERO_TO_ONE_SCALE_VEC--it needs to go slightly lower and slightly higher, so as to not clip the values off the bottom & top of the histogram. Thus, instead of 0 and 1, we use -0.05 and 1.05
      ## ============== DRAW LEGEND BACKGROUND GRADIENT =================
      par(usr=ZERO_TO_ONE_SCALE_VEC) # Scales the histogram (and image!) to fit into a 0-to-1 x and y axis scale. So the left is 0, and the right is 1.0.
-     legendBackground.mat <- matrix(seq(min(breaks.vec), max(breaks.vec), length.out=length(col)), ncol=1)
-     image(z=legendBackground.mat, col=col, breaks=breaks.vec, zlim=COLOR_ZLIM, xaxt="n", yaxt="n") ## This is the histogram / distribution background that goes at the top of the heatmap.
+     legendBackground.mat <- matrix(seq(min(breaks.vec), max(breaks.vec), length.out=length(colorVec)), ncol=1)
+     image(z=legendBackground.mat, col=colorVec, breaks=breaks.vec, zlim=COLOR_ZLIM, xaxt="n", yaxt="n") ## This is the histogram / distribution background that goes at the top of the heatmap.
 
      ## ============== DRAW THE 'HERE IS THE MEDIAN' VERTICAL LINE =================
      MEDIAN_LINE_WIDTH    <- 3
@@ -239,10 +238,6 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      ## ============== DRAW THE WIGGLY HISTOGRAM LINE =================
      par(usr=ZERO_TO_ONE_PLUS_EXTRA_ON_Y_AXIS_SCALE_VEC) # The scale should be SLIGHTLY different from the ZERO_TO_ONE_SCALE_VEC--it needs to go slightly lower and slightly higher, so as to not clip the values off the bottom & top of the histogram. Thus, instead of 0 and 1, we use -0.05 and 1.05
      HISTOGRAM_LINE_WIDTH <- 6
-
-     #mmmWithoutOutOfBounds <- mmm;
-     #mmmWithoutOutOfBounds[ mmmWithoutOutOfBounds < min(breaks.vec) ] <- NA #min(breaks.vec) #+ 0.001
-     #mmmWithoutOutOfBounds[ mmmWithoutOutOfBounds > max(breaks.vec) ] <- NA # max(breaks.vec) #- 0.001
 
      mmmClippedToBounds <- mmm
      mmmClippedToBounds[ mmmClippedToBounds < min(breaks.vec) ] <- min(breaks.vec)
@@ -274,7 +269,7 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
      par(mar=c("bottom"=25, "left"=8, "top"=8, "right"=20), cex.main=2.2, cex=0.5)
      mainHeatmap.mat <- t(mmmClippedToBounds)[, nrow(mmmClippedToBounds):1, drop=F]  ## <-- transpose AND flip, to rotate the correct way
      mainWithDimensions.string <- paste(main, "\n(", nrow(mmmClippedToBounds), " rows by ", ncol(mmmClippedToBounds), " columns)", sep='')
-     image(mainHeatmap.mat, breaks=breaks.vec, axes=F, main=mainWithDimensions.string, col=col, zlim=COLOR_ZLIM)
+     image(mainHeatmap.mat, breaks=breaks.vec, axes=F, main=mainWithDimensions.string, col=colorVec, zlim=COLOR_ZLIM)
      # Notice that ‘image’ interprets the matrix as a table of
      # ‘f(x[i], y[j])’ values, so that the x axis corresponds to row
      # number and the y axis to column number, with column 1 at the
@@ -283,7 +278,7 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, col=NULL, colo
 
      numNonBlankRows <- 0
      if (!is.null(labRow)) {
-          numNonBlankRows <- sum(!is.na(labRow) & (nchar(labRow) > 0)) ## Count the number of NON-BLANK rows only!
+          numNonBlankRows <- sum(!is.na(labRow) & (nchar(labRow) > 0), na.rm=T) ## Count the number of NON-BLANK rows only!
      }
 
      if (missing(cexCol) || is.null(cexCol)) {
@@ -458,7 +453,6 @@ geneST.pairs.plot <- function(..., celKeys) {
 ## if you for some reason actually want NO labels, set labelVec to "" in the arguments
 ### ===============================================================================
 pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, main="log2(Intensity).  Red points = within-group comparison. Values in lower left are Pearson's R of the log-transformed values.") {
-     
      assert.agw(nrow(keys$"table") == ncol(dataMatrix))
      if (missing(labelVec) || is.null(labelVec)) {
           COLUMN_THAT_PROBABLY_HAS_THE_FILENAMES <- 1 ## usually the first column in the keys file...
@@ -470,12 +464,9 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
      labelVec <- gsub("[ _]+vs[.]?[ _]+", "\nvs.\n", labelVec, perl=TRUE, ignore.case=TRUE) ## break up "vs" so it spans multiple lines
      labelVec <- gsub("\n\n+", "\n", labelVec, perl=TRUE, ignore.case=TRUE) ## One newline in a row at most!
      labelVecNoNewlines <- gsub("\n", "", labelVec, perl=TRUE, ignore.case=TRUE)
-     
      print.agw("Drawing a \"pairs\" plot matrix with many sub-plots to file <", filePath, ">... (note, this can take a couple of minutes)\n")
-     
      #datA <- apply(dataMatrix, APPLY_BY_ROW, mean) ## get the mean of each row
      #datM <- as.matrix(dataMatrix) - datA          ## get the difference of each row
-
      ## cumul/whichBin: Shows which "bins" each number is in. So like, experiment #2 might be in experimental group #1, if there were 2 replicates of that experiment.
      cumul <- c(0, cumsum(keys$"experimentsInEachGroup")) ## <-- 0 is the leftmost boundary!
      whichBin <- function(value, binMarkers) { ## right sides! The first value is NOT a valid one
@@ -490,16 +481,13 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
           return(-1); ## out of bounds
      }
 
-     nGroups <- length(keys$"groups")
-
+     nGroups    <- length(keys$"groups")
      pointAlpha <- 0.75  ## 0.75 = 75% opaque.
-     regularPointColor  <- hsv(h=1, s=1, v=0, alpha=pointAlpha) ## The foreground color for points in each "bin"
-     backgroundAlpha <- 1.0
-     backColors      <- rainbow(n=nGroups*(nGroups-1), s = 0.25, v = 1.0, alpha=backgroundAlpha) ## The background colors for each "bin"
-     
+     regularPointColor <- hsv(h=1, s=1, v=0, alpha=pointAlpha) ## The foreground color for points in each "bin"
+     backgroundAlpha   <- 1.0
+     backColors        <- rainbow(n=nGroups*(nGroups-1), s = 0.25, v = 1.0, alpha=backgroundAlpha) ## The background colors for each "bin"
      WITHIN_GROUP_POINT_COLOR <- hsv(h=1, s=1, v=1, alpha=pointAlpha)
      WITHIN_GROUP_BACKGROUND_COLOR   <- "white" ## What color are the cells that have the array filenames?
-
      MINI_PLOT_BORDER_THICKNESS <- 2.0   ## How thick the border around each scatterplot is
 
      if (ncol(dataMatrix) > 30) {
@@ -517,9 +505,7 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
      par(mar=c("bottom"=2, "left"=2, "right"=2, "top"=8))
      par(cex.axis=1.0, cex.lab=1.2, cex.main=1.0)     
      dimSize <- ncol(dataMatrix)
-
      whichSubplot <- list("x" = 2, "y" = 1)  ## <-- have to MANUALLY keep track of which sub-plot we are plotting in the  big "upper.panel" function using these vars and the <<- assignment operator
-
      corrMatrixOutputFilePath <- gsub(".png", ".pearson.corr.matrix.out.txt", filePath)
      print.green.agw("Now writing output correlations to <", corrMatrixOutputFilePath,">...")
      vvv <- matrix(nrow=length(labelVecNoNewlines), ncol=length(labelVecNoNewlines), dimnames=list(labelVecNoNewlines, labelVecNoNewlines))
@@ -531,7 +517,8 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
      NUM_DECIMAL_PLACES_FOR_CORR_OUTPUT <- 4
      write.table(signif(vvv, NUM_DECIMAL_PLACES_FOR_CORR_OUTPUT), corrMatrixOutputFilePath, sep="\t", col.names=NA, row.names=TRUE, quote=T)
      print.green.agw("[Done] writing output correlations to <", corrMatrixOutputFilePath,">.")
-     
+
+     ## "graphics::pairs" plot is one of those big matrix plots that is ususally used to display many scatterplots at once. In this case, it's scatterplots (top right -- upper.panel) and correlation values (bottom left -- lower.panel)
      graphics::pairs(dataMatrix
                      , main=main, labels=labelVec
                      , cex.labels=1.5 ## <-- this determines the labels on the diagonal
