@@ -102,7 +102,8 @@ alias cheat="echo \
 \">>> Find all .R files in a directory:   find ./ -name \\\"*.R\\\" -exec ls \'{}\' \\\; \" ${NL}\
 \">>> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
 \" \" ${NL}\
-\">>> Literal tab in bash: \$'\\t' \" ${NL}\
+\">>> Bash: Literal tab in bash: \$'\\t' \" ${NL}\
+\">>> sh: Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$( dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
 \">>> Python debugger: Crashing program? Run python -m pdb YOURPROG --yourargs . 'c' continues execution. \" ${NL}\
 \">>> R: Read bzip/gz file:  x <- read.table(bzfile(\\\"name.bz2\\\") or gzfile(...) \" ${NL}\
 \">>> R: Read from stdin:    x <- read.table(pipe(\\\"cat something name.bz2 | bunzip2\\\") \" ${NL}\
