@@ -79,7 +79,7 @@ PAREN_OPEN='('
 
 NL="\$'\\n'" # newline!
 
-alias maccheat="echo \
+alias cheat="echo \
 \">>> Mac: Check specific file io / activity: fs_usage <programname> \" ${NL}\
 \">>> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
 \">>> Filesystem: show what files are being read/written: sudo fs_usage \" ${NL}\
@@ -95,9 +95,6 @@ alias maccheat="echo \
 \">>> Select in QuickLook : defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
 \">>> No smooth scroll    : defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
 \">>>  \" ${NL}\
-"
-
-alias cheat="echo \
 \">>> Check directories for differences (by modification time): ionice -c3 rsync --dry-run --delete -vr /dirA /dirB \" ${NL}\
 \">>> Find all .R files in a directory:   find ./ -name \\\"*.R\\\" -exec ls \'{}\' \\\; \" ${NL}\
 \">>> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
