@@ -18,8 +18,9 @@ my $SUCCESS_STATUS = 0; ## <-- this should be ZERO
 
 my $isDryRun = 0;
 my $shouldSort = 1;
-my $shouldFilterMappedOnly = 1;
+my $shouldFilterDubiousReads = 1;
 my $shouldRemoveDupes = 1;
+#my $shouldRemoveSingletons = 1; # for paired-end reads, remove anything where the mate pair did NOT map
 my $shouldQC = 1;
 #my $genomeFastaFile = undef;
 my $keepAllReads = 0;
@@ -88,8 +89,9 @@ sub generateIndex($$) {
 
 GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
 	   , "sort!" => \$shouldSort ## specify "--nosort" to avoid sorting
-	   , "mapfilter!" => \$shouldFilterMappedOnly ## specify "--nomapfilter" to avoid filtering out the unmappable reads
+	   , "keepdubious" => sub { $shouldFilterDubiousReads = 0; } ## specify "--nomapfilter" to avoid filtering out the unmappable reads
 	   , "keepdupes" => sub { $shouldRemoveDupes = 0; }
+	   #, "keepsingletons" => sub { $shouldRemoveSingletons = 0; }
 #	   , "f|fasta" => \$genomeFastaFile ## used for generating the index
 	   , "qc!" => \$shouldQC
 	   , "keep|keepall!" => \$keepAllReads
@@ -110,7 +112,8 @@ if ($keepAllReads) {
     print STDOUT "   * Duplicate-location reads will be RETAINED.\n";
     print STDOUT "If you specified 'nomapfilter', that option is now OVERRIDDEN.\n";
     $shouldRemoveDupes = 0;
-    $shouldFilterMappedOnly = 0;
+    $shouldFilterDubiousReads = 0;
+    #$shouldRemoveSingletons = 0;
 }
 
 verifyToolPathsOrDie();
@@ -214,13 +217,16 @@ foreach my $file (@ARGV) {
     ## -F 0x0400 means "skip optical / PCR duplicates"
     ## Note that the "-u" flag means "send the data to the next step in UNCOMPRESSED form."
     ## The "-u" flag should be used for all these cases EXCEPT for the very last one, where we want the data compressed again.
-    my $filterMappedOnlyCmd = (qq{     samtools view -hbu -F 0x004  $latest } ## <-- only include the mapped (mapping flag is "4" apparently) reads, only include PRIMARY alignments, and skip any failing-QC reads
-			       . qq{ | samtools view -hbu -F 0x100 - } ## remove "alignment is not primary"
-			       . qq{ | samtools view -hbu -F 0x200 - } ## <-- remove "read fails QC"
-			       . qq{ | samtools view -hbu -F 0x400 - } ## <-- remove "read is PCR or optical duplicate"
-			       . qq{ | samtools view -hb  -F 0x008 - } ## <-- remove "mate pair did not map" reads
-			       . qq{ > $filteredFile });   ## <-- output file location
-    if ($shouldFilterMappedOnly) {
+
+
+    
+    if ($shouldFilterDubiousReads) {
+	my $filterMappedOnlyCmd = (qq{     samtools view -hbu -F 0x004  $latest } ## <-- only include the mapped (mapping flag is "4" apparently) reads, only include PRIMARY alignments, and skip any failing-QC reads
+				   . qq{ | samtools view -hbu -F 0x100 - } ## remove "alignment is not primary"
+				   . qq{ | samtools view -hbu -F 0x400 - } ## <-- remove "read is PCR or optical duplicate"
+				   . qq{ | samtools view -hbu -F 0x008 - } ## <-- remove "mate pair did not map" reads
+				   . qq{ | samtools view -hb  -F 0x200 - } ## <-- remove "read fails QC". Note this DOES NOT have the '-u' flag since it's the last filter!
+				   . qq{ > $filteredFile });   ## <-- output file location
 	my $result = alexSystemCall($filterMappedOnlyCmd);
 	if ($result != $SUCCESS_STATUS) { reportCommandFailure($filterMappedOnlyCmd, $latest); next; } ## go to the next file...
 	
@@ -344,11 +350,17 @@ Note that this is a DESTRUCTIVE operation that removes reads:
 
 OPTIONS:
    --keep or --keepall: Do NOT remove any reads. Just sort & index.
+   --keepdubious:   Do not remove the 'dubious' unmapped reads, such as:
+                    * Unmapped reads (as reported by the BAM flag)
+                    * Non-primary alignments (as reported by the BAM flag)
+                    * PCR duplicates / QC-failing reads (as reported by the BAM flag)
+                    * Reads where mate pair did not map (as reported by the BAM flag)
+                    (Default: these 'dubious' reads are removed)
+
    --dryrun:            Print what *would* be done, without doing it.
 
 FINE-TUNING OPTIONS:
    --nosort:      Do not sort the input file (Default: output is sorted)
-   --nomapfilter: Do not remove the unmapped reads (Default: unmappable reads are removed)
    --noqc:        Do not run the QC metrics. Runs faster.
 
 Requires the following additional programs to already be installed AND in your $PATH:
