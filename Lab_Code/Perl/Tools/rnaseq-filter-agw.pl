@@ -325,7 +325,10 @@ rnaseq_filter_agw.pl   [any number of bam/sam files may be specified here]
 Processes input SAM/BAM alignment files, and:
    1. Removes any UNMAPPED reads (unless you say --keepall)
    2. SORTS the files in COORDINATE order (unless you say --nosort)
-   3. Generates an output BAM file and a BAI index file.
+   3. Removes duplicates
+   4. Removes reads with the 'failed QC' BAM flag
+   5. Removes reads with the 'mate pair did not map' BAM flag
+   6. Generates an output BAM file and a BAI index file.
 
 The output is always a BAM file, regardless of the input.
 
