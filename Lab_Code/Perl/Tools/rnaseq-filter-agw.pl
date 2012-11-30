@@ -202,7 +202,7 @@ foreach my $file (@ARGV) {
     appendToSummaryFile(('-'x100 . "\n"), $summaryStatsFile);
     appendToSummaryFile(("  > Original number of reads BEFORE any filtering                 :\t" . $numOriginalReads . "\n"), $summaryStatsFile);
     appendToSummaryFile(("  * Number of reads that failed to map              (SAM flag 0x4):\t" . $numFailedToMap . "\n"), $summaryStatsFile);
-    appendToSummaryFile(("  * Number of non-primary reads                   (SAM flag 0x100):\t" . $numNonPrimary . "\n"), $summaryStatsFile);
+    appendToSummaryFile(("  * Number of non-primary alignments              (SAM flag 0x100):\t" . $numNonPrimary . "\n"), $summaryStatsFile);
     appendToSummaryFile(("  * Number of reads that failed basic QC          (SAM flag 0x200):\t" . $numFailedBasicQC . "\n"), $summaryStatsFile);
     appendToSummaryFile(("  * Number of reads that were optical duplicates  (SAM flag 0x400):\t" . $numOpticalDuplicates . "\n"), $summaryStatsFile);
     appendToSummaryFile(("  * Number of reads where the mate pair did not map (SAM flag 0x8):\t" . $numMateDoesNotMap . "\n"), $summaryStatsFile);
