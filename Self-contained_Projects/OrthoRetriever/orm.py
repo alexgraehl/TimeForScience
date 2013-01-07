@@ -69,9 +69,16 @@ Session = sessionmaker(bind=engine)
 
 session = Session()
 
+session.add(ed_user)
+
+session.add_all([
+     User('wendy', 'Wendy Williams', 'foobar'),
+     User('mary', 'Mary Contrary', 'xxg527'),
+     User('fred', 'Fred Flinstone', 'blah')])
 
 
+session.dirty
+session.new
 
-
-
-
+session.commit()
+#session.add(u2)
