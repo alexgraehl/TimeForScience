@@ -80,6 +80,7 @@ PAREN_OPEN='('
 NL="\$'\\n'" # newline!
 
 alias cheat="echo \
+\">>> Mac: see what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
 \">>> Mac: Check specific file io / activity: fs_usage <programname> \" ${NL}\
 \">>> Mac: Significant disk io:   sudo fs_usage -w | grep -v '0\\.0'  \" ${NL}\
 \">>> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
