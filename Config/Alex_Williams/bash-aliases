@@ -80,6 +80,7 @@ PAREN_OPEN='('
 NL="\$'\\n'" # newline!
 
 alias cheat="echo \
+\">>> Mac: check code signing: codesign -vvv /Applications/iTunes.app \" ${NL}\
 \">>> Mac: delete time machine backups: tmutil delete /Volumes/DISK/Backups.backupdb/COMPNAME/ \" ${NL}\
 \">>> Mac: see what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
 \">>> Mac: Check specific file io / activity: fs_usage <programname> \" ${NL}\
