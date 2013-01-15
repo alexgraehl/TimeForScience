@@ -123,12 +123,14 @@ fi
 
 ## ===============================================
 ## ====== TERMINAL HISTORY =======================
-export HISTSIZE=9999
+export HISTSIZE=30123
 export HISTCONTROL=ignoreboth  # duplicate and blank lines are not saved in the history
 shopt -s histappend # Save terminal history between sessions
 PROMPT_COMMAND='history -a' ## save ALL terminal histories
 ## ====== TERMINAL HISTORY =======================
 ## ===============================================
+
+stty -ixon -ixoff  # Disable the totally useless START/STOP output control (enables you to pause input by pressing the Ctrl-S key sequence and resume output by pressing the Ctrl-Q key sequence)
 
 set   -o ignoreeof  # Prevent Ctrl-D from exiting!
 shopt -s checkwinsize # Check the window size after each command and, if necessary, update the values of LINES and COLUMNS.
@@ -199,9 +201,7 @@ export CVSEDITOR="emacs -nw"
 export SVN_EDITOR="emacs -nw"
 export EDITOR="emacs -nw"
 
-HISTSIZE=10000
-HISTCONTROL=ignoreboth
-# this causes any lines matching the previous history entry not to be saved.
+
 
 # Keybindings: Add IJKL navigation to supplement/replace the arrow keys
 bind "\M-J:backward-word"

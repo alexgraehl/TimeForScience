@@ -52,5 +52,10 @@ set visible-stats on
 "\ei": previous-history
 "\ek": next-history
 
+#"\e[5~": history-search-backward
+#"\e[6~": history-search-forward
+
+
+
 
 
