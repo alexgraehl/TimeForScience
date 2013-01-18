@@ -349,7 +349,7 @@ alias bue='SET_BUENOCOLOR ; ssh ${AGW_SSH_OPTIONS} $UCSF_USER@bueno.gladstone.in
 alias buex='SET_BUENOCOLOR ; ssh ${AGW_SSH_OPTIONS} -Y $UCSF_USER@bueno.gladstone.internal ; agwReColorTerminal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
 alias chef='ssh ${AGW_SSH_OPTIONS} $UCSF_USER@chef.compbio.ucsf.edu ; agwReColorTerminal' ## QB3 cluster head node
 
-alias tuck='ssh ${AGW_SSH_OPTIONS} $UCSF_USER@shattuck.ucsf.edu ; agwReColorTerminal' ## pollard lab machine at UCSF, for talking to the cluster
+alias shattuck='ssh ${AGW_SSH_OPTIONS} $UCSF_USER@shattuck.ucsf.edu ; agwReColorTerminal' ## pollard lab machine at UCSF, for talking to the cluster
 
 
 case "$HOSTNAME" in
