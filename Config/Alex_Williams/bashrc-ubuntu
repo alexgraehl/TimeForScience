@@ -201,8 +201,6 @@ export CVSEDITOR="emacs -nw"
 export SVN_EDITOR="emacs -nw"
 export EDITOR="emacs -nw"
 
-
-
 # Keybindings: Add IJKL navigation to supplement/replace the arrow keys
 bind "\M-J:backward-word"
 bind "\M-L:forward-word"
