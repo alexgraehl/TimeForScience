@@ -171,7 +171,7 @@ sub main() { # Main program
 	$GLOBAL_INTERSECT_FILES{$shortName} = $finalFullPath;
     }
     
-    #if ($shouldUpdate) {
+    if ($shouldUpdate) {
     my $DOLLAR_SIGN = '$';
     goatRemoteDownloadAnnot("Mouse_Ensembl_GTF", "ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz", "mouse", "mm9", "Mus_musculus.GRCm38.68.gtf.gz");
     
@@ -185,7 +185,7 @@ sub main() { # Main program
 			     . qq{ /bin/rm human_ensembl_[123].tmp ; }
 			   )
 	);
-     #}
+    }
     
     #print "\t" . sprintf("%.${numDecimalPointsToPrint}f", $levFraction);
     #my @col1 = @{readFileColumn($filename1, 0, $delim)};
@@ -287,7 +287,8 @@ OPTIONS:
      Sets the input delimiter to DELIMITER.
 
   --update
-    Tells Agnomen to check for newer annotation files. Does not fully work yet!
+    Tells Agnomen to check for (and potentially update) newer annotation files. Does not fully work yet!
+    Default is --noupdate.
 
 
 KNOWN BUGS:
