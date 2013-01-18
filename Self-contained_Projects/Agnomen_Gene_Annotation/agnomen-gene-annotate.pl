@@ -18,7 +18,7 @@ sub main();
 my $INTERSECT_BED_EXE = "/work/Apps/Bio/bedtools/bin/intersectBed";
 my $LOCAL_ANNOTATION_DIR = "./Z_AGNOMEN_DATA";
 
-my $GOAT_ENSEMBL_GRABBER_SCRIPT = "/work/Common/Code/ProjectCode/0_Analyze_0277_Agnomen_Annotate/agnomen-ensembl-hg19-grabber.pl";
+my $AGNOMEN_ENSEMBL_GRABBER_SCRIPT = "/work/Common/Code/ProjectCode/0_Analyze_0277_Agnomen_Annotate/agnomen-ensembl-hg19-grabber.pl";
 
 my %GLOBAL_INTERSECT_FILES = (); ## New hash that will keep track of all the annotation files. Keys are the descriptions of the files, values are the actual paths of the annotation files.
 
@@ -52,13 +52,15 @@ sub printUsage() {  print STDOUT <DATA>; }
 # ==1==
 sub main() { # Main program
     my ($delim) = "\t";
+    my ($species) = undef;
     my ($shouldUpdate) = 0;
     my ($decimalPlaces) = 4; # How many decimal places to print, by default
     $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 
     GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	       , "delim|d=s" => \$delim
-	       , "update|u!" => \$shouldUpdate
+	       , "species|s=s" => \$species
+	       , "update!" => \$shouldUpdate
 	       , "dp=i" => \$decimalPlaces
 	) or printUsageAndQuit();
 
@@ -95,7 +97,7 @@ sub main() { # Main program
 	quitWithUsageError(">>> ERROR >>> We expected AT LEAST ONE valid file to annotate to be specified on the command line. We didn't get any, however.\n");
     }
 
-    sub goatRemoteDownloadAnnot($$$$;$$) {
+    sub agnomenRemoteDownloadAnnot($$$$;$$) {
 	## Arguments:
 	## 0. The "short name" that gets used as the hash ID and also in the filename of the output
 	## 1. The URL to get
@@ -152,7 +154,7 @@ sub main() { # Main program
 	}
     }
     
-    sub goatGenerateLocalAnnot($$$$$;$$) {
+    sub agnomenGenerateLocalAnnot($$$$$;$$) {
 	# Doesn't try to download anything; just runs '$cmd'
 	my ($shortName, $finalFilename, $species, $build, $cmd) = @_;
 	my $localDir = "${LOCAL_ANNOTATION_DIR}/${species}/${build}";	
@@ -173,17 +175,17 @@ sub main() { # Main program
     
     if ($shouldUpdate) {
     my $DOLLAR_SIGN = '$';
-    goatRemoteDownloadAnnot("Mouse_Ensembl_GTF", "ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz", "mouse", "mm9", "Mus_musculus.GRCm38.68.gtf.gz");
+    agnomenRemoteDownloadAnnot("Mouse_Ensembl_GTF", "ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz", "mouse", "mm9", "Mus_musculus.GRCm38.68.gtf.gz");
     
-    goatGenerateLocalAnnot("Human_Ensembl_BED"
-			   , "human_ensembl_via_perl_api.tab", "human", "hg19", 
-			   ( qq{ if [ ! -f human_ensembl_1_raw.tab.gz ]; then echo "\n>>>[NOTE] -- The GOAT ENSEMBL GRABBER takes about 18 hours to download data via Perl API! If you are reading this message, be prepared to wait QUITE A WHILE for the data to get downloaded!\n"; $GOAT_ENSEMBL_GRABBER_SCRIPT | gzip > human_ensembl_1_raw.tab.gz ; fi; }
-			     . qq{ zcat human_ensembl_1_raw.tab.gz | grep -v '^[#]' | grep -v '^$DOLLAR_SIGN' | sort -k 2,2 -k 3,3g | uniq > human_ensembl_2.tmp ; }
-			     . qq{ sed 's/^/chr/' human_ensembl_2.tmp > human_ensembl_3.tmp ; } ## add 'chr' to the beginning of each line
-			     . qq{ cat human_ensembl_2.tmp >> human_ensembl_3.tmp ; }
-			     . qq{ sort human_ensembl_3.tmp > human_ensembl_via_perl_api.tab ; }
-			     . qq{ /bin/rm human_ensembl_[123].tmp ; }
-			   )
+    agnomenGenerateLocalAnnot("Human_Ensembl_BED"
+			      , "human_ensembl_via_perl_api.tab", "human", "hg19", 
+			      ( qq{ if [ ! -f human_ensembl_1_raw.tab.gz ]; then echo "\n>>>[NOTE] -- The ENSEMBL GRABBER takes about 18 hours to download data via Perl API! If you are reading this message, be prepared to wait QUITE A WHILE for the data to get downloaded!\n"; $AGNOMEN_ENSEMBL_GRABBER_SCRIPT | gzip > human_ensembl_1_raw.tab.gz ; fi; }
+				. qq{ zcat human_ensembl_1_raw.tab.gz | grep -v '^[#]' | grep -v '^$DOLLAR_SIGN' | sort -k 2,2 -k 3,3g | uniq > human_ensembl_2.tmp ; }
+				. qq{ sed 's/^/chr/' human_ensembl_2.tmp > human_ensembl_3.tmp ; } ## add 'chr' to the beginning of each line
+				. qq{ cat human_ensembl_2.tmp >> human_ensembl_3.tmp ; }
+				. qq{ sort human_ensembl_3.tmp > human_ensembl_via_perl_api.tab ; }
+				. qq{ /bin/rm human_ensembl_[123].tmp ; }
+			      )
 	);
     }
     
@@ -195,7 +197,7 @@ sub main() { # Main program
     
 
     if (scalar(keys(%GLOBAL_INTERSECT_FILES)) == 0) {
-	die "Uh oh, there were no annotation files, for some reason! Maybe you need to run 'goat-annotate.pl --update' to re-download / re-generate them?\n";
+	die "Uh oh, there were no annotation files, for some reason! Maybe you need to run 'agnomen-gene-annotate.pl --update' to re-download / re-generate them?\n";
     }
     
     
@@ -253,7 +255,7 @@ exit(0);
 
 __DATA__
 
-agnomen-gene-annotate.pl  [OPTIONS]   INPUT_FILE_TO_ANNOTATE.bed
+agnomen-gene-annotate.pl  [OPTIONS]  [-s SPECIES]   INPUT_FILE_TO_ANNOTATE.bed
 
 by Alex Williams, 2012
 
@@ -283,12 +285,18 @@ NA
 
 OPTIONS:
 
-  --delim = DELIMITER   (Default: tab)
-     Sets the input delimiter to DELIMITER.
+  --delim = DELIMITER  (Default: tab)
+    or: -d DELIMITER
+       Sets the input delimiter to DELIMITER.
+
+  --species = STRING  (Default: undefined)
+    or: -s STRING
+       Sets which species should be used for annotation.
+       Default is to use output for ALL the different species.
 
   --update
-    Tells Agnomen to check for (and potentially update) newer annotation files. Does not fully work yet!
-    Default is --noupdate.
+       Tells Agnomen to check for (and potentially update) newer annotation files. Does not fully work yet!
+       Default is --noupdate.
 
 
 KNOWN BUGS:
