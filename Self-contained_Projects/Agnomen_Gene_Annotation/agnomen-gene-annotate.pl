@@ -138,7 +138,9 @@ sub main() { # Main program
 	if (defined($postprocessingCmd) && $postprocessingCmd && length($postprocessingCmd) > 0) {
 	    if ((not -e $processedFilename || (-s $processedFilename == 0))) {
 		## processed file already exists
+		stderrPrint(colorString("cyan"));
 		stderrPrint("[Skipping] re-generation of $processedFilename, as the output file already exists.\n");
+		stderrPrint(colorString("reset"));
 	    } else {
 		stderrPrint("Now running this post-processing command: $postprocessingCmd\n");
 		my $status = system($postprocessingCmd);
@@ -160,7 +162,9 @@ sub main() { # Main program
 	my $localDir = "${LOCAL_ANNOTATION_DIR}/${species}/${build}";	
 	my $finalFullPath = $localDir . "/" . $finalFilename;
 	if ((-e $finalFullPath && (-s $finalFullPath > 0))) {
+	    stderrPrint(colorString("cyan"));
 	    stderrPrint("[Skipping] re-generation of file <$finalFilename>, which already exists in <$finalFullPath>!\n");
+	    stderrPrint(colorString("reset"));
 	} else {
 	    my $fullCommand = "cd $localDir && $cmd";
 	    stderrPrint("[Generating the file $finalFilename], by running the command:\n$fullCommand\n\n\nRunning now...\n");
@@ -192,14 +196,12 @@ sub main() { # Main program
     #print "\t" . sprintf("%.${numDecimalPointsToPrint}f", $levFraction);
     #my @col1 = @{readFileColumn($filename1, 0, $delim)};
     
-    my $annot1 = "AnnotatedFeatures.gff"; #"hb.bed"; #"human_ens_manual.bed"; #"b.gtf"; #"AnnotatedFeatures.gff"; #"annot.bed";
-    stderrPrint("Warning: using a manually-selected annotation file here.\n");
-    
+    #my $annot1 = "AnnotatedFeatures.gff"; #"hb.bed"; #"human_ens_manual.bed"; #"b.gtf"; #"AnnotatedFeatures.gff"; #"annot.bed";
+    #stderrPrint("Warning: using a manually-selected annotation file here.\n");
 
     if (scalar(keys(%GLOBAL_INTERSECT_FILES)) == 0) {
 	die "Uh oh, there were no annotation files, for some reason! Maybe you need to run 'agnomen-gene-annotate.pl --update' to re-download / re-generate them?\n";
     }
-    
     
     ## For each file, we're going to annotate that file and write an output file. For each file, we're writing one output file per annotation type!
     ## Therefore, if you have (say) 3 input files to annotate, and 4 types of annotation, you will end up with (3*4 = 12) final output files.
@@ -210,8 +212,7 @@ sub main() { # Main program
 	}
 	## 
 	while (my($annotDescription, $annotFile) = each(%GLOBAL_INTERSECT_FILES)) {
-	    ## annotFile better exist, or we're int trouble!!
-
+	    ## annotFile better exist, or we're in trouble!!
 
 #	    if ($annotFile =~ m/.gz$/) {
 #		$annotFile = "<(zcat $annotFile)"; # bash subshell
