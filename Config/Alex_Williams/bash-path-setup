@@ -21,6 +21,8 @@ echo -e "${a_echo_color}>>> BASH: Loading bash-path-setup...${a_end_color}"
 # More general path-related settings
 
 export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
+#export AGW_HOSTNAME=$HOSTNAME
+#export BBB_HOSTNAME=ROBOTS
 
 export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience ## Location of the TIME FOR SCIENCE directory. This is mostly Alex's code.
 
