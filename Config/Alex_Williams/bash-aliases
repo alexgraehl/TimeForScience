@@ -264,8 +264,8 @@ function dos2unix { # Convert a Windows-style line-ending file to a UNIX one. Us
 ## Utility commands
 
 ## -U: "screen understands UTF8"
-alias rr="screen -xR -U" ## Reconnect to the previous screen, or make a new one if there isn't one already
-alias sc='screen' ## Make a new screen session
+alias rr='tmux attach-session' #"screen -xR -U" ## Reconnect to the previous screen, or make a new one if there isn't one already
+alias sc='tmux new-window' #'screen' ## Make a new screen session
 
 alias wcl='wc -l'
 alias sortt='sort -t "	"' # sort with tab as separator
