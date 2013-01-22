@@ -285,6 +285,10 @@ alias t='transpose.pl -q'
 alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl --color=always \
 --ht=75 --trunc=60 | tail -n +2 ; echo -e -n '$a_end_color'"
 
+
+# Rename the tmux window: usage is "tre NEW_NAME"
+alias tre='tmux rename-window $1'
+
 # GNU Make-related
 alias make='make --warn-undefined-variables --print-directory'
 alias mcm='make clean && make'
