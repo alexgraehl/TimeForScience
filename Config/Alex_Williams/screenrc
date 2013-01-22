@@ -10,7 +10,6 @@
 
 #term screen-256color
 #term xterm-color
-#term screen-256color
 term xterm-256color
 defutf8 on
 defflow off
@@ -59,7 +58,7 @@ bind ^r source "${HOME}/.screenrc"  # reload the screenrc!
 # Second item: foreground color
 # Capitals seem to indcate bold or something (B C Y R G M... etc)
 # Example: to make it white text on magenta background: %{= mW}
-caption always "%{yb}Screen %n : %t"
+caption always "%{by}Screen %n : %t"
 
 ## Scrollback buffer 100K lines
 defscrollback 100000
