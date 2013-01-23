@@ -31,7 +31,7 @@ hardstatus alwayslastline
 # The way this works:
 # For the "tab bar":
 # The first %{= gW} is the tabs BEFORE the active tab, the second is for the active tab, and the last is for the tabs AFTER the active one
-hardstatus string ' %{bW}%-Lw%{rW}%n %t%{bW}%+Lw'
+hardstatus string ' %{kW}%-Lw%{wk}%n %t%{kW}%+Lw' ## {kW} = black WHITE
 # old status:  hardstatus string ' %{bW}%-Lw%{rW}%50>%n%f* %t%{bW}%+Lw'
 
 bind x  # Remove the "screen lock" key command
@@ -54,11 +54,11 @@ bind ^r source "${HOME}/.screenrc"  # reload the screenrc!
 #caption always "%{= kc}%H (system load: %l)%-21=%{= .m}%D %d.%m.%Y %0c"
 #caption always "%3n %t%? @%u%?%? [%h]%?%=%c"
 # %H : host   %t : name of this screen  %n: screen number  %l: system load
-# First item: BGColors:  b c y r g m
+# First item: BGColors:  b c y r g m (k = black)
 # Second item: foreground color
 # Capitals seem to indcate bold or something (B C Y R G M... etc)
 # Example: to make it white text on magenta background: %{= mW}
-caption always "%{by}Screen %n : %t"
+caption always "%{kw}Screen %n : %t"
 
 ## Scrollback buffer 100K lines
 defscrollback 100000
