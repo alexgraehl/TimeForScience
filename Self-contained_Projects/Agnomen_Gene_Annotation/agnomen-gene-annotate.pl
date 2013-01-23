@@ -30,7 +30,9 @@ sub systemBash {
 sub agwSystemDieOnNonzero($) {
     my ($cmd) = @_;
     my $exitCode = system($cmd);
-    if ($exitCode != 0) { die "QUITTING: Exit code of <$cmd> was non-zero (specifically, it was <$exitCode>).\n";
+    if ($exitCode != 0) {
+	die "QUITTING: Exit code of <$cmd> was non-zero (specifically, it was <$exitCode>).\n";
+    }
 }
 
 sub stderrPrint {
@@ -57,8 +59,18 @@ sub printUsageAndQuit() { printUsage(); exit(1); }
 sub printUsage() {  print STDOUT <DATA>; }
 
 
+sub addPathToGlobalAnnotationHash($$) {
+    my ($shortName, $filePath) = @_;
+    if (exists($GLOBAL_ANNOT_PATHS{$shortName})) { die "Programming error 19A: Uh oh, there is ALREADY an annotation file with the short name <$shortName>. Can't have two duplicate short names! Check the source code and fix it.\n"; }
 
-sub agnomenRemoteDownloadAnnot($$$$$$) {
+    if (!agwFileHasContents($filePath)) {
+	die "ERROR: The file at path <$filePath> was expected to exist, but it does not appear to exist at that path!\n";
+    }
+
+    $GLOBAL_ANNOT_PATHS{$shortName} = $filePath; ## <-- Add this file to the list of annotation files.
+}
+
+sub agnomenGetAnnot($$$$$$$) {
     # Tries to generate the file $finalName, UNLESS that file already exists and is valid.
     ## Arguments:
     ## 0. The "short name" that gets used as the hash ID and also in the filename of the output
@@ -67,83 +79,66 @@ sub agnomenRemoteDownloadAnnot($$$$$$) {
     ## 3. the name to save the RAW file into
     ## 4. postprocessingCmd: something to do with the file after downloading it. Set it to "undef" if it isn't defined
     ## 5. finalName: the final filename after processing
-    my ($shortName, $url, $theBuild, $rawNameIncludingCompression, $postprocessingCmd, $finalName) = @_;
-
-    my $localDir = "${globalAnnotDir}/${theBuild}"; #${species}/${theBuild}";
-    my $rawFullPath = $localDir . "/" . $rawNameIncludingCompression;
+    my ($shortName, $url, $theBuild, $rawNameIncludingCompression, $postprocessingCmd, $finalName, $shouldActuallyUpdate) = @_;
+    my $localDir = "${globalAnnotDir}/${theBuild}";
+    my $rawFullPath = "$localDir/$rawNameIncludingCompression";
+    if ($rawFullPath =~ m/[ ,\t\s]/) { die "Uh oh, the local full path has a comma or whitespace in it, which is not legal for the directory name!!"; }
 
     my $unzippedPath = $rawFullPath;
     $unzippedPath =~ s/[.](bz2|gz|zip)$//i;
 
-    if ($rawFullPath =~ m/[ ,\t\s]/) { die "Uh oh, the local full path has a comma or whitespace in it, which is not legal for the directory name!!"; }
-    my $curlCmd = 'curl --remote-name ' . '"' . $url . '"' ;
-
-    system("mkdir -p $localDir");
-    if ($rawNameIncludingCompression ne File::Basename::basename($url)) {
-	stderrPrint("This is unusual; the local name of the file ($rawNameIncludingCompression) does not match the filename from the URL (the end of this URL: $url)!");
-    }
-
-    if (agwFileHasContents($unzippedPath)) {
+    if (!$shouldActuallyUpdate) {
 	stderrPrint(colorString("cyan"));
-	stderrPrint("[Skipping] re-download of <$rawFullPath> from <$url> -- the final downloaded file <$unzippedPath> already exists.\n");
+	stderrPrint("[Skipping] re-updating of the file of <$finalName>: the --update flag was not passed into this script.\n");
 	stderrPrint(colorString("reset"));
     } else {
-	## Do we need to download the file?
-	if (!agwFileHasContents($rawFullPath)) {
-	    ## Better download it!
-	    stderrPrint("Downloading $url --> $rawFullPath...\n");
-	    agwSystemDieOnNonzero($curlCmd);
-	} else {
-	    stderrPrint("[Skipping] re-download of <$rawFullPath> from $url, as that file already exists.\n");
+
+	if (defined($url) && $url) {
+	    my $curlCmd = 'curl --remote-name ' . '"' . $url . '"' ;
+	    system("mkdir -p $localDir");
+	    if ($rawNameIncludingCompression ne File::Basename::basename($url)) {
+		stderrPrint("This is unusual; the local name of the file ($rawNameIncludingCompression) does not match the filename from the URL (the end of this URL: $url)!");
+	    }
+	    
+	    if (agwFileHasContents($unzippedPath)) {
+		stderrPrint(colorString("cyan"));
+		stderrPrint("[Skipping] re-download of <$rawFullPath> from <$url> -- the final downloaded file <$unzippedPath> already exists.\n");
+		stderrPrint(colorString("reset"));
+	    } else {
+		## Do we need to download the file?
+		if (!agwFileHasContents($rawFullPath)) {
+		    ## Better download it!
+		    stderrPrint("Downloading $url --> $rawFullPath...\n");
+		    agwSystemDieOnNonzero($curlCmd);
+		} else {
+		    stderrPrint("[Skipping] re-download of <$rawFullPath> from $url, as that file already exists.\n");
+		}
+		if ($rawFullPath =~ m/[.]gz$/) { agwSystemDieOnNonzero("gunzip --stdout $rawFullPath > $unzippedPath"); }
+		if ($rawFullPath =~ m/[.]bz2$/) { agwSystemDieOnNonzero("bunzip2 --stdout $rawFullPath > $unzippedPath"); }
+		if ($rawFullPath =~ m/[.]zip$/) { agwSystemDieOnNonzero("unzip $rawFullPath"); }
+		stderrPrint("[Done] Successfully downloaded a file to the uncompressed location <$unzippedPath>\n");
+	    }
 	}
-	if ($rawFullPath =~ m/[.]gz$/) { agwSystemDieOnNonzero("gunzip --stdout $rawFullPath > $unzippedPath"); }
-	if ($rawFullPath =~ m/[.]bz2$/) { agwSystemDieOnNonzero("bunzip2 --stdout $rawFullPath > $unzippedPath"); }
-	if ($rawFullPath =~ m/[.]zip$/) { agwSystemDieOnNonzero("unzip $rawFullPath"); }
-	stderrPrint("[Done] Successfully downloaded a file to the uncompressed location <$unzippedPath>\n");
-    }
-
-    ## Now the file should be downloaded, if necessary. We may also have to do a post-processing step, below.
-    if (defined($postprocessingCmd) && $postprocessingCmd && length($postprocessingCmd) > 0) {
-	if (agwFileHasContents($finalName)) {
-	    stderrPrint(colorString("cyan"));
-	    stderrPrint("[Skipping] re-generation of $finalName, as the output file already exists.\n");
-	    stderrPrint(colorString("reset"));
+    
+	## Now the file should be downloaded, if necessary. We may also have to do a post-processing step, below.
+	if (defined($postprocessingCmd) && $postprocessingCmd && length($postprocessingCmd) > 0) {
+	    if (agwFileHasContents($finalName)) {
+		stderrPrint(colorString("cyan"));
+		stderrPrint("[Skipping] re-generation of $finalName, as the output file already exists.\n");
+		stderrPrint(colorString("reset"));
+	    } else {
+		stderrPrint("Now running this post-processing command: $postprocessingCmd\n");
+		agwSystemDieOnNonzero($postprocessingCmd);
+		if (not -e $finalName) { die "Uh oh, we failed to generate the file <$finalName>! Maybe the shell command had a mis-typed final filename, or perhaps something else went wrong?\n"; }
+	    }
 	} else {
-	    stderrPrint("Now running this post-processing command: $postprocessingCmd\n");
-	    agwSystemDieOnNonzero($postprocessingCmd);
-	    if (not -e $finalName) { die "Uh oh, we failed to generate the file <$finalName>! Maybe the shell command had a mis-typed final filename, or perhaps something else went wrong?\n"; }
+	    # No postprocessing to do, so we just want to use the regular file as an annotation file
+	    if ($unzippedPath ne "$localDir/$finalName") { die "Uh oh, the final file path was expected to be <$unzippedPath>, but it was manually specified as <$localDir/$finalName>."; }
 	}
-	
-    } else {
-	# No postprocessing to do, so we just want to use the regular file as an annotation file
-	unless ($unzippedPath ne "$localDir/$finalName") die "Uh oh, the final file path was expected to be <$unzippedPath>, but it was manually specified as <$localDir/$finalName>.";
     }
 
-    $GLOBAL_ANNOT_PATHS{$shortName} = "$localDir/$finalName"; ## <-- Add this file to the list of annotation files.
+    addPathToGlobalAnnotationHash($shortName, "$localDir/$finalName");
 }
-
-sub agnomenGenerateLocalAnnot($$$$$) {
-    # Doesn't try to download anything; just runs '$cmd' UNLESS the $finalFilename already is a non-zero-length file.
-    my ($shortName, $finalFilename, $theBuild, $cmd) = @_;
-    my $localDir = "${globalAnnotDir}/${theBuild}";	
-    my $finalFullPath = $localDir . "/" . $finalFilename;
-    if (agwFileHasContents($finalFullPath)) {
-	stderrPrint(colorString("cyan"));
-	stderrPrint("[Skipping] re-generation of file <$finalFilename>, which already exists in <$finalFullPath>!\n");
-	stderrPrint(colorString("reset"));
-    } else {
-	my $fullCommand = "cd $localDir && $cmd";
-	stderrPrint("[Generating the file $finalFilename], by running the command:\n$fullCommand\n\n\nRunning now...\n");
-	agwSystemDieOnNonzero($fullCommand); ## cd into the local
-    }
-    if (exists($GLOBAL_ANNOT_PATHS{$shortName})) { die "Programming error 19A: Uh oh, there is ALREADY an annotation file with the short name <$shortName>. Can't have two duplicate short names! Check the source code and fix it.\n"; }
-    $GLOBAL_ANNOT_PATHS{$shortName} = $finalFullPath;
-}
-
-
-
-
-
 
 # ==1==
 sub main() { # Main program
@@ -157,7 +152,7 @@ sub main() { # Main program
 	       , "delim|d=s" => \$delim
 	       , "species|s=s" => \$genomeBuild
 	       , "update!" => \$shouldUpdate
-	       , "annotdir|a" => \$globalAnnotDir
+	       , "annotdir|a=s" => \$globalAnnotDir
 	       , "dp=i" => \$decimalPlaces
 	) or printUsageAndQuit();
 
@@ -202,18 +197,21 @@ sub main() { # Main program
     }
 
     
-    if ($shouldUpdate) {
-	my $DOLLAR_SIGN = '$';
-	agnomenRemoteDownloadAnnot("Mouse_Ensembl_GTF", "ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz", "mm9", "Mus_musculus.GRCm38.68.gtf.gz", undef, "Mus_musculus.GRCm38.68.gtf");
-	agnomenGenerateLocalAnnot("Human_Ensembl_BED", "human_ensembl_via_perl_api.tab", "hg19",
-				  ( qq{ if [ ! -f human_ensembl_1_raw.tab.gz ]; then echo "\n>>>[NOTE] -- The ENSEMBL GRABBER takes about 18 hours to download data via Perl API! If you are reading this message, be prepared to wait QUITE A WHILE for the data to get downloaded!\n"; $AGNOMEN_ENSEMBL_GRABBER_SCRIPT | gzip > human_ensembl_1_raw.tab.gz ; fi; }
-				    . qq{ zcat human_ensembl_1_raw.tab.gz | grep -v '^[#]' | grep -v '^$DOLLAR_SIGN' | sort -k 2,2 -k 3,3g | uniq > human_ensembl_2.tmp ; }
-				    . qq{ sed 's/^/chr/' human_ensembl_2.tmp > human_ensembl_3.tmp ; } ## add 'chr' to the beginning of each line
-				    . qq{ cat human_ensembl_2.tmp >> human_ensembl_3.tmp ; }
-				    . qq{ sort human_ensembl_3.tmp > human_ensembl_via_perl_api.tab ; }
-				    . qq{ /bin/rm human_ensembl_[123].tmp ; }
-				  ));
-    }
+    my $DOLLAR_SIGN = '$';
+    agnomenGetAnnot("Mouse_Ensembl_GTF", "ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz"
+		    , "mm9", "Mus_musculus.GRCm38.68.gtf.gz"
+		    , undef
+		    , "Mus_musculus.GRCm38.68.gtf", $shouldUpdate);
+    agnomenGetAnnot("Human_Ensembl_BED", undef, 
+		    , "hg19", "human_ensembl_via_perl_api.tab"
+		    , ( qq{ if [ ! -f human_ensembl_1_raw.tab.gz ]; then echo "\n>>>[NOTE] -- The ENSEMBL GRABBER takes about 18 hours to download data via Perl API! If you are reading this message, be prepared to wait QUITE A WHILE for the data to get downloaded!\n"; $AGNOMEN_ENSEMBL_GRABBER_SCRIPT | gzip > human_ensembl_1_raw.tab.gz ; fi; }
+			. qq{ zcat human_ensembl_1_raw.tab.gz | grep -v '^[#]' | grep -v '^$DOLLAR_SIGN' | sort -k 2,2 -k 3,3g | uniq > human_ensembl_2.tmp ; }
+			. qq{ sed 's/^/chr/' human_ensembl_2.tmp > human_ensembl_3.tmp ; } ## add 'chr' to the beginning of each line
+			. qq{ cat human_ensembl_2.tmp >> human_ensembl_3.tmp ; }
+			. qq{ sort human_ensembl_3.tmp > human_ensembl_via_perl_api.tab ; }
+			. qq{ /bin/rm human_ensembl_[123].tmp ; }
+		    )
+		    , "human_ensembl_via_perl_api.tab", $shouldUpdate);
     
     #print "\t" . sprintf("%.${numDecimalPointsToPrint}f", $levFraction);
     #my @col1 = @{readFileColumn($filename1, 0, $delim)};
