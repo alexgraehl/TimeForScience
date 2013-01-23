@@ -20,11 +20,17 @@ my $globalAnnotDir = "./Z_AGNOMEN_DATA"; # default!
 
 my $AGNOMEN_ENSEMBL_GRABBER_SCRIPT = "/work/Common/Code/ProjectCode/0_Analyze_0277_Agnomen_Annotate/agnomen-ensembl-hg19-grabber.pl";
 
-my %GLOBAL_ANNOT_FILES = (); ## New hash that will keep track of all the annotation files. Keys are the descriptions of the files, values are the actual paths of the annotation files.
+my %GLOBAL_ANNOT_PATHS = (); ## New hash that will keep track of all the annotation files. Keys are the descriptions of the files, values are the actual paths of the annotation files.
 
 sub systemBash {
     my @args = ( "bash", "-c", shift );
     system(@args);
+}
+
+sub agwSystemDieOnNonzero($) {
+    my ($cmd) = @_;
+    my $exitCode = system($cmd);
+    if ($exitCode != 0) { die "QUITTING: Exit code of <$cmd> was non-zero (specifically, it was <$exitCode>).\n";
 }
 
 sub stderrPrint {
@@ -45,26 +51,29 @@ sub colorString($) {
     }
 }
 
+sub agwFileHasContents($) { my ($fname) = @_; return((-e $fname) && (-s $fname > 0)); }
 sub quitWithUsageError($) { print($_[0] . "\n"); printUsage(); print($_[0] . "\n"); exit(1); }
 sub printUsageAndQuit() { printUsage(); exit(1); }
 sub printUsage() {  print STDOUT <DATA>; }
 
 
 
-sub agnomenRemoteDownloadAnnot($$$$;$$) {
+sub agnomenRemoteDownloadAnnot($$$$$$) {
     # Tries to generate the file $finalName, UNLESS that file already exists and is valid.
     ## Arguments:
     ## 0. The "short name" that gets used as the hash ID and also in the filename of the output
     ## 1. The URL to get
     ## 2. the genome build (e.g. hg19, hg18, mm9)
     ## 3. the name to save the RAW file into
-    ## 4. postprocessingCmd: something to do with the file after downloading it. Optional
+    ## 4. postprocessingCmd: something to do with the file after downloading it. Set it to "undef" if it isn't defined
     ## 5. finalName: the final filename after processing
     my ($shortName, $url, $theBuild, $rawNameIncludingCompression, $postprocessingCmd, $finalName) = @_;
 
     my $localDir = "${globalAnnotDir}/${theBuild}"; #${species}/${theBuild}";
     my $rawFullPath = $localDir . "/" . $rawNameIncludingCompression;
+
     my $unzippedPath = $rawFullPath;
+    $unzippedPath =~ s/[.](bz2|gz|zip)$//i;
 
     if ($rawFullPath =~ m/[ ,\t\s]/) { die "Uh oh, the local full path has a comma or whitespace in it, which is not legal for the directory name!!"; }
     my $curlCmd = 'curl --remote-name ' . '"' . $url . '"' ;
@@ -74,44 +83,43 @@ sub agnomenRemoteDownloadAnnot($$$$;$$) {
 	stderrPrint("This is unusual; the local name of the file ($rawNameIncludingCompression) does not match the filename from the URL (the end of this URL: $url)!");
     }
 
-    $unzippedPath =~ s/[.](bz2|gz|zip)$//i;
-    if ((-e $rawFullPath && (-s $rawFullPath > 0)) || (-e $unzippedPath && (-s $unzippedPath > 0))) {
+    if (agwFileHasContents($unzippedPath)) {
 	stderrPrint(colorString("cyan"));
-	stderrPrint("[Skipping] re-download of <$rawFullPath> from <$url> -- file (or an uncompressed version of that file) already exists\n");
+	stderrPrint("[Skipping] re-download of <$rawFullPath> from <$url> -- the final downloaded file <$unzippedPath> already exists.\n");
 	stderrPrint(colorString("reset"));
     } else {
-	stderrPrint("Downloading $url --> $rawFullPath...\n");
-	my $status = system($curlCmd);
-	if ($status != 0) {
-	    die "Uh oh, download status was not zero! Something went wrong in the download of $url -> $rawFullPath.\nEXITING PROGRAM NOW.\n";
+	## Do we need to download the file?
+	if (!agwFileHasContents($rawFullPath)) {
+	    ## Better download it!
+	    stderrPrint("Downloading $url --> $rawFullPath...\n");
+	    agwSystemDieOnNonzero($curlCmd);
+	} else {
+	    stderrPrint("[Skipping] re-download of <$rawFullPath> from $url, as that file already exists.\n");
 	}
-	if ($rawFullPath =~ m/[.]gz$/) { system("gunzip --stdout $rawFullPath > $unzippedPath"); }
-	if ($rawFullPath =~ m/[.]bz2$/) { system("bunzip2 --stdout $rawFullPath > $unzippedPath"); }
-	if ($rawFullPath =~ m/[.]zip$/) { system("unzip $rawFullPath"); }
-	stderrPrint("[Done] Successfully downloaded a file to the probably-uncompressed location <$unzippedPath>\n");
+	if ($rawFullPath =~ m/[.]gz$/) { agwSystemDieOnNonzero("gunzip --stdout $rawFullPath > $unzippedPath"); }
+	if ($rawFullPath =~ m/[.]bz2$/) { agwSystemDieOnNonzero("bunzip2 --stdout $rawFullPath > $unzippedPath"); }
+	if ($rawFullPath =~ m/[.]zip$/) { agwSystemDieOnNonzero("unzip $rawFullPath"); }
+	stderrPrint("[Done] Successfully downloaded a file to the uncompressed location <$unzippedPath>\n");
     }
 
     ## Now the file should be downloaded, if necessary. We may also have to do a post-processing step, below.
-    
     if (defined($postprocessingCmd) && $postprocessingCmd && length($postprocessingCmd) > 0) {
-	if ((not -e $finalName || (-s $finalName == 0))) {
-	    ## processed file already exists
+	if (agwFileHasContents($finalName)) {
 	    stderrPrint(colorString("cyan"));
 	    stderrPrint("[Skipping] re-generation of $finalName, as the output file already exists.\n");
 	    stderrPrint(colorString("reset"));
 	} else {
 	    stderrPrint("Now running this post-processing command: $postprocessingCmd\n");
-	    my $status = system($postprocessingCmd);
-	    if ($status != 0) {
-		die "Uh oh, system code status from the postprocessing command was not zero! Something went wrong in the running of the code <$postprocessingCmd>. Quitting...\n";
-	    }
+	    agwSystemDieOnNonzero($postprocessingCmd);
 	    if (not -e $finalName) { die "Uh oh, we failed to generate the file <$finalName>! Maybe the shell command had a mis-typed final filename, or perhaps something else went wrong?\n"; }
 	}
-	$GLOBAL_ANNOT_FILES{$shortName} = $finalName; ## <-- Add this file to the list of annotation files.
+	
     } else {
 	# No postprocessing to do, so we just want to use the regular file as an annotation file
-	$GLOBAL_ANNOT_FILES{$shortName} = $unzippedPath;
+	unless ($unzippedPath ne "$localDir/$finalName") die "Uh oh, the final file path was expected to be <$unzippedPath>, but it was manually specified as <$localDir/$finalName>.";
     }
+
+    $GLOBAL_ANNOT_PATHS{$shortName} = "$localDir/$finalName"; ## <-- Add this file to the list of annotation files.
 }
 
 sub agnomenGenerateLocalAnnot($$$$$) {
@@ -119,20 +127,17 @@ sub agnomenGenerateLocalAnnot($$$$$) {
     my ($shortName, $finalFilename, $theBuild, $cmd) = @_;
     my $localDir = "${globalAnnotDir}/${theBuild}";	
     my $finalFullPath = $localDir . "/" . $finalFilename;
-    if ((-e $finalFullPath && (-s $finalFullPath > 0))) {
+    if (agwFileHasContents($finalFullPath)) {
 	stderrPrint(colorString("cyan"));
 	stderrPrint("[Skipping] re-generation of file <$finalFilename>, which already exists in <$finalFullPath>!\n");
 	stderrPrint(colorString("reset"));
     } else {
 	my $fullCommand = "cd $localDir && $cmd";
 	stderrPrint("[Generating the file $finalFilename], by running the command:\n$fullCommand\n\n\nRunning now...\n");
-	my $status = system($fullCommand); ## cd into the local
-	if ($status != 0) {
-	    die "Uh oh, system code status from the postprocessing command was not zero! Something went wrong in the running of the code <$fullCommand>. Quitting...\n";
-	}
+	agwSystemDieOnNonzero($fullCommand); ## cd into the local
     }
-    if (exists($GLOBAL_ANNOT_FILES{$shortName})) { die "Programming error 19A: Uh oh, there is ALREADY an annotation file with the short name <$shortName>. Can't have two duplicate short names! Check the source code and fix it.\n"; }
-    $GLOBAL_ANNOT_FILES{$shortName} = $finalFullPath;
+    if (exists($GLOBAL_ANNOT_PATHS{$shortName})) { die "Programming error 19A: Uh oh, there is ALREADY an annotation file with the short name <$shortName>. Can't have two duplicate short names! Check the source code and fix it.\n"; }
+    $GLOBAL_ANNOT_PATHS{$shortName} = $finalFullPath;
 }
 
 
@@ -216,7 +221,7 @@ sub main() { # Main program
     #my $annot1 = "AnnotatedFeatures.gff"; #"hb.bed"; #"human_ens_manual.bed"; #"b.gtf"; #"AnnotatedFeatures.gff"; #"annot.bed";
     #stderrPrint("Warning: using a manually-selected annotation file here.\n");
 
-    if (scalar(keys(%GLOBAL_ANNOT_FILES)) == 0) {
+    if (scalar(keys(%GLOBAL_ANNOT_PATHS)) == 0) {
 	die "Uh oh, there were no annotation files, for some reason! Maybe you need to run 'agnomen-gene-annotate.pl --update' to re-download / re-generate them?\n";
     }
     
@@ -228,7 +233,7 @@ sub main() { # Main program
 	    stderrPrint("Warning: the input file $input was EXPECTED to be a .bed file, but it appears not to have the .bed filename extension. Double-check to make sure this is the right file! Continuing on anyway, assuming that it is a bed file...\n");
 	}
 	## 
-	while (my($annotDescription, $annotFile) = each(%GLOBAL_ANNOT_FILES)) {
+	while (my($annotDescription, $annotFile) = each(%GLOBAL_ANNOT_PATHS)) {
 	    ## annotFile better exist, or we're in trouble!!
 #	    if ($annotFile =~ m/.gz$/) {
 #		$annotFile = "<(zcat $annotFile)"; # bash subshell
