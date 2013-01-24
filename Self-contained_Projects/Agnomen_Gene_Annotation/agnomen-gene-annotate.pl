@@ -75,12 +75,27 @@ sub agnomenGetAnnot($$$$$$$) {
     ## Arguments:
     ## 0. The "short name" that gets used as the hash ID and also in the filename of the output
     ## 1. The URL to get
-    ## 2. the genome build (e.g. hg19, hg18, mm9)
+    ## 2. the genome build (e.g. hg19, hg18, mm9) for this specific file. Set to "undef" to include this annotation file for ALL genomes.
     ## 3. the name to save the RAW file into
     ## 4. postprocessingCmd: something to do with the file after downloading it. Set it to "undef" if it isn't defined
     ## 5. finalName: the final filename after processing
-    my ($shortName, $url, $theBuild, $rawNameIncludingCompression, $postprocessingCmd, $finalName, $shouldActuallyUpdate) = @_;
-    my $localDir = "${globalAnnotDir}/${theBuild}";
+    ## 6: shouldActuallyUpdate: whether we are allowed to actually modify the files on disk (to update them) or not
+    ## 7: genomeBuildToUse: what genome build the user has specified for their input files. We will only add files that ALSO match this genome build.
+    my ($shortName, $url, $theBuildForThisFile, $rawNameIncludingCompression, $postprocessingCmd, $finalName, $shouldActuallyUpdate, $genomeBuildToUse) = @_;
+
+    if (!defined($theBuildForThisFile) || ($theBuildForThisFile eq $genomeBuildToUse)) {
+	stderrPrint(colorString("green"));
+	stderrPrint("Adding the annotation file <$shortName> to the global annotation list, as it is a valid annotation file for <$genomeBuildToUse>.");
+	stderrPrint(colorString("reset"));
+	# looks good, we'll add this annotation file to the global list
+    } else {
+	stderrPrint(colorString("cyan"));
+	stderrPrint("Not adding the <$theBuildForThisFile> annotation file <$shortName> to the global annotation list, as it is for a different species.");
+	stderrPrint(colorString("reset"));
+    }
+
+
+    my $localDir = "${globalAnnotDir}/${theBuildForThisFile}";
     my $rawFullPath = "$localDir/$rawNameIncludingCompression";
     if ($rawFullPath =~ m/[ ,\t\s]/) { die "Uh oh, the local full path has a comma or whitespace in it, which is not legal for the directory name!!"; }
 
@@ -108,7 +123,9 @@ sub agnomenGetAnnot($$$$$$$) {
 		## Do we need to download the file?
 		if (!agwFileHasContents($rawFullPath)) {
 		    ## Better download it!
+		    stderrPrint(colorString("green"));
 		    stderrPrint("Downloading $url --> $rawFullPath...\n");
+		    stderrPrint(colorString("reset"));
 		    agwSystemDieOnNonzero($curlCmd);
 		} else {
 		    stderrPrint("[Skipping] re-download of <$rawFullPath> from $url, as that file already exists.\n");
@@ -201,7 +218,7 @@ sub main() { # Main program
     agnomenGetAnnot("Mouse_Ensembl_GTF", "ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz"
 		    , "mm9", "Mus_musculus.GRCm38.68.gtf.gz"
 		    , undef
-		    , "Mus_musculus.GRCm38.68.gtf", $shouldUpdate);
+		    , "Mus_musculus.GRCm38.68.gtf", $shouldUpdate, $genomeBuild);
     agnomenGetAnnot("Human_Ensembl_BED", undef, 
 		    , "hg19", "human_ensembl_via_perl_api.tab"
 		    , ( qq{ if [ ! -f human_ensembl_1_raw.tab.gz ]; then echo "\n>>>[NOTE] -- The ENSEMBL GRABBER takes about 18 hours to download data via Perl API! If you are reading this message, be prepared to wait QUITE A WHILE for the data to get downloaded!\n"; $AGNOMEN_ENSEMBL_GRABBER_SCRIPT | gzip > human_ensembl_1_raw.tab.gz ; fi; }
@@ -210,14 +227,14 @@ sub main() { # Main program
 			. qq{ cat human_ensembl_2.tmp >> human_ensembl_3.tmp ; }
 			. qq{ sort human_ensembl_3.tmp > human_ensembl_via_perl_api.tab ; }
 			. qq{ /bin/rm human_ensembl_[123].tmp ; }
-		    )
-		    , "human_ensembl_via_perl_api.tab", $shouldUpdate);
+		    ), "human_ensembl_via_perl_api.tab", $shouldUpdate, $genomeBuild);
     
     #print "\t" . sprintf("%.${numDecimalPointsToPrint}f", $levFraction);
     #my @col1 = @{readFileColumn($filename1, 0, $delim)};
     
     #my $annot1 = "AnnotatedFeatures.gff"; #"hb.bed"; #"human_ens_manual.bed"; #"b.gtf"; #"AnnotatedFeatures.gff"; #"annot.bed";
     #stderrPrint("Warning: using a manually-selected annotation file here.\n");
+
 
     if (scalar(keys(%GLOBAL_ANNOT_PATHS)) == 0) {
 	die "Uh oh, there were no annotation files, for some reason! Maybe you need to run 'agnomen-gene-annotate.pl --update' to re-download / re-generate them?\n";
