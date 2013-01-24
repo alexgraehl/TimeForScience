@@ -123,7 +123,9 @@ fi
 ## ===============================================
 ## ====== TERMINAL HISTORY =======================
 export HISTSIZE=30123
-export HISTCONTROL=ignoreboth  # duplicate and blank lines are not saved in the history
+export HISTCONTROL=ignoredups # duplicate and blank lines are not saved in the history
+export HISTIGNORE="ls:ll:kpk:exit:p:pwd:rr:clear:history:fg:bg" ## Commands that are NOT saved to the history!
+set revert-all-at-newline on # <-- prevents editing of history lines! This is SUPER important, and SUPER annoying if it gets set to 'off'
 shopt -s histappend # Save terminal history between sessions
 PROMPT_COMMAND='history -a' ## save ALL terminal histories
 ## ====== TERMINAL HISTORY =======================
@@ -220,18 +222,5 @@ umask u=rwx,g=rwx,o=rx # <-- give users and groups full access to files I create
 #umask 0007 # <-- give users and groups full access to files I create, but give no access to other users.
 # 0 = "full access", 7 = "no access"
 
-# Add IJKL navigation to supplement/replace the arrow keys
-bind "\M-J:backward-word"
-bind "\M-L:forward-word"
-bind "\M-j:backward-char"
-bind "\M-l:forward-char"
-
-bind "\M-i:previous-history"
-bind "\M-I:previous-history"
-
-bind "\M-k:next-history"
-bind "\M-K:next-history"
-
-bind "\C-s:history-search-forward"
 
 # =======
