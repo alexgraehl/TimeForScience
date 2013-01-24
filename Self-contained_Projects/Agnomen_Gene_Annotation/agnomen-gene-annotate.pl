@@ -70,7 +70,7 @@ sub addPathToGlobalAnnotationHash($$) {
     $GLOBAL_ANNOT_PATHS{$shortName} = $filePath; ## <-- Add this file to the list of annotation files.
 }
 
-sub agnomenGetAnnot($$$$$$$) {
+sub agnomenGetAnnot($$$$$$$$) {
     # Tries to generate the file $finalName, UNLESS that file already exists and is valid.
     ## Arguments:
     ## 0. The "short name" that gets used as the hash ID and also in the filename of the output
@@ -79,35 +79,33 @@ sub agnomenGetAnnot($$$$$$$) {
     ## 3. the name to save the RAW file into
     ## 4. postprocessingCmd: something to do with the file after downloading it. Set it to "undef" if it isn't defined
     ## 5. finalName: the final filename after processing
-    ## 6: shouldActuallyUpdate: whether we are allowed to actually modify the files on disk (to update them) or not
+    ## 6: allowedToUpdateFiles: whether we are allowed to actually modify the files on disk (to update them) or not
     ## 7: genomeBuildToUse: what genome build the user has specified for their input files. We will only add files that ALSO match this genome build.
-    my ($shortName, $url, $theBuildForThisFile, $rawNameIncludingCompression, $postprocessingCmd, $finalName, $shouldActuallyUpdate, $genomeBuildToUse) = @_;
+    my ($shortName, $url, $theBuildForThisFile, $rawNameIncludingCompression, $postprocessingCmd, $finalName, $allowedToUpdateFiles, $genomeBuildToUse) = @_;
 
-    if (!defined($theBuildForThisFile) || ($theBuildForThisFile eq $genomeBuildToUse)) {
-	stderrPrint(colorString("green"));
-	stderrPrint("Adding the annotation file <$shortName> to the global annotation list, as it is a valid annotation file for <$genomeBuildToUse>.");
-	stderrPrint(colorString("reset"));
-	# looks good, we'll add this annotation file to the global list
-    } else {
+    if (defined($theBuildForThisFile) && ($theBuildForThisFile ne $genomeBuildToUse)) {
 	stderrPrint(colorString("cyan"));
-	stderrPrint("Not adding the <$theBuildForThisFile> annotation file <$shortName> to the global annotation list, as it is for a different species.");
+	stderrPrint("Not adding the <$theBuildForThisFile> annotation file <$shortName> to the global annotation list, as it is for a different species.\n");
 	stderrPrint(colorString("reset"));
+	return;
     }
 
+    stderrPrint(colorString("green"));
+    stderrPrint("Adding the annotation file <$shortName> to the global annotation list, as it is a valid annotation file for <$genomeBuildToUse>.\n");
+    stderrPrint(colorString("reset"));
 
     my $localDir = "${globalAnnotDir}/${theBuildForThisFile}";
     my $rawFullPath = "$localDir/$rawNameIncludingCompression";
-    if ($rawFullPath =~ m/[ ,\t\s]/) { die "Uh oh, the local full path has a comma or whitespace in it, which is not legal for the directory name!!"; }
+    if ($rawFullPath =~ m/[ ,\t\s]/) { die "Uh oh, the local full path has a comma or whitespace in it, which is not legal for the directory name!\n"; }
 
     my $unzippedPath = $rawFullPath;
     $unzippedPath =~ s/[.](bz2|gz|zip)$//i;
 
-    if (!$shouldActuallyUpdate) {
+    if (!$allowedToUpdateFiles) {
 	stderrPrint(colorString("cyan"));
 	stderrPrint("[Skipping] re-updating of the file of <$finalName>: the --update flag was not passed into this script.\n");
 	stderrPrint(colorString("reset"));
     } else {
-
 	if (defined($url) && $url) {
 	    my $curlCmd = 'curl --remote-name ' . '"' . $url . '"' ;
 	    system("mkdir -p $localDir");
@@ -212,7 +210,6 @@ sub main() { # Main program
 	## Need to have some files to annotate!
 	quitWithUsageError(">>> ERROR >>> We expected AT LEAST ONE valid file to annotate to be specified on the command line. We didn't get any, however.\n");
     }
-
     
     my $DOLLAR_SIGN = '$';
     agnomenGetAnnot("Mouse_Ensembl_GTF", "ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz"
