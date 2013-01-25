@@ -61,12 +61,10 @@ sub printUsage() {  print STDOUT <DATA>; }
 sub addPathToGlobalAnnotationHash($$) {
     my ($shortName, $filePath) = @_;
     if (exists($GLOBAL_ANNOT_PATHS{$shortName})) { die "Programming error 19A: Uh oh, there is ALREADY an annotation file with the short name <$shortName>. Can't have two duplicate short names! Check the source code and fix it.\n"; }
-
     if (!agwFileHasContents($filePath)) {
 	die "ERROR: The file at path <$filePath> was expected to exist, but it does not appear to exist at that path!\n";
     }
-
-    $GLOBAL_ANNOT_PATHS{$shortName} = $filePath; ## <-- Add this file to the list of annotation files.
+    $GLOBAL_ANNOT_PATHS{$shortName} = $filePath; ## <-- Add this file's FULL PATH to the list of annotation files.
 }
 
 sub agnomenGetAnnot($$$$$$$$) {
@@ -154,13 +152,37 @@ sub agnomenGetAnnot($$$$$$$$) {
     addPathToGlobalAnnotationHash($shortName, "$localDir/$finalName");
 }
 
+
+sub handleUserSpecifiedDatabases($$) {
+    my ($dataString, $verbose) = @_;
+    # Input arg: delimited string (example: "this,is,a,string")
+    # Return value: a hash, with all the elements from the string split up.
+    # and: $referenceToHash: a reference (\%hash would be passed in) to a hash where we store the results.
+    my %newHash = ();
+    if (defined($dataString)) {
+	($verbose) && stderrPrint(colorString("green"));
+	($verbose) && stderrPrint(qq{[INFO] The user specified that only the following annotation databases should be used: $dataString\n});
+	($verbose) && stderrPrint(colorString("reset"));
+	my @splitUpDb = split(/$DATABASE_INPUT_STRING_DELIM/, $dataString);
+	for my $theItem (@splitUpDb) {
+	    $newHash{$theItem} = 1; ## Let's remember that we SHOULD be using this database that the user specified on the command line!
+	    $newHash{lc($theItem)} = 1; ## Let's also remember the LOWER CASE version of this name.
+	}
+	(scalar(keys(%newHash)) > 0) or die "The user specified some specific databases to use with the --databases (or -d) flag, but we couldn't interpret those as any actual valid databases! We ended up with ZERO databases. Note that this needs to be a comma-delimited string with NO SPACES in it.\n";
+    } else {
+	($verbose) && stderrPrint(colorString("green"));
+	($verbose) && stderrPrint(qq{[INFO] Since no particular databases were specified, we will use ALL valid annotation databases.\n});
+	($verbose) && stderrPrint(colorString("reset"));
+    }
+    return(%newHash);
+}
+
 # ==1==
 sub main() { # Main program
     my $delim = "\t";
     my $genomeBuild = undef;
     my $shouldUpdate = 0;
     my $databaseStr = undef; # comma-delimited string
-    my %databaseHash = ();
     $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 
     GetOptions("help|?|man" => sub { printUsageAndQuit(); }
@@ -189,21 +211,7 @@ sub main() { # Main program
 #	quitWithUsageError("Error in arguments! You must send TWO filenames to this program.\n");
 #    }
 
-    if (defined($databaseStr)) {
-	stderrPrint(colorString("green"));
-	stderrPrint(qq{[INFO] The user specified that only the following annotation databases should be used: $databaseStr\n});
-	stderrPrint(colorString("reset"));
-	my @splitUpDb = split(/$DATABASE_INPUT_STRING_DELIM/, $databaseStr);
-	for my $theItem (@splitUpDb) {
-	    $databaseHash{$theItem} = 1; ## Remember that we should be using this database!
-	}
-	(scalar(keys(%databaseHash)) > 0) or die "The user specified some specific databases to use with the --databases (or -d) flag, but we couldn't interpret those as any actual valid databases! We ended up with ZERO databases. Note that this needs to be a comma-delimited string with NO SPACES in it.\n";
-    } else {
-	stderrPrint(colorString("green"));
-	stderrPrint(qq{[INFO] Since no particular databases were specified, we will use ALL valid annotation databases for <$genomeBuild>.\n});
-	stderrPrint(colorString("reset"));
-    }
-
+    
     my @inputFiles = (); # Input files to annotate
 
     foreach (@ARGV) { # these were arguments that were not understood by GetOptions
@@ -213,6 +221,8 @@ sub main() { # Main program
 	    die "Uh oh, the input argument <$_>, which we expected to be a file, apparently was not an actual file!";
 	}
     }
+
+    my %databaseHash = handleUserSpecifiedDatabases($databaseStr, "verbose_messages");
 
     unless (-d $globalAnnotDir) { quitWithUsageError(">>> ERROR >>> The annotation directory ($globalAnnotDir) does not exist!") }
     unless (defined($genomeBuild) && (length($genomeBuild) > 0)) { quitWithUsageError(">>> ERROR >>> it is MANDATORY to specify a genome build (example: hg19 or mm9). You do this with a command like this:   --species=hg19  or  -s hg19 \nCheck the annotation directory for a list of valid species.\n"); }
@@ -251,6 +261,7 @@ sub main() { # Main program
 	die "Uh oh, there were no annotation files, for some reason! Maybe you need to run 'agnomen-gene-annotate.pl --update' to re-download / re-generate them?\n";
     }
     
+    my $numAnnotationsDone = 0;
     ## For each file, we're going to annotate that file and write an output file. For each file, we're writing one output file per annotation type!
     ## Therefore, if you have (say) 3 input files to annotate, and 4 types of annotation, you will end up with (3*4 = 12) final output files.
     for my $input (@inputFiles) {
@@ -260,37 +271,51 @@ sub main() { # Main program
 	}
 	## 
 
-
 	while (my($annotDescription, $annotFile) = each(%GLOBAL_ANNOT_PATHS)) {
+
+	    
 	    ## annotFile better exist, or we're in trouble!!
 #	    if ($annotFile =~ m/.gz$/) {
 #		$annotFile = "<(zcat $annotFile)"; # bash subshell
 #		print STDERR "SUBSHELL\n";
 #	    }
+	    if (!defined($databaseStr) || exists($databaseHash{lc($annotDescription)})) {
+		# Looks like we should include this annotation file!
+		my $outputFile = "ANNOT_" . $input . "--" . $annotDescription;
+		$outputFile =~ s/[;:,\/\\]/_/g; ## Remove potentially "unsafe" characters from the output filename
+		my $cmd = qq{ $INTERSECT_BED_EXE -wao -a ${input} -b ${annotFile} > $outputFile};
+		stderrPrint(colorString("green"));
+		stderrPrint(qq{[ANNOTATING] using the data in $annotDescription\n});
+		stderrPrint(qq{[ANNOTATING]...\n    Running this command: $cmd\n});
+		stderrPrint(colorString("reset"));
+		my $intersectStatus = systemBash($cmd);
+		
+		if ($intersectStatus != 0) {
+		    stderrPrint("Uh oh, non-zero exit status!");
+		} else {
+		    $numAnnotationsDone++;
+		}
 
-
-
-
-	    my $outputFile = "ANNOT_" . $input . "--" . $annotDescription;
-	    $outputFile =~ s/[;:,\/\\]/_/g; ## Remove potentially "unsafe" characters from the output filename
-	    my $cmd = qq{ $INTERSECT_BED_EXE -wao -a ${input} -b ${annotFile} > $outputFile};
-
-	    stderrPrint(colorString("green"));
-	    stderrPrint(qq{[ANNOTATING]...\n    Running this command: $cmd\n});
-	    stderrPrint(colorString("reset"));
-	    my $intersectStatus = systemBash($cmd);
-	    
-	    if ($intersectStatus != 0) {
-		stderrPrint("Uh oh, non-zero exit status!");
+	    } else {
+		stderrPrint(colorString("cyan"));
+		stderrPrint(qq{[OMITTING] the annotation data in $annotDescription\n});
+		stderrPrint(colorString("reset"));
 	    }
 	}
     }
 
-    stderrPrint(colorString("green"));
-    stderrPrint("-------------------------------\n");
-    stderrPrint("[Done!]\n");
-    stderrPrint("-------------------------------\n");
-    stderrPrint(colorString("reset"));
+    if ($numAnnotationsDone == 0) {
+	stderrPrint(colorString("red"));
+	stderrPrint(qq{[FAILURE] It appears that we did not actually generate any annotation files. Check to see if perhaps the databases you have specified are invalid, or the species is not correct. Or maybe you need to run --update to generate the local databases.\n});
+	stderrPrint(colorString("reset"));
+    } else {
+	stderrPrint(colorString("green"));
+	stderrPrint("-------------------------------\n");
+	stderrPrint("[Done!]\n");
+	stderrPrint("-------------------------------\n");
+	stderrPrint(colorString("reset"));
+    }
+
 } # end main()
 
 
