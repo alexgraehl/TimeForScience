@@ -1,7 +1,5 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 #
-#
-
 [[ -z "$PS1" ]] && return # <-- If not running interactively, don't
 # do anything. Printing any output breaks ssh and various things.
 # This is why this line is important at the very top!
@@ -33,10 +31,10 @@ fi
 # ~/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 # Sets up the aliases whether or not this shell is interactive
-if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-aliases ]]; then
-    source ~/TimeForScience/Config/Alex_Williams/bash-aliases
-elif [[ -f /work/Common/Code/TimeForScience/Config/Alex_Williams/bash-aliases ]] ; then
-    source /work/Common/Code/TimeForScience/Config/Alex_Williams/bash-aliases
+if [[ -f ~/TimeForScience/Config/Alex_Williams/.aliases ]]; then
+    source ~/TimeForScience/Config/Alex_Williams/.aliases
+elif [[ -f /work/Common/Code/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
+    source /work/Common/Code/TimeForScience/Config/Alex_Williams/.aliases
 fi
 
 #iterm_bg=000000
