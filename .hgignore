@@ -1,5 +1,9 @@
 syntax: glob
 
+.hg
+.hg/hgrc
+hgrc
+
 .DS_Store
 
 *.swp
