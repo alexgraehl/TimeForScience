@@ -8,8 +8,6 @@ if (USE_COLORS_CONSTANT) { use Term::ANSIColor; }
 use File::Basename;
 use Getopt::Long;
 #no warnings 'numeric';
-#use Scalar::Util;
-#print Scalar::Util::looks_like_number($string), "\n";
 
 use strict;  use warnings;  use diagnostics;
 
@@ -18,6 +16,7 @@ sub main();
 my $INTERSECT_BED_EXE = "/work/Apps/Bio/bedtools/bin/intersectBed";
 my $globalAnnotDir = "./Z_AGNOMEN_DATA"; # default!
 
+my $DATABASE_INPUT_STRING_DELIM = ','; # comma-delimiting in the input string, example: --databases=human_ensembl,hg19browser,somethingelse
 my $AGNOMEN_ENSEMBL_GRABBER_SCRIPT = "/work/Common/Code/ProjectCode/0_Analyze_0277_Agnomen_Annotate/agnomen-ensembl-hg19-grabber.pl";
 
 my %GLOBAL_ANNOT_PATHS = (); ## New hash that will keep track of all the annotation files. Keys are the descriptions of the files, values are the actual paths of the annotation files.
@@ -157,10 +156,11 @@ sub agnomenGetAnnot($$$$$$$$) {
 
 # ==1==
 sub main() { # Main program
-    my ($delim) = "\t";
-    my ($genomeBuild) = undef;
-    my ($shouldUpdate) = 0;
-    my ($decimalPlaces) = 4; # How many decimal places to print, by default
+    my $delim = "\t";
+    my $genomeBuild = undef;
+    my $shouldUpdate = 0;
+    my $databaseStr = undef; # comma-delimited string
+    my %databaseHash = ();
     $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 
     GetOptions("help|?|man" => sub { printUsageAndQuit(); }
@@ -168,7 +168,7 @@ sub main() { # Main program
 	       , "species|s=s" => \$genomeBuild
 	       , "update!" => \$shouldUpdate
 	       , "annotdir|a=s" => \$globalAnnotDir
-	       , "dp=i" => \$decimalPlaces
+	       , "databases|database|d=s" => \$databaseStr # comma-delimited string
 	) or printUsageAndQuit();
 
     stderrPrint(colorString("green"));
@@ -188,6 +188,21 @@ sub main() { # Main program
     #if ($numUnprocessedArgs != 2) {
 #	quitWithUsageError("Error in arguments! You must send TWO filenames to this program.\n");
 #    }
+
+    if (defined($databaseStr)) {
+	stderrPrint(colorString("green"));
+	stderrPrint(qq{[INFO] The user specified that only the following annotation databases should be used: $databaseStr\n});
+	stderrPrint(colorString("reset"));
+	my @splitUpDb = split(/$DATABASE_INPUT_STRING_DELIM/, $databaseStr);
+	for my $theItem (@splitUpDb) {
+	    $databaseHash{$theItem} = 1; ## Remember that we should be using this database!
+	}
+	(scalar(keys(%databaseHash)) > 0) or die "The user specified some specific databases to use with the --databases (or -d) flag, but we couldn't interpret those as any actual valid databases! We ended up with ZERO databases. Note that this needs to be a comma-delimited string with NO SPACES in it.\n";
+    } else {
+	stderrPrint(colorString("green"));
+	stderrPrint(qq{[INFO] Since no particular databases were specified, we will use ALL valid annotation databases for <$genomeBuild>.\n});
+	stderrPrint(colorString("reset"));
+    }
 
     my @inputFiles = (); # Input files to annotate
 
@@ -210,13 +225,13 @@ sub main() { # Main program
 	## Need to have some files to annotate!
 	quitWithUsageError(">>> ERROR >>> We expected AT LEAST ONE valid file to annotate to be specified on the command line. We didn't get any, however.\n");
     }
-    
+
     my $DOLLAR_SIGN = '$';
     agnomenGetAnnot("Mouse_Ensembl_GTF", "ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz"
 		    , "mm9", "Mus_musculus.GRCm38.68.gtf.gz"
 		    , undef
 		    , "Mus_musculus.GRCm38.68.gtf", $shouldUpdate, $genomeBuild);
-    agnomenGetAnnot("Human_Ensembl_BED", undef, 
+    agnomenGetAnnot("Human_Ensembl", undef, 
 		    , "hg19", "human_ensembl_via_perl_api.tab"
 		    , ( qq{ if [ ! -f human_ensembl_1_raw.tab.gz ]; then echo "\n>>>[NOTE] -- The ENSEMBL GRABBER takes about 18 hours to download data via Perl API! If you are reading this message, be prepared to wait QUITE A WHILE for the data to get downloaded!\n"; $AGNOMEN_ENSEMBL_GRABBER_SCRIPT | gzip > human_ensembl_1_raw.tab.gz ; fi; }
 			. qq{ zcat human_ensembl_1_raw.tab.gz | grep -v '^[#]' | grep -v '^$DOLLAR_SIGN' | sort -k 2,2 -k 3,3g | uniq > human_ensembl_2.tmp ; }
@@ -226,7 +241,6 @@ sub main() { # Main program
 			. qq{ /bin/rm human_ensembl_[123].tmp ; }
 		    ), "human_ensembl_via_perl_api.tab", $shouldUpdate, $genomeBuild);
     
-    #print "\t" . sprintf("%.${numDecimalPointsToPrint}f", $levFraction);
     #my @col1 = @{readFileColumn($filename1, 0, $delim)};
     
     #my $annot1 = "AnnotatedFeatures.gff"; #"hb.bed"; #"human_ens_manual.bed"; #"b.gtf"; #"AnnotatedFeatures.gff"; #"annot.bed";
@@ -245,6 +259,8 @@ sub main() { # Main program
 	    stderrPrint("Warning: the input file $input was EXPECTED to be a .bed file, but it appears not to have the .bed filename extension. Double-check to make sure this is the right file! Continuing on anyway, assuming that it is a bed file...\n");
 	}
 	## 
+
+
 	while (my($annotDescription, $annotFile) = each(%GLOBAL_ANNOT_PATHS)) {
 	    ## annotFile better exist, or we're in trouble!!
 #	    if ($annotFile =~ m/.gz$/) {
@@ -252,11 +268,14 @@ sub main() { # Main program
 #		print STDERR "SUBSHELL\n";
 #	    }
 
+
+
+
 	    my $outputFile = "ANNOT_" . $input . "--" . $annotDescription;
 	    $outputFile =~ s/[;:,\/\\]/_/g; ## Remove potentially "unsafe" characters from the output filename
 	    my $cmd = qq{ $INTERSECT_BED_EXE -wao -a ${input} -b ${annotFile} > $outputFile};
 
-	    stderrPrint(colorString("yellow"));
+	    stderrPrint(colorString("green"));
 	    stderrPrint(qq{[ANNOTATING]...\n    Running this command: $cmd\n});
 	    stderrPrint(colorString("reset"));
 	    my $intersectStatus = systemBash($cmd);
@@ -334,6 +353,13 @@ OPTIONS:
        Sets which genome build should be used for annotation. Example: hg19 (a human genome), mm9 (a mouse genome).
        Currently supported: hg19, mm9.
        Default is to use output for ALL the different species.
+
+  --databases = STRING (Default: undefined, meaning "use ALL databases for this species")
+    or -d STRING
+       You can specify to ONLY use certain databases within a subdirectory of a species. You specify these by the SHORT NAME and
+       not FILE NAME.
+       Example: specifying --databases=Hu_Ensembl,hg19Ribosome,hgExtra  is CORRECT
+                       but --databases=human_ens.bed   <-------------   is WRONG
 
   --annotdir = STRING (Default: Z_AGNOMEN_DATA)
     or: -a STRING
