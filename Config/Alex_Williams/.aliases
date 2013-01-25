@@ -136,6 +136,8 @@ alias cheat="echo \
 \">>> Shell/bash: Rename files to include parent directory in filename for f in \\\`ls DIRS*/file.whatever\\\`; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).whatever ; done \" ${NL}\
 \" \" ${NL}\
 \">>> AWK: sum numbers in a column 1 of a file: cat THEFILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
+\">>> NIX: list ONLY dot files, no .. or up a directory: ls -l .??* \" ${NL}\
+\">>> NIX: set up symlinks from Mercurial/TimeForScience: ln -sfn ~/TimeForScience/Config/Alex_Williams/.??* ~/ \" ${NL}\
 \">>> NIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
 \">>> NIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
 \">>> NIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
@@ -182,7 +184,6 @@ alias cheat="echo \
 \">>> LINES: Every Xth, starting with line Y (starts at 1, not 0): awk 'NR%X==Y' FILE \" ${NL}\
 \">>> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">>> LINES Count characters on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
-\">>>  \" ${NL}\
 "
 
 # Shell navigation / commands
