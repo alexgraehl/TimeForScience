@@ -37,10 +37,10 @@ export PATH=/work/Apps/bin:/work/Apps/kent_tools:/db/projects/Common/kent_bin_lo
 ## export PATH=/opt/local/bin:/opt/local/sbin:$PATH ## This is for MacPorts. Check the .bash_profile, that's where it went
 
 
-# Highest priority: things in the HOME directory or TimeForScience
-export PATH=${HOME}/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH} ## <-- Priority!
+# Highest priority: things in the HOME directory or TimeForScience or /bioinformatics/bin
+export PATH=${HOME}/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:/bioinformatics/bin
 
-export PERL5LIB=/usr/local/lib/perl5/site_perl/5.12.1/
+export PERL5LIB=/usr/local/lib/perl5/site_perl/5.12.1/  # note: sometimes it's in /usr/lib instead of /usr/local!!
 
 ### ============== Below: Added Nov 27, 2012 for MRC metagenomics classifier project ======================
 ### Setup stuff for MRC for Tom Sharpton
