@@ -1,0 +1,477 @@
+# -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
+
+if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
+    source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
+fi
+
+echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
+
+alias SET_NAUCOLOR="echo -n ''"
+alias SET_CATBUSCOLOR="echo -n ''"
+alias SET_LOCALCOLOR="echo -n ''"
+alias SET_LIGHTHOUSECOLOR="echo -n ''"
+alias SET_BUENOCOLOR="echo -n ''"
+
+## Searches both the R source and the current directory (and any subdirectories!)
+## Note that it only looks for files with a ".R" ending!!!!!!!
+if [[ -n "$isMac" ]] ; then
+    ## It *is* a mac!
+    function ff {
+	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
+	    "$@" \
+	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
+	    "${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode" \
+	    "/Users/alexgw/TimeForScience" \
+	    ./
+    }
+
+    alias zcat='gunzip -c' ## On the Mac, "zcat" likes to append '.Z' to filenames. Super annoying.
+else
+    ## Not the mac!
+    function ff {     ## Annoyingly, grep is different between mac/unix
+	grep --color=always -T \
+	    --ignore-case \
+	    --recursive \
+	    --extended-regexp \
+	    --line-number --with-filename \
+	    --exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="CVS" --exclude-dir="[bB]ackup*" \
+	    --binary-files=without-match \
+	    --include=*.R --include=*.pl --include=*.py \
+	    "$@" \
+	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
+	    "${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode" \
+	    "/home/alexgw/TimeForScience"
+    }
+fi
+
+function delve {
+    ## Finds, in any subdirectories, any files that have a name that matches the input text.
+    ## Sort of like a poor man's "locate"
+    find ./ -iname "*$@*"
+}
+
+function vncnau {
+    # Forwards nausicaa's ports to the localhost
+    echo "Now forwarding port 590$* from Nausicaa ... you should launch your VNC client now and connect to localhost:$*"
+    ssh -L 590$*:localhost:590$* -p 22 alexgw@nausicaa.ucsf.edu -N
+}
+
+function vnccat {
+    # Forwards nausicaa's ports to the localhost
+    echo "Now forwarding port 590$* from Catbus ... you should launch your VNC client now and connect to localhost:$*"
+    ssh -L 590$*:localhost:590$* -p 22 alexgw@catbus.gladstone.internal -N
+}
+
+function vnccat {
+    # Forwards nausicaa's ports to the localhost
+    echo "Now forwarding port 590$* ... you should launch your VNC client now and connect to localhost:$*"
+    ssh -L 590$*:localhost:590$* -p 22 alexgw@catbus.gladstone.internal -N
+}
+
+function vncstart {
+    vncserver -geometry 1600x1000 -depth 16
+}
+
+
+
+BRACKET_OPEN='{'
+PAREN_OPEN='('
+
+NL="\$'\\n'" # newline!
+
+alias cheat="echo \
+\">>> Mac: check code signing: codesign -vvv /Applications/iTunes.app \" ${NL}\
+\">>> Mac: delete time machine backups: tmutil delete /Volumes/DISK/Backups.backupdb/COMPNAME/ \" ${NL}\
+\">>> Mac: see what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
+\">>> Mac: Check specific file io / activity: fs_usage <programname> \" ${NL}\
+\">>> Mac: Significant disk io:   sudo fs_usage -w | grep -v '0\\.0'  \" ${NL}\
+\">>> Filesystem: show what files are being read/written: sudo fs_usage \" ${NL}\
+\">>> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
+\">>> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
+\">>> Mac OS X show weird file flags: ls -l -@ \" ${NL}\
+\">>> Mac OS X recursively clear worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
+\">>> Mac OS X show library: chflags nohidden ~/Library/ \" ${NL}\
+\">>> Image SIPS: PNG -> JPEG: mkdir outjpegs; sips -s format jpeg *.png --out outjpegs \" ${NL}\
+\">>> Imagemagick convert recursive: find ./ -name \\\"*.jp*\\\" -print0 | xargs -0 -I{} convert -resize 1024x768 -quality 85 {} {} \" ${NL}\
+\">>> Mac batch change modification time: find . -print0 | xargs -0 SetFile -d '12/31/2012 12:00:00 PM' \" ${NL}\
+\">>> No quarantine warn  : defaults write com.apple.LaunchServices LSQuarantine -bool NO \" ${NL}\
+\">>> No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
+\">>> Select in QuickLook : defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
+\">>> No smooth scroll    : defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
+\">>>  \" ${NL}\
+\">>> Check directories for differences (by modification time): ionice -c3 rsync --dry-run --delete -vr /dirA /dirB \" ${NL}\
+\">>> Find all .R files in a directory:   find ./ -name \\\"*.R\\\" -exec ls \'{}\' \\\; \" ${NL}\
+\">>> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
+\" \" ${NL}\
+\">>> Bash: Literal tab in bash: \$'\\t' \" ${NL}\
+\">>> sh: Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
+\">>> Python debugger: Crashing program? Run python -m pdb YOURPROG --yourargs . 'c' continues execution. \" ${NL}\
+\">>> R: Read bzip/gz file:  x <- read.table(bzfile(\\\"name.bz2\\\") or gzfile(...) \" ${NL}\
+\">>> R: Read from stdin:    x <- read.table(pipe(\\\"cat something name.bz2 | bunzip2\\\") \" ${NL}\
+\">>> R: Install new package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
+\">>> R: Install new package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
+\">>> R: sessionInfo(): show package versions. ls('package:something') shows package details. \" ${NL}\
+\">>> R: t.test failing? Use tryCatch: tryCatch(something, error=function() { return('NA'); }); \" ${NL}\
+\">>> R: Need to un-list things? Use unlist! \" ${NL}\
+\">>> R: Perpendicular axis labels: las=2 (1=horiz, 3=vertical) \" ${NL}\
+\">>> R: Draw beyond graph region: par(xpd=T/F/NA) \" ${NL}\
+\">>> R: Square plot: par(pty='s') \" ${NL}\
+\">>> R: Figure out attributes of a variable: attr(x, 'theAttribute'); Works even when names()/attributes() does not! \" ${NL}\
+\">>> R: Inspect object: str(...) \" ${NL}\
+\">>> R: Totally blank plot: plot(c(0,1),c(0,1),ann=F,bty='n',type='n',xaxt='n',yaxt='n') \" ${NL}\
+\">>> R: Cut things into bins, like a histogram: cut(...) \" ${NL}\
+\">>> R: Factor -> Integers: unclass(...) \" ${NL}\
+\">>> R: Perpendicular axis: par(las=2) (1 = horiz, 3 = vertical) \" ${NL}\
+\">>> R: Draw BEYOND the axes / plot region: par(xpd=...) \" ${NL}\
+\">>> R: Show package contents: ls('package:some_package_name_here') \" ${NL}\
+\">>> R: Show versions of installed packages: sessionInfo(...) \" ${NL}\
+\">>> R: Collapse a list down to a basic vector: unlist(...) \" ${NL}\
+\">>> R: Resize terminal width / columns: options(width=Sys.getenv(\\\"COLUMNS\\\")) \" ${NL}\
+\">>> R: make libraries usable by non-root users: sudo chmod -R a+r /usr/local/lib/R ; sudo find /usr/local/lib/R -type d | sudo xargs chmod a+x \" ${NL}\
+\" \" ${NL}\
+\">>> Shell/bash: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
+\">>> Shell/bash: Pipe stderr (and stdout too): CMD 2>&1 | less -S \" ${NL}\
+\">>> Shell/bash: Modify variable: newV=\\\$(sed -e's/a/1/; s/b/2/; s/c/3/' <<< \\\$oldV) \" ${NL}\
+\">>> Shell/bash: Script run with ionice:  ionice -c3 -p\\\$\\\$ (top line of a /bin/sh script) \" ${NL}\
+\">>> Shell/bash: Rename files to include parent directory in filename for f in \\\`ls DIRS*/file.whatever\\\`; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).whatever ; done \" ${NL}\
+\" \" ${NL}\
+\">>> AWK: sum numbers in a column 1 of a file: cat THEFILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
+\">>> NIX: list ONLY dot files, no .. or up a directory: ls -l .??* \" ${NL}\
+\">>> NIX: set up symlinks from Mercurial/TimeForScience: ln -sfn ~/TimeForScience/Config/Alex_Williams/.??* ~/ \" ${NL}\
+\">>> NIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
+\">>> NIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
+\">>> NIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
+\">>> NIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
+\">>> NIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
+\">>> NIX: Check Linux version: cat /etc/*-release \" ${NL}\
+\">>> NIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
+\">>> NIX: Rsync transfer files: rsync --dry-run -thravz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
+\">>> NIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
+\">>> NIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
+\">>> NIX / INSTALL: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
+\">>> NIX / INSTALL: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
+\">>> NIX / INSTALL: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
+\">>> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub \" ${NL}\
+\"                        to server ~/.ssh/authorized_keys \" ${NL}\
+\">>> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): \" ${NL}\
+\"          sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ${NL}\
+\" \" ${NL}\
+\">>> ZIP: Zip a folder: zip -r ARCHIVENAME FOLDER \" ${NL}\
+\">>> BASH: Foreach / rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
+\">>> BASH: redirect STDERR & STDOUT both to console and to a file: THECMD 2>&1 | tee --append LOGFILE\" ${NL}\
+\">>> BASH: See a function definition:   type FUNCTIONNAME \" ${NL}\
+\">>> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ${NL}\
+\">>> XARGS/FIND: find . -name SOMEFILE -print0 | xargs -0 -I {} sh -c \\\"echo {}; thing {} | piped here | wc -l\\\"  \" ${NL}\
+\">>> GNU FIND delete-a-file option: find . -name SOMEFILE -delete \" ${NL}\
+\">>> REGEXP Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \\\$ work \" ${NL}\
+\">>> UNIX/Perl fast sort with ONE header line: cat FILE | perl -e 'print scalar (<>); print sort <>' > OUTFILE \" ${NL}\
+\">>> REGEXP EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
+\" \" ${NL}\
+\">>> RNASEQ SAM --> BAM:  samtools view -bS in.sam > out.bam \" ${NL}\
+\">>> RNASEQ BAM --> SAM:  samtools view -h  in.bam > out.sam \" ${NL}\
+\">>> RNASEQ sorting and setting the 'sorted' flag:  java -Xmx2g  -jar `which SortSam.jar` INPUT=in.sam SORT_ORDER=coordinate OUTPUT=out_sorted.sam \" ${NL}\
+\">>> RNASEQ View BAM header: samtools view -H  in.bam \" ${NL}\
+\">>> RNASEQ Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ${NL}\
+\">>> DNA Reverse-complement:  perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
+\">>> APACHE error log: sudo less -S /var/log/apache2/error.log \" ${NL}\
+\">>> Mac OS X Dictionary: /usr/share/dict/words \" ${NL}\
+\">>> Mac OS X Image type convert: mkdir -p PNGS_TO_JPEG; sips -s format jpeg *.png --out PNGS_TO_JPEG \" ${NL}\
+\">>> COPROC: coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ${NL}\
+\">>> AWK / FASTQ: Truncate a fastq file to length 19: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
+\">>> LINES: RANDOM subset (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'print if (rand() < 0.5);' theFile.txt \" ${NL}\
+\">>> LINES: REPEATABLE RANDOM subset: perl -e 'srand(123456); while(<>){ print if (rand() < 0.5);}' theFile.txt \" ${NL}\
+\">>> LINES: Range from N to M, inclusive (starts at 1):  sed -n N,Mp INPUTFILE  or  for a HUGE file: sed -n '(N+1)q;N,Mp' <-- quit on line (N+1) \" ${NL}\
+\">>> LINES: Every Xth, starting with line Y (starts at 1, not 0): awk 'NR%X==Y' FILE \" ${NL}\
+\">>> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
+\">>> LINES Count characters on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
+"
+
+# Shell navigation / commands
+
+#pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
+
+[[ "$color_prompt" && "$isMac" ]] && AGW_LS_OPT=' -F -G -@ ' ## Mac: Color option is -G. Also, on a Mac, show the extended attributes (-@)
+[[ "$color_prompt" && (-z "$isMac") ]] && AGW_LS_OPT=' --indicator-style=slash --color=auto ' ## Ubuntu: color is --color=auto
+
+alias ls='/bin/ls ${AGW_LS_OPT}'
+alias l='ls'
+alias ll='/bin/ls -l -h -A -F ${AGW_LS_OPT}'
+alias p='pwd -P'
+alias tc='randomize_terminal_color.pl -cycle'
+#alias cd='pushd'
+alias b='popd'
+alias ..='cd ..'
+#alias ..='pushd ..'
+alias res='source ~/.bashrc ; source ~/.bash_profile'
+alias mv='mv -i'
+alias cp='cp -i'
+alias kpk='exit'
+alias diffdir='diff -rq' ## diff on directories
+
+
+## ===============================================================
+## ====== SAFER 'rm' COMMANDS ====================
+## Below: aliases the command "rm" to actually run the script "trash.pl," which moves files to a trash directory in /tmp.
+## They can be recovered by just copying them back.
+## Use the "checktrash" command to find the trash directory if you forget where it is.
+#alias rm='/home/${USER}/trash.pl'
+alias rm='trash.pl' ## <-- Note that the "real" rm can still always be invoked by '/bin/rm'
+## Below: the command to list the top-level contents of the trash directory. You may have to look through the files here if you want to recover something you just accidentally deleted. Beware, files don't last long in /tmp\!
+alias checktrash='mkdir -p /tmp/${USER}/Trash/ && echo "Contents of /tmp/${USER}/Trash:" && ls /tmp/${USER}/Trash/'
+alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv /tmp/${USER}/Trash/ && echo "Emptied the trash directory (/tmp/${USER}/Trash)" ;'
+## ====== SAFER 'rm' COMMANDS ====================
+## ===============================================================
+
+## "showoff" makes it so that everyone can a+rx any directories and a+r any files.
+## Note that we don't want to make it so everyone can execute *files* necessarily, just folders
+## ("Executing" a folder means you can "ls" it and see what's inside.)
+function showoff {
+    for var in "$@"
+    do
+	echo "showoff: Using chmod -R to allow ANY USER to browse \"$var\""
+	chmod -R a+r "$var" ; find "$var" -type d -type d -exec chmod a+x \{\} \; ;
+    done
+}
+
+function sudoshowoff {
+    for var in "$@"
+    do
+	echo "sudoshowoff: Using chmod -R to allow ANY USER to browse \"$var\""
+	sudo chmod -R a+r "$var" ; sudo find "$var" -type d -type d -exec sudo chmod a+x \{\} \; ;
+    done
+}
+
+## Mac-specific commands:
+
+SETFILE_LOCATION=/Applications/Xcode*/Contents/Developer/Tools/SetFile
+alias invisible='$SETFILE_LOCATION -P -a V' ## Mac-only: Make a file/folder invisible to the Finder
+alias visible='$SETFILE_LOCATION -P -a v' ## Mac-only: opposite of "invisible"
+alias clearicon='$SETFILE_LOCATION -P -a c' ## clear mac custom icons. Useful for images that have old custom icons.
+
+alias version="lsb_release -a" # Tells you which version of Ubuntu you are running!
+
+alias res="source ~/.bashrc" ## Re-load the source file
+
+function mac2unix { # Convert a Mac-style line-ending file to a UNIX one. Useful for when you save a file in Excel and then UNIX won't read it.
+    if [[ -f "$1" ]] ; then cat "$1" | tr '\r' '\n' ## if a filename is passed in, then auto-cat that file
+    else tr '\r' '\n' ; fi ## otherwise it's probably part of a cmdline pipe
+}
+
+function dos2unix { # Convert a Windows-style line-ending file to a UNIX one. Useful for when you save a file in Excel and then UNIX won't read it.
+    if [[ -f "$1" ]] ; then cat "$1" | tr -d '\r' ## if a filename is passed in, then auto-cat that file
+    else tr -d '\r'; fi ## otherwise it's probably part of a cmdline pipe
+}
+
+## Utility commands
+
+## -U: "screen understands UTF8"
+alias rr='tmux attach || tmux new' #"screen -xR -U" ## Reconnect to the previous screen, or make a new one if there isn't one already
+alias sc='tmux new-window' #'screen' ## Make a new screen session
+
+alias wcl='wc -l'
+alias sortt='sort -t "	"' # sort with tab as separator
+alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
+
+if [[ -f /Applications/Emacs.app/Contents/MacOS/Emacs ]]; then
+    echo -e "${a_echo_color}>>> BASH: Note: aliasing 'e' to the Mac Application version of emacs.${a_end_color}"
+    alias e='/Applications/Emacs.app/Contents/MacOS/Emacs -nw'
+elif [[ -n "$isMac" ]]; then
+    alias e='emacs '
+else
+    alias e='emacsclient -nw -c --alternate-editor=""'
+    #alias e='emacs -nw'
+fi
+
+alias t='transpose.pl -q'
+alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl --color=always \
+--ht=75 --trunc=60 | tail -n +2 ; echo -e -n '$a_end_color'"
+
+
+# Rename the tmux window: usage is "tre NEW_NAME"
+alias tre='tmux rename-window $1'
+
+# GNU Make-related
+alias make='make --warn-undefined-variables --print-directory'
+alias mcm='make clean && make'
+function remake {
+    ## Lets you type "remake" to remove a file and then use GNU make to try to re-generate it
+	trash.pl "$1" && make --warn-undefined-variables --print-directory "$1"
+}
+
+# Aliases related to COLOR GREP
+alias grepc='grep   --color=always --with-filename --line-number'
+alias egrepc='egrep --color=always --with-filename --line-number'
+alias fgrepc='fgrep --color=always --with-filename --line-number'
+
+# Aliases related to CVS
+alias commit="cvs commit -m 'AGW CVS Commit'"
+alias gitcom="git commit -a -m 'Changes committed by alexgw'"
+alias gitstat="git ls-files --modified --deleted"
+alias gitdiff="git difftool"
+
+alias hgcom="hg commit -u '${USER}' -m 'Changes committed by ${USER}' && echo '[Done] committing changes locally with Mercurial.'"
+alias hgpush="hg commit -u '${USER}' -m 'Changes committed by ${USER}' && hg push && echo '[Done] pushing changes to the remote server with Mercurial.'"
+alias hgpull="hg pull ; hg update && echo '[Done] pulling remote changes and updating the local Mercurial repository.'"
+alias hgup="hg update && echo '[Done] updating local changes in Mercurial'"
+alias hgs="hg status"
+
+function hglog {
+    hg status
+    if [[ $? == "0" ]] ; then  ## <-- only check the log if there is actually a mercurial repo here!
+	hg log -p --color=always "$@" | s
+    fi
+}
+
+function sciencecom {
+    if [[ -d "$1" ]] ; then
+	hg commit --user ${USER} --cwd "$1" -m "Commit by ${USER}" ; hg push --cwd "$1" ; echo "[Done] commiting and pushing $1 repository" ;
+    else
+	echo "No $1 repository exists on this machine."
+	return 1;
+    fi
+}
+
+function scienceup {
+    if [[ -d "$1" ]] ; then
+	hg --cwd "$1" pull ; hg --cwd "$1" update ; echo "[Done] pulling and updating $1 repository"
+    else
+	echo "No $1 repository exists on this machine."
+	return 1;
+    fi
+}
+
+alias science="echo 'Time for science:' ; scienceup ${TIME_FOR_SCIENCE_DIR} ; sciencecom ${TIME_FOR_SCIENCE_DIR} ; echo ''; echo 'Work directory:' ; scienceup ${BINF_CORE_WORK_DIR} ; sciencecom ${BINF_CORE_WORK_DIR}"
+
+AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
+
+alias agwReColorTerminal=''
+alias nau='SET_NAUCOLOR ; ssh ${AGW_SSH_OPTIONS}   $UCSF_USER@nausicaa.ucsf.edu ; agwReColorTerminal'
+alias naux='SET_NAUCOLOR ; ssh ${AGW_SSH_OPTIONS} -Y  $UCSF_USER@nausicaa.ucsf.edu ; agwReColorTerminal'
+alias catbus='SET_CATBUSCOLOR ; ssh ${AGW_SSH_OPTIONS} $UCSF_USER@catbus.gladstone.internal ; agwReColorTerminal'
+alias lig='SET_LIGHTHOUSECOLOR ; ssh ${AGW_SSH_OPTIONS}  $UCSF_USER@lighthouse.ucsf.edu ; agwReColorTerminal' ## Database machine
+alias ligx='SET_LIGHTHOUSECOLOR ; ssh ${AGW_SSH_OPTIONS} -Y  $UCSF_USER@lighthouse.ucsf.edu ; agwReColorTerminal' ## Database machine
+alias bue='SET_BUENOCOLOR ; ssh ${AGW_SSH_OPTIONS} $UCSF_USER@bueno.gladstone.internal ; agwReColorTerminal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
+alias buex='SET_BUENOCOLOR ; ssh ${AGW_SSH_OPTIONS} -Y $UCSF_USER@bueno.gladstone.internal ; agwReColorTerminal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
+alias chef='ssh ${AGW_SSH_OPTIONS} $UCSF_USER@chef.compbio.ucsf.edu ; agwReColorTerminal' ## QB3 cluster head node
+
+alias newv='ssh ${AGW_SSH_OPTIONS} $UCSF_USER@10.1.101.251 ; agwReColorTerminal' ## new virtual machine downstairs
+
+alias shattuck='ssh ${AGW_SSH_OPTIONS} $UCSF_USER@shattuck.ucsf.edu ; agwReColorTerminal' ## pollard lab machine at UCSF, for talking to the cluster
+
+
+case "$HOSTNAME" in
+    nausicaa)
+	alias nau="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
+	alias naux="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
+	;;
+    catbus)
+	alias catbus="echo -e -n '$a_warning_color' ; echo 'This machine *is* catbus already!' ; echo -e -n '$a_end_color'"
+	;;
+    *)
+	;;
+esac
+
+
+## ===============================================
+## ====== LESS ===================================
+export PAGER=less
+[[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)" # make "less" friendly for non-text input files
+
+# Things related to "LESS"
+export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
+# lesspipe_basic.sh casues less to transparently decompress gzipped files before showing them
+# Old:  '|/usr/bin/lesspipe.sh %s'
+
+alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_advanced.sh %s" /usr/bin/less -S --RAW-CONTROL-CHARS -f --IGNORE-CASE'
+# It's less, but it "magically" handles gzipped files and automatically runs ".tab" files through sheet.pl
+# Note that this only magically happens if the files are passed in on the command line--otherwise you have
+# to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
+# sheet.pl unless you say "cat something | ssf"
+## ====== LESS ===================================
+## ===============================================
+
+# Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
+alias sn='/usr/bin/less -S --LINE-NUMBERS --status-column --RAW-CONTROL-CHARS -f --IGNORE-CASE'
+
+alias sweep='trash.pl *.tmp *.temp' ## Sweep out the .tmp files
+
+alias htop='htop --sort-key PERCENT_CPU'
+
+function s { ## <-- this needs to come BEFORE the other things that use less!
+    # "s" uses "magicless" to run files through sheet.pl
+    magicless --LINE-NUMBERS --status-column "$@"
+}
+
+function sf {
+    # Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
+    /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always | s
+}
+
+function s1 {
+    # like sf, but shorter columns # Can only view ONE file, unlike "s"
+    /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always --trunc=15 | s
+}
+
+function s2 {
+    # like sf, but shorter columns # Can only view ONE file, unlike "s"
+    /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always --trunc=25 | s
+}
+
+function v {
+    # Use sheet.py to view a file or list of files. These files cannot be gzipped, however.
+    # Must be python2.6, and not python 3, currently
+    python `which sheet.py` "$@"
+}
+
+alias huh='cat <(declare -f) <(alias)' ## uses bash subshells to show everything that is defined
+alias backoff='~/TimeForScience/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh off'
+alias backon='~/TimeForScience/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh on'
+
+function n { # show colors
+    echo -e  "$color_prefix[30m black $color_prefix[31mred $color_prefix[32mgreen $color_prefix[33myellow $color_prefix[34mblue $color_prefix[35mmagenta $color_prefix[36mcyan $color_prefix[37mwhite"
+}
+
+## Mini is a function that creates a .bz2 archive of whatever you pass into it.
+## It works in a manner similar to right-clicking and zipping a file on the Mac.
+## If you just pass it in ONE file named FILE, then the output filename is "FILE.tar.bz2" .
+## If you give it multiple files, the output is in Archive.tar.gz
+## To extract a "mini" archive, use "unmini" .
+# Bugs: it ONLY WORKS IN THE CURRENT DIRECTORY! And it probably hates whitespaces.
+# maybe this will help with escaping? for f in `ls`; do printf "%q " $f; done
+# looks like 'printf' can save the day
+function mini {
+    if [[ "$#" == 1 ]] ; then theCompressedBasename="$1"; ## If you pass it one argument, then that argument will also be the filename
+    else theCompressedBasename="Archive";
+    fi
+    
+    IONICE_EXISTS=`which programname >/dev/null`
+    if [[ $IONICE_EXISTS ]] ; then
+	AGW_IONICE='ionice -c3'
+    else
+	AGW_IONICE='' ## ionice doesn't exist on BSD or Mac OS X
+    fi
+
+    theCompressedBasename=`echo "$theCompressedBasename" | sed "s/[/]//"` ## Let's remove any slashes from the name of the *output*. That way if someone types "mini MyDir/" it will generate "MyDir.tar.bz2" and NOT "MyDir/.tar.bz2"
+    
+    if [[ -f "${theCompressedBasename}.tar" || -f "${theCompressedBasename}.tar.bz2" ]] ; then
+	echo "mini: HALTING: Cannot create a new archive---either ${theCompressedBasename}.tar or ${theCompressedBasename}.tar.bz2 already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive!!! Delete it and compress again." ;
+	return ;
+    else
+	if [[ "$#" -gt 1 ]] ; then echo "Adding a total of $# files to the archive." ; fi
+	for var in "$@"; do echo " * Archiving $var --> ${theCompressedBasename}.tar.bz2" ; done
+	echo "[TAR] command running now..." ;
+	${AGW_IONICE} tar --bzip2 -cvf "${theCompressedBasename}.tar.bz2" $@ ;
+	echo "[Done]" ;
+    fi
+}
+
+## Extracts a "mini"-fied archive.
+function unmini {
+    ionice -c3 tar --bzip2 --keep-old-files -xvf $1
+}
+
+
+
+
+
+
