@@ -3,6 +3,7 @@
 use constant USE_COLORS_CONSTANT => 1; ## 1 = true, 0 = false
 use POSIX      qw(ceil floor);
 use List::Util qw(max min);
+use Cwd;
 if (USE_COLORS_CONSTANT) { use Term::ANSIColor; }
 
 use File::Basename;
@@ -78,57 +79,59 @@ sub agnomenGetAnnot($$$$$$$$) {
     ## 5. finalName: the final filename after processing
     ## 6: allowedToUpdateFiles: whether we are allowed to actually modify the files on disk (to update them) or not
     ## 7: genomeBuildToUse: what genome build the user has specified for their input files. We will only add files that ALSO match this genome build.
-    my ($shortName, $url, $theBuildForThisFile, $rawNameIncludingCompression, $postprocessingCmd, $finalName, $allowedToUpdateFiles, $genomeBuildToUse) = @_;
+    my ($shortName, $url, $theBuildForThisFile, $rawZipped, $postprocessingCmd, $finalName, $allowedToUpdateFiles, $genomeBuildToUse) = @_;
 
-    if (defined($theBuildForThisFile) && ($theBuildForThisFile ne $genomeBuildToUse)) {
+    my $origWorkingDir = cwd();
+
+    if (defined($genomeBuildToUse) && defined($theBuildForThisFile) && ($theBuildForThisFile ne $genomeBuildToUse)) {
 	stderrPrint(colorString("cyan"));
-	stderrPrint("Not adding the <$theBuildForThisFile> annotation file <$shortName> to the global annotation list, as it is for a different species.\n");
+	stderrPrint("Not updating or adding the <$theBuildForThisFile> annotation file <$shortName> to the global annotation list, as it is for a different species.\n");
 	stderrPrint(colorString("reset"));
 	return;
     }
 
     stderrPrint(colorString("green"));
-    stderrPrint("Adding the annotation file <$shortName> to the global annotation list, as it is a valid annotation file for <$genomeBuildToUse>.\n");
+    if (defined($genomeBuildToUse)) { stderrPrint("Adding the annotation file <$shortName> to the global annotation list, as it is a valid annotation file for <$genomeBuildToUse>.\n"); }
     stderrPrint(colorString("reset"));
 
-    my $localDir = "${globalAnnotDir}/${theBuildForThisFile}";
-    my $rawFullPath = "$localDir/$rawNameIncludingCompression";
-    if ($rawFullPath =~ m/[ ,\t\s]/) { die "Uh oh, the local full path has a comma or whitespace in it, which is not legal for the directory name!\n"; }
-
-    my $unzippedPath = $rawFullPath;
-    $unzippedPath =~ s/[.](bz2|gz|zip)$//i;
+    my $localDir    = "${globalAnnotDir}/${theBuildForThisFile}";
+    my $unzippedRaw = $rawZipped;
+    $unzippedRaw    =~ s/[.](bz2|gz|zip)$//i;
 
     if (!$allowedToUpdateFiles) {
 	stderrPrint(colorString("cyan"));
 	stderrPrint("[Skipping] re-updating of the file of <$finalName>: the --update flag was not passed into this script.\n");
 	stderrPrint(colorString("reset"));
     } else {
+	system("mkdir -p $localDir");
+	chdir($localDir);
+
 	if (defined($url) && $url) {
 	    my $curlCmd = 'curl --remote-name ' . '"' . $url . '"' ;
-	    system("mkdir -p $localDir");
-	    if ($rawNameIncludingCompression ne File::Basename::basename($url)) {
-		stderrPrint("This is unusual; the local name of the file ($rawNameIncludingCompression) does not match the filename from the URL (the end of this URL: $url)!");
+	    if ($rawZipped ne File::Basename::basename($url)) {
+		stderrPrint("This is unusual; the local name of the file ($rawZipped) does not match the filename from the URL (the end of this URL: $url)!");
 	    }
 	    
-	    if (agwFileHasContents($unzippedPath)) {
+	    if (agwFileHasContents($unzippedRaw)) {
 		stderrPrint(colorString("cyan"));
-		stderrPrint("[Skipping] re-download of <$rawFullPath> from <$url> -- the final downloaded file <$unzippedPath> already exists.\n");
+		stderrPrint("[Skipping] re-download of <$localDir/$rawZipped> from <$url> -- the final downloaded file <$localDir/$unzippedRaw> already exists.\n");
 		stderrPrint(colorString("reset"));
 	    } else {
 		## Do we need to download the file?
-		if (!agwFileHasContents($rawFullPath)) {
+		if (!agwFileHasContents($rawZipped)) {
 		    ## Better download it!
 		    stderrPrint(colorString("green"));
-		    stderrPrint("Downloading $url --> $rawFullPath...\n");
+		    stderrPrint("Since we didn't find a file at <$rawZipped>, we will start the download here...\n");
+		    stderrPrint("Downloading $url --> $localDir/$rawZipped...\n");
 		    stderrPrint(colorString("reset"));
 		    agwSystemDieOnNonzero($curlCmd);
 		} else {
-		    stderrPrint("[Skipping] re-download of <$rawFullPath> from $url, as that file already exists.\n");
+		    stderrPrint("[Skipping] re-download of <$rawZipped> from $url, as that file already exists.\n");
 		}
-		if ($rawFullPath =~ m/[.]gz$/) { agwSystemDieOnNonzero("gunzip --stdout $rawFullPath > $unzippedPath"); }
-		if ($rawFullPath =~ m/[.]bz2$/) { agwSystemDieOnNonzero("bunzip2 --stdout $rawFullPath > $unzippedPath"); }
-		if ($rawFullPath =~ m/[.]zip$/) { agwSystemDieOnNonzero("unzip $rawFullPath"); }
-		stderrPrint("[Done] Successfully downloaded a file to the uncompressed location <$unzippedPath>\n");
+		if ($rawZipped =~ m/[.]gz$/) { agwSystemDieOnNonzero("gunzip --stdout $rawZipped > $unzippedRaw"); }
+		if ($rawZipped =~ m/[.]bz2$/) { agwSystemDieOnNonzero("bunzip2 --stdout $rawZipped > $unzippedRaw"); }
+		if ($rawZipped =~ m/[.]zip$/) { agwSystemDieOnNonzero("unzip $rawZipped"); }
+		stderrPrint("[Done] Successfully downloaded a file to the uncompressed location <$localDir/$unzippedRaw>\n");
 	    }
 	}
     
@@ -136,18 +139,23 @@ sub agnomenGetAnnot($$$$$$$$) {
 	if (defined($postprocessingCmd) && $postprocessingCmd && length($postprocessingCmd) > 0) {
 	    if (agwFileHasContents($finalName)) {
 		stderrPrint(colorString("cyan"));
-		stderrPrint("[Skipping] re-generation of $finalName, as the output file already exists.\n");
+		stderrPrint("[Skipping] re-generation of $localDir/$finalName, as the output file already exists.\n");
 		stderrPrint(colorString("reset"));
 	    } else {
-		stderrPrint("Now running this post-processing command: $postprocessingCmd\n");
+		stderrPrint(colorString("green"));
+		stderrPrint("Now running this post-processing command:\n");
+		stderrPrint(colorString("reset"));
+		stderrPrint("$postprocessingCmd\n");
 		agwSystemDieOnNonzero($postprocessingCmd);
 		if (not -e $finalName) { die "Uh oh, we failed to generate the file <$finalName>! Maybe the shell command had a mis-typed final filename, or perhaps something else went wrong?\n"; }
 	    }
 	} else {
 	    # No postprocessing to do, so we just want to use the regular file as an annotation file
-	    if ($unzippedPath ne "$localDir/$finalName") { die "Uh oh, the final file path was expected to be <$unzippedPath>, but it was manually specified as <$localDir/$finalName>."; }
+	    if ($unzippedRaw ne $finalName) { die "Uh oh, the final file path was expected to be <$unzippedRaw>, but it was manually specified as <$finalName>, which is NOT identical."; }
 	}
     }
+
+    chdir($origWorkingDir);
 
     addPathToGlobalAnnotationHash($shortName, "$localDir/$finalName");
 }
@@ -190,7 +198,7 @@ sub main() { # Main program
 	       , "species|s=s" => \$genomeBuild
 	       , "update!" => \$shouldUpdate
 	       , "annotdir|a=s" => \$globalAnnotDir
-	       , "databases|database|d=s" => \$databaseStr # comma-delimited string
+	       , "databases|database|db=s" => \$databaseStr # comma-delimited string
 	) or printUsageAndQuit();
 
     stderrPrint(colorString("green"));
@@ -199,21 +207,14 @@ sub main() { # Main program
     stderrPrint("-------------------------------\n");
     stderrPrint(colorString("reset"));
 
-    if (1 == 0) {
-	quitWithUsageError("1 == 0? Something is wrong!");
-    }
-
-    if (not -e $INTERSECT_BED_EXE) { die "Error 95a: <intersectBed> was not found!\nWe REQUIRE the program <intersectBed> to be installed. It is part of BedTools. We expected it to be located in <${INTERSECT_BED_EXE}>, but there was no file there at all! Check to make sure this path exists.\n"; }
-    if (not -x $INTERSECT_BED_EXE) { die "Error 99x: <intersectBed> was not executable by this user!\nWe REQUIRE <intersectBed>, located in <${INTERSECT_BED_EXE}>, to be executable. However, the file at that location was not executable by this user! You may have to use chmod to fix this.\n"; }
 
     my $numUnprocessedArgs = scalar(@ARGV);
     #if ($numUnprocessedArgs != 2) {
 #	quitWithUsageError("Error in arguments! You must send TWO filenames to this program.\n");
 #    }
-
     
     my @inputFiles = (); # Input files to annotate
-
+    
     foreach (@ARGV) { # these were arguments that were not understood by GetOptions
 	if (-e $_) {
 	    push(@inputFiles, $_);
@@ -222,22 +223,29 @@ sub main() { # Main program
 	}
     }
 
+    unless (-d $globalAnnotDir) { quitWithUsageError(">>> ERROR >>> The annotation directory ($globalAnnotDir) does not exist! This directory must exist, as this is where we are putting all the annotation we download.\n") }
+    if (not -e $INTERSECT_BED_EXE) { die "Error 95a: <intersectBed> was not found!\nWe REQUIRE the program <intersectBed> to be installed. It is part of BedTools. We expected it to be located in <${INTERSECT_BED_EXE}>, but there was no file there at all! Check to make sure this path exists.\n"; }
+    if (not -x $INTERSECT_BED_EXE) { die "Error 99x: <intersectBed> was not executable by this user!\nWe REQUIRE <intersectBed>, located in <${INTERSECT_BED_EXE}>, to be executable. However, the file at that location was not executable by this user! You may have to use chmod to fix this.\n"; }
+    
     my %databaseHash = handleUserSpecifiedDatabases($databaseStr, "verbose_messages");
-
-    unless (-d $globalAnnotDir) { quitWithUsageError(">>> ERROR >>> The annotation directory ($globalAnnotDir) does not exist!") }
-    unless (defined($genomeBuild) && (length($genomeBuild) > 0)) { quitWithUsageError(">>> ERROR >>> it is MANDATORY to specify a genome build (example: hg19 or mm9). You do this with a command like this:   --species=hg19  or  -s hg19 \nCheck the annotation directory for a list of valid species.\n"); }
-
+    
+    stderrPrint(colorString("green"));
     stderrPrint("* Searching for annotation files in: <$globalAnnotDir>\n");
-    stderrPrint("* Using the specified genome build: <$genomeBuild>\n");
-    stderrPrint("* Searching for BED annotation files in the following file path: <$globalAnnotDir/$genomeBuild/>\n");
+    if (defined($genomeBuild)) { stderrPrint("* Using the specified genome build: <$genomeBuild>\n"); }
+    if (defined($genomeBuild)) { stderrPrint("* Searching for BED annotation files in the following file path: <$globalAnnotDir/$genomeBuild/>\n"); }
+    stderrPrint(colorString("reset"));
 
     if (scalar(@inputFiles) == 0 && !$shouldUpdate) {
 	## Need to have some files to annotate!
 	quitWithUsageError(">>> ERROR >>> We expected AT LEAST ONE valid file to annotate to be specified on the command line. We didn't get any, however.\n");
     }
 
+    if ($shouldUpdate && scalar(@inputFiles) != 0) {
+	quitWithUsageError(">>> ERROR >>> If you specify --update, you should NOT also specify any files to annotate!\n");
+    }
+
     my $DOLLAR_SIGN = '$';
-    agnomenGetAnnot("Mouse_Ensembl_GTF", "ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz"
+    agnomenGetAnnot("Mouse_Ensembl", "ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz"
 		    , "mm9", "Mus_musculus.GRCm38.68.gtf.gz"
 		    , undef
 		    , "Mus_musculus.GRCm38.68.gtf", $shouldUpdate, $genomeBuild);
@@ -250,70 +258,81 @@ sub main() { # Main program
 			. qq{ sort human_ensembl_3.tmp > human_ensembl_via_perl_api.tab ; }
 			. qq{ /bin/rm human_ensembl_[123].tmp ; }
 		    ), "human_ensembl_via_perl_api.tab", $shouldUpdate, $genomeBuild);
+
+    agnomenGetAnnot("Human_Ensembl_Mini_Test_First_10K_Rows", undef, 
+		    , "hg19", "human_ensembl_via_perl_api.tab"
+		    , ( qq{ head -n 10000 human_ensembl_via_perl_api.tab > minitest.tab }
+		    ), "minitest.tab", $shouldUpdate, $genomeBuild);
     
     #my @col1 = @{readFileColumn($filename1, 0, $delim)};
     
     #my $annot1 = "AnnotatedFeatures.gff"; #"hb.bed"; #"human_ens_manual.bed"; #"b.gtf"; #"AnnotatedFeatures.gff"; #"annot.bed";
     #stderrPrint("Warning: using a manually-selected annotation file here.\n");
 
+    if ($shouldUpdate) {
+	    stderrPrint(colorString("green"));
+	    stderrPrint("-------------------------------\n");
+	    stderrPrint("[Finished updating!] Because we are UPDATING, we ignored any additional items specified on the command line.\n");
+	    stderrPrint("-------------------------------\n");
+	    stderrPrint(colorString("reset"));
+    } else { 
+	unless (defined($genomeBuild) && (length($genomeBuild) > 0)) { quitWithUsageError(">>> ERROR >>> it is MANDATORY to specify a genome build (example: hg19 or mm9). You do this with a command like this:   --species=hg19  or  -s hg19 \nCheck the annotation directory for a list of valid species.\n"); }
 
-    if (scalar(keys(%GLOBAL_ANNOT_PATHS)) == 0) {
-	die "Uh oh, there were no annotation files, for some reason! Maybe you need to run 'agnomen-gene-annotate.pl --update' to re-download / re-generate them?\n";
-    }
-    
-    my $numAnnotationsDone = 0;
-    ## For each file, we're going to annotate that file and write an output file. For each file, we're writing one output file per annotation type!
-    ## Therefore, if you have (say) 3 input files to annotate, and 4 types of annotation, you will end up with (3*4 = 12) final output files.
-    for my $input (@inputFiles) {
-	if ($input !~ m/[.]bed$/i) {
-	    ## Expecting the $input to be a BED file--- check to see if it has ".bed" as an extension?
-	    stderrPrint("Warning: the input file $input was EXPECTED to be a .bed file, but it appears not to have the .bed filename extension. Double-check to make sure this is the right file! Continuing on anyway, assuming that it is a bed file...\n");
+	if (scalar(keys(%GLOBAL_ANNOT_PATHS)) == 0) {
+	    die "Uh oh, there were no annotation files, for some reason! Maybe you need to run 'agnomen-gene-annotate.pl --update' to re-download / re-generate them?\n";
 	}
-	## 
+	
+	my $numAnnotationsDone = 0;
+	## For each file, we're going to annotate that file and write an output file. For each file, we're writing one output file per annotation type!
+	## Therefore, if you have (say) 3 input files to annotate, and 4 types of annotation, you will end up with (3*4 = 12) final output files.
+	for my $input (@inputFiles) {
+	    if ($input !~ m/[.]bed$/i) {
+		## Expecting the $input to be a BED file--- check to see if it has ".bed" as an extension?
+		stderrPrint("Warning: the input file $input was EXPECTED to be a .bed file, but it appears not to have the .bed filename extension. Double-check to make sure this is the right file! Continuing on anyway, assuming that it is a bed file...\n");
+	    }
+	    ## 
 
-	while (my($annotDescription, $annotFile) = each(%GLOBAL_ANNOT_PATHS)) {
-
-	    
-	    ## annotFile better exist, or we're in trouble!!
+	    while (my($annotDescription, $annotFile) = each(%GLOBAL_ANNOT_PATHS)) {
+		
+		## annotFile better exist, or we're in trouble!!
 #	    if ($annotFile =~ m/.gz$/) {
 #		$annotFile = "<(zcat $annotFile)"; # bash subshell
 #		print STDERR "SUBSHELL\n";
 #	    }
-	    if (!defined($databaseStr) || exists($databaseHash{lc($annotDescription)})) {
-		# Looks like we should include this annotation file!
-		my $outputFile = "ANNOT_" . $input . "--" . $annotDescription;
-		$outputFile =~ s/[;:,\/\\]/_/g; ## Remove potentially "unsafe" characters from the output filename
-		my $cmd = qq{ $INTERSECT_BED_EXE -wao -a ${input} -b ${annotFile} > $outputFile};
-		stderrPrint(colorString("green"));
-		stderrPrint(qq{[ANNOTATING] using the data in $annotDescription\n});
-		stderrPrint(qq{[ANNOTATING]...\n    Running this command: $cmd\n});
-		stderrPrint(colorString("reset"));
-		my $intersectStatus = systemBash($cmd);
-		
-		if ($intersectStatus != 0) {
-		    stderrPrint("Uh oh, non-zero exit status!");
+		if (!defined($databaseStr) || exists($databaseHash{lc($annotDescription)})) {
+		    # Looks like we should include this annotation file!
+		    my $outputFile = "ANNOT_" . $input . "--" . $annotDescription;
+		    $outputFile =~ s/[;:,\/\\]/_/g; ## Remove potentially "unsafe" characters from the output filename
+		    my $cmd = qq{ $INTERSECT_BED_EXE -wao -a ${input} -b ${annotFile} > $outputFile};
+		    stderrPrint(colorString("green"));
+		    stderrPrint(qq{[ANNOTATING] using the data in $annotDescription\n});
+		    stderrPrint(qq{[ANNOTATING]...\n    Running this command: $cmd\n});
+		    stderrPrint(colorString("reset"));
+		    my $intersectStatus = systemBash($cmd);
+		    if ($intersectStatus != 0) {
+			stderrPrint("Uh oh, non-zero exit status!");
+		    } else {
+			$numAnnotationsDone++;
+		    }
 		} else {
-		    $numAnnotationsDone++;
+		    stderrPrint(colorString("cyan"));
+		    stderrPrint(qq{[OMITTING] the annotation data in $annotDescription\n});
+		    stderrPrint(colorString("reset"));
 		}
-
-	    } else {
-		stderrPrint(colorString("cyan"));
-		stderrPrint(qq{[OMITTING] the annotation data in $annotDescription\n});
-		stderrPrint(colorString("reset"));
 	    }
 	}
-    }
 
-    if ($numAnnotationsDone == 0) {
-	stderrPrint(colorString("red"));
-	stderrPrint(qq{[FAILURE] It appears that we did not actually generate any annotation files. Check to see if perhaps the databases you have specified are invalid, or the species is not correct. Or maybe you need to run --update to generate the local databases.\n});
-	stderrPrint(colorString("reset"));
-    } else {
-	stderrPrint(colorString("green"));
-	stderrPrint("-------------------------------\n");
-	stderrPrint("[Done!]\n");
-	stderrPrint("-------------------------------\n");
-	stderrPrint(colorString("reset"));
+	if ($numAnnotationsDone == 0) {
+	    stderrPrint(colorString("red"));
+	    stderrPrint(qq{[FAILURE] It appears that we did not actually generate any annotation files. Check to see if perhaps the databases you have specified are invalid, or the species is not correct. Or maybe you need to run --update to generate the local databases.\n});
+	    stderrPrint(colorString("reset"));
+	} else {
+	    stderrPrint(colorString("green"));
+	    stderrPrint("-------------------------------\n");
+	    stderrPrint("[Done!]\n");
+	    stderrPrint("-------------------------------\n");
+	    stderrPrint(colorString("reset"));
+	}
     }
 
 } # end main()
@@ -373,18 +392,23 @@ OPTIONS:
     or: -d DELIMITER
        Sets the input delimiter to DELIMITER.
 
-  --species = STRING  (Default: undefined)
+  --species = STRING  (Default: undefined. This is a REQUIRED parameter for annotation.)
     or: -s STRING
        Sets which genome build should be used for annotation. Example: hg19 (a human genome), mm9 (a mouse genome).
        Currently supported: hg19, mm9.
-       Default is to use output for ALL the different species.
+       Note that only ONE species may be specified here.
 
-  --databases = STRING (Default: undefined, meaning "use ALL databases for this species")
-    or -d STRING
-       You can specify to ONLY use certain databases within a subdirectory of a species. You specify these by the SHORT NAME and
-       not FILE NAME.
+  --databases = STRING,OF,DATABASES (Default: undefined, meaning "use ALL databases for this species")
+    or   --db = STRING,OF,DATABASES
+       If this is specified, then we ONLY use certain databases for a species. Multiple databases for one species
+       may be included here; the databases must be comma-delimited.
+       You cannot specify databases for another species besides the one in --species (unless species is left blank, in which case
+       *all* species are considered to be valid).
+       You specify the database(s) by the SHORT NAME and not FILE NAME.
+       SHORT NAME is defined in the perl code for agnomen-gene-annotate.pl; you cannot figure it out just by looking at a filename. 
+       You have to check the code and look for the lines "agnomenGetAnnot(...)". The first argument to that function is the SHORT NAME.
        Example: specifying --databases=Hu_Ensembl,hg19Ribosome,hgExtra  is CORRECT
-                       but --databases=human_ens.bed   <-------------   is WRONG
+                       but --databases=human_ens.bed   <-------------   is WRONG (it uses a filename, not a short name)
 
   --annotdir = STRING (Default: Z_AGNOMEN_DATA)
     or: -a STRING
@@ -396,7 +420,9 @@ OPTIONS:
 
   --update
        Tells Agnomen to check for (and potentially update) newer annotation files. Does not fully work yet!
-       Default is --noupdate.
+       By default, Agnomen will NOT update databases.
+       * If you specify --update and NO species, we will attempt to download databases for ALL species.
+       * If you specify --update and a particular species, we will only download databases for that one species.
 
 
 KNOWN BUGS:
