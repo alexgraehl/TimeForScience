@@ -14,27 +14,14 @@
 
 if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
 
-## I have no idea what the "CONN" environment variable is actually useful for
-#if   [[ $is_sshing -eq 1 ]] ; then   CONN=ssh
-#elif [[ -z $SESS_SRC ]]     ; then   CONN=lcl ## local
-#elif [[ $SESS_SRC == "(:0.0)"]] || [[$SESS_SRC == "" ]] ; then    CONN=lcl ## local
-#else    CONN=tel
-#fi
-
 # If we're in TMUX, then change the screen type to "screen-256color" and export the TERM
 [[ -n "$TMUX" ]] && [[ color_prompt==1 ]] && export TERM=screen-256color
-
 case "$TERM" in
     xterm-color|xterm-256color|screen-256color)	color_prompt=1 ;;
     *)	                        ;;
 esac
-
 if [[ "$OSTYPE" == darwin* ]] ; then isMac=1 ; fi
 if [[ "$HOSTNAME" == "Slithereens.local" ]]; then isAGWHomeMachine=1 ; fi
-
-#if [[ -n `ps x | grep 'MacOS/iTerm' | grep -v 'grep'` ]] ; then export TERM_PROGRAM=iTerm ; fi
-#else                                                            export TERM_PROGRAM=Apple_Terminal ; fi
-
 if [[ 'Alex' == "$USER" ]] ; then UCSF_USER='alexgw' ; ## Expected username is "alexgw" and not "Alex" on the UCSF servers
 else UCSF_USER="$USER" ; fi
 
