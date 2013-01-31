@@ -12,14 +12,50 @@
 
 # ============= Set up things below ONLY if this shell is interactive ===============
 
-if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]] ; then
-    source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
-elif [[ -f /work/Common/Code/TimeForScience/Config/Alex_Williams/bash-platform-specific ]] ; then
-    source /work/Common/Code/TimeForScience/Config/Alex_Williams/bash-platform-specific
+if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
+
+## I have no idea what the "CONN" environment variable is actually useful for
+#if   [[ $is_sshing -eq 1 ]] ; then   CONN=ssh
+#elif [[ -z $SESS_SRC ]]     ; then   CONN=lcl ## local
+#elif [[ $SESS_SRC == "(:0.0)"]] || [[$SESS_SRC == "" ]] ; then    CONN=lcl ## local
+#else    CONN=tel
+#fi
+
+# If we're in TMUX, then change the screen type to "screen-256color" and export the TERM
+[[ -n "$TMUX" ]] && [[ color_prompt==1 ]] && export TERM=screen-256color
+
+case "$TERM" in
+    xterm-color|xterm-256color|screen-256color)	color_prompt=1 ;;
+    *)	                        ;;
+esac
+
+if [[ "$OSTYPE" == darwin* ]] ; then isMac=1 ; fi
+if [[ "$HOSTNAME" == "Slithereens.local" ]]; then isAGWHomeMachine=1 ; fi
+
+#if [[ -n `ps x | grep 'MacOS/iTerm' | grep -v 'grep'` ]] ; then export TERM_PROGRAM=iTerm ; fi
+#else                                                            export TERM_PROGRAM=Apple_Terminal ; fi
+
+if [[ 'Alex' == "$USER" ]] ; then UCSF_USER='alexgw' ; ## Expected username is "alexgw" and not "Alex" on the UCSF servers
+else UCSF_USER="$USER" ; fi
+
+if [[ -n "$color_prompt" ]] ; then
+    color_prefix="\033" ## <-- \033 works everywhere. \e works on Linux
+    a_echo_color="${color_prefix}[1;32m" ## green  ## can also be: 1;33 ## was [3;40m before
+    a_status_color="${color_prefix}[1;33m"
+    a_warning_color="${color_prefix}[1;31m"
+    a_end_color="${color_prefix}[m"
+else
+    color_prefix='' # Sadly, we do not have color on this terminal.
+    a_echo_color=''
+    a_status_color=''
+    a_warning_color=''
+    a_end_color=''
 fi
 
 echo -e "${a_echo_color}>>> BASH: Loading .bashrc...${a_end_color}" ## <-- comes after the colors are set up in platform-specific fashion
 
+
+## Requires the platform-specific stuff to already have been set!
 if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-path-setup ]] ; then
     source ~/TimeForScience/Config/Alex_Williams/bash-path-setup
 elif [[ -f /work/Common/Code/TimeForScience/Config/Alex_Williams/bash-path-setup ]] ; then
@@ -36,34 +72,6 @@ if [[ -f ~/TimeForScience/Config/Alex_Williams/.aliases ]]; then
 elif [[ -f /work/Common/Code/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
     source /work/Common/Code/TimeForScience/Config/Alex_Williams/.aliases
 fi
-
-#iterm_bg=000000
-#iterm_title_r255=200
-#iterm_title_g255=0
-#iterm_title_b255=0
-
-# function iTermColor {
-# # Set the Mac application "iTerm2" to have a custom title bar or a custom background
-# # Argument $1 is either "top" or "bg"
-# ## If the argument $1 is "top", then:
-# ##   $2/$3/$4 are R/G/B, which can range from 0 to 255
-# ##   This will, on the mac, set the iTerm2 title bar's color
-# ## If the aargument $1 is "bg", then the input $2 is a single hex color string in 00-FF format.
-# ## Example, it could be FF00FF, for magenta.
-#     if [[ "$1" == "top" ]] ; then
-# 	[[ -n "$2" ]] && echo -e "\033]6;1;bg;red;brightness;$2\a" ; ## title bar of iTerm
-# 	[[ -n "$3" ]] && echo -e "\033]6;1;bg;green;brightness;$3\a" ; ## title bar of iTerm
-# 	[[ -n "$4" ]] && echo -e "\033]6;1;bg;blue;brightness;$4\a" ## title bar of iTerm
-#     elif [[ "$1" == "bg" ]] ; then
-# 	[[ -n "$2" ]] && echo -e "\033]Ph$2\033\\" ; ## Set the iTerm background. $2 must be like FF00FF
-#     fi
-# }
-
-# function agwReColorTerminal {
-#     iTermColor "bg" ${iterm_bg} ; iTermColor "top" ${iterm_top}
-#     echo "Re-coloring the terminal..."
-# }
-
 
 # ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
 a_machine_prompt_main_color=''
