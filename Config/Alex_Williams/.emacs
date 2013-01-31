@@ -1,5 +1,22 @@
-
 ;; -*-Lisp-*-  <-- Tells emacs what syntax highlighting to use ; Important if the line ending does not indicate the file type.
+
+;; =============================================================================
+
+;; NOTE: IF YOU NOTICE THAT EMACS TAKES 2 seconds to open a file when you start it up AND you are using TMUX
+;; THEN HERE IS THE SOLUTION: set your $TERM to screen-256color instead of xterm-256color
+;; Then it will work! See here: https://bbs.archlinux.org/viewtopic.php?id=113566
+
+;; I wonder if someone can help me figure this out. I've started recently using emacs in daemon mode, and calling emacsclient from inside tmux. The problem is that there's a short delay (around 2 seconds) when I do this, before the file is opened.
+;; Specifically, from within a tmux client, calling "emacsclient -t filename" loads the emacs frame instantly inside the terminal emulator, displaying the scratch buffer. I then have to wait a second or two before it loads the file. This is annoying.
+;; Changing any of these variables seems to fix it: No tmux means that it works instantly. Also "emacsclient -c filename" opens a new window displaying the file instantly. It's a specific combination of starting the terminal version of emacs from within tmux that's triggering the delay. Also, any subsequent C-x C-f open that file instantly. It's just the first time.
+
+;; My TERM was set to xterm-256color inside tmux.
+;; I changed that to screen-256color, and it immediately fixed the problem.
+                                      
+;; Now I set my TERM in my .bashrc to xterm-256color unless $TMUX is set,
+;; in which case, screen-256color.
+
+;; =============================================================================
 
 ;; How to set a keybinding interactively:
 ;; 1. M-x: global-set-key
