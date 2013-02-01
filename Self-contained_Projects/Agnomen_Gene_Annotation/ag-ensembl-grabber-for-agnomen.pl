@@ -407,6 +407,7 @@ sub featureToBedStringWithManualPositions($$$$$;$) {
     else { $biotype = $GLOBAL_BIOTYPE_PREFIX . "NO_BIOTYPE"; }
 
     my $geneCommonName = ($gene->can('external_name')) ? $gene->external_name() : 'NA';
+    if (!defined($geneCommonName)) { $geneCommonName = 'NA'; } ## just in case it's STILL undefined, that must mean that this thing is SUPPOSED to have a common name, but doesn't for some reason.
 #    print $gene->display_xref->display_id() . " < GS\n";
 
     return manualToBedString($name, $seq_region, $start, $end, $strand, $score, $geneCommonName, $geneEnsemblID, $tsID, $biotype);
