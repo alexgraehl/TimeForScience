@@ -62,58 +62,22 @@ GetOptions("help|?|man" => sub { die "Sorry no help is available! Note that the 
 if ($DEBUG_QUIT_AFTER_A_FEW_GENES) { print STDERR "\n\n### WARNING: QUITTING AFTER ONLY A FEW GENES! This is for DEBUGGING PURPOSES!\n\n"; }
 
 
-
-
-
-
-
-
-
 print STDERR "### [Step 1] Loading registry (this takes 15-60 seconds). " . `date` . "\n";
 ## Registry info can be found at: http://uswest.ensembl.org/info/data/mysql.html?redirect=mirror;source=www.ensembl.org
 $registry->load_registry_from_db( '-host'   => 'useastdb.ensembl.org' #'ensembldb.ensembl.org', #'ensembldb.ensembl.org',
 				  , '-port' => '5306' # 5306 on useastdb means: Current ensembl version with Previous ensembl version ONLY
                                   , '-user' => 'anonymous');
-#                                  , '-db_version' => '68' );
-
-# http://plants.ensembl.org/info/docs/api/variation/variation_tutorial.html
-# You will need to have a registry configuration file set up. By default, it takes the file defined by the ENSEMBL_REGISTRY environment variable or the file named .ensembl_init in your home directory if the former is not found. Additionally, it is possible to use a specific file (see perldoc Bio::EnsEMBL::Registry or later in this document for some examples on how to use a different file). An example of such file can be found in ensembl/modules/Bio/EnsEMBL/Utils/ensembl_init.example, and below you have a slightly modified copy of it.
-
-
-
-foreach my $dba (@{$registry{'_DBA'}}){
-    print STDERR "ZOG: " . $dba->species() . "\n"; 
-    #$species_hash{lc($dba->species())} = 1;
-}
-
-
-
-
-
-
-
-
-my @adaps = @{Bio::EnsEMBL::Registry->get_all_adaptors()};
-print STDERR ">>>>>>>>>> NUM ADAPTORS: " . scalar(@adaps) . "\n";
-my $aref = Bio::EnsEMBL::Registry->get_all_aliases('Homo sapiens');
-print STDERR ">>>>>>>>> GETTING ALL ALIASES\n";
-for my $a (@$aref) {
-    print STDERR ">>>>>>>>>>>> ALIAS IS: $a \n";
-}
-print STDERR ">>>>>>>>> DONE.\n";
-
-my $alias_exists = Bio::EnsEMBL::Registry->alias_exists($adaptorSpecies);
-print STDERR ">>>>>>>>>>>>>>>>>>>>>>>>\n\n" . $adaptorSpecies . "\n>>>>>>>>>>>>>>>>>>>>>>>\n";
-print STDERR ">>>>>>>>>>>>>>>>>>>>>>>>\n\n" . $alias_exists . "\n>>>>>>>>>>>>>>>>>>>>>>>\n";
-
-
+#                                  '-db_version' => '68' );
 
 print STDERR "### [Step 2] Getting adaptor: " . `date` . "\n";
 
 #my $transcript_adaptor = $registry->get_adaptor( $adaptorSpecies, 'Core', 'Transcript' );
-my $slice_adaptor = $registry->get_adaptor($adaptorSpecies, 'Core', 'Slice');
-#my $tr_adaptor    = $registry->get_adaptor($adaptorSpecies, 'Core', 'Transcript' );
+my $slice_adaptor = $registry->get_adaptor( $adaptorSpecies, 'Core', 'Slice' );                                                                                                            
+my $tr_adaptor    = $registry->get_adaptor( $adaptorSpecies, 'Core', 'Transcript' );                                                                                                       
 my $gene_adaptor  = $registry->get_adaptor($adaptorSpecies, 'Core', 'Gene');
+
+
+my $include_non_ref = 1;
 
 my @allSlices = @{ $slice_adaptor->fetch_all('chromosome') };
 #my $slice = $slice_adaptor->fetch_by_region( 'chromosome', '20', 10e6, 10.3e6);
