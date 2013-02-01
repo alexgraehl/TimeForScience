@@ -292,20 +292,21 @@ sub main() { # Main program
 	    }
 	    ## 
 
-	    while (my($annotDescription, $annotFile) = each(%GLOBAL_ANNOT_PATHS)) {
+	    while (my($annotShortName, $annotFile) = each(%GLOBAL_ANNOT_PATHS)) {
 		
 		## annotFile better exist, or we're in trouble!!
 #	    if ($annotFile =~ m/.gz$/) {
 #		$annotFile = "<(zcat $annotFile)"; # bash subshell
 #		print STDERR "SUBSHELL\n";
 #	    }
-		if (!defined($databaseStr) || exists($databaseHash{lc($annotDescription)})) {
+		if (!defined($databaseStr) || exists($databaseHash{lc($annotShortName)})) {
 		    # Looks like we should include this annotation file!
-		    my $outputFile = "ANNOT_" . $input . "--" . $annotDescription;
-		    $outputFile =~ s/[;:,\/\\]/_/g; ## Remove potentially "unsafe" characters from the output filename
-		    my $cmd = qq{ $INTERSECT_BED_EXE -wao -a ${input} -b ${annotFile} > $outputFile};
+		    my $tempFile = "1.agnomen.agw.in.progress." . int(rand(99999999)) . ".temp.tmp"; ## Temp file that is unlikely to already be in use!
+		    my $agnomenOutputFile = qq{agnomen.$input.$annotShortName.out.txt};
+		    $agnomenOutputFile =~ s/[;:,\/\\]/_/g; ## Remove potentially "unsafe" characters from the output filename
+		    my $cmd = qq{ $INTERSECT_BED_EXE -wao -a ${input} -b ${annotFile} > $tempFile } . qq{ && } . qq{ /bin/mv -f $tempFile $agnomenOutputFile};
 		    stderrPrint(colorString("green"));
-		    stderrPrint(qq{[ANNOTATING] using the data in $annotDescription\n});
+		    stderrPrint(qq{[ANNOTATING] using the data in $annotShortName\n});
 		    stderrPrint(qq{[ANNOTATING]...\n    Running this command: $cmd\n});
 		    stderrPrint(colorString("reset"));
 		    my $intersectStatus = systemBash($cmd);
@@ -316,7 +317,7 @@ sub main() { # Main program
 		    }
 		} else {
 		    stderrPrint(colorString("cyan"));
-		    stderrPrint(qq{[OMITTING] the annotation data in $annotDescription\n});
+		    stderrPrint(qq{[OMITTING] the annotation data in $annotShortName\n});
 		    stderrPrint(colorString("reset"));
 		}
 	    }
