@@ -23,9 +23,6 @@
 # Finally, filter the resulting file: grep -v '^[#]' HUMAN_CORE_ENSEMBL_HUGE | grep -v '^$'   | sort -k 2,2 -k 3,3g | uniq > HUMAN_FILTERED_1
 # cut -f 2- HUMAN_FILTERED_1 > a.tmp; paste.pl -do '' 'chr' a.tmp > HUMAN_FILTERED_2; cat a.tmp >> HUMAN_FILTERED_2 ; sort HUMAN_FILTERED_2 > HUMAN_FILTERED_3
 
-
-
-
 ### =============================================================
 ### =============================================================
 ## You need to include some links to all the ENSEMBL Perl libraries, PLUS the bioperl libraries. Note their location on the filesystem below:
