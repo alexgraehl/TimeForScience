@@ -15,7 +15,7 @@
 ### Here's how you can do it:  1) perl -MCPAN -we 'shell'
 ###                            2) install DBD::mysql
 
-## Takes about 18 hours to download hg19 annotation.
+## Takes about 18 hours to download a mammalian annotation.
 
 ## Make sure to output this to STDOUT or something!
 
@@ -37,10 +37,11 @@ use lib "/work/Apps/perl/ensembl_perl_api/ensembl-functgenomics/modules";
 ### =============================================================
 ### =============================================================
 
-use strict;
-use warnings;
+use strict;  use warnings;  use diagnostics;
 use Bio::EnsEMBL::Registry;
 use List::Util qw(min max);
+use Getopt::Long;
+
 #use Scalar::Util 'looks_like_number';  ## <-- Perl is the worst language sometimes. What an elegant function!!!
 $| = 1; # flush output immediately to stdout. Otherwise you have to wait for.... something! It's annoying, that's for sure.
 my $registry = 'Bio::EnsEMBL::Registry';
@@ -48,11 +49,15 @@ my $GLOBAL_BIOTYPE_PREFIX = "ts_biotype:";
 my $DEFAULT_SCORE_FOR_THINGS_WITHOUT_A_SCORE = 0;
 
 my $ALEX_ANNOTATION_DELIMITER = "|";
-my $DEBUG_QUIT_AFTER_A_FEW_GENES = 0;
+my $DEBUG_QUIT_AFTER_A_FEW_GENES = 0; # default is false
+my $adaptorSpecies = "Human"; # default is human. Probably shouldn't be, though!
 
-if (scalar(@ARGV) >= 1 && $ARGV[0] eq '--debug') {
-    $DEBUG_QUIT_AFTER_A_FEW_GENES = 1;
-}
+$Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
+GetOptions("help|?|man" => sub { die "Sorry no help is available! Note that the only option to this script right now is --species=SOMETHING."; }
+	   , "debug!" => \$DEBUG_QUIT_AFTER_A_FEW_GENES
+	   , "species|s=s" => \$adaptorSpecies
+    ) or die "no options / wrong options given to this script (see the GetOptions part of the code";
+
 
 if ($DEBUG_QUIT_AFTER_A_FEW_GENES) { print STDERR "\n\n### WARNING: QUITTING AFTER ONLY A FEW GENES! This is for DEBUGGING PURPOSES!\n\n"; }
 
@@ -66,10 +71,10 @@ $registry->load_registry_from_db( '-host'   => 'useastdb.ensembl.org' #'ensembld
 
 print STDERR "### [Step 2] Getting adaptor: " . `date` . "\n";
 
-#my $transcript_adaptor = $registry->get_adaptor( 'Human', 'Core', 'Transcript' );
-my $slice_adaptor = $registry->get_adaptor( 'Human', 'Core', 'Slice' );                                                                                                            
-my $tr_adaptor    = $registry->get_adaptor( 'Human', 'Core', 'Transcript' );                                                                                                       
-my $gene_adaptor  = $registry->get_adaptor('Human', 'Core', 'Gene');
+#my $transcript_adaptor = $registry->get_adaptor( $adaptorSpecies, 'Core', 'Transcript' );
+my $slice_adaptor = $registry->get_adaptor( $adaptorSpecies, 'Core', 'Slice' );                                                                                                            
+my $tr_adaptor    = $registry->get_adaptor( $adaptorSpecies, 'Core', 'Transcript' );                                                                                                       
+my $gene_adaptor  = $registry->get_adaptor($adaptorSpecies, 'Core', 'Gene');
 
 
 my $include_non_ref = 1;
@@ -262,17 +267,13 @@ foreach my $slice (@allSlices) {
 	    my $utr5seq = defined($transcript->five_prime_utr()) ? $transcript->five_prime_utr()->seq() : undef;
 	    my $utr3seq = defined($transcript->three_prime_utr()) ? $transcript->three_prime_utr()->seq() : undef;
 
-
-
-
-
 	    ## Q: Why are there the awkward "try / catch" blocks below?
 	    ## A:
 	    ## We were getting this error, like 90% of the way through Ensembl:
 	    # MSG: Start (2654896) must be less than or equal to end+1 (5510)
 	    # STACK Bio::EnsEMBL::Feature::new /work/Apps/perl/ensembl_perl_api/ensembl/modules/Bio/EnsEMBL/Feature.pm:141
 	    # STACK Bio::EnsEMBL::Transcript::three_prime_utr_Feature /work/Apps/perl/ensembl_perl_api/ensembl/modules/Bio/EnsEMBL/Transcript.pm:1772
-	    # STACK toplevel ./agnomen-ensembl-hg19-grabber.pl:266
+	    # STACK toplevel this_script.pl:266
 	    ## What this means is that SOMETHING is wrong with getting five_prime_utr_Feature() from a maybe-invalid feature... or something.
 	    ## Basically, I think the annotation is wrong for something, and the code really should never actually result in an error from inquiring about a feature.
 	    ## So this is a workaround! If the UTR feature is screwed up, we just totally ignore it.
@@ -290,14 +291,10 @@ foreach my $slice (@allSlices) {
 	    eval { # "try"
 		$utr3 = defined($utr3seq) ? $transcript->three_prime_utr_Feature() : undef;
 		1;
-	    } or do { # "catch exception"
+	    } or do { # "catch exception" -- keep this! it's important (read above for description)
 		$utr3seq = undef;
 		$utr3 = undef;
 	    };
-
-
-	    
-	    
 
 	    my $utr5seqlen = (defined($utr5seq)) ? length($utr5seq) : 0;
 	    my $utr3seqlen = (defined($utr3seq)) ? length($utr3seq) : 0;

@@ -18,7 +18,7 @@ my $INTERSECT_BED_EXE = "/work/Apps/Bio/bedtools/bin/intersectBed";
 my $globalAnnotDir = "./Z_AGNOMEN_DATA"; # default!
 
 my $DATABASE_INPUT_STRING_DELIM = ','; # comma-delimiting in the input string, example: --databases=human_ensembl,hg19browser,somethingelse
-my $AGNOMEN_ENSEMBL_GRABBER_SCRIPT = "/work/Common/Code/ProjectCode/0_Analyze_0277_Agnomen_Annotate/agnomen-ensembl-hg19-grabber.pl";
+my $AGNOMEN_ENSEMBL_GRABBER_SCRIPT = "/home/alexgw/TimeForScience/Self-contained_Projects/Agnomen_Gene_Annotation/ag-ensembl-grabber-for-agnomen.pl";
 
 my %GLOBAL_ANNOT_PATHS = (); ## New hash that will keep track of all the annotation files. Keys are the descriptions of the files, values are the actual paths of the annotation files.
 
