@@ -21,7 +21,7 @@ case "$TERM" in
     *)	                        ;;
 esac
 if [[ "$OSTYPE" == darwin* ]] ; then isMac=1 ; fi
-if [[ "$HOSTNAME" == "Slithereens.local" ]]; then isAGWHomeMachine=1 ; fi
+if [[ "$HOSTNAME" == "Slithereens.local" ]]; then isAgwHomeMachine=1 ; fi
 if [[ 'Alex' == "$USER" ]] ; then UCSF_USER='alexgw' ; ## Expected username is "alexgw" and not "Alex" on the UCSF servers
 else UCSF_USER="$USER" ; fi
 
@@ -47,6 +47,8 @@ if [[ -f ~/TimeForScience/Config/Alex_Williams/bash-path-setup ]] ; then
     source ~/TimeForScience/Config/Alex_Williams/bash-path-setup
 elif [[ -f /work/Common/Code/TimeForScience/Config/Alex_Williams/bash-path-setup ]] ; then
     source /work/Common/Code/TimeForScience/Config/Alex_Williams/bash-path-setup
+elif [[ -f /home/alexgw/TimeForScience/Config/Alex_Williams/bash-path-setup ]] ; then
+    source /home/alexgw/TimeForScience/Config/Alex_Williams/bash-path-setup
 fi
 
 # Alias definitions.
@@ -58,6 +60,8 @@ if [[ -f ~/TimeForScience/Config/Alex_Williams/.aliases ]]; then
     source ~/TimeForScience/Config/Alex_Williams/.aliases
 elif [[ -f /work/Common/Code/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
     source /work/Common/Code/TimeForScience/Config/Alex_Williams/.aliases
+elif [[ -f /home/alexgw/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
+    source /home/alexgw/TimeForScience/Config/Alex_Williams/.aliases
 fi
 
 # ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #

@@ -1,14 +1,12 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 [[ -n "$BASH_PLATFORM_SPECIFIC_FILE_IS_ALREADY_INCLUDED" ]] && return ## Return early if this file was ALREADY included
 
-if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
+###########################################
+## The "bash-platform-specific" file is now OLD and should not be used in new configs
+## New configs should always just use ~/.bashrc, which contains the important parts from here.
+###########################################
 
-## I have no idea what the "CONN" environment variable is actually useful for
-#if   [[ $is_sshing -eq 1 ]] ; then   CONN=ssh
-#elif [[ -z $SESS_SRC ]]     ; then   CONN=lcl ## local
-#elif [[ $SESS_SRC == "(:0.0)"]] || [[$SESS_SRC == "" ]] ; then    CONN=lcl ## local
-#else    CONN=tel
-#fi
+if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
 
 case "$TERM" in
     xterm-color|xterm-256color)	color_prompt=1 ;;
