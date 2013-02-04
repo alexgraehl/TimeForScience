@@ -153,8 +153,7 @@ alias cheat="echo \
 \">>> NIX / INSTALL: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
 \">>> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub \" ${NL}\
 \"                        to server ~/.ssh/authorized_keys \" ${NL}\
-\">>> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): \" ${NL}\
-\"          sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ${NL}\
+\">>> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ${NL}\
 \" \" ${NL}\
 \">>> ZIP: Zip a folder: zip -r ARCHIVENAME FOLDER \" ${NL}\
 \">>> BASH: Foreach / rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
