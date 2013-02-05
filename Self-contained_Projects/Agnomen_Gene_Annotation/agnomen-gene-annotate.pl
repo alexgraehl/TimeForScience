@@ -191,12 +191,14 @@ sub main() { # Main program
     my $genomeBuild = undef;
     my $shouldUpdate = 0;
     my $databaseStr = undef; # comma-delimited string
+    my $longOutputNames = 0;
     $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 
     GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	       , "delim|d=s" => \$delim
 	       , "species|s=s" => \$genomeBuild
 	       , "update!" => \$shouldUpdate
+	       , "longnames|longname!" => \$longOutputNames
 	       , "annotdir|a=s" => \$globalAnnotDir
 	       , "databases|database|db=s" => \$databaseStr # comma-delimited string
 	) or printUsageAndQuit();
@@ -302,7 +304,9 @@ sub main() { # Main program
 		if (!defined($databaseStr) || exists($databaseHash{lc($annotShortName)})) {
 		    # Looks like we should include this annotation file!
 		    my $tempFile = "1.agnomen.agw.in.progress." . int(rand(99999999)) . ".temp.tmp"; ## Temp file that is unlikely to already be in use!
-		    my $agnomenOutputFile = qq{agnomen.$input.$annotShortName.out.txt};
+		    
+		    my $theOutputNameBase = ($longOutputNames) ? $input : basename($input); # see if we should use the FULL output name, with directory paths, or just the filename without the path. This is an option (--longnames)
+		    my $agnomenOutputFile = qq{agnomen.$theOutputNameBase.$annotShortName.out.txt};
 		    $agnomenOutputFile =~ s/[;:,\/\\]/_/g; ## Remove potentially "unsafe" characters from the output filename
 		    my $cmd = qq{ $INTERSECT_BED_EXE -wao -a ${input} -b ${annotFile} > $tempFile } . qq{ && } . qq{ /bin/mv -f $tempFile $agnomenOutputFile};
 		    stderrPrint(colorString("green"));
@@ -410,6 +414,12 @@ OPTIONS:
        You have to check the code and look for the lines "agnomenGetAnnot(...)". The first argument to that function is the SHORT NAME.
        Example: specifying --databases=Hu_Ensembl,hg19Ribosome,hgExtra  is CORRECT
                        but --databases=human_ens.bed   <-------------   is WRONG (it uses a filename, not a short name)
+
+  --longnames or --longname (Default: DISABLED)
+       By default, the output names only include the filename: example: "agnomen.human.something.bed"
+       If you want to include the entire path to the file, you can specify --longnames. Then you would end up with
+       something like "agnomen._path_to_somewhere_on_filesystem.human.something.bed" . Much uglier, but may be useful if you have a
+       lot of files with identical names in different directories.
 
   --annotdir = STRING (Default: Z_AGNOMEN_DATA)
     or: -a STRING
