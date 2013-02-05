@@ -364,6 +364,8 @@ foreach my $slice (@allSlices) {
 	if ($DEBUG_QUIT_AFTER_A_FEW_GENES && $numGenesTOTAL >= 7) { print "### DEBUGGING: QUITTING AFTER A FEW GENES.\n"; exit(0); }
     }
 }
+print STDOUT "### [DONE -- exited script with no errors: " . `date` . "]" . "\n"; # <-- print to the FILE
+print STDERR "### [DONE -- exited script with no errors: " . `date` . "]" . "\n"; # <-- print to the CONSOLE
 
 # The protein sequence is obtained from the translate() method. If the transcript is non-coding, undef is returned.
 #my $protein = $transcript->translate();
