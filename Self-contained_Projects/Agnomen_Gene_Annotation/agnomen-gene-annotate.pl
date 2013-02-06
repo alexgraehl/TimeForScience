@@ -230,7 +230,8 @@ sub main() { # Main program
     if (not -x $INTERSECT_BED_EXE) { die "Error 99x: <intersectBed> was not executable by this user!\nWe REQUIRE <intersectBed>, located in <${INTERSECT_BED_EXE}>, to be executable. However, the file at that location was not executable by this user! You may have to use chmod to fix this.\n"; }
     
     my %databaseHash = handleUserSpecifiedDatabases($databaseStr, "verbose_messages");
-    
+    my $shouldUseAllDatabases = (!defined($databaseStr));
+
     stderrPrint(colorString("green"));
     stderrPrint("* Searching for annotation files in: <$globalAnnotDir>\n");
     if (defined($genomeBuild)) { stderrPrint("* Using the specified genome build: <$genomeBuild>\n"); }
@@ -253,12 +254,12 @@ sub main() { # Main program
 		    , "Mus_musculus.GRCm38.68.gtf", $shouldUpdate, $genomeBuild);
 
     agnomenGetAnnot("Zebrafish_Ensembl", "ftp://ftp.ensembl.org/pub/release-70/gtf/danio_rerio/Danio_rerio.Zv9.70.gtf.gz"
-		    , "zv9", "Danio_rerio.Zv9.70.gtf.gz"
+		    , "danRer7", "Danio_rerio.Zv9.70.gtf.gz" ## danRer7 is also Zv9.
 		    , undef
 		    , "Danio_rerio.Zv9.70.gtf", $shouldUpdate, $genomeBuild);
 
     agnomenGetAnnot("Chicken_Ensembl", "ftp://ftp.ensembl.org/pub/release-70/gtf/gallus_gallus/Gallus_gallus.WASHUC2.70.gtf.gz"
-		    , "mm9", "Gallus_gallus.WASHUC2.70.gtf.gz"
+		    , "galGal3", "Gallus_gallus.WASHUC2.70.gtf.gz"
 		    , undef
 		    , "Gallus_gallus.WASHUC2.70.gtf", $shouldUpdate, $genomeBuild);
 
@@ -305,6 +306,8 @@ sub main() { # Main program
 	    }
 	    ## 
 
+
+
 	    while (my($annotShortName, $annotFile) = each(%GLOBAL_ANNOT_PATHS)) {
 		
 		## annotFile better exist, or we're in trouble!!
@@ -312,7 +315,7 @@ sub main() { # Main program
 #		$annotFile = "<(zcat $annotFile)"; # bash subshell
 #		print STDERR "SUBSHELL\n";
 #	    }
-		if (!defined($databaseStr) || exists($databaseHash{lc($annotShortName)})) {
+		if ($shouldUseAllDatabases || exists($databaseHash{lc($annotShortName)})) {
 		    # Looks like we should include this annotation file!
 		    my $tempFile = "1.agnomen.agw.in.progress." . int(rand(99999999)) . ".temp.tmp"; ## Temp file that is unlikely to already be in use!
 		    
@@ -332,7 +335,7 @@ sub main() { # Main program
 		    }
 		} else {
 		    stderrPrint(colorString("cyan"));
-		    stderrPrint(qq{[OMITTING] the annotation data in $annotShortName\n});
+		    stderrPrint(qq{[OMITTING] the annotation data in <$annotShortName>, as that database was not specified in the database string ($databaseStr).\n});
 		    stderrPrint(colorString("reset"));
 		}
 	    }
