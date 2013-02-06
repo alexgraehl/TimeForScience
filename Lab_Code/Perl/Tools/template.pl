@@ -37,17 +37,13 @@ sub main();
 #colorResetString();
 
 sub colorString($) {
-    # Requires: use Term::AnsiColor at the top of your file. Note: you have to
-    # PRINT the result of this function! Only sets the output color if the output
-    # is a TERMINAL. If the output is NOT a terminal, then colorizing output
-    # results in lots of garbage characters (the color control characters)
-    # written to the screen.
-    my ($theColor) = @_;
-    if (-t STDOUT && USE_COLORS_CONSTANT) { # <-- checks to see if STDOUT goes directly to the terminal (instead of, say, outputting to a file with a redirect)
-	return color($theColor);
-    } else {
-	return "";
-    }
+    # Requires "use Term::AnsiColor". Note: you have to PRINT the result of this function!
+    # It also only sets the output color if the output is a TERMINAL.
+    # If the output is NOT a terminal, then colorizing output
+    # results in lots of garbage characters (color control characters) written to the screen,
+    # so we don't do it.
+    # Example usage: print colorString("red"); print "something red"; print colorString("reset");
+    return ((-t STDOUT && USE_COLORS_CONSTANT) ? (Term::ANSIColor::color($_[0])) : ""); # <-- checks to see if STDOUT goes directly to the terminal (instead of, say, outputting to a file with a redirect)
 }
 
 sub quitWithUsageError($) { print($_[0] . "\n"); printUsage(); print($_[0] . "\n"); }
