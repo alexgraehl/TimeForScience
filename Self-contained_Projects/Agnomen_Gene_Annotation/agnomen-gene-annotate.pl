@@ -243,7 +243,7 @@ sub main() { # Main program
     }
 
     if ($shouldUpdate && scalar(@inputFiles) != 0) {
-	quitWithUsageError(">>> ERROR >>> If you specify --update, you should NOT also specify any files to annotate!\n");
+	quitWithUsageError(">>> ERROR >>> If you specify --update, you should NOT also specify any files to annotate! Try running again with JUST the --update flag and no filenames, or (if you already updated the files), remove the --update flag.\n");
     }
 
     my $DOLLAR_SIGN = '$';
@@ -251,6 +251,17 @@ sub main() { # Main program
 		    , "mm9", "Mus_musculus.GRCm38.68.gtf.gz"
 		    , undef
 		    , "Mus_musculus.GRCm38.68.gtf", $shouldUpdate, $genomeBuild);
+
+    agnomenGetAnnot("Zebrafish_Ensembl", "ftp://ftp.ensembl.org/pub/release-70/gtf/danio_rerio/Danio_rerio.Zv9.70.gtf.gz"
+		    , "zv9", "Danio_rerio.Zv9.70.gtf.gz"
+		    , undef
+		    , "Danio_rerio.Zv9.70.gtf", $shouldUpdate, $genomeBuild);
+
+    agnomenGetAnnot("Chicken_Ensembl", "ftp://ftp.ensembl.org/pub/release-70/gtf/gallus_gallus/Gallus_gallus.WASHUC2.70.gtf.gz"
+		    , "mm9", "Gallus_gallus.WASHUC2.70.gtf.gz"
+		    , undef
+		    , "Gallus_gallus.WASHUC2.70.gtf", $shouldUpdate, $genomeBuild);
+
     agnomenGetAnnot("Human_Ensembl", undef, 
 		    , "hg19", "human_ensembl_via_perl_api.tab"
 		    , ( qq{ if [ ! -f human_ensembl_1_raw.tab.gz ]; then echo "\n>>>[NOTE] -- The ENSEMBL GRABBER takes about 18 hours to download data via Perl API! If you are reading this message, be prepared to wait QUITE A WHILE for the data to get downloaded!\n"; $AGNOMEN_ENSEMBL_GRABBER_SCRIPT | gzip > human_ensembl_1_raw.tab.gz ; fi; }
