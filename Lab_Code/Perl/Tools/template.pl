@@ -14,7 +14,6 @@ use constant USE_COLORS_CONSTANT => 1; ## 1 = true, 0 = false
 use POSIX      qw(ceil floor);
 use List::Util qw(max min);
 
-
 if (USE_COLORS_CONSTANT) {
     use Term::ANSIColor;
 }
@@ -25,8 +24,6 @@ use Getopt::Long;
 #no warnings 'numeric';
 #use Scalar::Util;
 #print Scalar::Util::looks_like_number($string), "\n";
-
-
 
 use strict;  use warnings;  use diagnostics;
 
@@ -44,6 +41,7 @@ sub colorString($) {
     # so we don't do it.
     # Example usage: print colorString("red"); print "something red"; print colorString("reset");
     return ((-t STDOUT && USE_COLORS_CONSTANT) ? (Term::ANSIColor::color($_[0])) : ""); # <-- checks to see if STDOUT goes directly to the terminal (instead of, say, outputting to a file with a redirect)
+    ## probably should actually use "colored( ... , "red")" as an example
 }
 
 sub quitWithUsageError($) { print($_[0] . "\n"); printUsage(); print($_[0] . "\n"); }
