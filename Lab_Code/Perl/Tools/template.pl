@@ -14,6 +14,42 @@ use constant USE_COLORS_CONSTANT => 1; ## 1 = true, 0 = false
 use POSIX      qw(ceil floor);
 use List::Util qw(max min);
 
+sub tryToLoadModule($) {
+    my $x = eval("require $_[0]");
+    if ((defined($@) && $@)) {
+	warn "Module loading of $_[0] FAILED. Skipping this module.";
+	return 0;
+    } else {
+	$_[0]->import();
+	return 1;
+    }
+}
+
+#tryToLoadModule("Term::ANSIColor");
+
+sub warnPrint($) { chomp($_[0]); warn(safeColor("[WARNING]: " . $_[0] . "", "yellow on_black")); } # regarding "warn": if it ends with a newline it WON'T print the line number
+
+sub safeColor($;$) { # one required and one optional argument
+    ## Prints colored text, but only if USER_COLORS_CONSTANT is set.
+    ## Allows you to totally disable colored printing by just changing USE_COLORS_CONSTANT to 0 at the top of this file
+    my ($str, $color) = @_;
+    return ((USE_COLORS_CONSTANT) ? colored($str, $color) : $str);
+}
+
+sub dryNotify(;$) { # one optional argument
+    my ($msg) = @_;
+    $msg = (defined($msg)) ? $msg : "This was only a dry run, so we skipped executing a command.";
+    print STDERR safeColor("[DRY RUN]: $msg\n", "black on_yellow");
+}
+
+sub notify($) { # one required argument
+    my ($msg) = @_;
+    warn safeColor("[DRY RUN]: $msg\n", "cyan on_blue");
+
+}
+
+
+
 if (USE_COLORS_CONSTANT) {
     use Term::ANSIColor;
 }
