@@ -8,6 +8,10 @@ if (USE_COLORS_CONSTANT) { use Term::ANSIColor; }
 
 use File::Basename;
 use Getopt::Long;
+
+use Carp;
+$SIG{ __DIE__ } = sub { Carp::confess( @_ ) }; # always print the stack trace when "die" activates
+
 #no warnings 'numeric';
 
 use strict;  use warnings;  use diagnostics;
@@ -53,6 +57,12 @@ sub colorString($) {
     }
 }
 
+sub info($) {
+    my ($msg) = @_;
+    chomp($msg);
+    print Term::AnsiColor::colored("[INFO]: $msg\n", "blue on_yellow");
+}
+
 sub agwFileHasContents($) { my ($fname) = @_; return((-e $fname) && (-s $fname > 0)); }
 sub quitWithUsageError($) { print($_[0] . "\n"); printUsage(); print($_[0] . "\n"); exit(1); }
 sub printUsageAndQuit() { printUsage(); exit(1); }
@@ -74,12 +84,14 @@ sub agnomenGetAnnot($$$$$$$$) {
     ## 0. The "short name" that gets used as the hash ID and also in the filename of the output
     ## 1. The URL to get
     ## 2. the genome build (e.g. hg19, hg18, mm9) for this specific file. Set to "undef" to include this annotation file for ALL genomes.
-    ## 3. the name to save the RAW file into
+    ## 3. $rawZipped -- the name to save the RAW file into. If it is UNDEFINED, then this will just be the last part of the URL.
     ## 4. postprocessingCmd: something to do with the file after downloading it. Set it to "undef" if it isn't defined
     ## 5. finalName: the final filename after processing
     ## 6: allowedToUpdateFiles: whether we are allowed to actually modify the files on disk (to update them) or not
     ## 7: genomeBuildToUse: what genome build the user has specified for their input files. We will only add files that ALSO match this genome build.
     my ($shortName, $url, $theBuildForThisFile, $rawZipped, $postprocessingCmd, $finalName, $allowedToUpdateFiles, $genomeBuildToUse) = @_;
+
+    (defined($shortName) && length($shortName) > 0) or die "Short name must be specified!";
 
     my $origWorkingDir = cwd();
 
@@ -95,22 +107,29 @@ sub agnomenGetAnnot($$$$$$$$) {
     stderrPrint(colorString("reset"));
 
     my $localDir    = "${globalAnnotDir}/${theBuildForThisFile}";
-    my $unzippedRaw = $rawZipped;
-    $unzippedRaw    =~ s/[.](bz2|gz|zip)$//i;
 
     if (!$allowedToUpdateFiles) {
 	stderrPrint(colorString("cyan"));
 	stderrPrint("[Skipping] re-updating of the file of <$finalName>: the --update flag was not passed into this script.\n");
 	stderrPrint(colorString("reset"));
     } else {
+	if (!defined($rawZipped)) {
+	    $rawZipped = File::Basename::basename($url); 
+	    info("[INFO] Assuming that the unspecified download filename will be the last part of the url (setting it to <$rawZipped>)");
+	}
+	my $unzippedRaw = $rawZipped;
+	$unzippedRaw    =~ s/[.](bz2|gz|zip)$//i;
+	if ($rawZipped ne File::Basename::basename($url)) {
+	    stderrPrint("This is unusual; the local name of the file ($rawZipped) does not match the filename from the URL (the end of this URL: $url)!");
+	}
+
 	system("mkdir -p $localDir");
 	chdir($localDir);
 
 	if (defined($url) && $url) {
+	    if ($url =~ /^(wget|curl)/) { die "Your download url starts with 'wget' or 'curl'. It should start with ftp/http/something like that, instead. Don't put the command name (wget/curl) in the url!"; }
+
 	    my $curlCmd = 'curl --remote-name ' . '"' . $url . '"' ;
-	    if ($rawZipped ne File::Basename::basename($url)) {
-		stderrPrint("This is unusual; the local name of the file ($rawZipped) does not match the filename from the URL (the end of this URL: $url)!");
-	    }
 	    
 	    if (agwFileHasContents($unzippedRaw)) {
 		stderrPrint(colorString("cyan"));
@@ -128,6 +147,8 @@ sub agnomenGetAnnot($$$$$$$$) {
 		} else {
 		    stderrPrint("[Skipping] re-download of <$rawZipped> from $url, as that file already exists.\n");
 		}
+
+		# Automatically unzip the file...
 		if ($rawZipped =~ m/[.]gz$/) { agwSystemDieOnNonzero("gunzip --stdout $rawZipped > $unzippedRaw"); }
 		if ($rawZipped =~ m/[.]bz2$/) { agwSystemDieOnNonzero("bunzip2 --stdout $rawZipped > $unzippedRaw"); }
 		if ($rawZipped =~ m/[.]zip$/) { agwSystemDieOnNonzero("unzip $rawZipped"); }
@@ -143,6 +164,7 @@ sub agnomenGetAnnot($$$$$$$$) {
 		stderrPrint(colorString("reset"));
 	    } else {
 		stderrPrint(colorString("green"));
+		stderrPrint("Operating in local directory <$localDir>. Here is a list of all the files in this directory:\n" . join("   * ", `ls`) . "\n");
 		stderrPrint("Now running this post-processing command:\n");
 		stderrPrint(colorString("reset"));
 		stderrPrint("$postprocessingCmd\n");
@@ -249,18 +271,15 @@ sub main() { # Main program
 
     my $DOLLAR_SIGN = '$';
     agnomenGetAnnot("Mouse_Ensembl", "ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz"
-		    , "mm9", "Mus_musculus.GRCm38.68.gtf.gz"
-		    , undef
+		    , "mm9", undef, undef
 		    , "Mus_musculus.GRCm38.68.gtf", $shouldUpdate, $genomeBuild);
 
     agnomenGetAnnot("Zebrafish_Ensembl", "ftp://ftp.ensembl.org/pub/release-70/gtf/danio_rerio/Danio_rerio.Zv9.70.gtf.gz"
-		    , "danRer7", "Danio_rerio.Zv9.70.gtf.gz" ## danRer7 is also Zv9.
-		    , undef
+		    , "danRer7", undef, undef
 		    , "Danio_rerio.Zv9.70.gtf", $shouldUpdate, $genomeBuild);
 
     agnomenGetAnnot("Chicken_Ensembl", "ftp://ftp.ensembl.org/pub/release-70/gtf/gallus_gallus/Gallus_gallus.WASHUC2.70.gtf.gz"
-		    , "galGal3", "Gallus_gallus.WASHUC2.70.gtf.gz"
-		    , undef
+		    , "galGal3", undef, undef
 		    , "Gallus_gallus.WASHUC2.70.gtf", $shouldUpdate, $genomeBuild);
 
     agnomenGetAnnot("Human_Ensembl", undef, 
@@ -273,11 +292,53 @@ sub main() { # Main program
 			. qq{ /bin/rm human_ensembl_[123].tmp ; }
 		    ), "human_ensembl_via_perl_api.tab", $shouldUpdate, $genomeBuild);
 
-    agnomenGetAnnot("Human_Ensembl_Mini_Test_First_10K_Rows", undef, 
+    agnomenGetAnnot("Human_Ensembl_Mini_Test_First_10K_Rows", undef,
 		    , "hg19", "human_ensembl_via_perl_api.tab"
 		    , ( qq{ head -n 10000 human_ensembl_via_perl_api.tab > minitest.tab }
 		    ), "minitest.tab", $shouldUpdate, $genomeBuild);
+
+
+    agnomenGetAnnot("hg19: Phast Conservation 46-way placental", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/phastCons46wayPlacental.txt.gz", "hg19", undef
+		    , qq{cat phastCons46wayPlacental.txt | cut -f 2- > browser_phastCons46wayPlacental.bed} # columns 2 and onward are the only ones that are interesting for the genome browser!
+		    , qq{browser_phastCons46wayPlacental.bed}, $shouldUpdate, $genomeBuild);
+
     
+    agnomenGetAnnot("hg19 conservation track: phyloP 46-way all-species conservation", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/phyloP46wayAll.txt.gz", "hg19", undef
+		    , qq{cat phyloP46wayAll.txt | cut -f 2- > browser_phyloP46wayAll.bed}, "browser_phyloP46wayAll.bed"
+		    , $shouldUpdate, $genomeBuild)
+    #"hg19 conservation track: PhastCons 46-way all-species conservation", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/phastCons46way.txt.gz"
+
+    #"GNF expression atlas", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/gnfAtlas2.txt.gz"
+	agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Gm12878 cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmGm12878HMM.txt.gz", "hg19"
+			, qq{cat phyloP46wayAll.txt | cut -f 2- > browser_phyloP46wayAll.bed}, "browser_phyloP46wayAll.bed"
+			, $shouldUpdate, $genomeBuild);
+	agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for H1 HESC", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmH1hescHMM.txt.gz", "hg19"
+			, qq{cat wgEncodeBroadHmmH1hescHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmH1hescHMM.bed}, "wgEncodeBroadHmmH1hescHMM.bed"
+			, $shouldUpdate, $genomeBuild);
+	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Hepg2 cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHepg2HMM.txt.gz", "hg19"
+	# 		, qq{cat wgEncodeBroadHmmHepg2HMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHepg2HMM.bed}, "browser_wgEncodeBroadHmmHepg2HMM.bed"
+	# 		, $shouldUpdate, $genomeBuild);
+	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Hmec cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHmecHMM.txt.gz", "hg19"
+	# 		, qq{cat wgEncodeBroadHmmHmecHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHmecHMM.bed}, "browser_wgEncodeBroadHmmHmecHMM.bed"
+	# 		, $shouldUpdate, $genomeBuild);
+	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Hsmm cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHsmmHMM.txt.gz", "hg19"
+	# 		, qq{cat wgEncodeBroadHmmHsmmHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHsmmHMM.bed}, "browser_wgEncodeBroadHmmHsmmHMM.bed"
+	# 		, $shouldUpdate, $genomeBuild);
+	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Huvec cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHuvecHMM.txt.gz", "hg19"
+	# 		, qq{cat wgEncodeBroadHmmHuvecHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHuvecHMM.bed}, "browser_wgEncodeBroadHmmHuvecHMM.bed"
+	# 		, $shouldUpdate, $genomeBuild);
+	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for K562 cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmK562HMM.txt.gz", "hg19"
+	# 		, qq{cat wgEncodeBroadHmmK562HMM.txt  | cut -f 2- > browser_wgEncodeBroadHmmK562HMM.bed}, "browser_wgEncodeBroadHmmK562HMM.bed"
+	# 		, $shouldUpdate, $genomeBuild);
+	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Nhek cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmNhekHMM.txt.gz", "hg19"
+	# 		, qq{cat wgEncodeBroadHmmNhekHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmNhekHMM.bed}, "browser_wgEncodeBroadHmmNhekHMM.bed"
+	# 		, $shouldUpdate, $genomeBuild);
+	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Nhlf cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmNhlfHMM.txt.gz", "hg19"
+	# 		, qq{cat wgEncodeBroadHmmNhlfHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmNhlfHMM.bed}, "browser_wgEncodeBroadHmmNhlfHMM.bed"
+	# 		, $shouldUpdate, $genomeBuild);
+	
+
+
     #my @col1 = @{readFileColumn($filename1, 0, $delim)};
     
     #my $annot1 = "AnnotatedFeatures.gff"; #"hb.bed"; #"human_ens_manual.bed"; #"b.gtf"; #"AnnotatedFeatures.gff"; #"annot.bed";
