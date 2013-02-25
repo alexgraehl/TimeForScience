@@ -4,6 +4,10 @@ if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
     source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
 
+if [ -f ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/alias-server-config.txt ]; then
+    source ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/alias-server-config.txt
+fi
+
 echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
 
 alias SET_NAUCOLOR="echo -n ''"
@@ -50,22 +54,14 @@ function delve {
     find ./ -iname "*$@*"
 }
 
-function vncnau {
-    # Forwards nausicaa's ports to the localhost
-    echo "Now forwarding port 590$* from Nausicaa ... you should launch your VNC client now and connect to localhost:$*"
-    ssh -L 590$*:localhost:590$* -p 22 alexgw@nausicaa.ucsf.edu -N
+function vncnau {    # Forwards the ports from this machine to the localhost
+    echo "Now forwarding port 590$* from $BN_HOSTNAME... you should launch your VNC client now and connect to localhost:$*"
+    ssh -L 590$*:localhost:590$* -p 22 alexgw@${BN_IP} -N
 }
 
-function vnccat {
-    # Forwards nausicaa's ports to the localhost
-    echo "Now forwarding port 590$* from Catbus ... you should launch your VNC client now and connect to localhost:$*"
-    ssh -L 590$*:localhost:590$* -p 22 alexgw@catbus.gladstone.internal -N
-}
-
-function vnccat {
-    # Forwards nausicaa's ports to the localhost
-    echo "Now forwarding port 590$* ... you should launch your VNC client now and connect to localhost:$*"
-    ssh -L 590$*:localhost:590$* -p 22 alexgw@catbus.gladstone.internal -N
+function vnccat {    # Forwards the ports from this machine to the localhost
+    echo "Now forwarding port 590$* from $BC_HOSTNAME ... you should launch your VNC client now and connect to localhost:$*"
+    ssh -L 590$*:localhost:590$* -p 22 alexgw@${BC_IP} -N
 }
 
 function vncstart {
@@ -343,33 +339,16 @@ alias science="echo 'Time for science:' ; scienceup ${TIME_FOR_SCIENCE_DIR} ; sc
 
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
 
-alias agwReColorTerminal=''
-alias nau='SET_NAUCOLOR ; ssh ${AGW_SSH_OPTIONS}   $UCSF_USER@nausicaa.ucsf.edu ; agwReColorTerminal'
-alias naux='SET_NAUCOLOR ; ssh ${AGW_SSH_OPTIONS} -Y  $UCSF_USER@nausicaa.ucsf.edu ; agwReColorTerminal'
-alias catbus='SET_CATBUSCOLOR ; ssh ${AGW_SSH_OPTIONS} $UCSF_USER@catbus.gladstone.internal ; agwReColorTerminal'
-alias lig='SET_LIGHTHOUSECOLOR ; ssh ${AGW_SSH_OPTIONS}  $UCSF_USER@lighthouse.ucsf.edu ; agwReColorTerminal' ## Database machine
-alias ligx='SET_LIGHTHOUSECOLOR ; ssh ${AGW_SSH_OPTIONS} -Y  $UCSF_USER@lighthouse.ucsf.edu ; agwReColorTerminal' ## Database machine
-alias bue='SET_BUENOCOLOR ; ssh ${AGW_SSH_OPTIONS} $UCSF_USER@bueno.gladstone.internal ; agwReColorTerminal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
-alias buex='SET_BUENOCOLOR ; ssh ${AGW_SSH_OPTIONS} -Y $UCSF_USER@bueno.gladstone.internal ; agwReColorTerminal' ## Compute machine, accessible *through* lighthouse for some reason. Not otherwise accessible from off campus.
-alias chef='ssh ${AGW_SSH_OPTIONS} $UCSF_USER@chef.compbio.ucsf.edu ; agwReColorTerminal' ## QB3 cluster head node
-
-alias newv='ssh ${AGW_SSH_OPTIONS} $UCSF_USER@10.1.101.251 ; agwReColorTerminal' ## new virtual machine downstairs
-
-alias shattuck='ssh ${AGW_SSH_OPTIONS} $UCSF_USER@shattuck.ucsf.edu ; agwReColorTerminal' ## pollard lab machine at UCSF, for talking to the cluster
-
-
-case "$HOSTNAME" in
-    nausicaa)
-	alias nau="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
-	alias naux="echo -e -n '$a_warning_color' ; echo 'This machine *is* nausicaa already!' ; echo -e -n '$a_end_color'"
-	;;
-    catbus)
-	alias catbus="echo -e -n '$a_warning_color' ; echo 'This machine *is* catbus already!' ; echo -e -n '$a_end_color'"
-	;;
-    *)
-	;;
-esac
-
+alias nau=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${BN_IP}'  # From the not-uploaded file alias-server-config
+alias naux='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${BN_IP}'
+alias bus=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${BC_IP}'
+alias lig=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PL_IP}'
+alias ligx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${PL_IP}'
+alias bue=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PB_IP}'
+alias buex='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${PB_IP}'
+alias che=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${CLUS_IP}'
+alias newv='ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${NEWV_IP}'
+alias tuck='ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PS_IP}'
 
 ## ===============================================
 ## ====== LESS ===================================
