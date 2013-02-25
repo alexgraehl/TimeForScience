@@ -4,13 +4,13 @@ if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
     source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
 
-if [ -f ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/alias-server-config ]; then
-    source ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/alias-server-config
-elif [ -f ~/.alias-server-config ]; then
-    source ~/.alias-server-config # for machines that do not have the /work repository, you can just manually transfer the file over like so!
-    echo "Note: loading the .alias-server-config MANUALLY from the home directory."
+if [ -f ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/aliases-server-config ]; then
+    source ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/aliases-server-config
+elif [ -f ~/.aliases-server-config ]; then
+    source ~/.aliases-server-config # for machines that do not have the /work repository, you can just manually transfer the file over like so!
+    echo "Note: loading the .aliases-server-config MANUALLY from the home directory."
 else
-    echo "Note: no .alias-server-config was found. SSH commands and tmux coloring may fail."
+    echo "Note: no .aliases-server-config was found. SSH commands and tmux coloring may fail."
 fi
 
 echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
