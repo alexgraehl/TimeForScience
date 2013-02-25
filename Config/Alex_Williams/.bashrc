@@ -22,8 +22,7 @@ case "$TERM" in
 esac
 if [[ "$OSTYPE" == darwin* ]] ; then isMac=1 ; fi
 if [[ "$HOSTNAME" == "Slithereens.local" ]]; then isAgwHomeMachine=1 ; fi
-if [[ 'Alex' == "$USER" ]] ; then UCSF_USER='alexgw' ; ## Expected username is "alexgw" and not "Alex" on the UCSF servers
-else UCSF_USER="$USER" ; fi
+
 
 if [[ -n "$color_prompt" ]] ; then
     color_prefix="\033" ## <-- \033 works everywhere. \e works on Linux
@@ -77,22 +76,22 @@ if [[ -n "$color_prompt" ]] ; then
 	## Ok, we are SSHed into a remote machine...
 	case "$HOSTNAME"
 	    in
-	    nausicaa)
+	    $BN_IP)
 		a_machine_prompt_main_color="${color_prefix}[1;35m" ; ## 1;35m == Bold magenta
 		iterm_bg=002200 ;# iTerm console window background
 		iterm_top="40 120 40" ; # iTerm window top bar color
 		;;
-	    catbus)
+	    $BC_IP)
 		a_machine_prompt_main_color="${color_prefix}[1;34m"
 		iterm_bg=000022 ;
 		iterm_top="80 80 250" ;
 		;;
-	    bueno)
+	    $PB_IP)
 		a_machine_prompt_main_color="${color_prefix}[44m${color_prefix}[3;36m" # cyan text / blue background
 		iterm_bg=220000 ;
 		iterm_top="140 40 40" ;
 		;;
-	    lighthouse)
+	    $PL_IP)
 		a_machine_prompt_main_color="${color_prefix}[43m${color_prefix}[3;30m" # yellow background
 		iterm_bg=302000 ;
 		iterm_top="120 100 40" ;
@@ -109,13 +108,11 @@ if [[ -n "$color_prompt" ]] ; then
 fi
 # ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
 
-#agwReColorTerminal
-
-if [[ -z "$STY" ]] && [[ "$HOSTNAME" == 'nausicaa' ]] ; then
-    echo -e "${a_warning_color}*\n*\n* Remember to resume the screen session on this machine!!!\n*\n*${a_end_color}"
-else
-    echo -n ''
-fi
+#if [[ -z "$STY" ]] && [[ "$HOSTNAME" == 'something' ]] ; then
+#    echo -e "${a_warning_color}*\n*\n* Remember to resume the screen session on this machine!!!\n*\n*${a_end_color}"
+#else
+#    echo -n ''
+#fi
 
 ## ===============================================
 ## ====== TERMINAL HISTORY =======================
