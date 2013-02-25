@@ -6,15 +6,14 @@ fi
 
 if [ -f ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/alias-server-config ]; then
     source ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/alias-server-config
+elif [ -f ~/.alias-server-config ]; then
+    source ~/.alias-server-config # for machines that do not have the /work repository, you can just manually transfer the file over like so!
+    echo "Note: loading the .alias-server-config MANUALLY from the home directory."
+else
+    echo "Note: no .alias-server-config was found. SSH commands and tmux coloring may fail."
 fi
 
 echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
-
-alias SET_NAUCOLOR="echo -n ''"
-alias SET_CATBUSCOLOR="echo -n ''"
-alias SET_LOCALCOLOR="echo -n ''"
-alias SET_LIGHTHOUSECOLOR="echo -n ''"
-alias SET_BUENOCOLOR="echo -n ''"
 
 ## Searches both the R source and the current directory (and any subdirectories!)
 ## Note that it only looks for files with a ".R" ending!!!!!!!
