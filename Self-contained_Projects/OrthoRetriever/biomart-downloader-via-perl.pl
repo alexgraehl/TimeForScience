@@ -41,12 +41,10 @@ if (!-f $confFile || (-s $confFile == 0)) {
 # and to 'cached' if you want to skip configuration step on subsequent runs from the same registry
 #
 
-
-
 my $globalRegistry = undef;
 
 sub globalInitRegistryOnlyOnceEver() {
-    if (!defined($globalInitRegistryOnlyOnceEver)) {
+    if (!defined($globalRegistry)) {
 	print STDERR "Initializing the global registry...\n";
 	my $action='cached';
 	my $initializer = BioMart::Initializer->new('registryFile'=>$confFile, 'action'=>$action);
@@ -73,10 +71,17 @@ letsDownloadStuff({ filename      => 'zebrafish_ens_master'
 			, species => 'drerio'
 		  });
 
-letsDownloadStuff({ filename      => 'BIOMART_hsapiens_map_to_drerio'
-			, species => 'hsapiens'
-			, ortholog_species => 'drerio'
-		  });
+
+my @latinSpecies = ('hsapiens', 'drerio', 'ggallus', 'mmusculus');
+foreach my $source (@latinSpecies) {
+    foreach my $target (@latinSpecies) {
+	next if ($source eq $target); # no point in mapping a species to ITSELF!
+	letsDownloadStuff({ filename               => "DL_BIOMART_${source}_map_to_${target}"
+				, species          => $source
+				, ortholog_species => $target
+			  });
+    }
+}
 
 
 
@@ -87,50 +92,39 @@ sub letsDownloadStuff {
 	print STDERR "[OMITTING] the re-download of file <" . $aa->{'filename'} . ">, as that file was already present and had non-zero size. Delete it from the command line if you REALLY want to download it again.\n";
 	return; # exit early!
     }
-
-
     print STDERR "[DOWNLOADING] the file <" . $aa->{'filename'} . ">, for species \"" . $aa->{'species'} . "\"... note that this is SLOW because it's a network operation.\n";
-
     globalInitRegistryOnlyOnceEver();
-
     my $query = BioMart::Query->new('registry'=>$globalRegistry,'virtualSchemaName'=>'default');
-
     $query->setDataset( $aa->{'species'} . "_gene_ensembl" );  ## <-- change datasets!
-
-    sub addStandardAttributes($) {
-	my ($theQ) = @_;
-	$theQ->addAttribute("ensembl_gene_id");
-	$theQ->addAttribute("chromosome_name");
-	$theQ->addAttribute("start_position");
-	$theQ->addAttribute("end_position");
-	$theQ->addAttribute("strand");
-	$theQ->addAttribute("external_gene_id");
-	$theQ->addAttribute("external_gene_db");
-	$theQ->addAttribute("percentage_gc_content");
-	$theQ->addAttribute("transcript_count");
-	$theQ->addAttribute("status");
-	$theQ->addAttribute("refseq_mrna");
-	$theQ->addAttribute("refseq_ncrna");
-	$theQ->addAttribute("unigene");
-	$theQ->addAttribute("description");
-    }
-    
-    addStandardAttributes($theQ); # for the DEFAULT species
-
-    print STDERR "Getting ORTHOLOG MAPPING for the SINGLE SPECIES ONLY named $ortholog_species...\n";
+    $query->addAttribute("ensembl_gene_id");
+    $query->addAttribute("external_gene_id");
+    $query->addAttribute("external_gene_db");
 
     if (exists($aa->{'ortholog_species'}) && $aa->{'ortholog_species'}) {
 	my $orthSpecies = $aa->{'ortholog_species'};
+	print STDERR "Getting ORTHOLOG MAPPING for the SINGLE SPECIES ONLY named $orthSpecies. Note that it is intentional to only be able to get one at a time, due to the way the results are generated. Multiple results seem to generate the 'cross product' of all possible mappings.\n";
 
 	$query->addAttribute("${orthSpecies}_homolog_ensembl_gene"); # orthology-specific attributes
 	$query->addAttribute("${orthSpecies}_homolog_orthology_type"); # note that this must be done BEFORE
 	$query->addAttribute("${orthSpecies}_homolog_subtype");        # we change datasets (below)!
 	$query->addAttribute("${orthSpecies}_homolog_perc_id");
 	$query->addAttribute("${orthSpecies}_homolog_perc_id_r1");
-
 	# Now SWITCH to that other database to get the full data...
-	$query->setDataset("${orthSpecies}_gene_ensembl"); ## <-- change datasets!
-	addStandardAttributes($query); # for the ORTHOLOG species
+	#$query->setDataset("${orthSpecies}_gene_ensembl"); ## <-- change datasets!
+	#addStandardAttributes($query); # for the ORTHOLOG species
+    } else {
+	print STDERR "Adding the standard attributes that are incompatible with the orthology mapping.\n";
+	$query->addAttribute("chromosome_name");
+	$query->addAttribute("start_position");
+	$query->addAttribute("end_position");
+	$query->addAttribute("strand");
+	$query->addAttribute("percentage_gc_content");
+	$query->addAttribute("transcript_count");
+	$query->addAttribute("status");
+	$query->addAttribute("refseq_mrna");
+	$query->addAttribute("refseq_ncrna");
+	$query->addAttribute("unigene");
+	$query->addAttribute("description");
     }
 
     $query->formatter("TSV");
