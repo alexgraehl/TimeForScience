@@ -9,8 +9,6 @@
 #@shuffled = shuffle(@list);
 # Check out: perldoc -q array
 
-use constant USE_COLORS_CONSTANT => 1; ## 1 = true, 0 = false
-
 use POSIX      qw(ceil floor);
 use List::Util qw(max min);
 
@@ -18,14 +16,14 @@ sub tryToLoadModule($) {
     my $x = eval("require $_[0]");
     if ((defined($@) && $@)) {
 	warn "Module loading of $_[0] FAILED. Skipping this module.";
-	return 0;
+	return 0; # FAILURE: return 0(false)
     } else {
 	$_[0]->import();
-	return 1;
+	return 1; # SUCCESS: return 1(true)
     }
 }
 
-#tryToLoadModule("Term::ANSIColor");
+my $SHOULD_USE_COLORS = tryToLoadModule("Term::ANSIColor");
 
 sub warnPrint($) { chomp($_[0]); warn(safeColor("[WARNING]: " . $_[0] . "", "yellow on_black")); } # regarding "warn": if it ends with a newline it WON'T print the line number
 
@@ -69,6 +67,16 @@ sub main();
 #print "Arr";
 #colorResetString();
 
+sub safeColor($$) {
+    my ($msg, $colorString) = @_;
+    # Colorstring should be something like "red on_blue" or "red" or "magenta on_green"
+    if (USE_COLORS_CONSTANT) {
+	return(Term::ANSIColor::colored($msg, $colorString));
+    } else {
+	return($msg); # no color support apparently
+    }
+}
+
 sub colorString($) {
     # Requires "use Term::AnsiColor". Note: you have to PRINT the result of this function!
     # It also only sets the output color if the output is a TERMINAL.
@@ -80,7 +88,7 @@ sub colorString($) {
     ## probably should actually use "colored( ... , "red")" as an example
 }
 
-sub quitWithUsageError($) { print($_[0] . "\n"); printUsage(); print($_[0] . "\n"); }
+sub quitWithUsageError($) { print($_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
 sub printUsageAndQuit() { printUsage(); exit(1); }
 
 sub printUsage() {
