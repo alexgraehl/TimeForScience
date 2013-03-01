@@ -1,8 +1,9 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 
 use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
 
 use strict;
+use warnings;
 
 use Getopt::Long;
 
@@ -11,20 +12,16 @@ $| = 1;
 
 ################# BEGIN MAIN ###########################
 
-my $arg                                   =  '';
 my (@key1)                                = (1);
 my (@key2)                                = (1);
 my ($beg,$end)                            = (0,0);
-my ($i,$j)                                = (0,0);
 my ($file1,$file2)                        = ('','');
 my ($key)                                 = '';
-my (%values)                              = {};
-my (%exists)                              = {};
+my (%values)                              = ();
+my (%exists)                              = ();
 my $delim                                 = "\t";
 my ($delim_in1, $delim_in2)               = ("\t","\t");
 my ($delim_out)                           = ("\t");
-my $delim_syn                             = "\t";
-my (@tmp)                                 = ();
 my ($value1, $value2)                     = ('','');
 my ($printable, $printable1, $printable2) = ('','','');
 my ($suppress1, $suppress2, $suppressk) = (0,0,0);
@@ -39,22 +36,14 @@ my ($outer) = 0;
 my ($reverse) = 0;
 my ($uppercase) = 0;
 my $hit = 0;
-my $tmp;
 my @fill_lines = ();
 my $merge=0;
-my $syn_file = "$ENV{JOIN_SYNONYMS}";
-my %syn_pairs;
-my $syn_pair;
-my @syns_remaining;
-my @syn_list;
-my %syn_seen;
 my $verbose=1;
 my $header=0;
 
 
-while(@ARGV)
-{
-    $arg = shift @ARGV;
+while(@ARGV) {
+    my $arg = shift @ARGV;
     if($arg eq '--help') {
 	print STDOUT <DATA>;
 	exit(0);
@@ -76,17 +65,15 @@ while(@ARGV)
 	$arg = shift @ARGV;
 	if(-f $arg) { ## if it's a file...
 	    my $FILE = openFile($arg);
-	    if (!defined(openFile($arg))) {
-		print STDERR "join.pl: WARNING: Could not open file '$arg' to find outer text, skipping.\n";
-	    } else {
-		while(<$FILE>) {
-		    if(/\S/) { ## if there's some content that's non-spaces-only
-			chomp;
-			push(@fill_lines, $_);
-		    }
+	    (defined(openFile($arg))) or die "join.pl: Could not open file '$arg' to find outer text, skipping.";
+	    while(<$FILE>) {
+		if(/\S/) { ## if there's some content that's non-spaces-only
+		    chomp;
+		    push(@fill_lines, $_);
 		}
-		$outer = 1;
 	    }
+	    close($FILE);
+	    $outer = 1;
 	} else {
 	    $fill = $arg; ## fill with this text
 	    $fill =~ s/[\\]t/\t/g; ## any time you see "slash t" replace it with an actual tab!
@@ -121,12 +108,6 @@ while(@ARGV)
         $delim_in2 = $delim_in1;
     } elsif($arg eq '-do') {
         $delim_out = shift @ARGV;
-    } elsif($arg eq '-ds') {
-	$delim_syn = shift @ARGV;
-    } elsif($arg eq '-syn') {
-	$syn_file = shift @ARGV;
-    } elsif($arg eq '-nosyn') {
-	$syn_file = '';
     } elsif($arg eq '-s1') {
 	# Suppress printing of values from table 1 (key will be printed however).
         $suppress1 = 1;
@@ -157,76 +138,9 @@ if (scalar(@fill_lines) > 0) {
 }
 
 if($reverse) {
-	$tmp       = $suppress1;
-	$suppress1 = $suppress2;
-	$suppress2 = $tmp;
+    ($suppress1, $suppress2) = ($suppress2, $suppress1); # swap them!
 }
 
-# See if the user supplied a synonyms file.  If so, extract synonyms for
-# keys from the file and load it into a hash.
-my %syns;
-if(length($syn_file)>0) {
-    my $FILE = openFile($syn_file);
-    if (!defined($FILE)) { 
-	$verbose and print STDERR "join.pl: WARNING: Could not open the synonyms file, '$syn_file'. Skipping...\n";
-    } else {
-	$verbose and print STDERR "join.pl: Reading in synonyms from '$syn_file'...";
-	while(<$FILE>){
-	    @tmp = split($delim_syn,$_);
-	    chomp($tmp[$#tmp]);
-	    if ($uppercase) {
-		for($i=0; $i<=$#tmp; $i++) { $tmp[$i] =~ tr/a-z/A-Z/; }
-	    }
-	    if ($numeric) { 
-		for($i=0; $i<=$#tmp; $i++) { $tmp[$i] =~ int($tmp[$i]); }
-	    }
-	    for($i=0; $i<=$#tmp; $i++) {
-		if($tmp[$i] =~ /\S/) {
-		    for($j=0; $j<=$#tmp; $j++) {
-			if($tmp[$j] =~ /\S/) {
-			    $syns{$tmp[$i]} .= $tmp[$j] . $delim_syn;
-			    $syn_pairs{$tmp[$i] . $delim_syn . $tmp[$j]} = 1;
-			}
-		    }
-		}
-	    }
-	}
-	# Post-process the synonyms: If there are synonyms of synonyms, then make
-	# sure these are united etc..
-	foreach $syn_pair (keys(%syn_pairs)) {
-	    (@syns_remaining) = split($delim_syn,$syn_pair);
-	    @syn_list=();
-	    # print SYN '[', join($delim_syn, @syns_remaining), "]: ";
-	    while (@syns_remaining) {
-		my $thisSyn = shift @syns_remaining;
-		if (not($syn_seen{$thisSyn})) {
-		    $syn_seen{$thisSyn} = 1;
-		    push(@syn_list,$thisSyn);
-		    # print SYN "$syn ";
-		    @tmp = split($delim_syn, $syns{$thisSyn});
-		    # Add new synonyms to the list to be processed.
-		    for($j=0; $j<=$#tmp; $j++) {
-			push(@syns_remaining, $tmp[$j]);
-		    }
-		}
-	    }
-	    # print SYN "]\n";
-	    for($i=0; $i<=$#syn_list; $i++) {
-		$syns{$syn_list[$i]} = '';
-		for($j=0; $j<=$#syn_list; $j++) {
-		    $syns{$syn_list[$i]} .= $syn_list[$j];
-		    if($j<$#syn_list) {
-			$syns{$syn_list[$i]} .= $delim_syn;
-		    }
-		}
-		# print SYN "[$syn_list[$i]] <=> [$syns{$syn_list[$i]}]\n";
-	    }
-	}
-	
-	close($FILE);
-	$verbose and print STDERR " done.\n";
-    }
-}
 
 if ( (length($file1) < 1) or (length($file2) < 1) ) {
   print STDERR "join.pl: ERROR: Two input files must be specified on the command line!\n\n";
@@ -234,11 +148,8 @@ if ( (length($file1) < 1) or (length($file2) < 1) ) {
   exit(1);
 }
 
-for($i=0; $i<=$#key1; $i++)
-{ $key1[$i]--; }
-
-for($i=0; $i<=$#key2; $i++)
-{ $key2[$i]--; }
+for(my $i=0; $i<=$#key1; $i++) { $key1[$i]--; } # what is going on. We subtract one from all keys I guess.
+for(my $i=0; $i<=$#key2; $i++){ $key2[$i]--; } # what the heck. We subtract one from all keys I guess.
 
 @key1 = sort {$a <=> $b} @key1; # sorts @key1 alphabetically
 @key2 = sort {$a <=> $b} @key2; # sorts @key2 alphabetically
@@ -274,16 +185,22 @@ while(<$fileRef2>) {
     if((not($skip_empty_lines) or /\S/)) { # and not(/^\s*$commentChar/)) {
 	$line++;
 	if($line==1 and $header==2) { $header_data = $_; }
-	@tmp = split($delim_in2);
+	my @tmp = split($delim_in2);
 	chomp($tmp[$#tmp]);
 	
 # print STDERR "\n2: tmp: [", join('|',@tmp), "]\n";
 # print STDERR "2: key cols: [", join('|',@key2), "]\n";
 	$key='';
-	for($i=$#key2; $i>=0; $i--) {
+	for(my $i=$#key2; $i >= 0; $i--) {
 	    my $key_part = splice(@tmp,$key2[$i], 1);
 	    # $key .= length($key)>0 ? ($delim_out . $key_part) : $key_part;
-	    $key = length($key)>0 ? ($key_part . $delim_out . $key) : $key_part;
+	    
+	    if (length($key) == 0) {
+		$key = "$key_part";
+	    } else {
+		$key = "${key_part}${delim_out}${key}";
+	    }
+	    
 # print STDERR "1: key: [$key]\n";
 # print STDERR "Before splice: [", join('|',@tmp), "] [$key]\n";
 # print STDERR "After splice: [", join('|',@tmp), "] [$key]\n";
@@ -295,7 +212,7 @@ while(<$fileRef2>) {
 # print STDERR "2: tmp: [", join('|',@tmp), "]\n";
 # print STDERR "2: key: [$key]\n";
 	# $tmp = join($delim_out, @tmp);
-	$tmp = &myJoin($delim_out, \@tmp, $empty_placeholder);
+	my $tmpMini = &myJoin($delim_out, \@tmp, $empty_placeholder);
 	
 	if (defined($key) && (length($key) > 0) && defined($exists{$key})) {
 	    $numDuplicateKeysRead++;
@@ -304,23 +221,13 @@ while(<$fileRef2>) {
 		print STDERR "\njoin.pl: WARNING: Multiple lines with the key \"$key\" were found in <$file2>. We will only use the LAST row with this key\n";
 	    }
 	}
-	$values{$key} = $tmp;
+	$values{$key} = $tmpMini;
 	$exists{$key} = 1;
 
 	my $tuple_size = scalar(@tmp);
 	
 	if(not(defined($max_tuple_size)) or $tuple_size > $max_tuple_size) {
 	    $max_tuple_size = $tuple_size;
-	}
-	
-	# Record this value with all the synonym keys as well.
-	@tmp = split($delim_syn, $syns{$key});
-	# foreach $key (@tmp)
-	for($j=0; $j<=$#tmp; $j++) {
-	    if ($numeric) { $key = int($key); }
-	    if ($uppercase) { $key =~ tr/a-z/A-Z/; }
-	    $values{$key} = $tmp;
-	    $exists{$key} = 1;
 	}
 	
 	$loops++;
@@ -337,22 +244,21 @@ if($outer and not(defined($fill))) {
 }
 
 # Read in the key-printable pairs from the first file and print out the joined key:
-my $fileRef1 = openFile($file1) or die("join.pl: Could not open file <$file2>.");
+my $fileRef1 = openFile($file1) or die("join.pl: Could not open file <$file1>.");
 
 if($verbose) { print STDERR "join.pl: Joining on file <$file1>\n"; }
 $loops = 0;
 my $found;
 while(<$fileRef1>) {
     if((not($skip_empty_lines) or /\S/)) { # and not(/^\s*${commentChar}/)) {
-	@tmp = split($delim_in1);
+	my @tmp = split($delim_in1);
 	chomp($tmp[$#tmp]);
 	$key='';
-# print STDERR "1: tmp: [", join('|',@tmp), "]\n";
-	for($i = $#key1; $i >= 0; $i--) {
+	# print STDERR "1: tmp: [", join('|',@tmp), "]\n";
+	for(my $i = $#key1; $i >= 0; $i--) {
 	    my $key_part = splice(@tmp,$key1[$i], 1);
-	    # $key .= length($key)>0 ? ($delim_out . $key_part) : $key_part;
-	    $key = length($key)>0 ? ($key_part . $delim_out . $key) : $key_part;
-# print STDERR "1: key: [$key]\n";
+	    $key = (length($key)>0) ? ($key_part . $delim_out . $key) : $key_part;
+	    # print STDERR "1: key: [$key]\n";
 	}
 	# Get rid of the last delimiter we added:
 	if($numeric)   { $key = int($key); }
@@ -366,19 +272,6 @@ while(<$fileRef1>) {
 # print STDERR "1: value1: [$value1]\n";
 # print STDERR "1: value2: [$value2]\n";
 # print STDERR "1: found: [$found]\n";
-	
-	# See if this key matches any of the key's synonyms
-	if(not($found)) {
-	    @tmp = split($delim_syn, $syns{$key});
-	    while(@tmp and not($found)) {
-		$tmp = shift @tmp;
-		$found = $exists{$tmp};
-		if($found) {
-		    $value2 = $values{$tmp};
-		}
-	    }
-	}
-	
 	if((not($negate) and $found) or ($negate and not($found))) {
 	    $hit = 1;
 	} elsif($outer) {
@@ -398,9 +291,7 @@ while(<$fileRef1>) {
 
 	if ($hit) {
 	    if ($reverse) {
-		$tmp = $value1;    # Swap the two values if we're
-		$value1 = $value2; # supposed to print the second value
-		$value2 = $tmp;    # before the first one.
+		($value1, $value2) = ($value2, $value1) # Swap the two values if we're supposed to print the second value before the first one
 	    }
 	    $printable  = $suppressk ? '' : $key;
 	    $printable1 = ($suppress1 or length($value1)<1) ? '' : $value1;
@@ -432,9 +323,6 @@ if ($verbose && ($numDuplicateKeysRead > 0)) {
     print STDERR "         Only the *last* line in a file with a redundant key is actually used.\n"
 }
 
-close(FILE);
-
-exit(0);
 
 ################# END MAIN #############################
 
@@ -525,17 +413,6 @@ OPTIONS are:
         is tab).  Equivalent to using both the -di1 and -di2 options.
 
 -do DELIM: Set the output file delimiter to DELIM. (default is tab)
-
--ds DELIM: Set the delimiter for synonyms to DELIM.  This is used for reading
-        synonyms for keys (see the -syn option) (default is tab).
-
--syn FILE: Specify that synonyms for keys can be found in the file FILE.
-        Each line in FILE should contain synonyms for only one key, separated
-        by the delimiter specified with the -ds option).
-     Example:      theKey  <tab>   synonymOne  <tab>   synonymTwo
-
--nosyn: Ignore synonym file in the JOIN_SYNONYMS environment variable if it
-        exists.
 
 -s1: Suppress printing of tuples from FILE1.  The key is printed, followed by
         the tuple found in FILE2.
