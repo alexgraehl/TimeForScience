@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 
+# New version of Join.pl by Alex Williams. (This isn't related to the previous UCSC code at all... and probably produces different results! Note that both versions produce different results from UNIX join, even on properly sorted input!)
+
 use strict; use warnings; use Getopt::Long;
 $| = 1;  # Flush output to STDOUT immediately.
 
@@ -11,7 +13,7 @@ sub quitWithUsageError($) { print($_[0] . "\n"); printUsageAndQuit(); print($_[0
 sub printUsageAndQuit() { printUsageAndContinue(); exit(1); }
 sub printUsageAndContinue() {    print STDOUT <DATA>; }
 sub debugPrint($) {   ($isDebugging) and print STDERR $_[0]; }
-sub warnPrintUnlessQuiet($) {
+sub verboseWarnPrint($) {
     if ($verbose) { print STDERR $_[0] . "\n"; }
 }
 my $keyCol1 = 1; # indexed from ONE rather than 0!
@@ -24,8 +26,8 @@ my $delim2 = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED;
 my $delimBoth = undef;
 my $outputDelim = undef;
 
-my $filePrimary   = undef;
-my $fileSecondary = undef;
+my $file1   = undef;
+my $file2 = undef;
 
 my $shouldNegate = 0; # whether we should NEGATE the output
 my $shouldIgnoreCase = 0; # by default, case-sensitive
@@ -52,10 +54,10 @@ my $numUnprocessedArgs = scalar(@ARGV);
 if ($numUnprocessedArgs != 2) {
     quitWithUsageError("Error in arguments! You must send exactly TWO filenames (or one filename and '-' for STDIN) to this program.");
 }
-$filePrimary = $ARGV[0]; # first un-processed join argument
-$fileSecondary = $ARGV[1]; # second un-processed join argument
+$file1 = $ARGV[0]; # first un-processed join argument
+$file2 = $ARGV[1]; # second un-processed join argument
 
-foreach my $ff ($filePrimary, $fileSecondary) {
+foreach my $ff ($file1, $file2) {
     (($ff eq '-') or (-f $ff)) or die "File $ff did not exist!"; # Specified files must be either - (for stdin) or a real, valid, existing filename)
 }
 
@@ -97,8 +99,8 @@ sub readIntoHash($$$$$) {
     foreach my $line ( <$theFileHandle> ) {
 	chomp($line);
 	#if(/\S/) { ## if there's some content that's non-spaces-only
-	my @sp = split($theDelim, $line);
-	my $thisKey = $sp[ ($keyIndexCountingFromOne - 1) ]; # index from ZERO here!
+	my @sp1 = split($theDelim, $line);
+	my $thisKey = $sp1[ ($keyIndexCountingFromOne - 1) ]; # index from ZERO here!
 	if (exists($masterHashRef->{$thisKey})) {
 	    print STDERR "Warning: the key <$thisKey> appeared more than once in <$filename> (on line $lineNum). We are only keeping the FIRST instance of this key.\n";
 	    $numDupeKeys++;
@@ -109,85 +111,85 @@ sub readIntoHash($$$$$) {
 		$uppercaseHashMapRef->{uc($thisKey)} = $thisKey; # maps from the UPPER-CASE version of this key back to the one we ACTUALLY put in the hash
 	    }
 	    # masterHashRef is a hash of ARRAYS: each line is ALREADY SPLIT UP by its delimiter
-	    @{$masterHashRef->{$thisKey}} = @sp; # whole SPLIT UP line, even the key, goes into the hash!!!
+	    @{$masterHashRef->{$thisKey}} = @sp1; # whole SPLIT UP line, even the key, goes into the hash!!!
 	    #print "$line\n";
 	}
 	$lineNum++;
     }
 
     if ($numDupeKeys > 0) { print STDERR "Warning: $numDupeKeys duplicate keys were skipped in <$filename>.\n"; }
-    if ($filename ne '-') { close($theFileHandle); } # close the file we opened in 'openSmartAndGetFilehandle'
+    if ($filename ne '-') { close($theFileHandle); } # close the file we opened in 'openSmartAndGetFilehandle' . This may not actually be necessary
 }
 
 
-#my %hash1 = readIntoHash($filePrimary  , $delim1, $keyCol1);
+#my %hash1 = readIntoHash($file1  , $delim1, $keyCol1);
 #($isDebugging) && print STDERR ("Read in this many keys: " . scalar(keys(%hash1)) . " from primary file.\n");
 
-sub getAllNonKeyIndices(\@$) {
+sub arrayOfNonKeyElements(\@$) {
     my ($inputArrayPtr, $inputKey) = @_;
-
     ($isDebugging) && (($inputKey >= 1) or die "Whoa, the input key was LESS THAN ONE, which is impossible, since numbering for keys starts from 1! Not zero-indexing!!!");
-    my @nonKeyIndices = ();
+    my @nonKeyElements = (); # the final array with everything BUT the key. Apparently doesn't matter much whether we pre-allocate it to the right size or not, speed-wise.
     for (my $i = 0; $i < scalar(@{$inputArrayPtr}); $i++) {
 	if ($i != ($inputKey-1)) {
 	    # remember that the input key is indexed from ONE and not ZERO!!!
-	    push(@nonKeyIndices, $i); #It's not a key, so add it to the array
+	    push(@nonKeyElements, $inputArrayPtr->[$i]); # It's not a key, so add it to the array
 	    #debugPrint("Adding $i (index $i is not equal to the input key index $inputKey)...\n");
 	} else {
+	    # Huh, this IS a key item, so don't include it!!!
 	    #debugPrint("OMITTING $i (index $i is EXACTLY EQUAL to the input key index $inputKey. Remember that one of them counts from zero!)...\n");
 	}
     }
-    return (@nonKeyIndices);
+    return (@nonKeyElements); # The subset of the inputArrayPtr that does NOT include the non-key elements!
 }
 
 my %hash2 = ();
 my %uppercaseHash = ();
 my $uppercaseHashRef = ($shouldIgnoreCase) ? \%uppercaseHash : undef; # UNDEFINED if we aren't ignoring case
-readIntoHash($fileSecondary, $delim2, $keyCol2, \%hash2, $uppercaseHashRef);
+readIntoHash($file2, $delim2, $keyCol2, \%hash2, $uppercaseHashRef);
 debugPrint("Read in this many keys: " . scalar(keys(%hash2)) . " from secondary file.\n");
 
 my $lineNumPrimary = 1;
-my $primaryFH = openSmartAndGetFilehandle($filePrimary);
+my $primaryFH = openSmartAndGetFilehandle($file1);
 my $numElementsOnPreviousLineInPrimary = undef;
 my $numElementsOnPreviousLineInSecondary = undef;
 foreach my $line (<$primaryFH>) {
     chomp($line);
     #if(/\S/) { ## if there's some content that's non-spaces-only
-    my @sp = split($delim1, $line); # split-up line
-    my $thisKey = $sp[ ($keyCol1-1) ]; # index from ZERO here, that's why we subtract 1 from the key column
-    my @matchingSp; # matching split-up line
+    my @sp1 = split($delim1, $line); # split-up line
+    my $thisKey = $sp1[ ($keyCol1-1) ]; # index from ZERO here, that's why we subtract 1 from the key column
+    my @sp2; # matching split-up line
 
     if ($shouldIgnoreCase) {
 	my $keyInSameCaseItWasInTheOriginalHash = $uppercaseHash{uc($thisKey)}; # mutate the key so that it's in the SAME CASE as it was in the key we added
-	@matchingSp = (exists($hash2{$keyInSameCaseItWasInTheOriginalHash})) ? @{$hash2{$keyInSameCaseItWasInTheOriginalHash}} : ();
+	@sp2 = (exists($hash2{$keyInSameCaseItWasInTheOriginalHash})) ? @{$hash2{$keyInSameCaseItWasInTheOriginalHash}} : ();
     } else {
-	@matchingSp = (exists($hash2{$thisKey})) ? @{$hash2{$thisKey}} : ();
+	@sp2 = (exists($hash2{$thisKey})) ? @{$hash2{$thisKey}} : ();
     }
 
-    if (@matchingSp) {
-
-	if (defined($numElementsOnPreviousLineInSecondary) && $numElementsOnPreviousLineInSecondary != scalar(@matchingSp)) {
-
+    if (@sp2) {
+	# Got a match for the key in question!
+	if (defined($numElementsOnPreviousLineInSecondary) && $numElementsOnPreviousLineInSecondary != scalar(@sp2)) {
+	    verboseWarnPrint("Warning: the number of elements in <$file2> is not constant. Got a line with this many elements: " . scalar(@sp2) . "\n");	    
 	}
-	$numElementsOnPreviousLineInSecondary = scalar(@matchingSp);
+	$numElementsOnPreviousLineInSecondary = scalar(@sp2);
 	
 	if ($shouldNegate) { 
 	    # Since we are NEGATING this, don't print the match when it's found (only when it isn't...)
 	} else {
 	    # Great, the OTHER file had a valid entry for this key as well! So print it... UNLESS we are negating.
-	    print STDOUT join($outputDelim, $thisKey, @sp[getAllNonKeyIndices(@sp, $keyCol1)], @matchingSp[getAllNonKeyIndices(@matchingSp, $keyCol2)]) . "\n";
+	    print STDOUT join($outputDelim, $thisKey, arrayOfNonKeyElements(@sp1, $keyCol1), arrayOfNonKeyElements(@sp2, $keyCol2)) . "\n";
 	}
     } else {
 	# Ok, there was NO MATCH for this key!
 	debugPrint("Hash2 didn't have the key $thisKey\n");
 	if ($shouldNegate) {
-	    # But because we are NEGATING, let's print this line anyway
-	    print STDOUT join($outputDelim, $thisKey, @sp[getAllNonKeyIndices(@sp, $keyCol1)]) . "\n";
+	    # We didn't find a match for this key, but because we are NEGATING the output, we'll print this line anyway
+	    print STDOUT join($outputDelim, $thisKey, @sp1[getAllNonKeyIndices(@sp1, $keyCol1)]) . "\n";
 	} else {
 	    if (defined($stringWhenNoMatch)) {
 		# We print the line ANYWAY, because the user specified an outer join, with the "-o SOMETHING" option.
 		my $suffixWhenNoMatch = (length($stringWhenNoMatch)>0) ? "${outputDelim}${stringWhenNoMatch}" : "$stringWhenNoMatch"; # handle zero-length -ob SPECIALLY
-		print STDOUT join($outputDelim, $thisKey, @sp[getAllNonKeyIndices(@sp, $keyCol1)]) . $suffixWhenNoMatch . "\n";
+		print STDOUT join($outputDelim, $thisKey, getAllNonKeyIndices(@sp1, $keyCol1)) . $suffixWhenNoMatch . "\n";
 	    } else {
 		# Omit the line entirely, since there was no match in the secondary file.
 	    }
@@ -195,13 +197,13 @@ foreach my $line (<$primaryFH>) {
     }
     #print "$line\n";
 
-    if (defined($numElementsOnPreviousLineInSecondary) && $numElementsOnPreviousLineInSecondary != scalar(@matchingSp)) {
-	#warnPrint("Warning: the
+    if (defined($numElementsOnPreviousLineInSecondary) && $numElementsOnPreviousLineInSecondary != scalar(@sp1)) {
+	verboseWarnPrint("Warning: the number of elements in <$file1> is not constant. Got a line with this many elements: " . scalar(@sp1) . "\n");
     }
-    $numElementsOnPreviousLineInPrimary = scalar(@sp);
+    $numElementsOnPreviousLineInPrimary = scalar(@sp1);
     $lineNumPrimary++;
 }
-if ($filePrimary ne '-') { close($primaryFH); } # close the file we opened in 'openSmartAndGetFilehandle'
+if ($file1 ne '-') { close($primaryFH); } # close the file we opened in 'openSmartAndGetFilehandle'
 
 exit(0); # looks like we were successful
 
