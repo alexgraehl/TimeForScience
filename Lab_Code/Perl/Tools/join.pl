@@ -88,11 +88,11 @@ sub openSmartAndGetFilehandle($) {
 	return(*STDIN);
     } else {
 	my $reader;
-	if ($filename =~ /[.]gz$/) { $reader = "zcat $filename |"; }
+	if ($filename =~ /[.]gz$/)     { $reader = "zcat $filename |"; }
 	elsif ($filename =~ /[.]bz2$/) { $reader = "bzcat $filename |"; }
-	else { $reader = $filename; }  #default to just read a file normally
+	else                           { $reader = "$filename"; }  #default to just read a file normally
 	my $fh;
-	open($fh, "$reader") or die("Couldn't read from file: $!");
+	open($fh, "$reader") or die("Couldn't read from <$filename>: $!");
 	return $fh;
     }
 }
