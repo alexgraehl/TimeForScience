@@ -5,56 +5,77 @@ $| = 1;  # Flush output to STDOUT immediately.
 
 my $isDebugging = 0;
 
+my $verbose = 1; # use 'q' (quiet) to suppress this
+
 sub quitWithUsageError($) { print($_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
 sub printUsageAndQuit() { printUsageAndContinue(); exit(1); }
 sub printUsageAndContinue() {    print STDOUT <DATA>; }
 sub debugPrint($) {   ($isDebugging) and print STDERR $_[0]; }
+sub warnPrintUnlessQuiet($) {
+    if ($verbose) { print STDERR $_[0] . "\n"; }
+}
+my $keyCol1 = 1; # indexed from ONE rather than 0!
+my $keyCol2 = 1; # indexed from ONE rather than 0!
 
-my $key1 = 1; # indexed from ONE rather than 0!
-my $key2 = 1; # indexed from ONE rather than 0!
+my $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED = "\t";
 
-my $delim1 = "\t";
-my $delim2 = "\t";
+my $delim1 = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED;
+my $delim2 = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED;
 my $delimBoth = undef;
-my $outputDelim = "\t";
+my $outputDelim = undef;
 
 my $filePrimary   = undef;
 my $fileSecondary = undef;
+
+my $shouldNegate = 0; # whether we should NEGATE the output
+my $shouldIgnoreCase = 0; # by default, case-sensitive
 
 my $stringWhenNoMatch = undef;
 
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 GetOptions("help|?|man" => sub { printUsageAndQuit(); }
-	   , "1=s" => \$key1
-	   , "2=s" => \$key2
+	   , "q" => sub { $verbose = 0; }
+	   , "1=s" => \$keyCol1
+	   , "2=s" => \$keyCol2
 	   , "d1=s" => \$delim1
 	   , "d2=s" => \$delim2
+	   , "t|d|delim=s" => \$delimBoth # -t is the regular UNIX join name for this option
 	   , "o=s"  => \$stringWhenNoMatch
 	   , "ob!"  => sub { $stringWhenNoMatch = ''; } # shortcut for just a blank when there's no match. Default is to OMIT lines with no match.
-	   , "d=s" => \$delimBoth
 	   , "do=s" => \$outputDelim
+	   , "neg!" => \$shouldNegate
+	   , "i|ignore-case!" => \$shouldIgnoreCase
 	   , "debug!" => \$isDebugging
     ) or printUsageAndQuit();
 
-if (defined($delimBoth)) {
-    $delim1 = $delimBoth; $delim2 = $delimBoth;
-}
-
 my $numUnprocessedArgs = scalar(@ARGV);
 if ($numUnprocessedArgs != 2) {
-    quitWithUsageError("Error in arguments! You must send exactly TWO filenames to this program.\n");
+    quitWithUsageError("Error in arguments! You must send exactly TWO filenames (or one filename and '-' for STDIN) to this program.");
 }
-
 $filePrimary = $ARGV[0]; # first un-processed join argument
 $fileSecondary = $ARGV[1]; # second un-processed join argument
 
-($key1 != 0) or die "Key1 CANNOT BE ZERO! These indices are numbered from ONE and not zero!";
-($key2 != 0) or die "Key2 CANNOT BE ZERO! These indices are numbered from ONE and not zero!";
-
 foreach my $ff ($filePrimary, $fileSecondary) {
-    # Specified files must be either - (for stdin) or a real, valid, existing filename)
-    (($ff eq '-') or (-f $ff)) or die "File $ff did not exist!";
+    (($ff eq '-') or (-f $ff)) or die "File $ff did not exist!"; # Specified files must be either - (for stdin) or a real, valid, existing filename)
 }
+
+if ($shouldNegate && defined($stringWhenNoMatch)) {
+    quitWithUsageError("Error in arguments! It doesn't make sense to both --neg (negate) the join AND ALSO specify -o or --ob -- the outer join specifies that we should print lines REGARDLESS of match, whereas the --neg specifies that we should ONLY print lines with no match. You cannot specifiy both of these options at the same time.");
+}
+
+
+if (defined($delimBoth)) { # If "delimBoth" was specified, then set both of the input delimiters accordingly.
+    $delim1 = $delimBoth; $delim2 = $delimBoth;
+}
+
+if (!defined($outputDelim)) { # Figure out what the output delimiter should be, if it wasn't explicitly specified.
+    if (defined($delimBoth)) { $outputDelim = $delimBoth; } # default: set the output delim to whatever the input delim was
+    elsif ($delim1 eq $delim2) { $outputDelim = $delim1; } # or we can set it to the manually-specified delimiters, if they are the SAME only
+    else { $outputDelim = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED; } # otherwise, set it to the default delimiter
+}
+
+($keyCol1 != 0) or die "Key1 CANNOT BE ZERO! These indices are numbered from ONE and not zero!";
+($keyCol2 != 0) or die "Key2 CANNOT BE ZERO! These indices are numbered from ONE and not zero!";
 
 sub openSmartAndGetFilehandle($) {
     # returns a FILEHANDLE. Can be standard in, if the 'filename' was specified as '-'
@@ -68,9 +89,8 @@ sub openSmartAndGetFilehandle($) {
     }
 }
 
-sub readIntoHash($$$) {
-    my ($filename, $theDelim, $keyIndexCountingFromOne) = @_;
-    my %tempHash = ();
+sub readIntoHash($$$$$) {
+    my ($filename, $theDelim, $keyIndexCountingFromOne, $masterHashRef, $uppercaseHashMapRef) = @_;
     my $numDupeKeys = 0;
     my $lineNum = 1;
     my $theFileHandle = openSmartAndGetFilehandle($filename);
@@ -79,13 +99,17 @@ sub readIntoHash($$$) {
 	#if(/\S/) { ## if there's some content that's non-spaces-only
 	my @sp = split($theDelim, $line);
 	my $thisKey = $sp[ ($keyIndexCountingFromOne - 1) ]; # index from ZERO here!
-	if (exists($tempHash{$thisKey})) {
+	if (exists($masterHashRef->{$thisKey})) {
 	    print STDERR "Warning: the key <$thisKey> appeared more than once in <$filename> (on line $lineNum). We are only keeping the FIRST instance of this key.\n";
 	    $numDupeKeys++;
 	} else {
 	    # Found a UNIQUE new key!
 	    # ($isDebugging) && print STDERR "Added a line for the key <$thisKey>.\n";
-	    @{$tempHash{$thisKey}} = @sp; # whole SPLIT UP line, even the key!!!
+	    if (defined($uppercaseHashMapRef)) { # apparently we want to deal with things case-insensitively
+		$uppercaseHashMapRef->{uc($thisKey)} = $thisKey; # maps from the UPPER-CASE version of this key back to the one we ACTUALLY put in the hash
+	    }
+	    # masterHashRef is a hash of ARRAYS: each line is ALREADY SPLIT UP by its delimiter
+	    @{$masterHashRef->{$thisKey}} = @sp; # whole SPLIT UP line, even the key, goes into the hash!!!
 	    #print "$line\n";
 	}
 	$lineNum++;
@@ -93,11 +117,10 @@ sub readIntoHash($$$) {
 
     if ($numDupeKeys > 0) { print STDERR "Warning: $numDupeKeys duplicate keys were skipped in <$filename>.\n"; }
     if ($filename ne '-') { close($theFileHandle); } # close the file we opened in 'openSmartAndGetFilehandle'
-    return %tempHash; # This is a hash of ARRAYS: each line is ALREADY SPLIT UP by its delimiter
 }
 
 
-#my %hash1 = readIntoHash($filePrimary  , $delim1, $key1);
+#my %hash1 = readIntoHash($filePrimary  , $delim1, $keyCol1);
 #($isDebugging) && print STDERR ("Read in this many keys: " . scalar(keys(%hash1)) . " from primary file.\n");
 
 sub getAllNonKeyIndices(\@$) {
@@ -109,359 +132,78 @@ sub getAllNonKeyIndices(\@$) {
 	if ($i != ($inputKey-1)) {
 	    # remember that the input key is indexed from ONE and not ZERO!!!
 	    push(@nonKeyIndices, $i); #It's not a key, so add it to the array
-	    debugPrint("Adding $i (index $i is not equal to the input key index $inputKey)...\n");
+	    #debugPrint("Adding $i (index $i is not equal to the input key index $inputKey)...\n");
 	} else {
-	    debugPrint("OMITTING $i (index $i is EXACTLY EQUAL to the input key index $inputKey. Remember that one of them counts from zero!)...\n");
+	    #debugPrint("OMITTING $i (index $i is EXACTLY EQUAL to the input key index $inputKey. Remember that one of them counts from zero!)...\n");
 	}
     }
     return (@nonKeyIndices);
 }
 
-my %hash2 = readIntoHash($fileSecondary, $delim2, $key2);
+my %hash2 = ();
+my %uppercaseHash = ();
+my $uppercaseHashRef = ($shouldIgnoreCase) ? \%uppercaseHash : undef; # UNDEFINED if we aren't ignoring case
+readIntoHash($fileSecondary, $delim2, $keyCol2, \%hash2, $uppercaseHashRef);
 debugPrint("Read in this many keys: " . scalar(keys(%hash2)) . " from secondary file.\n");
 
 my $lineNumPrimary = 1;
 my $primaryFH = openSmartAndGetFilehandle($filePrimary);
+my $numElementsOnPreviousLineInPrimary = undef;
+my $numElementsOnPreviousLineInSecondary = undef;
 foreach my $line (<$primaryFH>) {
     chomp($line);
     #if(/\S/) { ## if there's some content that's non-spaces-only
-    my @sp = split($delim1, $line);
-    my $thisKey = $sp[ ($key1-1) ]; # index from ZERO here
+    my @sp = split($delim1, $line); # split-up line
+    my $thisKey = $sp[ ($keyCol1-1) ]; # index from ZERO here, that's why we subtract 1 from the key column
+    my @matchingSp; # matching split-up line
 
-    my @nonKeyIndicesPrimary = getAllNonKeyIndices(@sp, $key1);
-    #($isDebugging) && print STDERR "Looking for the key <$thisKey>...\n";
-    my @matchingSp = (exists($hash2{$thisKey})) ? @{$hash2{$thisKey}} : undef;
-    if (defined(@matchingSp)) {
-	# Great, the OTHER file had a valid entry for this key as well!
-	my @nonKeyIndicesSecondary = getAllNonKeyIndices(@matchingSp, $key2);
-	print STDOUT join($outputDelim, @sp[@nonKeyIndicesPrimary], @matchingSp[@nonKeyIndicesSecondary]) . "\n";
+    if ($shouldIgnoreCase) {
+	my $keyInSameCaseItWasInTheOriginalHash = $uppercaseHash{uc($thisKey)}; # mutate the key so that it's in the SAME CASE as it was in the key we added
+	@matchingSp = (exists($hash2{$keyInSameCaseItWasInTheOriginalHash})) ? @{$hash2{$keyInSameCaseItWasInTheOriginalHash}} : ();
     } else {
-	debugPrint("Hash2 didn't have the key $thisKey\n");
-	if (defined($stringWhenNoMatch)) {
-	    my $suffixWhenNoMatch = (length($stringWhenNoMatch)>0) ? "${outputDelim}${stringWhenNoMatch}" : "$stringWhenNoMatch"; # handle zero-length -ob SPECIALLY
-	    print STDOUT join($outputDelim, @sp[@nonKeyIndicesPrimary]) . $suffixWhenNoMatch . "\n";
+	@matchingSp = (exists($hash2{$thisKey})) ? @{$hash2{$thisKey}} : ();
+    }
+
+    if (@matchingSp) {
+
+	if (defined($numElementsOnPreviousLineInSecondary) && $numElementsOnPreviousLineInSecondary != scalar(@matchingSp)) {
+
+	}
+	$numElementsOnPreviousLineInSecondary = scalar(@matchingSp);
+	
+	if ($shouldNegate) { 
+	    # Since we are NEGATING this, don't print the match when it's found (only when it isn't...)
 	} else {
-	    # omit the line entirely, since there was no match in the secondary file
+	    # Great, the OTHER file had a valid entry for this key as well! So print it... UNLESS we are negating.
+	    print STDOUT join($outputDelim, $thisKey, @sp[getAllNonKeyIndices(@sp, $keyCol1)], @matchingSp[getAllNonKeyIndices(@matchingSp, $keyCol2)]) . "\n";
+	}
+    } else {
+	# Ok, there was NO MATCH for this key!
+	debugPrint("Hash2 didn't have the key $thisKey\n");
+	if ($shouldNegate) {
+	    # But because we are NEGATING, let's print this line anyway
+	    print STDOUT join($outputDelim, $thisKey, @sp[getAllNonKeyIndices(@sp, $keyCol1)]) . "\n";
+	} else {
+	    if (defined($stringWhenNoMatch)) {
+		# We print the line ANYWAY, because the user specified an outer join, with the "-o SOMETHING" option.
+		my $suffixWhenNoMatch = (length($stringWhenNoMatch)>0) ? "${outputDelim}${stringWhenNoMatch}" : "$stringWhenNoMatch"; # handle zero-length -ob SPECIALLY
+		print STDOUT join($outputDelim, $thisKey, @sp[getAllNonKeyIndices(@sp, $keyCol1)]) . $suffixWhenNoMatch . "\n";
+	    } else {
+		# Omit the line entirely, since there was no match in the secondary file.
+	    }
 	}
     }
     #print "$line\n";
+
+    if (defined($numElementsOnPreviousLineInSecondary) && $numElementsOnPreviousLineInSecondary != scalar(@matchingSp)) {
+	#warnPrint("Warning: the
+    }
+    $numElementsOnPreviousLineInPrimary = scalar(@sp);
     $lineNumPrimary++;
 }
 if ($filePrimary ne '-') { close($primaryFH); } # close the file we opened in 'openSmartAndGetFilehandle'
 
-
-################# BEGIN MAIN ###########################
-
-# my (@key1)                                = (1);
-# my (@key2)                                = (1);
-# my ($beg,$end)                            = (0,0);
-# my ($file1,$file2)                        = ('','');
-# my ($key)                                 = '';
-# my (%values)                              = ();
-# my (%exists)                              = ();
-# my $delim                                 = "\t";
-# my ($delim_in1, $delim_in2)               = ("\t","\t");
-# my ($delim_out)                           = ("\t");
-# my ($value1, $value2)                     = ('','');
-# my ($printable, $printable1, $printable2) = ('','','');
-# my ($suppress1, $suppress2, $suppressk) = (0,0,0);
-# my $negate=0;
-# my ($numeric) = 0;
-# my $empty = '';
-# my $max_tuple_size = undef;
-# my $skip_empty_lines = 0;
-# my $fill = '';
-# my $empty_placeholder = '___@@@_THIS_IS_A_BLANK_VALUE_@@@___';
-# my ($outer) = 0;
-# my ($reverse) = 0;
-# my ($uppercase) = 0;
-# my $hit = 0;
-# my @fill_lines = ();
-# my $merge=0;
-# my $verbose=1;
-# my $header=0;
-
-
-# while(@ARGV) {
-#     my $arg = shift @ARGV;
-#     if($arg eq '--help') {
-# 	print STDOUT <DATA>;
-# 	exit(0);
-#     } elsif($arg eq '-q') {
-# 	$verbose = 0;
-#     } elsif($arg eq '-f') {
-# 	$arg = shift @ARGV;
-# 	@key1 = &parseRanges($arg);
-# 	@key2 = @key1;
-#     }
-#     elsif($arg eq '-1') {
-#         $arg = shift @ARGV;
-#         @key1 = &parseRanges($arg);
-#     }
-#     elsif($arg eq '-2') {
-#         $arg = shift @ARGV;
-#         @key2 = &parseRanges($arg);
-#     } elsif($arg eq '-o' or $arg eq '-of') {
-# 	$arg = shift @ARGV;
-# 	if(-f $arg) { ## if it's a file...
-# 	    my $FILE = openFile($arg);
-# 	    (defined(openFile($arg))) or die "join.pl: Could not open file '$arg' to find outer text, skipping.";
-# 	    while(<$FILE>) {
-# 		if(/\S/) { ## if there's some content that's non-spaces-only
-# 		    chomp;
-# 		    push(@fill_lines, $_);
-# 		}
-# 	    }
-# 	    close($FILE);
-# 	    $outer = 1;
-# 	} else {
-# 	    $fill = $arg; ## fill with this text
-# 	    $fill =~ s/[\\]t/\t/g; ## any time you see "slash t" replace it with an actual tab!
-# 	    $outer = 1;
-# 	}
-#     } elsif ($arg eq '-ob' or $arg eq '--outer_blank') {
-# 	$fill  = undef;
-# 	$outer = 1;
-#     } elsif ($arg eq '-h1') {
-# 	$header = 1;
-#     } elsif ($arg eq '-h2') {
-# 	$header = 2;
-#     } elsif ($arg eq '-e' or $arg eq '--empty') {
-# 	$empty = shift @ARGV;
-#     } elsif ($arg eq '-skip') {
-# 	$skip_empty_lines = 1;
-#     } elsif ($arg eq '-m') {
-# 	$merge = 1;
-#     } elsif ($arg eq '-num') {
-#         $numeric = 1;
-#     } elsif($arg eq '-neg') {
-#         $negate = 1;
-#     } elsif($arg eq '-t' or $arg eq '-d') {
-#         $arg = shift @ARGV;
-#         $delim_in1 = $delim_in2 = $arg;
-#     } elsif($arg eq '-di1') {
-#         $delim_in1 = shift @ARGV;
-#     } elsif($arg eq '-di2') {
-#         $delim_in2 = shift @ARGV;
-#     } elsif(($arg eq '-di') or ($arg eq '-d')) {
-#         $delim_in1 = shift @ARGV;
-#         $delim_in2 = $delim_in1;
-#     } elsif($arg eq '-do') {
-#         $delim_out = shift @ARGV;
-#     } elsif($arg eq '-s1') {
-# 	# Suppress printing of values from table 1 (key will be printed however).
-#         $suppress1 = 1;
-#     } elsif($arg eq '-s2') {
-# 	# Suppress printing of values from table 2 (key will be printed however).
-#         $suppress2 = 1;
-#     } elsif($arg eq '-sk') {
-#         $suppressk = 1;
-#     } elsif($arg eq '-r' or $arg eq '--reverse' or $arg eq '-rev') {
-#         $reverse = 1;
-#     } elsif($arg eq '-u') {
-# 	$uppercase = 1;
-#     } elsif(length($file1) < 1) {
-#         $file1 = $arg;
-#     } elsif(length($file2)<1) {
-#         $file2 = $arg;
-#     } else {
-# 	print STDERR "join.pl: UNRECOGNIZED COMMAND LINE ARGUMENT: $arg\n\n";
-#     }
-# }
-
-# if (scalar(@fill_lines) > 0) {
-#     if (!defined($fill) or (length($fill) == 0)) {
-# 	$fill = join($delim_out, @fill_lines);
-#     } else {
-# 	$fill .= ($delim_out . join($delim_out, @fill_lines));
-#     }
-# }
-
-# if($reverse) {
-#     ($suppress1, $suppress2) = ($suppress2, $suppress1); # swap them!
-# }
-
-
-# if ( (length($file1) < 1) or (length($file2) < 1) ) {
-#   print STDERR "join.pl: ERROR: Two input files must be specified on the command line!\n\n";
-#   print STDERR <DATA>;
-#   exit(1);
-# }
-
-# for(my $i=0; $i<=$#key1; $i++) { $key1[$i]--; } # what is going on. We subtract one from all keys I guess.
-# for(my $i=0; $i<=$#key2; $i++){ $key2[$i]--; } # what the heck. We subtract one from all keys I guess.
-
-# @key1 = sort {$a <=> $b} @key1; # sorts @key1 alphabetically
-# @key2 = sort {$a <=> $b} @key2; # sorts @key2 alphabetically
-
-# # print STDERR "Key 1: [", join(',', @key1), "]\n",
-# #         "Key 2: [", join(',', @key2), "]\n",
-# #         "Input delimiter 1: [$delim_in1]\n",
-# #         "Input delimiter 2: [$delim_in2]\n",
-# #         "Output delimiter 1: [$delim_out1]\n",
-# #         "Output delimiter 2: [$delim_out2]\n",
-# #         "\n",
-# #         ;
-
-# # Read in the key-printable pairs from the second file:
-# my ($loops) = 0;
-# my ($passify) = 10000; # <-- this means "print out a dot to STDERR every *this* many iterations"
-
-# ## Note: We TRANSPARENTLY handle gzipped / bzip2 files in "openFile" , in "libfile.pl"
-# my $fileRef2 = openFile($file2) or die("join.pl: Could not open file <$file2>.");
-
-# if($verbose) {
-#     print STDERR "join.pl: Reading relations from ", ($file2 eq '-') ? "standard input" : "file <$file2>";
-# }
-
-# #my $commentChar = '#';
-
-# my $numDuplicateKeysRead = 0; # how many duplicate keys were read from $file2?
-# my $maxDuplicateKeyWarnings = 10; # how many times to nag the user about multiple keys?
-
-# my $header_data='';
-# my $line=0;
-# while(<$fileRef2>) {
-#     if((not($skip_empty_lines) or /\S/)) { # and not(/^\s*$commentChar/)) {
-# 	$line++;
-# 	if($line==1 and $header==2) { $header_data = $_; }
-# 	my @tmp = split($delim_in2);
-# 	chomp($tmp[$#tmp]);
-	
-# # print STDERR "\n2: tmp: [", join('|',@tmp), "]\n";
-# # print STDERR "2: key cols: [", join('|',@key2), "]\n";
-# 	$key='';
-# 	for(my $i=$#key2; $i >= 0; $i--) {
-# 	    my $key_part = splice(@tmp,$key2[$i], 1);
-# 	    # $key .= length($key)>0 ? ($delim_out . $key_part) : $key_part;
-	    
-# 	    if (length($key) == 0) {
-# 		$key = "$key_part";
-# 	    } else {
-# 		$key = "${key_part}${delim_out}${key}";
-# 	    }
-	    
-# # print STDERR "1: key: [$key]\n";
-# # print STDERR "Before splice: [", join('|',@tmp), "] [$key]\n";
-# # print STDERR "After splice: [", join('|',@tmp), "] [$key]\n";
-# 	    # $key .= splice(@tmp, $i-1, 1) . $delim_out;
-# 	}
-# 	# Get rid of the last delimiter we added:
-# 	if ($numeric) { $key = int($key); }
-# 	if ($uppercase) { $key =~ tr/a-z/A-Z/; }
-# # print STDERR "2: tmp: [", join('|',@tmp), "]\n";
-# # print STDERR "2: key: [$key]\n";
-# 	# $tmp = join($delim_out, @tmp);
-# 	my $tmpMini = &myJoin($delim_out, \@tmp, $empty_placeholder);
-	
-# 	if (defined($key) && (length($key) > 0) && defined($exists{$key})) {
-# 	    $numDuplicateKeysRead++;
-# 	    if ($verbose && ($numDuplicateKeysRead <= $maxDuplicateKeyWarnings)) {
-# 		# only print this error if we are in VERBOSE mode.
-# 		print STDERR "\njoin.pl: WARNING: Multiple lines with the key \"$key\" were found in <$file2>. We will only use the LAST row with this key\n";
-# 	    }
-# 	}
-# 	$values{$key} = $tmpMini;
-# 	$exists{$key} = 1;
-
-# 	my $tuple_size = scalar(@tmp);
-	
-# 	if(not(defined($max_tuple_size)) or $tuple_size > $max_tuple_size) {
-# 	    $max_tuple_size = $tuple_size;
-# 	}
-	
-# 	$loops++;
-# 	if($verbose and (($loops % $passify) == ($passify-1))) {
-# 	    print STDERR '.';
-# 	}
-#     }
-# }
-# if($verbose) { print STDERR " done (" . scalar(keys(%values)) . ").\n"; }
-# close($fileRef2);
-
-# if($outer and not(defined($fill))) {
-#     $fill = &replicate($max_tuple_size, $empty_placeholder, $delim);
-# }
-
-# # Read in the key-printable pairs from the first file and print out the joined key:
-# my $fileRef1 = openFile($file1) or die("join.pl: Could not open file <$file1>.");
-
-# if($verbose) { print STDERR "join.pl: Joining on file <$file1>\n"; }
-# $loops = 0;
-# my $found;
-# while(<$fileRef1>) {
-#     if((not($skip_empty_lines) or /\S/)) { # and not(/^\s*${commentChar}/)) {
-# 	my @tmp = split($delim_in1);
-# 	chomp($tmp[$#tmp]);
-# 	$key='';
-# 	# print STDERR "1: tmp: [", join('|',@tmp), "]\n";
-# 	for(my $i = $#key1; $i >= 0; $i--) {
-# 	    my $key_part = splice(@tmp,$key1[$i], 1);
-# 	    $key = (length($key)>0) ? ($key_part . $delim_out . $key) : $key_part;
-# 	    # print STDERR "1: key: [$key]\n";
-# 	}
-# 	# Get rid of the last delimiter we added:
-# 	if($numeric)   { $key = int($key); }
-# 	if($uppercase) { $key = uc($key); }  # uppercase-ify it
-	
-# 	$value1 = &myJoin($delim_out, \@tmp, $empty_placeholder);
-# 	$value2 = $values{$key};
-# 	$found = $exists{$key};
-	
-# # print STDERR "1: key: [$key]\n";
-# # print STDERR "1: value1: [$value1]\n";
-# # print STDERR "1: value2: [$value2]\n";
-# # print STDERR "1: found: [$found]\n";
-# 	if((not($negate) and $found) or ($negate and not($found))) {
-# 	    $hit = 1;
-# 	} elsif($outer) {
-# 	    $value2 = $fill;
-# 	    $hit = 1;
-# 	} else {
-# 	    $hit = 0;
-# 	}
-
-# 	if($merge and $hit) {
-# 	    $value1 = $value2;
-# 	    $value2 = $empty;
-# 	} elsif($merge and not($hit)) {
-# 	    $hit = 1;
-# 	    $value2 = $empty;
-# 	}
-
-# 	if ($hit) {
-# 	    if ($reverse) {
-# 		($value1, $value2) = ($value2, $value1) # Swap the two values if we're supposed to print the second value before the first one
-# 	    }
-# 	    $printable  = $suppressk ? '' : $key;
-# 	    $printable1 = ($suppress1 or length($value1)<1) ? '' : $value1;
-# 	    $printable2 = ($suppress2 or length($value2)<1) ? '' : $value2;
-
-# 	    if (length($printable1) > 0) {
-# 		$printable = (length($printable) > 0)
-# 		    ? ($printable . $delim . $printable1)
-# 		    : $printable1;
-# 	    }
-# 	    if (length($printable2) > 0) {
-# 		$printable = (length($printable) > 0)
-# 		    ? ($printable . $delim . $printable2)
-# 		    : $printable2;
-# 	    }
-# 	    $printable =~ s/$empty_placeholder/$empty/g;
-# 	    print $printable, "\n";
-# 	}
-# 	$loops++;
-# 	if ($verbose and (($loops % $passify)==($passify-1)) ) {
-# 	    print STDERR '.';
-# 	}
-#     }
-# }
-# close($fileRef1);
-# if ($verbose) { print STDERR "join.pl finished. (Joined <$file1> with <$file2>)\n"; }
-# if ($verbose && ($numDuplicateKeysRead > 0)) {
-#     print STDERR "join.pl: WARNING: Read $numDuplicateKeysRead lines with identical keys in <$file2>.\n";
-#     print STDERR "         Only the *last* line in a file with a redundant key is actually used.\n"
-# }
+exit(0); # looks like we were successful
 
 
 ################# END MAIN #############################
@@ -505,22 +247,10 @@ in multiple-key situations.
 
 OPTIONS are:
 
--m: Merge - if key exists in file 2, use value from file 2 else
-    use the value from file 1.
-
--q: Quiet mode: turn verbosity off (default is verbose)
-    Quiet mode also removes the "more than one line with the key..." warnings.
-
 -1 COL: Include column COL from FILE1 as part of the key (default is 1).
-         Multiple columns may be specified in which case keys are constructed
-         by concaternating each column in NUMERICAL order (NOT the order specified,
-         where the delimiter used is equal to the output delimiter, see -do flag).
- CAVEAT: Multiple join fields do NOT respect the order on the command line
-         -1 1,2,3,4,5  is exactly the same as -1 4,3,5,1,2. Therefore you cannot
-         join files with out-of-order keys in this manner!
+        Only supports ONE key field.
 
 -2 COL: Include column COL from FILE2 as part of the key (default is 1).
-         See -1 option for discussion of multiple columns.
 
 -o FILLER: Do a left outer join.  If a key in FILE1 is not in FILE2, then the
           tuple from FILE1 is printed along with the text in FILLER in place of
@@ -528,49 +258,24 @@ OPTIONS are:
           result).  See -of option also to supply FILLER from a file.
           (See below for an example of usage.)
 
--ob: Same as -o but fill with blanks.
+-ob: Same as -o but do not actually fill with anything (identical to -o '').
 
--of FILE: Same as -o, but use the text in FILE as the text for FILLER.
-
--e EMPTY: Set the empty string to EMPTY (default is blank).  If both keys
-           exist in FILE1 and FILE2 but one tuple is blank, then the empty
-           character EMPTY will be printed.
-
--num: Treat the keys as numeric quantities (default is off: treat keys as
-        strings).  If this is turned on, each key will be forced into an
-        integer quantity.
-
--neg: Negative output -- print keys that are in FILE1 but not in FILE2.
+-neg: Negate output -- print keys that are in FILE1 but not in FILE2.
         These keys are the same ones that would be left out of the join,
-        or those that would have a FILL tuple in a left outer join (see -o
-        option).
+        or those that would have a FILL tuple in a left outer join
+        Cannot specify both this AND ALSO -ob or -o.
 
--di1 DELIM: Set the input delimiter for FILE1 to DELIM (default is tab).
 
--di2 DELIM: Set the input delimiter for FILE2 to DELIM (default is tab).
+-t DELIM or -d DELIM or --delim=DELIM: Set the input delimiters for both FILE1 and FILE2 to DELIM (default: tab)
+          Equivalent to setting both --d1 and --d2.
 
--di DELIM: Set the input delimiters for both FILE1 and FILE2 to DELIM (default
-        is tab).  Equivalent to using both the -di1 and -di2 options.
+--d1 DELIM: Set the input delimiter for FILE1 to DELIM (default: tab).
 
--do DELIM: Set the output file delimiter to DELIM. (default is tab)
+--d2 DELIM: Set the input delimiter for FILE2 to DELIM (default: tab).
 
--s1: Suppress printing of tuples from FILE1.  The key is printed, followed by
-        the tuple found in FILE2.
+-do DELIM: Set the OUTPUT delimiter to DELIM. (default: same as input delim)
 
--s2: Suppress printing of tuples from FILE2.
-
--sk: Suppress printing of keys.
-
--r: Reverse
-     Instead of printing: <key> <tuple_from_FILE1> <tuple_from_FILE2>,
-                    print <key> <tuple_from_FILE2> <tuple_from_FILE1>
-
--u: Uppercase.  (Case-insensitive join)
-     Converts non-numeric keys to uppercase, resulting in a case-insensitive join.
-     Keys from both FILE1 and FILE2 will be uppercased before attempting the join.
-
--skip: Skip empty lines (default processes them).
-
+-i or --ignore-case: (Case-insensitive join)
 
 Example:
 
