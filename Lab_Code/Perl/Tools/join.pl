@@ -21,12 +21,15 @@ my $keyCol2 = 1; # indexed from ONE rather than 0!
 
 my $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED = "\t";
 
-my $delim1 = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED;
-my $delim2 = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED;
-my $delimBoth = undef;
+my $MAX_DUPE_KEYS_TO_REPORT = 10;
+my $MAX_MIS_MATCHED_LINE_LENGTHS_TO_REPORT = 10;
+
+my $delim1 = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED; # input deilmiter for file 1
+my $delim2 = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED; # input delimiter for file 2
+my $delimBoth   = undef; # input delimiter
 my $outputDelim = undef;
 
-my $file1   = undef;
+my $file1 = undef;
 my $file2 = undef;
 
 my $shouldNegate = 0; # whether we should NEGATE the output
@@ -57,15 +60,7 @@ if ($numUnprocessedArgs != 2) {
 $file1 = $ARGV[0]; # first un-processed join argument
 $file2 = $ARGV[1]; # second un-processed join argument
 
-foreach my $ff ($file1, $file2) {
-    (($ff eq '-') or (-f $ff)) or die "File $ff did not exist!"; # Specified files must be either - (for stdin) or a real, valid, existing filename)
-}
-
-if ($shouldNegate && defined($stringWhenNoMatch)) {
-    quitWithUsageError("Error in arguments! It doesn't make sense to both --neg (negate) the join AND ALSO specify -o or --ob -- the outer join specifies that we should print lines REGARDLESS of match, whereas the --neg specifies that we should ONLY print lines with no match. You cannot specifiy both of these options at the same time.");
-}
-
-
+## ================ SET SOME DEFAULT VALUES ============================
 if (defined($delimBoth)) { # If "delimBoth" was specified, then set both of the input delimiters accordingly.
     $delim1 = $delimBoth; $delim2 = $delimBoth;
 }
@@ -75,9 +70,16 @@ if (!defined($outputDelim)) { # Figure out what the output delimiter should be, 
     elsif ($delim1 eq $delim2) { $outputDelim = $delim1; } # or we can set it to the manually-specified delimiters, if they are the SAME only
     else { $outputDelim = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED; } # otherwise, set it to the default delimiter
 }
+## ================ DONE SETTING SOME DEFAULT VALUES ====================
 
+## ================ SANITY-CHECK A BUNCH OF VARIABLES ==================
+foreach my $ff ($file1, $file2) {
+    (($ff eq '-') or (-f $ff)) or die "File $ff did not exist!"; # Specified files must be either - (for stdin) or a real, valid, existing filename)
+}
+(not ($shouldNegate && defined($stringWhenNoMatch))) or quitWithUsageError("Error in arguments! It doesn't make sense to both --neg (negate) the join AND ALSO specify -o or --ob -- the outer join specifies that we should print lines REGARDLESS of match, whereas the --neg specifies that we should ONLY print lines with no match. You cannot specifiy both of these options at the same time.");
 ($keyCol1 != 0) or die "Key1 CANNOT BE ZERO! These indices are numbered from ONE and not zero!";
 ($keyCol2 != 0) or die "Key2 CANNOT BE ZERO! These indices are numbered from ONE and not zero!";
+## ================ DONE SANITY-CHECKING A BUNCH OF VARIABLES ==================
 
 sub openSmartAndGetFilehandle($) {
     # returns a FILEHANDLE. Can be standard in, if the 'filename' was specified as '-'
@@ -85,8 +87,12 @@ sub openSmartAndGetFilehandle($) {
     if ($filename eq '-') {
 	return(*STDIN);
     } else {
+	my $reader;
+	if ($filename =~ /[.]gz$/) { $reader = "zcat $filename |"; }
+	elsif ($filename =~ /[.]bz2$/) { $reader = "bzcat $filename |"; }
+	else { $reader = $filename; }  #default to just read a file normally
 	my $fh;
-	open($fh, '<', $filename) or die("Couldn't read from file: $!");
+	open($fh, "$reader") or die("Couldn't read from file: $!");
 	return $fh;
     }
 }
@@ -102,7 +108,8 @@ sub readIntoHash($$$$$) {
 	my @sp1 = split($theDelim, $line);
 	my $thisKey = $sp1[ ($keyIndexCountingFromOne - 1) ]; # index from ZERO here!
 	if (exists($masterHashRef->{$thisKey})) {
-	    print STDERR "Warning: the key <$thisKey> appeared more than once in <$filename> (on line $lineNum). We are only keeping the FIRST instance of this key.\n";
+	    ($numDupeKeys < $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: the key <$thisKey> appeared more than once in <$filename> (on line $lineNum). We are only keeping the FIRST instance of this key.");
+	    ($numDupeKeys == $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any future duplicate key warnings.");
 	    $numDupeKeys++;
 	} else {
 	    # Found a UNIQUE new key!
@@ -117,7 +124,7 @@ sub readIntoHash($$$$$) {
 	$lineNum++;
     }
 
-    if ($numDupeKeys > 0) { print STDERR "Warning: $numDupeKeys duplicate keys were skipped in <$filename>.\n"; }
+    ($numDupeKeys > 0) and verboseWarnPrint("Warning: $numDupeKeys duplicate keys were skipped in <$filename>.");
     if ($filename ne '-') { close($theFileHandle); } # close the file we opened in 'openSmartAndGetFilehandle' . This may not actually be necessary
 }
 
@@ -152,6 +159,7 @@ my $lineNumPrimary = 1;
 my $primaryFH = openSmartAndGetFilehandle($file1);
 my $numElementsOnPreviousLineInPrimary = undef;
 my $numElementsOnPreviousLineInSecondary = undef;
+my $numMismatchedLineLengths = 0;
 foreach my $line (<$primaryFH>) {
     chomp($line);
     #if(/\S/) { ## if there's some content that's non-spaces-only
@@ -169,7 +177,9 @@ foreach my $line (<$primaryFH>) {
     if (@sp2) {
 	# Got a match for the key in question!
 	if (defined($numElementsOnPreviousLineInSecondary) && $numElementsOnPreviousLineInSecondary != scalar(@sp2)) {
-	    verboseWarnPrint("Warning: the number of elements in <$file2> is not constant. Got a line with this many elements: " . scalar(@sp2) . "\n");	    
+	    ($numMismatchedLineLengths < $MAX_MIS_MATCHED_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 2 ($file2) is not constant. Got a line with this many elements: " . scalar(@sp2));
+	    ($numMismatchedLineLengths == $MAX_MIS_MATCHED_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any further non-constant elements-per-line warnings.");
+	    $numMismatchedLineLengths++;
 	}
 	$numElementsOnPreviousLineInSecondary = scalar(@sp2);
 	
@@ -198,7 +208,9 @@ foreach my $line (<$primaryFH>) {
     #print "$line\n";
 
     if (defined($numElementsOnPreviousLineInSecondary) && $numElementsOnPreviousLineInSecondary != scalar(@sp1)) {
-	verboseWarnPrint("Warning: the number of elements in <$file1> is not constant. Got a line with this many elements: " . scalar(@sp1) . "\n");
+	($numMismatchedLineLengths < $MAX_MIS_MATCHED_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 1 ($file1) is not constant. Line $lineNumPrimary had this many elements: " . scalar(@sp1));
+	($numMismatchedLineLengths == $MAX_MIS_MATCHED_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any further non-constant elements-per-line warnings.");
+	$numMismatchedLineLengths++;
     }
     $numElementsOnPreviousLineInPrimary = scalar(@sp1);
     $lineNumPrimary++;
@@ -278,6 +290,8 @@ OPTIONS are:
 -do DELIM: Set the OUTPUT delimiter to DELIM. (default: same as input delim)
 
 -i or --ignore-case: (Case-insensitive join)
+
+-q or --quiet : No verbose output. May hide some useful warning messages!
 
 Example:
 
