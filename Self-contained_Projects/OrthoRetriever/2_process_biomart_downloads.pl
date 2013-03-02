@@ -32,7 +32,7 @@ print (join(", ", @masterFiles) . "\n");
 #my $MAP_TYPE_COL = 5; # "many-to-one" or "one-to-one" or whatever
 
 foreach my $ff (@mapFiles) {
-    my $annotFinal = "${ff}.ANNOT_FINAL";
+    my $annotFinal = "ANNOT_FINAL_${ff}";
     my $ffWithoutSpeciesName = "${ff}.fixed.header.tmp";
     my $AAA = "aaa.tmp";
     my $BBB = "bbb.tmp";
@@ -63,5 +63,5 @@ foreach my $ff (@mapFiles) {
     my $annotUniqLineLenCount = `count_items_per_line.pl $annotFinal | uniq | wc -l`;    chomp($annotUniqLineLenCount);
     print STDERR "<$uniqLineLenCount>\n";
     ($annotUniqLineLenCount eq '1') or die "Problem: some of the output lines in <$annotFinal> had different lengths (number of tab-delimited elements) after joining them!";
-    die "ok done testing";
+    #die "ok done testing";
 }
