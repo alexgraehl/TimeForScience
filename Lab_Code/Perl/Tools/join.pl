@@ -20,9 +20,11 @@ my $keyCol1 = 1; # indexed from ONE rather than 0!
 my $keyCol2 = 1; # indexed from ONE rather than 0!
 
 my $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED = "\t";
+my $SPLIT_WITH_TRAILING_DELIMS = -1; # You MUST specify this constant value of -1, or else split will by default NOT split consecutive trailing delimiters! This is super important and belongs in EVERY SINGLE split call.
+
 
 my $MAX_DUPE_KEYS_TO_REPORT = 10;
-my $MAX_MIS_MATCHED_LINE_LENGTHS_TO_REPORT = 10;
+my $MAX_WEIRD_LINE_LENGTHS_TO_REPORT = 10;
 
 my $delim1 = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED; # input deilmiter for file 1
 my $delim2 = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED; # input delimiter for file 2
@@ -37,6 +39,8 @@ my $shouldIgnoreCase = 0; # by default, case-sensitive
 
 my $stringWhenNoMatch = undef;
 
+my $allowEmptyKey = 0; # whether we allow a TOTALLY EMPTY value to be a key (default: no)
+
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "q" => sub { $verbose = 0; }
@@ -49,6 +53,7 @@ GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "ob!"  => sub { $stringWhenNoMatch = ''; } # shortcut for just a blank when there's no match. Default is to OMIT lines with no match.
 	   , "do=s" => \$outputDelim
 	   , "neg!" => \$shouldNegate
+	   , "allow-empty-key!" => \$allowEmptyKey
 	   , "i|ignore-case!" => \$shouldIgnoreCase
 	   , "debug!" => \$isDebugging
     ) or printUsageAndQuit();
@@ -105,21 +110,26 @@ sub readIntoHash($$$$$) {
     foreach my $line ( <$theFileHandle> ) {
 	chomp($line);
 	#if(/\S/) { ## if there's some content that's non-spaces-only
-	my @sp1 = split($theDelim, $line);
+	my @sp1 = split($theDelim, $line, $SPLIT_WITH_TRAILING_DELIMS);
 	my $thisKey = $sp1[ ($keyIndexCountingFromOne - 1) ]; # index from ZERO here!
 	if (exists($masterHashRef->{$thisKey})) {
 	    ($numDupeKeys < $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: the key <$thisKey> appeared more than once in <$filename> (on line $lineNum). We are only keeping the FIRST instance of this key.");
 	    ($numDupeKeys == $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any future duplicate key warnings.");
 	    $numDupeKeys++;
 	} else {
-	    # Found a UNIQUE new key!
-	    # ($isDebugging) && print STDERR "Added a line for the key <$thisKey>.\n";
-	    if (defined($uppercaseHashMapRef)) { # apparently we want to deal with things case-insensitively
-		$uppercaseHashMapRef->{uc($thisKey)} = $thisKey; # maps from the UPPER-CASE version of this key back to the one we ACTUALLY put in the hash
+	    # Found a UNIQUE new key! ($isDebugging) && print STDERR "Added a line for the key <$thisKey>.\n";
+	    if ((length($thisKey) == 0) and (!$allowEmptyKey)) {
+		verboseWarnPrint("Warning: skipping an empty key on line <$lineNum>!");
+	    } else {
+		# Key was valid, OR we are allowing empty keys!
+		if (defined($uppercaseHashMapRef)) { # apparently we want to deal with things case-insensitively
+		    $uppercaseHashMapRef->{uc($thisKey)} = $thisKey; # maps from the UPPER-CASE version of this key back to the one we ACTUALLY put in the hash
+		    
+		}
+		# masterHashRef is a hash of ARRAYS: each line is ALREADY SPLIT UP by its delimiter
+		@{$masterHashRef->{$thisKey}} = @sp1; # whole SPLIT UP line, even the key, goes into the hash!!!
+		#print "$line\n";
 	    }
-	    # masterHashRef is a hash of ARRAYS: each line is ALREADY SPLIT UP by its delimiter
-	    @{$masterHashRef->{$thisKey}} = @sp1; # whole SPLIT UP line, even the key, goes into the hash!!!
-	    #print "$line\n";
 	}
 	$lineNum++;
     }
@@ -157,13 +167,13 @@ debugPrint("Read in this many keys: " . scalar(keys(%hash2)) . " from secondary 
 
 my $lineNumPrimary = 1;
 my $primaryFH = openSmartAndGetFilehandle($file1);
-my $numElementsOnPreviousLineInPrimary = undef;
-my $numElementsOnPreviousLineInSecondary = undef;
-my $numMismatchedLineLengths = 0;
+my $prevLineCount1 = undef;
+my $prevLineCount2 = undef;
+my $numWeirdLengths = 0;
 foreach my $line (<$primaryFH>) {
     chomp($line);
     #if(/\S/) { ## if there's some content that's non-spaces-only
-    my @sp1 = split($delim1, $line); # split-up line
+    my @sp1 = split($delim1, $line, $SPLIT_WITH_TRAILING_DELIMS); # split-up line
     my $thisKey = $sp1[ ($keyCol1-1) ]; # index from ZERO here, that's why we subtract 1 from the key column
     my @sp2; # matching split-up line
 
@@ -176,12 +186,12 @@ foreach my $line (<$primaryFH>) {
 
     if (@sp2) {
 	# Got a match for the key in question!
-	if (defined($numElementsOnPreviousLineInSecondary) && $numElementsOnPreviousLineInSecondary != scalar(@sp2)) {
-	    ($numMismatchedLineLengths < $MAX_MIS_MATCHED_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 2 ($file2) is not constant. Got a line with this many elements: " . scalar(@sp2));
-	    ($numMismatchedLineLengths == $MAX_MIS_MATCHED_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any further non-constant elements-per-line warnings.");
-	    $numMismatchedLineLengths++;
+	if (defined($prevLineCount2) && $prevLineCount2 != scalar(@sp2)) {
+	    ($numWeirdLengths < $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 2 ($file2) is not constant. Got a line with this many elements: " . scalar(@sp2) . " (previous line had $prevLineCount2)");
+	    ($numWeirdLengths == $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any further non-constant elements-per-line warnings.");
+	    $numWeirdLengths++;
 	}
-	$numElementsOnPreviousLineInSecondary = scalar(@sp2);
+	$prevLineCount2 = scalar(@sp2);
 	
 	if ($shouldNegate) { 
 	    # Since we are NEGATING this, don't print the match when it's found (only when it isn't...)
@@ -194,12 +204,12 @@ foreach my $line (<$primaryFH>) {
 	debugPrint("Hash2 didn't have the key $thisKey\n");
 	if ($shouldNegate) {
 	    # We didn't find a match for this key, but because we are NEGATING the output, we'll print this line anyway
-	    print STDOUT join($outputDelim, $thisKey, @sp1[getAllNonKeyIndices(@sp1, $keyCol1)]) . "\n";
+	    print STDOUT join($outputDelim, $thisKey, arrayOfNonKeyElements(@sp1, $keyCol1)) . "\n";
 	} else {
 	    if (defined($stringWhenNoMatch)) {
 		# We print the line ANYWAY, because the user specified an outer join, with the "-o SOMETHING" option.
 		my $suffixWhenNoMatch = (length($stringWhenNoMatch)>0) ? "${outputDelim}${stringWhenNoMatch}" : "$stringWhenNoMatch"; # handle zero-length -ob SPECIALLY
-		print STDOUT join($outputDelim, $thisKey, getAllNonKeyIndices(@sp1, $keyCol1)) . $suffixWhenNoMatch . "\n";
+		print STDOUT join($outputDelim, $thisKey, arrayOfNonKeyElements(@sp1, $keyCol1)) . $suffixWhenNoMatch . "\n";
 	    } else {
 		# Omit the line entirely, since there was no match in the secondary file.
 	    }
@@ -207,12 +217,12 @@ foreach my $line (<$primaryFH>) {
     }
     #print "$line\n";
 
-    if (defined($numElementsOnPreviousLineInSecondary) && $numElementsOnPreviousLineInSecondary != scalar(@sp1)) {
-	($numMismatchedLineLengths < $MAX_MIS_MATCHED_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 1 ($file1) is not constant. Line $lineNumPrimary had this many elements: " . scalar(@sp1));
-	($numMismatchedLineLengths == $MAX_MIS_MATCHED_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any further non-constant elements-per-line warnings.");
-	$numMismatchedLineLengths++;
+    if (defined($prevLineCount1) && $prevLineCount1 != scalar(@sp1)) {
+	($numWeirdLengths < $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 1 ($file1) is not constant. Line $lineNumPrimary had this many elements: " . scalar(@sp1) . " (previous line had $prevLineCount1)");
+	($numWeirdLengths == $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any further non-constant elements-per-line warnings.");
+	$numWeirdLengths++;
     }
-    $numElementsOnPreviousLineInPrimary = scalar(@sp1);
+    $prevLineCount1 = scalar(@sp1);
     $lineNumPrimary++;
 }
 if ($file1 ne '-') { close($primaryFH); } # close the file we opened in 'openSmartAndGetFilehandle'
@@ -288,6 +298,10 @@ OPTIONS are:
 --d2 DELIM: Set the input delimiter for FILE2 to DELIM (default: tab).
 
 -do DELIM: Set the OUTPUT delimiter to DELIM. (default: same as input delim)
+
+--allow-empty-key: (Default: do not allow it): Whether to allow an EMPTY key as valid.
+  Note: even when the empty key is NOT allowed for matching, if we do an outer join or
+  negation, we will still print items from FILE1 where the key was blank.
 
 -i or --ignore-case: (Case-insensitive join)
 
