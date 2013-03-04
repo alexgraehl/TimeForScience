@@ -44,7 +44,7 @@ sub stderrPrint {
 }
 
 sub colorString($) {
-    # Requires: use Term::AnsiColor at the top of your file. Note: you have to
+    # Requires: use Term::ANSIColor at the top of your file. Note: you have to
     # PRINT the result of this function! Only sets the output color if the output
     # is a TERMINAL. If the output is NOT a terminal, then colorizing output
     # results in lots of garbage characters (the color control characters)
@@ -57,17 +57,33 @@ sub colorString($) {
     }
 }
 
+sub agwSafeColor($$) {
+    my ($msg, $col) = @_;
+    return (-t STDOUT && USE_COLORS_CONSTANT) ? Term::ANSIColor::colored("$msg", "$col") : $msg;
+}
+
 sub info($) {
     my ($msg) = @_;
-    chomp($msg);
-    print Term::AnsiColor::colored("[INFO]: $msg\n", "blue on_yellow");
+    chomp($msg); # remove newline
+    print STDOUT agwSafeColor("[INFO]: $msg\n", "cyan on_black");
+}
+
+sub bad($) {
+    my ($msg) = @_;
+    chomp($msg); # remove newline
+    print STDOUT agwSafeColor("[ERROR]: $msg\n", "yellow on_red");
+}
+
+sub progressReport($) {
+    my ($msg) = @_;
+    chomp($msg); # remove newline
+    print STDOUT agwSafeColor("[REPORT]: $msg\n", "green on_black");
 }
 
 sub agwFileHasContents($) { my ($fname) = @_; return((-e $fname) && (-s $fname > 0)); }
 sub quitWithUsageError($) { print($_[0] . "\n"); printUsage(); print($_[0] . "\n"); exit(1); }
 sub printUsageAndQuit() { printUsage(); exit(1); }
 sub printUsage() {  print STDOUT <DATA>; }
-
 
 sub addPathToGlobalAnnotationHash($$) {
     my ($shortName, $filePath) = @_;
@@ -84,43 +100,40 @@ sub agnomenGetAnnot($$$$$$$$) {
     ## 0. The "short name" that gets used as the hash ID and also in the filename of the output
     ## 1. The URL to get
     ## 2. the genome build (e.g. hg19, hg18, mm9) for this specific file. Set to "undef" to include this annotation file for ALL genomes.
-    ## 3. $rawZipped -- the name to save the RAW file into. If it is UNDEFINED, then this will just be the last part of the URL.
+    ## 3. $rawZipped -- the name to save the RAW file into. If it is UNDEFINED, then this will just be auto-set as the last part of the URL.
     ## 4. postprocessingCmd: something to do with the file after downloading it. Set it to "undef" if it isn't defined
     ## 5. finalName: the final filename after processing
     ## 6: allowedToUpdateFiles: whether we are allowed to actually modify the files on disk (to update them) or not
     ## 7: genomeBuildToUse: what genome build the user has specified for their input files. We will only add files that ALSO match this genome build.
-    my ($shortName, $url, $theBuildForThisFile, $rawZipped, $postprocessingCmd, $finalName, $allowedToUpdateFiles, $genomeBuildToUse) = @_;
+    my ($shortName          , $url      , $theBuildForThisFile , $rawZipped
+	, $postprocessingCmd, $finalName, $allowedToUpdateFiles, $genomeBuildToUse) = @_;
 
     (defined($shortName) && length($shortName) > 0) or die "Short name must be specified!";
+    (defined($finalName) && length($finalName) > 0) or die "Final name must be defined!";
+
+    (defined($allowedToUpdateFiles)) or die "allowed_to_update must be defined!";
 
     my $origWorkingDir = cwd();
 
     if (defined($genomeBuildToUse) && defined($theBuildForThisFile) && ($theBuildForThisFile ne $genomeBuildToUse)) {
-	stderrPrint(colorString("cyan"));
-	stderrPrint("Not updating or adding the <$theBuildForThisFile> annotation file <$shortName> to the global annotation list, as it is for a different species.\n");
-	stderrPrint(colorString("reset"));
+	info("Not updating or adding the <$theBuildForThisFile> annotation file <$shortName> to the global annotation list, as it is for a different species.");
 	return;
     }
-
-    stderrPrint(colorString("green"));
-    if (defined($genomeBuildToUse)) { stderrPrint("Adding the annotation file <$shortName> to the global annotation list, as it is a valid annotation file for <$genomeBuildToUse>.\n"); }
-    stderrPrint(colorString("reset"));
+    if (defined($genomeBuildToUse)) { info("Adding the annotation file <$shortName> to the global annotation list, as it is a valid annotation file for <$genomeBuildToUse>."); }
 
     my $localDir    = "${globalAnnotDir}/${theBuildForThisFile}";
 
     if (!$allowedToUpdateFiles) {
-	stderrPrint(colorString("cyan"));
-	stderrPrint("[Skipping] re-updating of the file of <$finalName>: the --update flag was not passed into this script.\n");
-	stderrPrint(colorString("reset"));
+	info("[Skipping] re-updating of the file of <$finalName>: the --update flag was not passed into this script.");
     } else {
 	if (!defined($rawZipped)) {
-	    $rawZipped = File::Basename::basename($url); 
-	    info("[INFO] Assuming that the unspecified download filename will be the last part of the url (setting it to <$rawZipped>)");
+	    $rawZipped = File::Basename::basename($url);  # just get the LAST thing from the URL
+	    info("Assuming that the unspecified download filename will be the last part of the url (setting it to <$rawZipped>)");
 	}
 	my $unzippedRaw = $rawZipped;
 	$unzippedRaw    =~ s/[.](bz2|gz|zip)$//i;
-	if ($rawZipped ne File::Basename::basename($url)) {
-	    stderrPrint("This is unusual; the local name of the file ($rawZipped) does not match the filename from the URL (the end of this URL: $url)!");
+	if (defined($url) && ($rawZipped ne File::Basename::basename($url))) {
+	    bad("This is unusual; the local name of the file ($rawZipped) does not match the filename from the URL (the end of this URL: $url)!");
 	}
 
 	system("mkdir -p $localDir");
@@ -132,42 +145,34 @@ sub agnomenGetAnnot($$$$$$$$) {
 	    my $curlCmd = 'curl --remote-name ' . '"' . $url . '"' ;
 	    
 	    if (agwFileHasContents($unzippedRaw)) {
-		stderrPrint(colorString("cyan"));
-		stderrPrint("[Skipping] re-download of <$localDir/$rawZipped> from <$url> -- the final downloaded file <$localDir/$unzippedRaw> already exists.\n");
-		stderrPrint(colorString("reset"));
+		progressReport("[Skipping] re-download of <$localDir/$rawZipped> from <$url> -- the final downloaded file <$localDir/$unzippedRaw> already exists.\n");
 	    } else {
 		## Do we need to download the file?
 		if (!agwFileHasContents($rawZipped)) {
 		    ## Better download it!
-		    stderrPrint(colorString("green"));
-		    stderrPrint("Since we didn't find a file at <$rawZipped>, we will start the download here...\n");
-		    stderrPrint("Downloading $url --> $localDir/$rawZipped...\n");
-		    stderrPrint(colorString("reset"));
+		    progressReport("Since we didn't find a file at <$rawZipped>, we will start the download here...\n");
+		    progressReport("Downloading $url --> $localDir/$rawZipped...\n");
 		    agwSystemDieOnNonzero($curlCmd);
 		} else {
-		    stderrPrint("[Skipping] re-download of <$rawZipped> from $url, as that file already exists.\n");
+		    progressReport("[Skipping] re-download of <$rawZipped> from $url, as that file already exists.\n");
 		}
 
 		# Automatically unzip the file...
 		if ($rawZipped =~ m/[.]gz$/) { agwSystemDieOnNonzero("gunzip --stdout $rawZipped > $unzippedRaw"); }
 		if ($rawZipped =~ m/[.]bz2$/) { agwSystemDieOnNonzero("bunzip2 --stdout $rawZipped > $unzippedRaw"); }
 		if ($rawZipped =~ m/[.]zip$/) { agwSystemDieOnNonzero("unzip $rawZipped"); }
-		stderrPrint("[Done] Successfully downloaded a file to the uncompressed location <$localDir/$unzippedRaw>\n");
+		progressReport("[Done] Successfully downloaded a file to the uncompressed location <$localDir/$unzippedRaw>\n");
 	    }
 	}
     
 	## Now the file should be downloaded, if necessary. We may also have to do a post-processing step, below.
 	if (defined($postprocessingCmd) && $postprocessingCmd && length($postprocessingCmd) > 0) {
 	    if (agwFileHasContents($finalName)) {
-		stderrPrint(colorString("cyan"));
-		stderrPrint("[Skipping] re-generation of $localDir/$finalName, as the output file already exists.\n");
-		stderrPrint(colorString("reset"));
+		progressReport("[Skipping] re-generation of $localDir/$finalName, as the output file already exists.\n");
 	    } else {
-		stderrPrint(colorString("green"));
-		stderrPrint("Operating in local directory <$localDir>. Here is a list of all the files in this directory:\n" . join("   * ", `ls`) . "\n");
-		stderrPrint("Now running this post-processing command:\n");
-		stderrPrint(colorString("reset"));
-		stderrPrint("$postprocessingCmd\n");
+		progressReport("Operating in local directory <$localDir>. Here is a list of all the files in this directory:\n" . join("   * ", `ls`) . "\n");
+		progressReport("Now running this post-processing command:\n");
+		progressReport("$postprocessingCmd\n");
 		agwSystemDieOnNonzero($postprocessingCmd);
 		if (not -e $finalName) { die "Uh oh, we failed to generate the file <$finalName>! Maybe the shell command had a mis-typed final filename, or perhaps something else went wrong?\n"; }
 	    }
@@ -190,9 +195,7 @@ sub handleUserSpecifiedDatabases($$) {
     # and: $referenceToHash: a reference (\%hash would be passed in) to a hash where we store the results.
     my %newHash = ();
     if (defined($dataString)) {
-	($verbose) && stderrPrint(colorString("green"));
-	($verbose) && stderrPrint(qq{[INFO] The user specified that only the following annotation databases should be used: $dataString\n});
-	($verbose) && stderrPrint(colorString("reset"));
+	($verbose) && info(qq{The user specified that only the following annotation databases should be used: $dataString\n});
 	my @splitUpDb = split(/$DATABASE_INPUT_STRING_DELIM/, $dataString);
 	for my $theItem (@splitUpDb) {
 	    $newHash{$theItem} = 1; ## Let's remember that we SHOULD be using this database that the user specified on the command line!
@@ -200,9 +203,7 @@ sub handleUserSpecifiedDatabases($$) {
 	}
 	(scalar(keys(%newHash)) > 0) or die "The user specified some specific databases to use with the --databases (or -d) flag, but we couldn't interpret those as any actual valid databases! We ended up with ZERO databases. Note that this needs to be a comma-delimited string with NO SPACES in it.\n";
     } else {
-	($verbose) && stderrPrint(colorString("green"));
-	($verbose) && stderrPrint(qq{[INFO] Since no particular databases were specified, we will use ALL valid annotation databases.\n});
-	($verbose) && stderrPrint(colorString("reset"));
+	($verbose) && info(qq{Since no particular databases were specified, we will use ALL valid annotation databases.\n});
     }
     return(%newHash);
 }
@@ -225,12 +226,7 @@ sub main() { # Main program
 	       , "databases|database|db=s" => \$databaseStr # comma-delimited string
 	) or printUsageAndQuit();
 
-    stderrPrint(colorString("green"));
-    stderrPrint("-------------------------------\n");
-    stderrPrint("Starting...!\n");
-    stderrPrint("-------------------------------\n");
-    stderrPrint(colorString("reset"));
-
+    progressReport("-"x80 ."\n" . "Starting...!\n" . "-"x80 . "\n");
 
     my $numUnprocessedArgs = scalar(@ARGV);
     #if ($numUnprocessedArgs != 2) {
@@ -254,11 +250,9 @@ sub main() { # Main program
     my %databaseHash = handleUserSpecifiedDatabases($databaseStr, "verbose_messages");
     my $shouldUseAllDatabases = (!defined($databaseStr));
 
-    stderrPrint(colorString("green"));
-    stderrPrint("* Searching for annotation files in: <$globalAnnotDir>\n");
-    if (defined($genomeBuild)) { stderrPrint("* Using the specified genome build: <$genomeBuild>\n"); }
-    if (defined($genomeBuild)) { stderrPrint("* Searching for BED annotation files in the following file path: <$globalAnnotDir/$genomeBuild/>\n"); }
-    stderrPrint(colorString("reset"));
+    progressReport("* Searching for annotation files in: <$globalAnnotDir>\n");
+    if (defined($genomeBuild)) { progressReport("* Using the specified genome build: <$genomeBuild>\n"); }
+    if (defined($genomeBuild)) { progressReport("* Searching for BED annotation files in the following file path: <$globalAnnotDir/$genomeBuild/>\n"); }
 
     if (scalar(@inputFiles) == 0 && !$shouldUpdate) {
 	## Need to have some files to annotate!
@@ -305,51 +299,47 @@ sub main() { # Main program
     
     agnomenGetAnnot("hg19 conservation track: phyloP 46-way all-species conservation", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/phyloP46wayAll.txt.gz", "hg19", undef
 		    , qq{cat phyloP46wayAll.txt | cut -f 2- > browser_phyloP46wayAll.bed}, "browser_phyloP46wayAll.bed"
-		    , $shouldUpdate, $genomeBuild)
+		    , $shouldUpdate, $genomeBuild);
     #"hg19 conservation track: PhastCons 46-way all-species conservation", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/phastCons46way.txt.gz"
-
+    
     #"GNF expression atlas", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/gnfAtlas2.txt.gz"
-	agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Gm12878 cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmGm12878HMM.txt.gz", "hg19"
-			, qq{cat phyloP46wayAll.txt | cut -f 2- > browser_phyloP46wayAll.bed}, "browser_phyloP46wayAll.bed"
-			, $shouldUpdate, $genomeBuild);
-	agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for H1 HESC", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmH1hescHMM.txt.gz", "hg19"
-			, qq{cat wgEncodeBroadHmmH1hescHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmH1hescHMM.bed}, "wgEncodeBroadHmmH1hescHMM.bed"
-			, $shouldUpdate, $genomeBuild);
-	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Hepg2 cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHepg2HMM.txt.gz", "hg19"
-	# 		, qq{cat wgEncodeBroadHmmHepg2HMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHepg2HMM.bed}, "browser_wgEncodeBroadHmmHepg2HMM.bed"
-	# 		, $shouldUpdate, $genomeBuild);
-	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Hmec cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHmecHMM.txt.gz", "hg19"
-	# 		, qq{cat wgEncodeBroadHmmHmecHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHmecHMM.bed}, "browser_wgEncodeBroadHmmHmecHMM.bed"
-	# 		, $shouldUpdate, $genomeBuild);
-	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Hsmm cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHsmmHMM.txt.gz", "hg19"
-	# 		, qq{cat wgEncodeBroadHmmHsmmHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHsmmHMM.bed}, "browser_wgEncodeBroadHmmHsmmHMM.bed"
-	# 		, $shouldUpdate, $genomeBuild);
-	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Huvec cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHuvecHMM.txt.gz", "hg19"
-	# 		, qq{cat wgEncodeBroadHmmHuvecHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHuvecHMM.bed}, "browser_wgEncodeBroadHmmHuvecHMM.bed"
-	# 		, $shouldUpdate, $genomeBuild);
-	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for K562 cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmK562HMM.txt.gz", "hg19"
-	# 		, qq{cat wgEncodeBroadHmmK562HMM.txt  | cut -f 2- > browser_wgEncodeBroadHmmK562HMM.bed}, "browser_wgEncodeBroadHmmK562HMM.bed"
-	# 		, $shouldUpdate, $genomeBuild);
-	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Nhek cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmNhekHMM.txt.gz", "hg19"
-	# 		, qq{cat wgEncodeBroadHmmNhekHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmNhekHMM.bed}, "browser_wgEncodeBroadHmmNhekHMM.bed"
-	# 		, $shouldUpdate, $genomeBuild);
-	# agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Nhlf cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmNhlfHMM.txt.gz", "hg19"
-	# 		, qq{cat wgEncodeBroadHmmNhlfHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmNhlfHMM.bed}, "browser_wgEncodeBroadHmmNhlfHMM.bed"
-	# 		, $shouldUpdate, $genomeBuild);
-	
+    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Gm12878 cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmGm12878HMM.txt.gz", "hg19", undef
+		    , qq{cat phyloP46wayAll.txt | cut -f 2- > browser_phyloP46wayAll.bed}, "browser_phyloP46wayAll.bed", $shouldUpdate, $genomeBuild);
 
+    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for H1 HESC", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmH1hescHMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmH1hescHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmH1hescHMM.bed}, "browser_wgEncodeBroadHmmH1hescHMM.bed", $shouldUpdate, $genomeBuild);
+    
+    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Hepg2 cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHepg2HMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmHepg2HMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHepg2HMM.bed}, "browser_wgEncodeBroadHmmHepg2HMM.bed", $shouldUpdate, $genomeBuild);
+
+    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Hmec cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHmecHMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmHmecHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHmecHMM.bed}, "browser_wgEncodeBroadHmmHmecHMM.bed", $shouldUpdate, $genomeBuild);
+
+    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Hsmm cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHsmmHMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmHsmmHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHsmmHMM.bed}, "browser_wgEncodeBroadHmmHsmmHMM.bed", $shouldUpdate, $genomeBuild);
+
+    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Huvec cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHuvecHMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmHuvecHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHuvecHMM.bed}, "browser_wgEncodeBroadHmmHuvecHMM.bed", $shouldUpdate, $genomeBuild);
+
+    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for K562 cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmK562HMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmK562HMM.txt  | cut -f 2- > browser_wgEncodeBroadHmmK562HMM.bed}, "browser_wgEncodeBroadHmmK562HMM.bed", $shouldUpdate, $genomeBuild);
+
+    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Nhek cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmNhekHMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmNhekHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmNhekHMM.bed}, "browser_wgEncodeBroadHmmNhekHMM.bed", $shouldUpdate, $genomeBuild);
+
+    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Nhlf cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmNhlfHMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmNhlfHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmNhlfHMM.bed}, "browser_wgEncodeBroadHmmNhlfHMM.bed", $shouldUpdate, $genomeBuild);
+	
 
     #my @col1 = @{readFileColumn($filename1, 0, $delim)};
     
     #my $annot1 = "AnnotatedFeatures.gff"; #"hb.bed"; #"human_ens_manual.bed"; #"b.gtf"; #"AnnotatedFeatures.gff"; #"annot.bed";
-    #stderrPrint("Warning: using a manually-selected annotation file here.\n");
+    #progressReport("Warning: using a manually-selected annotation file here.\n");
 
     if ($shouldUpdate) {
-	    stderrPrint(colorString("green"));
-	    stderrPrint("-------------------------------\n");
-	    stderrPrint("[Finished updating!] Because we are UPDATING, we ignored any additional items specified on the command line.\n");
-	    stderrPrint("-------------------------------\n");
-	    stderrPrint(colorString("reset"));
+	    progressReport("-------------------------------\n");
+	    progressReport("[Finished updating!] Because we are UPDATING, we ignored any additional items specified on the command line.\n");
+	    progressReport("-------------------------------\n");
     } else { 
 	unless (defined($genomeBuild) && (length($genomeBuild) > 0)) { quitWithUsageError(">>> ERROR >>> it is MANDATORY to specify a genome build (example: hg19 or mm9). You do this with a command like this:   --species=hg19  or  -s hg19 \nCheck the annotation directory for a list of valid species.\n"); }
 
@@ -363,11 +353,8 @@ sub main() { # Main program
 	for my $input (@inputFiles) {
 	    if ($input !~ m/[.]bed$/i) {
 		## Expecting the $input to be a BED file--- check to see if it has ".bed" as an extension?
-		stderrPrint("Warning: the input file $input was EXPECTED to be a .bed file, but it appears not to have the .bed filename extension. Double-check to make sure this is the right file! Continuing on anyway, assuming that it is a bed file...\n");
+		bad("Warning: the input file $input was EXPECTED to be a .bed file, but it appears not to have the .bed filename extension. Double-check to make sure this is the right file! Continuing on anyway, assuming that it is a bed file...\n");
 	    }
-	    ## 
-
-
 
 	    while (my($annotShortName, $annotFile) = each(%GLOBAL_ANNOT_PATHS)) {
 		
@@ -379,39 +366,30 @@ sub main() { # Main program
 		if ($shouldUseAllDatabases || exists($databaseHash{lc($annotShortName)})) {
 		    # Looks like we should include this annotation file!
 		    my $tempFile = "1.agnomen.agw.in.progress." . int(rand(99999999)) . ".temp.tmp"; ## Temp file that is unlikely to already be in use!
-		    
 		    my $theOutputNameBase = ($longOutputNames) ? $input : basename($input); # see if we should use the FULL output name, with directory paths, or just the filename without the path. This is an option (--longnames)
 		    my $agnomenOutputFile = qq{agnomen.$theOutputNameBase.$annotShortName.out.txt};
 		    $agnomenOutputFile =~ s/[;:,\/\\]/_/g; ## Remove potentially "unsafe" characters from the output filename
 		    my $cmd = qq{ $INTERSECT_BED_EXE -wao -a ${input} -b ${annotFile} > $tempFile } . qq{ && } . qq{ /bin/mv -f $tempFile $agnomenOutputFile};
-		    stderrPrint(colorString("green"));
-		    stderrPrint(qq{[ANNOTATING] using the data in $annotShortName\n});
-		    stderrPrint(qq{[ANNOTATING]...\n    Running this command: $cmd\n});
-		    stderrPrint(colorString("reset"));
+		    progressReport(qq{[ANNOTATING] using the data in $annotShortName\n});
+		    progressReport(qq{[ANNOTATING]...\n    Running this command: $cmd\n});
 		    my $intersectStatus = systemBash($cmd);
 		    if ($intersectStatus != 0) {
-			stderrPrint("Uh oh, non-zero exit status!");
+			bad("Uh oh, non-zero exit status!");
 		    } else {
 			$numAnnotationsDone++;
 		    }
 		} else {
-		    stderrPrint(colorString("cyan"));
-		    stderrPrint(qq{[OMITTING] the annotation data in <$annotShortName>, as that database was not specified in the database string ($databaseStr).\n});
-		    stderrPrint(colorString("reset"));
+		    info(qq{[OMITTING] the annotation data in <$annotShortName>, as that database was not specified in the database string ($databaseStr).\n});
 		}
 	    }
 	}
 
 	if ($numAnnotationsDone == 0) {
-	    stderrPrint(colorString("red"));
-	    stderrPrint(qq{[FAILURE] It appears that we did not actually generate any annotation files. Check to see if perhaps the databases you have specified are invalid, or the species is not correct. Or maybe you need to run --update to generate the local databases.\n});
-	    stderrPrint(colorString("reset"));
+	    bad(qq{Failure: It appears that we did not actually generate any annotation files. Check to see if perhaps the databases you have specified are invalid, or the species is not correct. Or maybe you need to run --update to generate the local databases.\n});
 	} else {
-	    stderrPrint(colorString("green"));
-	    stderrPrint("-------------------------------\n");
-	    stderrPrint("[Done!]\n");
-	    stderrPrint("-------------------------------\n");
-	    stderrPrint(colorString("reset"));
+	    progressReport("-------------------------------\n");
+	    progressReport("[Done!]\n");
+	    progressReport("-------------------------------\n");
 	}
     }
 
