@@ -23,6 +23,9 @@ my $INTERSECT_BED_EXE_DEFAULT = "intersectBed";
 
 my $SORT_FOR_INTERSECT_BED = " sort -t '\t' -k1,1 -k2,2n ";   # sorts a BED file by chromosome and then by start position in ascending order. Apparently end position is not important for intersectBed, based on the docs at: /work/Apps/Bio/bedtools/bin/intersectBed
 
+my $DISCARD_FIRST_COLUMN = " cut -f 2- ";
+my $HANDLE_CHR_PREFIX_AND_ALSO_SORT = " bed_and_gtf_handle_chr_prefix.pl "; # Alex's script! It's located in ~/TimeForScience/Lab_Tools/Perl/Tools/bed_and_gtf_handle_chr_prefix.pl
+
 my $globalAnnotDir = "./Z_AGNOMEN_DATA"; # default!
 
 my $DATABASE_INPUT_STRING_DELIM = ','; # comma-delimiting in the input string, example: --databases=human_ensembl,hg19browser,somethingelse
@@ -104,12 +107,12 @@ sub agnomenGetAnnot($$$$$$$$) {
     ## 0. The "short name" that gets used as the hash ID and also in the filename of the output
     ## 1. The URL to get
     ## 2. the genome build (e.g. hg19, hg18, mm9) for this specific file. Set to "undef" to include this annotation file for ALL genomes.
-    ## 3. $rawZipped -- the name to save the RAW file into. If it is UNDEFINED, then this will just be auto-set as the last part of the URL.
+    ## 3. $rawDownloadFileName -- the name to save the RAW file into. If it is UNDEFINED, then this will just be auto-set as the last part of the URL.
     ## 4. postprocessingCmd: something to do with the file after downloading it. Set it to "undef" if it isn't defined
     ## 5. finalName: the final filename after processing
     ## 6: allowedToUpdateFiles: whether we are allowed to actually modify the files on disk (to update them) or not
     ## 7: genomeBuildToUse: what genome build the user has specified for their input files. We will only add files that ALSO match this genome build.
-    my ($shortName          , $url      , $theBuildForThisFile , $rawZipped
+    my ($shortName          , $url      , $theBuildForThisFile , $rawDownloadFileName
 	, $postprocessingCmd, $finalName, $allowedToUpdateFiles, $genomeBuildToUse) = @_;
 
     (defined($shortName) && length($shortName) > 0) or die "Short name must be specified!";
@@ -130,42 +133,26 @@ sub agnomenGetAnnot($$$$$$$$) {
     if (!$allowedToUpdateFiles) {
 	info("[Skipping] re-updating of the file of <$finalName>: the --update flag was not passed into this script.");
     } else {
-	if (!defined($rawZipped)) {
-	    $rawZipped = File::Basename::basename($url);  # just get the LAST thing from the URL
-	    info("Assuming that the unspecified download filename will be the last part of the url (setting it to <$rawZipped>)");
+	if (!defined($rawDownloadFileName)) {
+	    $rawDownloadFileName = File::Basename::basename($url);  # just get the LAST thing from the URL
+	    info("Assuming that the unspecified download filename will be the last part of the url (setting it to <$rawDownloadFileName>)");
 	}
-	my $unzippedRaw = $rawZipped;
-	$unzippedRaw    =~ s/[.](bz2|gz|zip)$//i;
-	if (defined($url) && ($rawZipped ne File::Basename::basename($url))) {
-	    bad("This is unusual; the local name of the file ($rawZipped) does not match the filename from the URL (the end of this URL: $url)!");
+	if (defined($url) && ($rawDownloadFileName ne File::Basename::basename($url))) {
+	    bad("This is unusual; the local name of the file ($rawDownloadFileName) does not match the filename from the URL (the end of this URL: $url)!");
 	}
-
 	system("mkdir -p $localDir");
 	chdir($localDir);
-
 	if (defined($url) && $url) {
-	    if ($url =~ /^(wget|curl)/) { die "Your download url starts with 'wget' or 'curl'. It should start with ftp/http/something like that, instead. Don't put the command name (wget/curl) in the url!"; }
-
-	    my $curlCmd = 'curl --remote-name ' . '"' . $url . '"' ;
-	    
-	    if (agwFileHasContents($unzippedRaw)) {
-		progressReport("[Skipping] re-download of <$localDir/$rawZipped> from <$url> -- the final downloaded file <$localDir/$unzippedRaw> already exists.\n");
+	    (not($url =~ /^(wget|curl)/)) or die "Your download url starts with 'wget' or 'curl'. It should start with ftp/http/something like that, instead. Don't put the command name (wget/curl) in the url!";
+	    my $curlCmd = 'curl --remote-name ' . '"' . $url . '"' ; # downloads to whatever the remote name of the file was
+	    #my $unzippedVersion = $rawDownloadFileName; $unzippedVersion    =~ s/[.](bz2|gz|zip)$//i;
+	    if (agwFileHasContents("./$rawDownloadFileName")) { # changed directory ALREADY!
+		progressReport("[Skipping] re-download of <$localDir/$rawDownloadFileName> from <$url> -- the downloaded file <$localDir/$rawDownloadFileName> already exists.\n");
 	    } else {
-		## Do we need to download the file?
-		if (!agwFileHasContents($rawZipped)) {
-		    ## Better download it!
-		    progressReport("Since we didn't find a file at <$rawZipped>, we will start the download here...\n");
-		    progressReport("Downloading $url --> $localDir/$rawZipped...\n");
-		    agwSystemDieOnNonzero($curlCmd);
-		} else {
-		    progressReport("[Skipping] re-download of <$rawZipped> from $url, as that file already exists.\n");
-		}
-
-		# Automatically unzip the file...
-		if ($rawZipped =~ m/[.]gz$/) { agwSystemDieOnNonzero("gunzip --stdout $rawZipped > $unzippedRaw"); }
-		if ($rawZipped =~ m/[.]bz2$/) { agwSystemDieOnNonzero("bunzip2 --stdout $rawZipped > $unzippedRaw"); }
-		if ($rawZipped =~ m/[.]zip$/) { agwSystemDieOnNonzero("unzip $rawZipped"); }
-		progressReport("[Done] Successfully downloaded a file to the uncompressed location <$localDir/$unzippedRaw>\n");
+		progressReport("Since we didn't find a file at <$localDir/$rawDownloadFileName>, we will start the download here...\n");
+		progressReport("Downloading $url --> <$localDir/$rawDownloadFileName>...\n");
+		agwSystemDieOnNonzero($curlCmd);
+		progressReport("[Done] Successfully downloaded a file to this location <$localDir/$rawDownloadFileName>\n");
 	    }
 	}
     
@@ -182,13 +169,11 @@ sub agnomenGetAnnot($$$$$$$$) {
 	    }
 	} else {
 	    # No postprocessing to do, so we just want to use the regular file as an annotation file
-	    if ($unzippedRaw ne $finalName) { die "Uh oh, the final file path was expected to be <$unzippedRaw>, but it was manually specified as <$finalName>, which is NOT identical."; }
 	}
     }
 
     chdir($origWorkingDir);
-
-    addPathToGlobalAnnotationHash($shortName, "$localDir/$finalName");
+    addPathToGlobalAnnotationHash($shortName, "$localDir/$finalName"); # the actual full path to this file
 }
 
 
@@ -277,82 +262,80 @@ sub main() { # Main program
     }
 
     my $DOLLAR_SIGN = '$';
-    agnomenGetAnnot("Mouse_Ensembl", "ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz"
-		    , "mm9", undef, undef
-		    , "Mus_musculus.GRCm38.68.gtf", $shouldUpdate, $genomeBuild);
+    agnomenGetAnnot("Mouse_Ensembl", "ftp://ftp.ensembl.org/pub/release-68/gtf/mus_musculus/Mus_musculus.GRCm38.68.gtf.gz", "mm9", undef
+		    , "zcat Mus_musculus.GRCm38.68.gtf.gz | $HANDLE_CHR_PREFIX_AND_ALSO_SORT > processed_Mus_musculus.GRCm38.68.gtf"
+		    , "processed_Mus_musculus.GRCm38.68.gtf", $shouldUpdate, $genomeBuild);
 
-    agnomenGetAnnot("Zebrafish_Ensembl", "ftp://ftp.ensembl.org/pub/release-70/gtf/danio_rerio/Danio_rerio.Zv9.70.gtf.gz"
-		    , "danRer7", undef, undef
-		    , "Danio_rerio.Zv9.70.gtf", $shouldUpdate, $genomeBuild);
+    agnomenGetAnnot("Zebrafish_Ensembl", "ftp://ftp.ensembl.org/pub/release-70/gtf/danio_rerio/Danio_rerio.Zv9.70.gtf.gz", "danRer7", undef
+		    , "zcat Danio_rerio.Zv9.70.gtf.gz | $HANDLE_CHR_PREFIX_AND_ALSO_SORT > processed_Danio_rerio.Zv9.70.gtf"
+		    , "processed_Danio_rerio.Zv9.70.gtf", $shouldUpdate, $genomeBuild);
 
-    agnomenGetAnnot("Chicken_Ensembl", "ftp://ftp.ensembl.org/pub/release-70/gtf/gallus_gallus/Gallus_gallus.WASHUC2.70.gtf.gz"
-		    , "galGal3", undef, undef
-		    , "Gallus_gallus.WASHUC2.70.gtf", $shouldUpdate, $genomeBuild);
+    agnomenGetAnnot("Chicken_Ensembl", "ftp://ftp.ensembl.org/pub/release-70/gtf/gallus_gallus/Gallus_gallus.WASHUC2.70.gtf.gz", "galGal3", undef
+		    , "zcat Gallus_gallus.WASHUC2.70.gtf.gz | $HANDLE_CHR_PREFIX_AND_ALSO_SORT > processed_Gallus_gallus.WASHUC2.70.gtf"
+		    , "processed_Gallus_gallus.WASHUC2.70.gtf", $shouldUpdate, $genomeBuild);
 
     # BedTools documentation is available at: http://bioinf.comav.upv.es/courses/sequence_analysis/bedtools.html
-    agnomenGetAnnot("Human_Ensembl", undef, 
-		    , "hg19", "human_ensembl_via_perl_api.tab"
+    agnomenGetAnnot("Human_Ensembl", undef, , "hg19", "human_ensembl_via_perl_api.tab"
 		    , ( qq{ if [ ! -f human_ensembl_1_raw.tab.gz ]; then echo "\n>>>[NOTE] -- The ENSEMBL GRABBER takes about 18 hours to download data via Perl API! If you are reading this message, be prepared to wait QUITE A WHILE for the data to get downloaded!\n"; $AGNOMEN_ENSEMBL_GRABBER_SCRIPT | gzip > human_ensembl_1_raw.tab.gz ; fi; }
-			. qq{ zcat human_ensembl_1_raw.tab.gz | grep -v '^[#]' | grep -v '^$DOLLAR_SIGN' | $SORT_FOR_INTERSECT_BED | uniq > human_ensembl_2.tmp ; } # sorts a BED file by chromosome and then by start position in ascending order. Apparently end position is not important for intersectBed, based on the docs at: /work/Apps/Bio/bedtools/bin/intersectBed
-			. qq{ sed 's/^/chr/' human_ensembl_2.tmp > human_ensembl_3.tmp ; } ## add 'chr' to the beginning of each line
-			. qq{ cat human_ensembl_2.tmp human_ensembl_3.tmp > human_ensembl_via_perl_api.tab ; } # options: have both the without-chr and the with-chr chromosome names!
-			. qq{ /bin/rm human_ensembl_[23].tmp ; } # remove temp files
-		    ), "human_ensembl_via_perl_api.tab", $shouldUpdate, $genomeBuild);
+			. qq{ zcat human_ensembl_1_raw.tab.gz | grep -v '^[#]' | grep -v '^$DOLLAR_SIGN' | $HANDLE_CHR_PREFIX_AND_ALSO_SORT | uniq > processed_human_ensembl_via_perl_api.tab ; } # sorts a BED file by chromosome and then by start position in ascending order. Apparently end position is not important for intersectBed, based on the docs at: /work/Apps/Bio/bedtools/bin/intersectBed
+		    ), "processed_human_ensembl_via_perl_api.tab", $shouldUpdate, $genomeBuild);
 
     agnomenGetAnnot("Human_Ensembl_Mini_Test_First_10K_Rows", undef,
 		    , "hg19", "human_ensembl_via_perl_api.tab"
-		    , ( qq{ head -n 10000 human_ensembl_via_perl_api.tab > minitest.tab }
+		    , ( qq{ head -n 10000 human_ensembl_via_perl_api.tab | $HANDLE_CHR_PREFIX_AND_ALSO_SORT > minitest.tab }
 		    ), "minitest.tab", $shouldUpdate, $genomeBuild);
 
 
     # hg19: Phast Conservation 46-way placental
+    # columns 2 and onward are the only ones that are interesting ones from the genome browser -- discard the FIRST column!
     agnomenGetAnnot("hg19_phast_46_placental_conservation", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/phastCons46wayPlacental.txt.gz", "hg19", undef
-		    , qq{cat phastCons46wayPlacental.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_phastCons46wayPlacental.bed} # columns 2 and onward are the only ones that are interesting for the genome browser!
+		    , qq{zcat phastCons46wayPlacental.txt.gz | cut -f 2-8,10- | $HANDLE_CHR_PREFIX_AND_ALSO_SORT  > browser_phastCons46wayPlacental.bed}
 		    , qq{browser_phastCons46wayPlacental.bed}, $shouldUpdate, $genomeBuild);
 
     # hg19: conservation track: phyloP 46-way all-species conservation
+    # columns 2 and onward are the only ones that are interesting ones from the genome browser -- discard the FIRST column!
     agnomenGetAnnot("hg19_phylo_46_all_species_conservation", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/phyloP46wayAll.txt.gz", "hg19", undef
-		    , qq{cat phyloP46wayAll.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_phyloP46wayAll.bed}, "browser_phyloP46wayAll.bed"
-		    , $shouldUpdate, $genomeBuild);
+		    , qq{zcat phyloP46wayAll.txt.gz | cut -f 2-8,10- | $HANDLE_CHR_PREFIX_AND_ALSO_SORT  > browser_phyloP46wayAll.bed}
+		    , "browser_phyloP46wayAll.bed", $shouldUpdate, $genomeBuild);
     #"hg19 conservation track: PhastCons 46-way all-species conservation", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/phastCons46way.txt.gz"
     
     #"GNF expression atlas", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/gnfAtlas2.txt.gz"
 
     # "Human (hg19): Broad Institute chromatin HMM for Gm12878 cell line"
     agnomenGetAnnot("hg19_broad_chromatin_gm12878", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmGm12878HMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmGm12878HMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmGm12878HMM.bed}, "browser_wgEncodeBroadHmmGm12878HMM.bed", $shouldUpdate, $genomeBuild);
+		    , qq{zcat wgEncodeBroadHmmGm12878HMM.txt.gz | ${DISCARD_FIRST_COLUMN} | $HANDLE_CHR_PREFIX_AND_ALSO_SORT  > browser_wgEncodeBroadHmmGm12878HMM.bed}, "browser_wgEncodeBroadHmmGm12878HMM.bed", $shouldUpdate, $genomeBuild);
 
     #"Human (hg19): Broad Institute chromatin HMM for H1 HESC"
     agnomenGetAnnot("hg19_broad_chromatin_h1hesc", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmH1hescHMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmH1hescHMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmH1hescHMM.bed}, "browser_wgEncodeBroadHmmH1hescHMM.bed", $shouldUpdate, $genomeBuild);
+		    , qq{zcat wgEncodeBroadHmmH1hescHMM.txt.gz | ${DISCARD_FIRST_COLUMN} | $HANDLE_CHR_PREFIX_AND_ALSO_SORT  > browser_wgEncodeBroadHmmH1hescHMM.bed}, "browser_wgEncodeBroadHmmH1hescHMM.bed", $shouldUpdate, $genomeBuild);
     
     # "Human (hg19): Broad Institute chromatin HMM for Hepg2 cell line"
     agnomenGetAnnot("hg19_broad_chromatin_hepg2", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHepg2HMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmHepg2HMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmHepg2HMM.bed}, "browser_wgEncodeBroadHmmHepg2HMM.bed", $shouldUpdate, $genomeBuild);
+		    , qq{zcat wgEncodeBroadHmmHepg2HMM.txt.gz | ${DISCARD_FIRST_COLUMN} | $HANDLE_CHR_PREFIX_AND_ALSO_SORT  > browser_wgEncodeBroadHmmHepg2HMM.bed}, "browser_wgEncodeBroadHmmHepg2HMM.bed", $shouldUpdate, $genomeBuild);
 
     # "Human (hg19): Broad Institute chromatin HMM for Hmec cell line"
     agnomenGetAnnot("hg19_broad_chromatin_hmec", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHmecHMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmHmecHMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmHmecHMM.bed}, "browser_wgEncodeBroadHmmHmecHMM.bed", $shouldUpdate, $genomeBuild);
+		    , qq{zcat wgEncodeBroadHmmHmecHMM.txt.gz | ${DISCARD_FIRST_COLUMN} | $HANDLE_CHR_PREFIX_AND_ALSO_SORT  > browser_wgEncodeBroadHmmHmecHMM.bed}, "browser_wgEncodeBroadHmmHmecHMM.bed", $shouldUpdate, $genomeBuild);
 
     # "Human (hg19): Broad Institute chromatin HMM for Hsmm cell line"
     agnomenGetAnnot("hg19_broad_chromatin_hsmm", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHsmmHMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmHsmmHMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmHsmmHMM.bed}, "browser_wgEncodeBroadHmmHsmmHMM.bed", $shouldUpdate, $genomeBuild);
+		    , qq{zcat wgEncodeBroadHmmHsmmHMM.txt.gz | ${DISCARD_FIRST_COLUMN} | $HANDLE_CHR_PREFIX_AND_ALSO_SORT  > browser_wgEncodeBroadHmmHsmmHMM.bed}, "browser_wgEncodeBroadHmmHsmmHMM.bed", $shouldUpdate, $genomeBuild);
 
     # "Human (hg19): Broad Institute chromatin HMM for Huvec cell line"
     agnomenGetAnnot("hg19_broad_chromatin_huvec", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHuvecHMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmHuvecHMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmHuvecHMM.bed}, "browser_wgEncodeBroadHmmHuvecHMM.bed", $shouldUpdate, $genomeBuild);
+		    , qq{zcat wgEncodeBroadHmmHuvecHMM.txt.gz | ${DISCARD_FIRST_COLUMN} | $HANDLE_CHR_PREFIX_AND_ALSO_SORT  > browser_wgEncodeBroadHmmHuvecHMM.bed}, "browser_wgEncodeBroadHmmHuvecHMM.bed", $shouldUpdate, $genomeBuild);
 
     # "Human (hg19): Broad Institute chromatin HMM for K562 cell line"
     agnomenGetAnnot("hg19_broad_chromatin_k562", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmK562HMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmK562HMM.txt  | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmK562HMM.bed}, "browser_wgEncodeBroadHmmK562HMM.bed", $shouldUpdate, $genomeBuild);
+		    , qq{zcat wgEncodeBroadHmmK562HMM.txt.gz  | ${DISCARD_FIRST_COLUMN} | $HANDLE_CHR_PREFIX_AND_ALSO_SORT  > browser_wgEncodeBroadHmmK562HMM.bed}, "browser_wgEncodeBroadHmmK562HMM.bed", $shouldUpdate, $genomeBuild);
 
     # "Human (hg19): Broad Institute chromatin HMM for Nhek cell line"
     agnomenGetAnnot("hg19_broad_chromatin_nhek", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmNhekHMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmNhekHMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmNhekHMM.bed}, "browser_wgEncodeBroadHmmNhekHMM.bed", $shouldUpdate, $genomeBuild);
+		    , qq{zcat wgEncodeBroadHmmNhekHMM.txt.gz | ${DISCARD_FIRST_COLUMN} | $HANDLE_CHR_PREFIX_AND_ALSO_SORT  > browser_wgEncodeBroadHmmNhekHMM.bed}, "browser_wgEncodeBroadHmmNhekHMM.bed", $shouldUpdate, $genomeBuild);
 
     # "Human (hg19): Broad Institute chromatin HMM for Nhlf cell line"
     agnomenGetAnnot("hg19_broad_chromatin_nhlf", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmNhlfHMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmNhlfHMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmNhlfHMM.bed}, "browser_wgEncodeBroadHmmNhlfHMM.bed", $shouldUpdate, $genomeBuild);
+		    , qq{zcat wgEncodeBroadHmmNhlfHMM.txt.gz | ${DISCARD_FIRST_COLUMN} | $HANDLE_CHR_PREFIX_AND_ALSO_SORT  > browser_wgEncodeBroadHmmNhlfHMM.bed}, "browser_wgEncodeBroadHmmNhlfHMM.bed", $shouldUpdate, $genomeBuild);
 	
 
     #my @col1 = @{readFileColumn($filename1, 0, $delim)};
