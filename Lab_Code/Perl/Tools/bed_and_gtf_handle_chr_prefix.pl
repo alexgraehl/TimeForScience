@@ -31,14 +31,15 @@
 use strict;
 use warnings;
 
-print STDERR "Note: this is a pretty dubious script! Read the docs in the source. It SORTS the output also!";
+print STDERR "Note: this is a pretty dubious script! Read the docs in the source. It SORTS the output also!\nThis script can take a while to run (10 minutes or so on a large file)...\n";
 
 my $FILE_IN = $ARGV[0];
 # output goes to STDOUT
 
-my $NOCHR = "${FILE_IN}.nochr.tmp"
+my $NOCHR = "${FILE_IN}.nochr.alex.temp.sorting.file.delete.soon.tmp"; # temp file with lines that have the leading 'chr' text removed
 
 system("sed 's/^chr//' $FILE_IN > $NOCHR");
-system("sed 's/^/chr/' $NOCHR | cat - $NOCHR | sort -t '\t' -k1,1 -k2,2n"); # prints to stdout
+system("sed 's/^/chr/' $NOCHR | cat - $NOCHR | sort -t '\t' -k1,1 -k2,2n"); # prints to stdout. Assumes files are TAB DELIMITED.
 
-print STDERR "You should probably delete the temp file <$NOCHR> now...";
+system("/bin/rm $NOCHR"); # delete the temp file
+
