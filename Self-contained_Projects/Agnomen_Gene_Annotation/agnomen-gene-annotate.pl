@@ -18,7 +18,11 @@ use strict;  use warnings;  use diagnostics;
 
 sub main();
 
-my $INTERSECT_BED_EXE = "/work/Apps/Bio/bedtools/bin/intersectBed";
+#"/work/Apps/Bio/bedtools/bin/intersectBed";
+my $INTERSECT_BED_EXE_DEFAULT = "intersectBed";
+
+my $SORT_FOR_INTERSECT_BED = " sort -t '\t' -k1,1 -k2,2n ";   # sorts a BED file by chromosome and then by start position in ascending order. Apparently end position is not important for intersectBed, based on the docs at: /work/Apps/Bio/bedtools/bin/intersectBed
+
 my $globalAnnotDir = "./Z_AGNOMEN_DATA"; # default!
 
 my $DATABASE_INPUT_STRING_DELIM = ','; # comma-delimiting in the input string, example: --databases=human_ensembl,hg19browser,somethingelse
@@ -215,6 +219,7 @@ sub main() { # Main program
     my $shouldUpdate = 0;
     my $databaseStr = undef; # comma-delimited string
     my $longOutputNames = 0;
+    my $intersectBedExeManuallySpecifiedLocation = undef;
     $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 
     GetOptions("help|?|man" => sub { printUsageAndQuit(); }
@@ -224,6 +229,7 @@ sub main() { # Main program
 	       , "longnames|longname!" => \$longOutputNames
 	       , "annotdir|a=s" => \$globalAnnotDir
 	       , "databases|database|db=s" => \$databaseStr # comma-delimited string
+	       , "ib=s" => \$intersectBedExeManuallySpecifiedLocation
 	) or printUsageAndQuit();
 
     progressReport("-"x80 ."\n" . "Starting...!\n" . "-"x80 . "\n");
@@ -244,8 +250,15 @@ sub main() { # Main program
     }
 
     unless (-d $globalAnnotDir) { quitWithUsageError(">>> ERROR >>> The annotation directory ($globalAnnotDir) does not exist! This directory must exist, as this is where we are putting all the annotation we download.\n") }
-    if (not -e $INTERSECT_BED_EXE) { die "Error 95a: <intersectBed> was not found!\nWe REQUIRE the program <intersectBed> to be installed. It is part of BedTools. We expected it to be located in <${INTERSECT_BED_EXE}>, but there was no file there at all! Check to make sure this path exists.\n"; }
-    if (not -x $INTERSECT_BED_EXE) { die "Error 99x: <intersectBed> was not executable by this user!\nWe REQUIRE <intersectBed>, located in <${INTERSECT_BED_EXE}>, to be executable. However, the file at that location was not executable by this user! You may have to use chmod to fix this.\n"; }
+    if (defined($intersectBedExeManuallySpecifiedLocation) && (not -e $intersectBedExeManuallySpecifiedLocation)) { die "Error 95a: <intersectBed> was not found!\nWe  REQUIRE the program <intersectBed> to be installed. It is part of BedTools. We expected it to be located in <${intersectBedExeManuallySpecifiedLocation}>, but there was no file there at all! Check to make sure this path exists.\n"; }
+    if (defined($intersectBedExeManuallySpecifiedLocation) && (not -x $intersectBedExeManuallySpecifiedLocation)) { die "Error 99x: <intersectBed> was not executable by this user!\nWe REQUIRE <intersectBed>, located in <${intersectBedExeManuallySpecifiedLocation}>, to be executable. However, the file at that location was not executable by this user! You may have to use chmod to fix this.\n"; }
+
+    my $intersectBedExe = undef;
+    if (defined($intersectBedExeManuallySpecifiedLocation)) {
+	$intersectBedExe = $intersectBedExeManuallySpecifiedLocation;
+    } else {
+	$intersectBedExe = $INTERSECT_BED_EXE_DEFAULT;
+    }
     
     my %databaseHash = handleUserSpecifiedDatabases($databaseStr, "verbose_messages");
     my $shouldUseAllDatabases = (!defined($databaseStr));
@@ -276,14 +289,14 @@ sub main() { # Main program
 		    , "galGal3", undef, undef
 		    , "Gallus_gallus.WASHUC2.70.gtf", $shouldUpdate, $genomeBuild);
 
+    # BedTools documentation is available at: http://bioinf.comav.upv.es/courses/sequence_analysis/bedtools.html
     agnomenGetAnnot("Human_Ensembl", undef, 
 		    , "hg19", "human_ensembl_via_perl_api.tab"
 		    , ( qq{ if [ ! -f human_ensembl_1_raw.tab.gz ]; then echo "\n>>>[NOTE] -- The ENSEMBL GRABBER takes about 18 hours to download data via Perl API! If you are reading this message, be prepared to wait QUITE A WHILE for the data to get downloaded!\n"; $AGNOMEN_ENSEMBL_GRABBER_SCRIPT | gzip > human_ensembl_1_raw.tab.gz ; fi; }
-			. qq{ zcat human_ensembl_1_raw.tab.gz | grep -v '^[#]' | grep -v '^$DOLLAR_SIGN' | sort -k 2,2 -k 3,3g | uniq > human_ensembl_2.tmp ; }
+			. qq{ zcat human_ensembl_1_raw.tab.gz | grep -v '^[#]' | grep -v '^$DOLLAR_SIGN' | $SORT_FOR_INTERSECT_BED | uniq > human_ensembl_2.tmp ; } # sorts a BED file by chromosome and then by start position in ascending order. Apparently end position is not important for intersectBed, based on the docs at: /work/Apps/Bio/bedtools/bin/intersectBed
 			. qq{ sed 's/^/chr/' human_ensembl_2.tmp > human_ensembl_3.tmp ; } ## add 'chr' to the beginning of each line
-			. qq{ cat human_ensembl_2.tmp >> human_ensembl_3.tmp ; }
-			. qq{ sort human_ensembl_3.tmp > human_ensembl_via_perl_api.tab ; }
-			. qq{ /bin/rm human_ensembl_[123].tmp ; }
+			. qq{ cat human_ensembl_2.tmp human_ensembl_3.tmp > human_ensembl_via_perl_api.tab ; } # options: have both the without-chr and the with-chr chromosome names!
+			. qq{ /bin/rm human_ensembl_[23].tmp ; } # remove temp files
 		    ), "human_ensembl_via_perl_api.tab", $shouldUpdate, $genomeBuild);
 
     agnomenGetAnnot("Human_Ensembl_Mini_Test_First_10K_Rows", undef,
@@ -292,43 +305,54 @@ sub main() { # Main program
 		    ), "minitest.tab", $shouldUpdate, $genomeBuild);
 
 
-    agnomenGetAnnot("hg19: Phast Conservation 46-way placental", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/phastCons46wayPlacental.txt.gz", "hg19", undef
-		    , qq{cat phastCons46wayPlacental.txt | cut -f 2- > browser_phastCons46wayPlacental.bed} # columns 2 and onward are the only ones that are interesting for the genome browser!
+    # hg19: Phast Conservation 46-way placental
+    agnomenGetAnnot("hg19_phast_46_placental_conservation", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/phastCons46wayPlacental.txt.gz", "hg19", undef
+		    , qq{cat phastCons46wayPlacental.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_phastCons46wayPlacental.bed} # columns 2 and onward are the only ones that are interesting for the genome browser!
 		    , qq{browser_phastCons46wayPlacental.bed}, $shouldUpdate, $genomeBuild);
 
-    
-    agnomenGetAnnot("hg19 conservation track: phyloP 46-way all-species conservation", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/phyloP46wayAll.txt.gz", "hg19", undef
-		    , qq{cat phyloP46wayAll.txt | cut -f 2- > browser_phyloP46wayAll.bed}, "browser_phyloP46wayAll.bed"
+    # hg19: conservation track: phyloP 46-way all-species conservation
+    agnomenGetAnnot("hg19_phylo_46_all_species_conservation", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/phyloP46wayAll.txt.gz", "hg19", undef
+		    , qq{cat phyloP46wayAll.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_phyloP46wayAll.bed}, "browser_phyloP46wayAll.bed"
 		    , $shouldUpdate, $genomeBuild);
     #"hg19 conservation track: PhastCons 46-way all-species conservation", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/phastCons46way.txt.gz"
     
     #"GNF expression atlas", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/gnfAtlas2.txt.gz"
-    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Gm12878 cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmGm12878HMM.txt.gz", "hg19", undef
-		    , qq{cat phyloP46wayAll.txt | cut -f 2- > browser_phyloP46wayAll.bed}, "browser_phyloP46wayAll.bed", $shouldUpdate, $genomeBuild);
 
-    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for H1 HESC", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmH1hescHMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmH1hescHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmH1hescHMM.bed}, "browser_wgEncodeBroadHmmH1hescHMM.bed", $shouldUpdate, $genomeBuild);
+    # "Human (hg19): Broad Institute chromatin HMM for Gm12878 cell line"
+    agnomenGetAnnot("hg19_broad_chromatin_gm12878", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmGm12878HMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmGm12878HMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmGm12878HMM.bed}, "browser_wgEncodeBroadHmmGm12878HMM.bed", $shouldUpdate, $genomeBuild);
+
+    #"Human (hg19): Broad Institute chromatin HMM for H1 HESC"
+    agnomenGetAnnot("hg19_broad_chromatin_h1hesc", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmH1hescHMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmH1hescHMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmH1hescHMM.bed}, "browser_wgEncodeBroadHmmH1hescHMM.bed", $shouldUpdate, $genomeBuild);
     
-    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Hepg2 cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHepg2HMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmHepg2HMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHepg2HMM.bed}, "browser_wgEncodeBroadHmmHepg2HMM.bed", $shouldUpdate, $genomeBuild);
+    # "Human (hg19): Broad Institute chromatin HMM for Hepg2 cell line"
+    agnomenGetAnnot("hg19_broad_chromatin_hepg2", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHepg2HMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmHepg2HMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmHepg2HMM.bed}, "browser_wgEncodeBroadHmmHepg2HMM.bed", $shouldUpdate, $genomeBuild);
 
-    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Hmec cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHmecHMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmHmecHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHmecHMM.bed}, "browser_wgEncodeBroadHmmHmecHMM.bed", $shouldUpdate, $genomeBuild);
+    # "Human (hg19): Broad Institute chromatin HMM for Hmec cell line"
+    agnomenGetAnnot("hg19_broad_chromatin_hmec", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHmecHMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmHmecHMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmHmecHMM.bed}, "browser_wgEncodeBroadHmmHmecHMM.bed", $shouldUpdate, $genomeBuild);
 
-    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Hsmm cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHsmmHMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmHsmmHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHsmmHMM.bed}, "browser_wgEncodeBroadHmmHsmmHMM.bed", $shouldUpdate, $genomeBuild);
+    # "Human (hg19): Broad Institute chromatin HMM for Hsmm cell line"
+    agnomenGetAnnot("hg19_broad_chromatin_hsmm", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHsmmHMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmHsmmHMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmHsmmHMM.bed}, "browser_wgEncodeBroadHmmHsmmHMM.bed", $shouldUpdate, $genomeBuild);
 
-    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Huvec cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHuvecHMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmHuvecHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmHuvecHMM.bed}, "browser_wgEncodeBroadHmmHuvecHMM.bed", $shouldUpdate, $genomeBuild);
+    # "Human (hg19): Broad Institute chromatin HMM for Huvec cell line"
+    agnomenGetAnnot("hg19_broad_chromatin_huvec", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmHuvecHMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmHuvecHMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmHuvecHMM.bed}, "browser_wgEncodeBroadHmmHuvecHMM.bed", $shouldUpdate, $genomeBuild);
 
-    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for K562 cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmK562HMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmK562HMM.txt  | cut -f 2- > browser_wgEncodeBroadHmmK562HMM.bed}, "browser_wgEncodeBroadHmmK562HMM.bed", $shouldUpdate, $genomeBuild);
+    # "Human (hg19): Broad Institute chromatin HMM for K562 cell line"
+    agnomenGetAnnot("hg19_broad_chromatin_k562", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmK562HMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmK562HMM.txt  | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmK562HMM.bed}, "browser_wgEncodeBroadHmmK562HMM.bed", $shouldUpdate, $genomeBuild);
 
-    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Nhek cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmNhekHMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmNhekHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmNhekHMM.bed}, "browser_wgEncodeBroadHmmNhekHMM.bed", $shouldUpdate, $genomeBuild);
+    # "Human (hg19): Broad Institute chromatin HMM for Nhek cell line"
+    agnomenGetAnnot("hg19_broad_chromatin_nhek", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmNhekHMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmNhekHMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmNhekHMM.bed}, "browser_wgEncodeBroadHmmNhekHMM.bed", $shouldUpdate, $genomeBuild);
 
-    agnomenGetAnnot("Human (hg19): Broad Institute chromatin HMM for Nhlf cell line", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmNhlfHMM.txt.gz", "hg19", undef
-		    , qq{cat wgEncodeBroadHmmNhlfHMM.txt | cut -f 2- > browser_wgEncodeBroadHmmNhlfHMM.bed}, "browser_wgEncodeBroadHmmNhlfHMM.bed", $shouldUpdate, $genomeBuild);
+    # "Human (hg19): Broad Institute chromatin HMM for Nhlf cell line"
+    agnomenGetAnnot("hg19_broad_chromatin_nhlf", "http://hgdownload.cse.ucsc.edu/goldenPath/hg19/database/wgEncodeBroadHmmNhlfHMM.txt.gz", "hg19", undef
+		    , qq{cat wgEncodeBroadHmmNhlfHMM.txt | cut -f 2- | $SORT_FOR_INTERSECT_BED  > browser_wgEncodeBroadHmmNhlfHMM.bed}, "browser_wgEncodeBroadHmmNhlfHMM.bed", $shouldUpdate, $genomeBuild);
 	
 
     #my @col1 = @{readFileColumn($filename1, 0, $delim)};
@@ -357,19 +381,13 @@ sub main() { # Main program
 	    }
 
 	    while (my($annotShortName, $annotFile) = each(%GLOBAL_ANNOT_PATHS)) {
-		
-		## annotFile better exist, or we're in trouble!!
-#	    if ($annotFile =~ m/.gz$/) {
-#		$annotFile = "<(zcat $annotFile)"; # bash subshell
-#		print STDERR "SUBSHELL\n";
-#	    }
 		if ($shouldUseAllDatabases || exists($databaseHash{lc($annotShortName)})) {
 		    # Looks like we should include this annotation file!
 		    my $tempFile = "1.agnomen.agw.in.progress." . int(rand(99999999)) . ".temp.tmp"; ## Temp file that is unlikely to already be in use!
 		    my $theOutputNameBase = ($longOutputNames) ? $input : basename($input); # see if we should use the FULL output name, with directory paths, or just the filename without the path. This is an option (--longnames)
 		    my $agnomenOutputFile = qq{agnomen.$theOutputNameBase.$annotShortName.out.txt};
 		    $agnomenOutputFile =~ s/[;:,\/\\]/_/g; ## Remove potentially "unsafe" characters from the output filename
-		    my $cmd = qq{ $INTERSECT_BED_EXE -wao -a ${input} -b ${annotFile} > $tempFile } . qq{ && } . qq{ /bin/mv -f $tempFile $agnomenOutputFile};
+		    my $cmd = qq{ ${intersectBedExe} -wao -a ${input} -b ${annotFile} > $tempFile } . qq{ && } . qq{ /bin/mv -f $tempFile $agnomenOutputFile}; # <-- we WRITE to a temp file so that when the file actually moves to the FINAL location, it is guaranteed to be 100% finished
 		    progressReport(qq{[ANNOTATING] using the data in $annotShortName\n});
 		    progressReport(qq{[ANNOTATING]...\n    Running this command: $cmd\n});
 		    my $intersectStatus = systemBash($cmd);
@@ -379,7 +397,7 @@ sub main() { # Main program
 			$numAnnotationsDone++;
 		    }
 		} else {
-		    info(qq{[OMITTING] the annotation data in <$annotShortName>, as that database was not specified in the database string ($databaseStr).\n});
+		    info(qq{OMITTING the annotation data in <$annotShortName>, as that database was not specified in the database string ($databaseStr).\n});
 		}
 	    }
 	}
@@ -488,6 +506,9 @@ OPTIONS:
        * If you specify --update and NO species, we will attempt to download databases for ALL species.
        * If you specify --update and a particular species, we will only download databases for that one species.
 
+  --ib=PATH/TO/intersectBed (Default: looks on user search $PATH only)
+       Path to the 'intersectBed' tool. If you do not specify this option, then we try to run the command "intersectBed" with
+       no directory prefix. Example: --ib=/common/share/bin/64bit/intersectBed
 
 KNOWN BUGS:
 
