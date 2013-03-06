@@ -207,9 +207,9 @@ foreach my $line (<$primaryFH>) {
 
 	if ($shouldIgnoreCase) {
 	    my $keyInSameCaseItWasInTheOriginalHash = $uppercaseHash{uc($thisKey)}; # mutate the key so that it's in the SAME CASE as it was in the key we added
-	    @sp2 = (exists($hash2{$keyInSameCaseItWasInTheOriginalHash})) ? @{$hash2{$keyInSameCaseItWasInTheOriginalHash}} : ();
+	    @sp2 = (defined($keyInSameCaseItWasInTheOriginalHash) && exists($hash2{$keyInSameCaseItWasInTheOriginalHash})) ? @{$hash2{$keyInSameCaseItWasInTheOriginalHash}} : (); # () <-- empty list/array is the result of "didn't find anything"
 	} else {
-	    @sp2 = (exists($hash2{$thisKey})) ? @{$hash2{$thisKey}} : ();
+	    @sp2 = (exists($hash2{$thisKey})) ? @{$hash2{$thisKey}} : (); # () <-- empty list/array is the result of "didn't find anything"
 	}
 
 	if (@sp2) {
