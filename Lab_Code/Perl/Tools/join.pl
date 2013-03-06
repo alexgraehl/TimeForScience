@@ -3,6 +3,7 @@
 # New version of Join.pl by Alex Williams. (This isn't related to the previous UCSC code at all... and probably produces different results! Note that both versions produce different results from UNIX join, even on properly sorted input!)
 
 use strict; use warnings; use Getopt::Long;
+use Term::ANSIColor;
 $| = 1;  # Flush output to STDOUT immediately.
 
 my $isDebugging = 0;
@@ -14,7 +15,7 @@ sub printUsageAndQuit() { printUsageAndContinue(); exit(1); }
 sub printUsageAndContinue() {    print STDOUT <DATA>; }
 sub debugPrint($) {   ($isDebugging) and print STDERR $_[0]; }
 sub verboseWarnPrint($) {
-    if ($verbose) { print STDERR $_[0] . "\n"; }
+    if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "yellow on_blue"); }
 }
 my $keyCol1 = 1; # indexed from ONE rather than 0!
 my $keyCol2 = 1; # indexed from ONE rather than 0!
@@ -41,6 +42,8 @@ my $stringWhenNoMatch = undef;
 
 my $allowEmptyKey = 0; # whether we allow a TOTALLY EMPTY value to be a key (default: no)
 
+my $shouldKeepKeyInOriginalPosition = 0; # whether we should KEEP the key in whatever column it was found in, instead of moving it to the front of the line.
+
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "q" => sub { $verbose = 0; }
@@ -53,6 +56,7 @@ GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "ob!"  => sub { $stringWhenNoMatch = ''; } # shortcut for just a blank when there's no match. Default is to OMIT lines with no match.
 	   , "do=s" => \$outputDelim
 	   , "neg!" => \$shouldNegate
+	   , "nrk|no-reorder-key!"  => \$shouldKeepKeyInOriginalPosition
 	   , "allow-empty-key!" => \$allowEmptyKey
 	   , "i|ignore-case!" => \$shouldIgnoreCase
 	   , "debug!" => \$isDebugging
@@ -111,23 +115,23 @@ sub readIntoHash($$$$$) {
 	chomp($line);
 	#if(/\S/) { ## if there's some content that's non-spaces-only
 	my @sp1 = split($theDelim, $line, $SPLIT_WITH_TRAILING_DELIMS);
-	my $thisKey = $sp1[ ($keyIndexCountingFromOne - 1) ]; # index from ZERO here!
-	if (exists($masterHashRef->{$thisKey})) {
-	    ($numDupeKeys < $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: the key <$thisKey> appeared more than once in <$filename> (on line $lineNum). We are only keeping the FIRST instance of this key.");
+	my $theKey = $sp1[ ($keyIndexCountingFromOne - 1) ]; # index from ZERO here!
+	if (exists($masterHashRef->{$theKey})) {
+	    ($numDupeKeys < $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: the key <$theKey> appeared more than once in <$filename> (on line $lineNum). We are only keeping the FIRST instance of this key.");
 	    ($numDupeKeys == $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any future duplicate key warnings.");
 	    $numDupeKeys++;
 	} else {
-	    # Found a UNIQUE new key! ($isDebugging) && print STDERR "Added a line for the key <$thisKey>.\n";
-	    if ((length($thisKey) == 0) and (!$allowEmptyKey)) {
+	    # Found a UNIQUE new key! ($isDebugging) && print STDERR "Added a line for the key <$theKey>.\n";
+	    if ((length($theKey) == 0) and (!$allowEmptyKey)) {
 		verboseWarnPrint("Warning: skipping an empty key on line <$lineNum>!");
 	    } else {
 		# Key was valid, OR we are allowing empty keys!
 		if (defined($uppercaseHashMapRef)) { # apparently we want to deal with things case-insensitively
-		    $uppercaseHashMapRef->{uc($thisKey)} = $thisKey; # maps from the UPPER-CASE version of this key back to the one we ACTUALLY put in the hash
+		    $uppercaseHashMapRef->{uc($theKey)} = $theKey; # maps from the UPPER-CASE version of this key back to the one we ACTUALLY put in the hash
 		    
 		}
 		# masterHashRef is a hash of ARRAYS: each line is ALREADY SPLIT UP by its delimiter
-		@{$masterHashRef->{$thisKey}} = @sp1; # whole SPLIT UP line, even the key, goes into the hash!!!
+		@{$masterHashRef->{$theKey}} = @sp1; # whole SPLIT UP line, even the key, goes into the hash!!!
 		#print "$line\n";
 	    }
 	}
@@ -142,7 +146,9 @@ sub readIntoHash($$$$$) {
 #my %hash1 = readIntoHash($file1  , $delim1, $keyCol1);
 #($isDebugging) && print STDERR ("Read in this many keys: " . scalar(keys(%hash1)) . " from primary file.\n");
 
+
 sub arrayOfNonKeyElements(\@$) {
+    # Returns everything EXCEPT the key! This is because by default, when joining, you move the key to the FRONT of the line, and then do not print it again later on the line.
     my ($inputArrayPtr, $inputKey) = @_;
     ($isDebugging) && (($inputKey >= 1) or die "Whoa, the input key was LESS THAN ONE, which is impossible, since numbering for keys starts from 1! Not zero-indexing!!!");
     my @nonKeyElements = (); # the final array with everything BUT the key. Apparently doesn't matter much whether we pre-allocate it to the right size or not, speed-wise.
@@ -158,6 +164,24 @@ sub arrayOfNonKeyElements(\@$) {
     }
     return (@nonKeyElements); # The subset of the inputArrayPtr that does NOT include the non-key elements!
 }
+
+sub joinedUpOutputLine($$$$$$$) {
+    my ($delim, $mainKey, $array1Ref, $k1col, $array2Ref, $k2col, $shouldNotMoveKey) = @_;
+    if ($shouldNotMoveKey) {
+	# do NOT move the key to the front of the line---this is a bit unusual! The key stays wherever it was on the line.
+	return join($delim, @$array1Ref, @$array2Ref); # no newline!
+    } else {
+	# key gets moved to the front! -- like in unix join. This is the DEFAULT and UNIX-join-like way of doing it
+	if (@{$array2Ref}) {
+	    return join($delim, $mainKey, arrayOfNonKeyElements(@{$array1Ref}, $k1col), arrayOfNonKeyElements(@{$array2Ref}, $k2col)); # no newline!
+	} else {
+	    # array 2 was EMPTY
+	    return join($delim, $mainKey, arrayOfNonKeyElements(@{$array1Ref}, $k1col)); # no newline!
+	}
+    }
+}
+
+
 
 my %hash2 = ();
 my %uppercaseHash = ();
@@ -175,47 +199,53 @@ foreach my $line (<$primaryFH>) {
     #if(/\S/) { ## if there's some content that's non-spaces-only
     my @sp1 = split($delim1, $line, $SPLIT_WITH_TRAILING_DELIMS); # split-up line
     my $thisKey = $sp1[ ($keyCol1-1) ]; # index from ZERO here, that's why we subtract 1 from the key column
-    my @sp2; # matching split-up line
-
-    if ($shouldIgnoreCase) {
-	my $keyInSameCaseItWasInTheOriginalHash = $uppercaseHash{uc($thisKey)}; # mutate the key so that it's in the SAME CASE as it was in the key we added
-	@sp2 = (exists($hash2{$keyInSameCaseItWasInTheOriginalHash})) ? @{$hash2{$keyInSameCaseItWasInTheOriginalHash}} : ();
+    if (!defined($thisKey)) {
+	# we're going to SKIP the line entirely if there was no key AT ALL (not even something blank!) at this location
+	verboseWarnPrint("Warning: skipping line $lineNumPrimary---there was no key column on that line. (Key column: $keyCol1, Columns on line: " . scalar(@sp1) . ")");
     } else {
-	@sp2 = (exists($hash2{$thisKey})) ? @{$hash2{$thisKey}} : ();
-    }
+	my @sp2; # matching split-up line
 
-    if (@sp2) {
-	# Got a match for the key in question!
-	if (defined($prevLineCount2) && $prevLineCount2 != scalar(@sp2)) {
-	    ($numWeirdLengths < $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 2 ($file2) is not constant. Got a line with this many elements: " . scalar(@sp2) . " (previous line had $prevLineCount2)");
-	    ($numWeirdLengths == $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any further non-constant elements-per-line warnings.");
-	    $numWeirdLengths++;
-	}
-	$prevLineCount2 = scalar(@sp2);
-	
-	if ($shouldNegate) { 
-	    # Since we are NEGATING this, don't print the match when it's found (only when it isn't...)
+	if ($shouldIgnoreCase) {
+	    my $keyInSameCaseItWasInTheOriginalHash = $uppercaseHash{uc($thisKey)}; # mutate the key so that it's in the SAME CASE as it was in the key we added
+	    @sp2 = (exists($hash2{$keyInSameCaseItWasInTheOriginalHash})) ? @{$hash2{$keyInSameCaseItWasInTheOriginalHash}} : ();
 	} else {
-	    # Great, the OTHER file had a valid entry for this key as well! So print it... UNLESS we are negating.
-	    print STDOUT join($outputDelim, $thisKey, arrayOfNonKeyElements(@sp1, $keyCol1), arrayOfNonKeyElements(@sp2, $keyCol2)) . "\n";
+	    @sp2 = (exists($hash2{$thisKey})) ? @{$hash2{$thisKey}} : ();
 	}
-    } else {
-	# Ok, there was NO MATCH for this key!
-	debugPrint("Hash2 didn't have the key $thisKey\n");
-	if ($shouldNegate) {
-	    # We didn't find a match for this key, but because we are NEGATING the output, we'll print this line anyway
-	    print STDOUT join($outputDelim, $thisKey, arrayOfNonKeyElements(@sp1, $keyCol1)) . "\n";
-	} else {
-	    if (defined($stringWhenNoMatch)) {
-		# We print the line ANYWAY, because the user specified an outer join, with the "-o SOMETHING" option.
-		my $suffixWhenNoMatch = (length($stringWhenNoMatch)>0) ? "${outputDelim}${stringWhenNoMatch}" : "$stringWhenNoMatch"; # handle zero-length -ob SPECIALLY
-		print STDOUT join($outputDelim, $thisKey, arrayOfNonKeyElements(@sp1, $keyCol1)) . $suffixWhenNoMatch . "\n";
+
+	if (@sp2) {
+	    # Got a match for the key in question!
+	    if (defined($prevLineCount2) && $prevLineCount2 != scalar(@sp2)) {
+		($numWeirdLengths < $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 2 ($file2) is not constant. Got a line with this many elements: " . scalar(@sp2) . " (previous line had $prevLineCount2)");
+		($numWeirdLengths == $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any further non-constant elements-per-line warnings.");
+		$numWeirdLengths++;
+	    }
+	    $prevLineCount2 = scalar(@sp2);
+	    
+	    if ($shouldNegate) { 
+		# Since we are NEGATING this, don't print the match when it's found (only when it isn't...)
 	    } else {
-		# Omit the line entirely, since there was no match in the secondary file.
+		# Great, the OTHER file had a valid entry for this key as well! So print it... UNLESS we are negating.
+		print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $shouldKeepKeyInOriginalPosition) . "\n";
+	    }
+	} else {
+	    # Ok, there was NO MATCH for this key!
+	    debugPrint("Hash2 didn't have the key $thisKey\n");
+	    if ($shouldNegate) {
+		# We didn't find a match for this key, but because we are NEGATING the output, we'll print this line anyway
+		print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $shouldKeepKeyInOriginalPosition) . "\n";
+	    } else {
+		if (defined($stringWhenNoMatch)) {
+		    # We print the line ANYWAY, because the user specified an outer join, with the "-o SOMETHING" option.
+		    my $suffixWhenNoMatch = (length($stringWhenNoMatch)>0) ? "${outputDelim}${stringWhenNoMatch}" : "$stringWhenNoMatch"; # handle zero-length -ob SPECIALLY
+		    print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $shouldKeepKeyInOriginalPosition) . $suffixWhenNoMatch . "\n";
+		    #print STDOUT join($outputDelim, $thisKey, arrayOfNonKeyElements(@sp1, $keyCol1)) . $suffixWhenNoMatch . "\n";
+		} else {
+		    # Omit the line entirely, since there was no match in the secondary file.
+		}
 	    }
 	}
+	#print "$line\n";
     }
-    #print "$line\n";
 
     if (defined($prevLineCount1) && $prevLineCount1 != scalar(@sp1)) {
 	($numWeirdLengths < $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 1 ($file1) is not constant. Line $lineNumPrimary had this many elements: " . scalar(@sp1) . " (previous line had $prevLineCount1)");
@@ -298,6 +328,11 @@ OPTIONS are:
 --d2 DELIM: Set the input delimiter for FILE2 to DELIM (default: tab).
 
 -do DELIM: Set the OUTPUT delimiter to DELIM. (default: same as input delim)
+
+--no-reorder-key or --nrk: (Default: DO move the key to column 1 -- the UNIX join default)
+  If this is specified, then instead of having the key at the BEGINNING of the output line (the default),
+  the key stays wherever it was (like if it was in column 10, it STAYS in column 10. Regular join would move
+  it to column 1).
 
 --allow-empty-key: (Default: do not allow it): Whether to allow an EMPTY key as valid.
   Note: even when the empty key is NOT allowed for matching, if we do an outer join or
