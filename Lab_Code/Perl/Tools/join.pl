@@ -23,7 +23,6 @@ my $keyCol2 = 1; # indexed from ONE rather than 0!
 my $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED = "\t";
 my $SPLIT_WITH_TRAILING_DELIMS = -1; # You MUST specify this constant value of -1, or else split will by default NOT split consecutive trailing delimiters! This is super important and belongs in EVERY SINGLE split call.
 
-
 my $MAX_DUPE_KEYS_TO_REPORT = 10;
 my $MAX_WEIRD_LINE_LENGTHS_TO_REPORT = 10;
 
@@ -92,14 +91,17 @@ foreach my $ff ($file1, $file2) {
 
 sub openSmartAndGetFilehandle($) {
     # returns a FILEHANDLE. Can be standard in, if the 'filename' was specified as '-'
+    # Transparently handles ".gz" and ".bz2" files.
+    # This is the MARCH 6, 2013 version of this function.
     my ($filename) = @_;
     if ($filename eq '-') {
 	return(*STDIN);
     } else {
 	my $reader;
-	if ($filename =~ /[.]gz$/)     { $reader = "zcat $filename |"; }
-	elsif ($filename =~ /[.]bz2$/) { $reader = "bzcat $filename |"; }
-	else                           { $reader = "$filename"; }  #default to just read a file normally
+	if    ($filename =~ /[.]gz$/)  { $reader = "zcat $filename |"; }     # Un-gzip a file and send it to STDOUT.
+	elsif ($filename =~ /[.]bz2$/) { $reader = "bzcat $filename |"; }    # Un-bz2 a file and send it to STDOUT
+	elsif ($filename =~ /[.]zip$/) { $reader = "unzip -p $filename |"; } # Un-regular-zip a file and send it to STDOUT with "-p": which is DIFFERENT from -c (-c is NOT what you want here). See 'man unzip'
+	else                           { $reader = "$filename"; }  # Default: just read a file normally
 	my $fh;
 	open($fh, "$reader") or die("Couldn't read from <$filename>: $!");
 	return $fh;
