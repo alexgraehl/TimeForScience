@@ -346,39 +346,59 @@ OPTIONS are:
 
 Example:
 
+join.pl -1 1 -2 2 file1--key_in_first_col.txt  file2--key_in_second_col.compressed.gz > join.output.txt
+  Print lines from file1 that are ALSO in file2, and append the data from file2 in the output.
+  This is the most standard-plain-vanilla join, and should be similar to the unix "join" results.
+
+join.pl -o "NO_MATCH_HERE_I_SEE" -1 4 -2 1 file_with_key_in_fourth_col.compressed.bz2  file2.gz > join.with.unmatched.rows.txt
+  Also print the un-matching lines from the first file (lines with no match will say "NO_MATCH_HERE_I_SEE")
+
+cat myfile.txt | join.pl - b.txt | less -S
+  Read from STDIN (use a '-' instead of a filename!), and pipe into the program "less".
+
+join.pl --no-reorder-key a.txt b.txt > a_and_b.txt
+join.pl --no-reorder-key a_and_b.txt c.txt > a_and_b_and_c.txt
+  Since we are using --no-reorder-key, it makes it easier to join multiple files sometimes, since the order of columns
+  does not keep moving around. This is only of interest if your key column is NOT the very first one already!
+
+Detailed example:
+
 If you have the following two files:
 
-File 1: (tab-delimited)
- AAA   avar    aard
- ZZZ   zebra
- BBB   beta    bead    been
- MMM   man     most
+File1 (tab-delimited)       <-- FIRST FILE
+    AAA   avar    aard
+    ZZZ   zebra                     <-- Note the differing number of items per line!
+    BBB   beta    bead    been          This *usually* indicates a problem in your input data.
+    MMM   man     most                  Alex wrote "table-no-ragged.py" to pad any blank spaces,
+                                        so you can use that if your file has "ragged" edges.
 
-File 2: (tab-delimited)
- AAA   111
- BBB   222
- CCC   333
+File2 (tab-delimited)       <-- SECOND FILE
+    AAA   111
+    BBB   222
+    CCC   333
 
 Then the result of a regular join.pl invocation...
    join.pl File1 File2
 ...is:
- AAA   avar    aard    111             <-- Note: 4 columns in all
- BBB   beta    bead    been    222     <-- Note: 5 columns in all
+    AAA   avar    aard    111             <-- Note: 4 columns in all
+    BBB   beta    bead    been    222     <-- Note: 5 columns in all
 
 The result of an outer join (i.e., use File1 as the "master" file)...
    join.pl -o "NONE!" File1 File2
-...is:
- AAA    avar     aard      111
- ZZZ    zebra    NONE!
- BBB    beta     bead      been      222
- MMM    man      mouse     NONE!
+Results in:
+    AAA    avar     aard      111
+    ZZZ    zebra    NONE!
+    BBB    beta     bead      been      222
+    MMM    man      mouse     NONE!
 
 Note that if you switch the order of File1 and File2 for an outer join...
-   join.pl -o "NOPE!" File2 File1
-...you get a different result (the first file specifies the keys):
- AAA    111       avar      aard
- BBB    222       beta      bead       been
- CCC    333       NOPE!
+...you get a different result (the first file specifies the keys)!
+
+join.pl -o "NOPE!" File2 File1
+Results in:
+    AAA    111       avar      aard
+    BBB    222       beta      bead       been
+    CCC    333       NOPE!
 
 ----------
 Note that UNIX join will behave differently from
