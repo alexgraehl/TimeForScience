@@ -98,7 +98,7 @@ sub letsDownloadStuff {
     $query->addAttribute("ensembl_gene_id");
 
     if (exists($aa->{'get_transcripts_only'}) && defined($aa->{'get_transcripts_only'}) && $aa->{'get_transcripts_only'}) {
-	print STDERR "Running in special GET ONLY THE GENE IDs AND TRANSCRIPTS mode.";
+	print STDERR "Running in special \"GET ONLY THE GENE IDs AND TRANSCRIPTS\" mode.\n";
 	$query->addAttribute("ensembl_transcript_id");
     } else {
 
