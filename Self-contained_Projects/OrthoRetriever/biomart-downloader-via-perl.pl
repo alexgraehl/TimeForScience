@@ -24,7 +24,7 @@ use BioMart::QueryRunner;
 print STDERR "Alex: note, you will have to use CPAN to install 'Log::Log4perl'  before this will work!\n";
 print STDERR "Alex: note, you will have to use CPAN to install 'Readonly'  before this will work!\n";
 print STDERR "Alex: as root, try: perl -MCPAN -e shell, and then install those scripts from within the interactive CPAN shell. Make sure users (not just root) can READ the resulting installed perl library files, of course, too!\n";
-print STDERR "Alex: I guess you have to download a file from: http://www.biomart.org/biomart/martservice?type=registry and save it to a local path. Then set it below! Not sure though... it definitely does not work to set it to a URL, though!";
+print STDERR "Alex: I guess you have to download a file from: http://www.biomart.org/biomart/martservice?type=registry and save it to a local path. Then set it below! Not sure though... it definitely does not work to set it to a URL, though!\n";
 
 my $confFile = "./alex-biomart-registry.txt"; #"PATH TO YOUR REGISTRY FILE UNDER biomart-perl/conf/. For Biomart Central Registry navigate to http://www.biomart.org/biomart/martservice?type=registry";
 
@@ -54,26 +54,20 @@ sub globalInitRegistryOnlyOnceEver() {
     }
 }
 
+#letsDownloadStuff({ filename      => 'mouse_ens_master'
+#			, species => 'mmusculus'
+#		  });
 
-letsDownloadStuff({ filename      => 'human_ens_master'
-			, species => 'hsapiens'
-		  });
-
-letsDownloadStuff({ filename      => 'mouse_ens_master'
-			, species => 'mmusculus'
-		  });
-
-letsDownloadStuff({ filename      => 'chicken_ens_master'
-			, species => 'ggallus'
-		  });
-
-letsDownloadStuff({ filename      => 'zebrafish_ens_master'
-			, species => 'drerio'
-		  });
-
+#letsDownloadStuff({ filename      => 'chicken_ens_master'
+#			, species => 'ggallus'
+#		  });
 
 my @latinSpecies = ('hsapiens', 'drerio', 'ggallus', 'mmusculus');
 foreach my $source (@latinSpecies) {
+    letsDownloadStuff({ filename => "DL_BIOMART_PRIMARY_${source}"   , species => "$source" });
+    # Example: letsDownloadStuff({ filename      => 'human_ens_master', species => 'hsapiens'});
+    letsDownloadStuff({ filename => "DL_BIOMART_TRANSCRIPT_${source}", species => "$source", get_transcripts_only => 1}); # yes, we ONLY want to get the transcripts + gene mapping, not any of the other data!
+
     foreach my $target (@latinSpecies) {
 	next if ($source eq $target); # no point in mapping a species to ITSELF!
 	letsDownloadStuff({ filename               => "DL_BIOMART_${source}_map_to_${target}"
@@ -87,6 +81,11 @@ foreach my $source (@latinSpecies) {
 
 sub letsDownloadStuff {
     my ($aa) = @_; ## aa is a HASH REFERENCE. You access it like so:  $aa->{'hashkey'}
+    # hash should have these elements (potentially; some may be missing!):
+    # filename: REQUIRED (string)
+    # species: REQUIRED (string)
+    # ortholog_species: OPTIONAL (string)
+    # get_transcripts_only: OPTIONAL (1 / 0 for true/false)
 
     if (-f $aa->{'filename'} && (-s $aa->{'filename'} > 0)) {
 	print STDERR "[OMITTING] the re-download of file <" . $aa->{'filename'} . ">, as that file was already present and had non-zero size. Delete it from the command line if you REALLY want to download it again.\n";
@@ -97,34 +96,41 @@ sub letsDownloadStuff {
     my $query = BioMart::Query->new('registry'=>$globalRegistry,'virtualSchemaName'=>'default');
     $query->setDataset( $aa->{'species'} . "_gene_ensembl" );  ## <-- change datasets!
     $query->addAttribute("ensembl_gene_id");
-    $query->addAttribute("external_gene_id");
-    $query->addAttribute("external_gene_db");
 
-    if (exists($aa->{'ortholog_species'}) && $aa->{'ortholog_species'}) {
-	my $orthSpecies = $aa->{'ortholog_species'};
-	print STDERR "Getting ORTHOLOG MAPPING for the SINGLE SPECIES ONLY named $orthSpecies. Note that it is intentional to only be able to get one at a time, due to the way the results are generated. Multiple results seem to generate the 'cross product' of all possible mappings.\n";
-
-	$query->addAttribute("${orthSpecies}_homolog_ensembl_gene"); # orthology-specific attributes
-	$query->addAttribute("${orthSpecies}_homolog_orthology_type"); # note that this must be done BEFORE
-	$query->addAttribute("${orthSpecies}_homolog_subtype");        # we change datasets (below)!
-	$query->addAttribute("${orthSpecies}_homolog_perc_id");
-	$query->addAttribute("${orthSpecies}_homolog_perc_id_r1");
-	# Now SWITCH to that other database to get the full data...
-	#$query->setDataset("${orthSpecies}_gene_ensembl"); ## <-- change datasets!
-	#addStandardAttributes($query); # for the ORTHOLOG species
+    if (exists($aa->{'get_transcripts_only'}) && defined($aa->{'get_transcripts_only'}) && $aa->{'get_transcripts_only'}) {
+	print STDERR "Running in special GET ONLY THE GENE IDs AND TRANSCRIPTS mode.";
+	$query->addAttribute("ensembl_transcript_id");
     } else {
-	print STDERR "Adding the standard attributes that are incompatible with the orthology mapping.\n";
-	$query->addAttribute("chromosome_name");
-	$query->addAttribute("start_position");
-	$query->addAttribute("end_position");
-	$query->addAttribute("strand");
-	$query->addAttribute("percentage_gc_content");
-	$query->addAttribute("transcript_count");
-	$query->addAttribute("status");
-	$query->addAttribute("refseq_mrna");
-	$query->addAttribute("refseq_ncrna");
-	$query->addAttribute("unigene");
-	$query->addAttribute("description");
+
+	$query->addAttribute("external_gene_id");
+	$query->addAttribute("external_gene_db");
+
+	if (exists($aa->{'ortholog_species'}) && $aa->{'ortholog_species'}) {
+	    my $orthSpecies = $aa->{'ortholog_species'};
+	    print STDERR "Getting ORTHOLOG MAPPING for the SINGLE SPECIES ONLY named $orthSpecies. Note that it is intentional to only be able to get one at a time, due to the way the results are generated. Multiple results seem to generate the 'cross product' of all possible mappings.\n";
+
+	    $query->addAttribute("${orthSpecies}_homolog_ensembl_gene"); # orthology-specific attributes
+	    $query->addAttribute("${orthSpecies}_homolog_orthology_type"); # note that this must be done BEFORE
+	    $query->addAttribute("${orthSpecies}_homolog_subtype");        # we change datasets (below)!
+	    $query->addAttribute("${orthSpecies}_homolog_perc_id");
+	    $query->addAttribute("${orthSpecies}_homolog_perc_id_r1");
+	    # Now SWITCH to that other database to get the full data...
+	    #$query->setDataset("${orthSpecies}_gene_ensembl"); ## <-- change datasets!
+	    #addStandardAttributes($query); # for the ORTHOLOG species
+	} else {
+	    print STDERR "Adding the standard attributes that are incompatible with the orthology mapping.\n";
+	    $query->addAttribute("chromosome_name");
+	    $query->addAttribute("start_position");
+	    $query->addAttribute("end_position");
+	    $query->addAttribute("strand");
+	    $query->addAttribute("percentage_gc_content");
+	    $query->addAttribute("transcript_count");
+	    $query->addAttribute("status");
+	    $query->addAttribute("refseq_mrna");
+	    $query->addAttribute("refseq_ncrna");
+	    $query->addAttribute("unigene");
+	    $query->addAttribute("description");
+	}
     }
 
     $query->formatter("TSV");
