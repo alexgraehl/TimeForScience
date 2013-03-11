@@ -618,7 +618,7 @@ current line."
 ;;(set-foreground-color FOREGROUND) ;; Set emacs background color
 
 ;; MODE LINE COLORS
-(agwColor 'modeline ACTIVE_MODELINE ACTIVE_MODELINE_TEXT)
+;(agwColor 'modeline ACTIVE_MODELINE ACTIVE_MODELINE_TEXT)
 (agwColor 'mode-line-inactive INACTIVE_MODELINE_TEXT INACTIVE_MODELINE)
 (agwColor 'mode-line-highlight "green" "red")
 (agwColor 'mode-line-buffer-id BUFFER_FILENAME_TEXT BUFFER_FILENAME_BG)
