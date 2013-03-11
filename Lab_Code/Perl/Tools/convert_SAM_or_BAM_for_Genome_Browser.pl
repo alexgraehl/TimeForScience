@@ -51,7 +51,7 @@ sub browserTrackString($$) {
 
 
 #my $genomeFastaFile = undef;
-my $faiFile = undef;  ## <-- "fai" means genome "fasta index (fai)" file
+##my $faiFile = undef;  ## <-- "fai" means genome "fasta index (fai)" file
 my $makeWig = 1; ## By default, generate a bigwig track too. Specify "nowig" to avoid this.
 my $shouldSort = 1; ## By default, assume the input SAM/BAM file will still require sorting.
 
@@ -217,7 +217,7 @@ Processes SAM or BAM alignment files to generate files for the UCSC Genome Brows
 You can now specify multiple input files.
 
 Options:
-    * --nowig: If you do not want to generate a wiggle track, you can say `--nowig` and omit the --fasta file.
+    * --nowig: If you do not want to generate a wiggle track, you can say `--nowig`.
     * --alreadysorted: If your file is already coordinate-sorted, then you can say `--alreadysorted` to avoid re-sorting it.
 
 This is a script that will generate UCSC-genome-browser-ready BAM files.
