@@ -97,7 +97,21 @@ for my $originalInputFilename (@ARGV) {
 	$bamFilename =~ s/\.sam$/\.bam/i;
 	if (not(-e $bamFilename)) {
 	    print "Time to make the bam file named <$bamFilename> from the input SAM file that was named <$originalInputFilename>... this will take a minute or two...\n";
-	    system("samtools view -S -b $originalInputFilename > $bamFilename"); ## generate a BAM file from the sam file
+	    my $exitCode = system("samtools view -S -b $originalInputFilename > $bamFilename"); ## generate a BAM file from the sam file
+	    if (0 != $exitCode) { 
+		unlink($bamFilename); # Definitely remove the screwed-up bam file first!! Otherwise we will think this is a valid input file.
+		print STDERR "ERROR of type SAM99 (exit code $exitCode)! The attempted conversion from SAM -> BAM ($originalInputFilename -> $bamFilename) FAILED, probably because the input SAM file was either: 1) not a real SAM file or 2) did not have a header (which is mandatory).\n";
+
+		my $checkHeaderCmd = "samtools view -S -H $originalInputFilename 2>&1 | tee"; # <-- "tee" redirects even samtools' bizarre output messages to a file! If you try just capturing STDERR by other methods, it is a huge mess.
+		my $results = `$checkHeaderCmd`; # this also prints to the screen, by the way!
+		if ($results =~ /no .*lines in .*header/) {
+		    print STDERR "ADDITIONAL INFORMATION: Sure enough, the problem was that there was NO HEADER DATA in your sam file! Specifically, here is the error message from tunning the command <$checkHeaderCmd>:\n$results\n";
+		} else {
+		    print STDERR "ADDITIONAL INFORMATION: It was unclear whether the header was the problem, but you should check the input sam file yourself. View <$originalInputFilename> with 'less' or another tool, and see if you can figure out what is wrong with it.\n$results";
+		}
+		print STDERR "FAILURE: fix the SAM file and try again!\n";
+		exit(1);
+	    }
 	} else {
 	    print "Not remaking the BAM file named <$bamFilename>, because it already existed.\n";
 	}
@@ -163,9 +177,9 @@ for my $originalInputFilename (@ARGV) {
 		system($wigCmd1);
 	    }
 	    ## -clip means "allow errant entries off the end of the chromosome". This is important, because otherwise wigToBigWig quits with errors like "something went off the end of chr12_random"
-	    my $wigCmd2 = (qq{wigToBigWig -clip $bedGraphIntermediateFile $chrLenTempFile $bigWigOutFile});
-	    datePrint("Now running this command:\n  $wigCmd2\n");
-	    system($wigCmd2); ## makes a BIGWIG file from the WIG file
+	    my @wigCmd2 = ("wigToBigWig", "-clip", $bedGraphIntermediateFile, $chrLenTempFile, $bigWigOutFile);
+	    datePrint("Now running this command:\n @wigCmd2\n");
+	    system(@wigCmd2); ## makes a BIGWIG file from the WIG file
 	}
 	unlink($chrLenTempFile); ## <-- delete the $chrLenTempFile now! We don't need it anymore.
     } else {
