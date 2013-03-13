@@ -62,7 +62,7 @@ sub globalInitRegistryOnlyOnceEver() {
 #			, species => 'ggallus'
 #		  });
 
-my @latinSpecies = ('hsapiens', 'drerio', 'ggallus', 'mmusculus');
+my @latinSpecies = ('hsapiens', 'drerio', 'ggallus', 'mmusculus', 'xtropicalis');
 foreach my $source (@latinSpecies) {
     letsDownloadStuff({ filename => "DL_BIOMART_PRIMARY_${source}"   , species => "$source" });
     # Example: letsDownloadStuff({ filename      => 'human_ens_master', species => 'hsapiens'});
@@ -106,6 +106,10 @@ sub letsDownloadStuff {
 	$query->addAttribute("external_gene_db");
 
 	if (exists($aa->{'ortholog_species'}) && $aa->{'ortholog_species'}) {
+	    # If we ALSO want to get an orthologous species, that changes what stuff we can get
+	    # from Ensembl. We cannot get all the fields and ALSO get orthology data! You have to pick
+	    # a subset of things, which is what this is doing here.
+
 	    my $orthSpecies = $aa->{'ortholog_species'};
 	    print STDERR "Getting ORTHOLOG MAPPING for the SINGLE SPECIES ONLY named $orthSpecies. Note that it is intentional to only be able to get one at a time, due to the way the results are generated. Multiple results seem to generate the 'cross product' of all possible mappings.\n";
 
@@ -126,8 +130,16 @@ sub letsDownloadStuff {
 	    $query->addAttribute("percentage_gc_content");
 	    $query->addAttribute("transcript_count");
 	    $query->addAttribute("status");
-	    $query->addAttribute("refseq_mrna");
-	    $query->addAttribute("refseq_ncrna");
+
+	    if ($aa->{'species'} eq "xtropicalis") {
+		# xtropicalis does NOT HAVE refseq_mrna or refseq_nrcna fields!
+		# But we still have to have two columns here, or else the column indexes won't be the same in xtropicalis as in the other species.
+		$query->addAttribute("refseq_peptide");            # You have to have the SAME NUMBER of fields here
+		$query->addAttribute("refseq_peptide_predicted");  # (two fields) -- otherwise the columns will not line up between species!
+	    } else {
+		$query->addAttribute("refseq_mrna");     # You have to have the SAME NUMBER of fields here
+		$query->addAttribute("refseq_ncrna");    # (two fields) -- otherwise the columns will not line up between species!
+	    }
 	    $query->addAttribute("unigene");
 	    $query->addAttribute("description");
 	}
