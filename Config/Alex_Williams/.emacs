@@ -205,12 +205,14 @@
 (if (system-type-is-darwin)
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
+      (setq load-path (cons "/usr/local/share/emacs/site-lisp/ess" load-path))
       ;(setq should-load-ess t) ; damn, it broke again
       ))
 
 (if (system-type-is-gnu)
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
+      (setq load-path (cons "/usr/local/share/emacs/site-lisp/ess" load-path))
       (setq should-load-ess t)
       (require 'show-wspace nil t)			; Show whitespace!
       ))
@@ -947,13 +949,12 @@ current line."
 
 
 (defun loadr ()
-  "Loads R syntax stuff (the ESS package)"
+  "Loads R syntax stuff (the ESS package) MANUALLY in case it didn't load automatically"
   (interactive)
   (progn
     (setq should-load-ess t)
     (reload-config)
     ))
-
 (global-set-key [(control meta j)] 'loadr) ; less annoying than meta-shift-5
 
 (defun buffer-exists (bufname)   (not (eq nil (get-buffer bufname))))
