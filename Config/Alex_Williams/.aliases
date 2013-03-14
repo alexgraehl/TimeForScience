@@ -272,7 +272,7 @@ if [[ -f /Applications/Emacs.app/Contents/MacOS/Emacs ]]; then
 elif [[ -n "$isMac" ]]; then
     alias e='/usr/local/bin/emacs '
 else
-    alias e='/usr/local/bin/emacsclient -nw -c --alternate-editor=""'
+    alias e='/usr/local/bin/emacsclient -nw -c --alternate-editor=\"\"' # "As a special exception, if command is the empty string, then emacsclient starts Emacs in daemon mode (as emacs --daemon) and then tries connecting again."
 fi
 
 alias t='transpose.pl -q'
