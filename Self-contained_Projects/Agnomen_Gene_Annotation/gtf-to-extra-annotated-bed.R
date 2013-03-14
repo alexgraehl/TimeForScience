@@ -5,9 +5,9 @@ trimWhitespaceBothEnds <- function(string) { gsub("^\\s+|\\s+$", '', string) }
 print("Ok...")
 
 if (!exists("hugeData")) {
-     print("Loading a huge file!")
+     print("Loading a huge GTF file!")
      hugeData <- read.table("Homo_sapiens.GRCh37.70.gtf.txt", sep="\t", stringsAsFactors=FALSE)
-     print("Loaded the huge file!")
+     print("Loaded the huge GTF file!")
 }
 
 TESTRANGE <- 12000:13000
@@ -58,3 +58,6 @@ for (i in seq_along(column9)) {
 
 INTERESTING_ORIGINAL_COLUMNS <- c(1,2,3,4,5,7) # everything but the free text column and useless score columns
 ddd <- cbind( tomato[ , INTERESTING_ORIGINAL_COLUMNS], resMat) # smash them together!
+colnames(ddd) <- c("CHR","ABOUT","TYPE","START","STOP","STRAND","GENE","TS","EXON","EXNUM","COMMON")
+
+# Now let's go through them one TRANSCRIPT at a time
