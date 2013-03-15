@@ -28,7 +28,6 @@ column9 <- strsplit(tomato[, FREETEXT_COL_IDX], FREETEXT_DELIM, perl=T)
 # exon_number
 # gene_name
 
-
 devour <- function(key, searchInThisVector) {
      # Looks for the KEY (a perl search string!) in the split-up free text vector
      # example input:  devour("name=", someVector) (where someVector could look like this: [1] city=Boston [2] name=Testguy [3] fish=tuna
@@ -45,8 +44,7 @@ devour <- function(key, searchInThisVector) {
 }
 
 NUM_INTERESTING_ITEMS_IN_RESULT_VEC <- 5
-resMat <- matrix(data="", nrow=nrow(tomato), ncol=NUM_INTERESTING_ITEMS_IN_RESULT_VEC)
-
+resMat <- matrix("", nrow=nrow(tomato), ncol=NUM_INTERESTING_ITEMS_IN_RESULT_VEC)
 for (i in seq_along(column9)) {
      resMat[i, 1:NUM_INTERESTING_ITEMS_IN_RESULT_VEC] <- c("gene_id"        = devour("gene_id "      , column9[[i]])
                                                            , "transcript_id"= devour("transcript_id ", column9[[i]])
@@ -60,4 +58,47 @@ INTERESTING_ORIGINAL_COLUMNS <- c(1,2,3,4,5,7) # everything but the free text co
 ddd <- cbind( tomato[ , INTERESTING_ORIGINAL_COLUMNS], resMat) # smash them together!
 colnames(ddd) <- c("CHR","ABOUT","TYPE","START","STOP","STRAND","GENE","TS","EXON","EXNUM","COMMON")
 
+uniqTS.vec <- as.character(unique(ddd$TS)) # unique transcripts only (as characters)
+firstUniqueTranscript <- uniqTS.vec[1]
+
+for (ut in uniqTS.vec) {
+     a.frame <- ddd[ ddd$TS == ut, , drop=F]
+     b.frame <- a.frame[ order(a.frame$START), ] # re-order the data frame by start positions of each exon/element!
+     nStartCodons = sum(b.frame$TYPE == "start_codon")
+     nStopCodons  = sum(b.frame$TYPE == "stop_codon")
+     print( paste("Transcript <", ut, "> had ", nStartCodons, " start codons (", rep("S", times=nStartCodons),  ") and ", nStopCodons, " stop codons (", rep("E", times=nStopCodons), ").", sep='') )
+
+     # Any exons BEFORE the start codon are 5' UTR
+     
+     # Any exons AFTER the stop codon are 3' UTR
+
+     # All regions that are 1) NOT in exons
+     #              and are 2) between the first and last exons
+     #                         are introns.
+     
+     lowerLimit <- min( b.frame$START, b.frame$END ) # lowest-numbered base pair. Disregards strand.
+     upperLimit <- max( b.frame$START, b.frame$END ) # highest-numbered base pair. Disregards strand.
+     
+     
+     
+     for (rrr in seq_along(rownames(b.frame))) {
+          thisItem <- b.frame[rrr, ]
+          #if (thisItem$START
+     }
+     
+}
+
+#for (i in seq_along(column9)) {
+
 # Now let's go through them one TRANSCRIPT at a time
+
+
+
+
+
+
+
+
+
+
+
