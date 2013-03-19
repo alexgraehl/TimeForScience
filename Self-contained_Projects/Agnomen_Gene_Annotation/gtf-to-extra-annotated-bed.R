@@ -12,7 +12,7 @@ if (!exists("hugeData")) {
      print("Loaded the huge GTF file!")
 }
 
-TESTRANGE <- 12000:13000
+TESTRANGE <- 12250:12255
 tomato <- hugeData[TESTRANGE,]
 
 
@@ -48,7 +48,13 @@ featureIsEntirelyOutside <- function(irange1, irange2) {
 
 rangeStr <- function(irange) {
      # returns the string for a range. Example: [1094-2094] (101) . Note that the width is INCLUSIVE! (e.g. 200 to 300 has 101 elements.)
-     return(paste("[", irange@start, "-", (irange@start+irange@width-1), " width=", irange@width, "]", sep=''))
+     if (length(irange) == 0) {
+          return("[ NULL RANGE ]")
+     } else if (length(irange) == 1) {
+          return(paste("[", irange@start, "-", (irange@start+irange@width-1), " width=", irange@width, "]", sep=''))
+     } else {
+          return("[ MULTIPLE IRANGES ARE NOT SUPPORTED BY rangeStr ]");
+     }
 }
 
 devour <- function(key, searchInThisVector) {
@@ -86,10 +92,21 @@ firstUniqueTranscript <- uniqTS.vec[1]
 
 for (ut in uniqTS.vec) {
      a.frame <- ddd[ ddd$TS == ut, , drop=F]
-     b.frame <- a.frame[ order(a.frame$START), ] # re-order the data frame by start positions of each exon/element!
+     b.frame <- a.frame[ order(a.frame$START), ] # re-order the data frame by start positions of each exon/element! It should already be in that order, but just in case...
+     ec.frame <- b.frame[ b.frame$TYPE %in% c("exon", "CDS"), c("START","STOP")] # exons and CDs
+     print("Got the 'ec.frame', which contains the start and stop locations for all EXON and CDS elements in this transcript.")
+
+     tsFullRange <- IRanges(start=min(b.frame$START, b.frame$STOP), end=max(b.frame$START, b.frame$STOP)) # Start it at the FULL transcript range -- min to max
+     intronRanges <- tsFullRange
+     for (i in seq_along(rownames(ec.frame))) {
+          intronRanges <- setdiff(intronRanges, IRanges(start=ec.frame[i, "START"], end=ec.frame[i, "STOP"])) # Now SUBTRACT OUT each "exon or CDS" IRange, leaving only things that were NOT in an exon and were NOT in a CDS
+     }
+     
      nStartCodons = sum(b.frame$TYPE == "start_codon")
      nStopCodons  = sum(b.frame$TYPE == "stop_codon")
 
+     browser()
+     
      strand = unique(b.frame$STRAND)
      isPositiveStrand = (strand == "+" || strand == "1" || strand == "+1")
      stopifnot(length(strand) == 1)
@@ -111,8 +128,6 @@ for (ut in uniqTS.vec) {
      #              and are 2) between the first and last exons
      #                         are introns.
      
-     #lowerLimit <- min( b.frame$START, b.frame$END ) # lowest-numbered base pair of ANY type. Disregards strand.
-     #upperLimit <- max( b.frame$START, b.frame$END ) # highest-numbered base pair of ANY type. Disregards strand.
 
      BIGGEST_POSSIBLE_GENOMIC_COORDINATE <- (.Machine$integer.max - 100) # This needs to be greater than any valid genomic coordinate, but not so big as to instantly cause integer overflow. What a mess. Why did I use IRanges anyway!!!
      
@@ -133,20 +148,25 @@ for (ut in uniqTS.vec) {
           rowItem <- b.frame[rrr, ]
           queryRange <- IRanges(start=rowItem$START, end=rowItem$STOP)  # IRanges::intersect(IRanges(10,20), IRanges(40,51))
 
+          theClassification <- NA
           #print( paste("Query: ", codingRange@start, " and ", (codingRange@start + codingRange@width - 1), " is within the coding sequence.", sep=''))
           if (featureIsEntirelyBetween(queryRange, codingRange)) {
                print(paste("Feature at ", rangeStr(queryRange), " is entirely within the coding limits!", sep=''))
+               theClassification <- "CODING"
           } else if (featureIsEntirelyOutside(queryRange, codingRange)) {
                print(paste("OUTSIDE at ", rangeStr(queryRange), " -------------------", sep=''))
+               theClassification <- "UTR PRESUMABLY"
           } else {
                print(paste("Partially inside at ", rangeStr(queryRange), " ****", sep=''))
+               theClassification <- "MIXED CODING/UTR"
+               queryCodeOnly    <- IRanges::intersect(queryRange, codingRange) # only the part of the query that is ALSO in the coding region
+               queryUtrOnly       <- IRanges::setdiff(queryRange, codingRange) # subtract out the coding part from the query
+               xprint("Coding part of that: ", rangeStr(queryCodeOnly))
+               xprint("UTR part of that: ", rangeStr(queryUtrOnly))
+               newCodeRow <- rowItem ; newCodeRow$START <- queryCodeOnly@start; newCodeRow$STOP <- (queryCodeOnly@start+queryCodeOnly@width-1)
+               newUtrRow  <- rowItem ; newUtrRow$START  <- queryUtrOnly@start;  newUtrRow$STOP  <- (queryUtrOnly@start+queryUtrOnly@width-1)
           }
-
-          qCode    <- IRanges::intersect(queryRange, codingRange) # only the part of the query that is ALSO in the coding region
-          uCode    <- IRanges::setdiff(queryRange, codingRange) # subtract out the coding part from the query
-
-          xprint("Coding part of that: ", rangeStr(qCode))
-          xprint("UTR part of that: ", rangeStr(uCode))
+          print(theClassification)
           
           #if (queryRange$START
      }
