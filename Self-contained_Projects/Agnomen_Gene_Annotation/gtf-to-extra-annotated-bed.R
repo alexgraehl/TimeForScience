@@ -13,9 +13,9 @@ if (!exists("hugeData")) {
 }
 
 #TESTRANGE <- 12250:12255
-TESTRANGE <- 12250:12355
-tomato <- hugeData[TESTRANGE,]
-
+#TESTRANGE <- 12250:12355
+#tomato <- hugeData[TESTRANGE,]
+tomato <- hugeData
 
 FREETEXT_COL_IDX <- 9
 
@@ -36,7 +36,7 @@ xprint <- function(...) {
 }
 
 xPrintRow <- function(type, range, rowItem) {
-     cat(paste(type, rangeStr(range), paste(rowItem, collapse="\t"), "\n", sep="\t"))
+     cat(paste(type, rangeStrTab(range), paste(rowItem, collapse="\t"), "\n", sep="\t"))
 }
 
 xPrintRowRaw <- function(type, range, rowItem) {
@@ -44,10 +44,21 @@ xPrintRowRaw <- function(type, range, rowItem) {
      # Used for printing introns and UTRs, which don't have valid data for those files in the input row data.
      
      #colnames(ddd) <- c("CHR","ABOUT","TYPE","START","STOP","STRAND","GENE","TS","EXON","EXNUM","COMMON")
-     cat(paste(type, rangeStr(range)
+     cat(paste(type, rangeStrTab(range)
                , paste(c(rowItem$CHR, rowItem$ABOUT, "NA", "NA", "NA", rowItem$STRAND, rowItem$GENE, rowItem$TS, "NA", "NA", rowItem$COMMON), collapse="\t")
                , "\n", sep="\t"))
 }
+
+
+xPrintRowExceptStartStop <- function(type, range, rowItem) {
+     # Print ths row with everything EXCEPT the start and stop
+     # Used for printing the split-up exons that are partially coding and partially UTR.
+     #colnames(ddd) <- c("CHR","ABOUT","TYPE","START","STOP","STRAND","GENE","TS","EXON","EXNUM","COMMON")
+     cat(paste(type, rangeStrTab(range)
+               , paste(c(rowItem$CHR, rowItem$ABOUT, rowItem$TYPE, "NA", "NA", rowItem$STRAND, rowItem$GENE, rowItem$TS, rowItem$EXON, rowItem$EXNUM, rowItem$COMMON), collapse="\t")
+               , "\n", sep="\t"))
+}
+
 
 featureIsEntirelyBetween <- function(irange1, irange2) {
      return(length(IRanges::findOverlaps(irange1, irange2, type="within")) > 0) # Type: WITHIN only
@@ -72,6 +83,20 @@ rangeStr <- function(irange) {
      }
 }
 
+
+rangeStrTab <- function(irange) {
+     # returns the tab-delimited three-element string for a range. Note that the width is INCLUSIVE! (e.g. 2 to 3 has a width of TWO.)
+     if (length(irange) == 0) {
+          return("NA\tNA\tNA")
+     } else if (length(irange) == 1) {
+          return(paste(irange@start, (irange@start+irange@width-1), irange@width, sep='\t'))
+     } else {
+          return("[ MULTIPLE IRANGES ARE NOT SUPPORTED BY rangeStrTab ]\tERROR\tERROR");
+     }
+}
+
+
+
 devour <- function(key, searchInThisVector) {
      # Looks for the KEY (a perl search string!) in the split-up free text vector
      # example input:  devour("name=", someVector) (where someVector could look like this: [1] city=Boston [2] name=Testguy [3] fish=tuna
@@ -86,6 +111,13 @@ devour <- function(key, searchInThisVector) {
           return(trimWhitespaceBothEnds(sub(key, '', searchInThisVector[res]))) # delete the key, then trim whitespace again
      }
 }
+
+
+
+
+startTime = date() # save the time when we started
+
+
 
 NUM_INTERESTING_ITEMS_IN_RESULT_VEC <- 5
 resMat <- matrix("", nrow=nrow(tomato), ncol=NUM_INTERESTING_ITEMS_IN_RESULT_VEC)
@@ -128,10 +160,10 @@ for (ut in uniqTS.vec) {
      isPositiveStrand <- (strand == "+" || strand == "1" || strand == "+1")
 
      #print(paste("Strand: ", strand, sep=''))
-     xprint("Transcript <", ut, "> had ", nStartCodons, " start codons (", rep("S", times=nStartCodons),  ") and ", nStopCodons, " stop codons (", rep("E", times=nStopCodons), ").")
+     #xprint("Transcript <", ut, "> had ", nStartCodons, " start codons (", rep("S", times=nStartCodons),  ") and ", nStopCodons, " stop codons (", rep("E", times=nStopCodons), ").")
 
      if (nStartCodons != nStopCodons) {
-          print("WARNING: UNEQUAL NUMBER OF START & STOP CODONS. This appears to be a common situation, so I guess it is by design?")
+          #print("WARNING: UNEQUAL NUMBER OF START & STOP CODONS. This appears to be a common situation, so I guess it is by design?")
           #stopifnot(nStartCodons == nStopCodons)
      }
      
@@ -151,14 +183,14 @@ for (ut in uniqTS.vec) {
      }
 
      codingRange <- IRanges(start=codingLimitLeft, end=codingLimitRight)
-     xprint("Anything within ", rangeStr(codingRange), " is within the coding sequence.")
+     #xprint("Anything within ", rangeStr(codingRange), " is within the coding sequence.")
      
      for (rrr in seq_along(rownames(b.frame))) {
           rowItem <- b.frame[rrr, ]
           queryRange <- IRanges(start=rowItem$START, end=rowItem$STOP)  # IRanges::intersect(IRanges(10,20), IRanges(40,51))
           #print( paste("Query: ", codingRange@start, " and ", (codingRange@start + codingRange@width - 1), " is within the coding sequence.", sep=''))
           if (featureIsEntirelyBetween(queryRange, codingRange)) {
-               xPrintRow(rowItem$TYPEE, queryRange, rowItem)
+               xPrintRow(toupper(rowItem$TYPE), queryRange, rowItem)
           } else if (featureIsEntirelyOutside(queryRange, codingRange)) {
                # Any exons BEFORE the start codon are 5' UTR, and any exons AFTER the stop codon are 3' UTR
                # Note that we just check the relative positions of the queryRange start and codingRange start; we don't actually bother to figure out the widths, because we don't care---
@@ -173,14 +205,12 @@ for (ut in uniqTS.vec) {
                utrTypeString <- ifelse(isFivePrimeUtr, yes="UTR_FIVE_PRIME", no="UTR_THREE_PRIME")
                xPrintRowRaw(utrTypeString, queryRange, rowItem)
           } else {
-               print(paste("Partially inside at ", rangeStr(queryRange), " ****", sep=''))
-               theClassification <- "MIXED CODING/UTR"
+               #print(paste("Partially inside at ", rangeStr(queryRange), " ****", sep=''))
                queryCodeOnly  <- IRanges::intersect(queryRange, codingRange) # only the part of the query that is ALSO in the coding region
                queryUtrOnly   <-   IRanges::setdiff(queryRange, codingRange) # subtract out the coding part from the query
-               xPrintRowRaw("Coding part of that:", queryCodeOnly, rowItem)
-               xPrintRowRaw("UTR part of that: ", queryUtrOnly, rowItem)
-               #newCodeRow <- rowItem ; newCodeRow$START <- queryCodeOnly@start; newCodeRow$STOP <- (queryCodeOnly@start+queryCodeOnly@width-1)
-               #newUtrRow  <- rowItem ; newUtrRow$START  <- queryUtrOnly@start;  newUtrRow$STOP  <- (queryUtrOnly@start+queryUtrOnly@width-1)
+               xPrintRowExceptStartStop("EXON_CODING_ONLY",   queryCodeOnly, rowItem) # only the coding part!
+               xPrintRowExceptStartStop("UTR_SECTION_OF_EXON", queryUtrOnly, rowItem) # only the NON-CODING part
+               xPrintRow(paste(toupper(rowItem$TYPE), "_INCLUDING_UTR", sep=''), queryRange, rowItem) # the exon with both coding AND non-coding parts
           }
      }
 
@@ -196,12 +226,5 @@ for (ut in uniqTS.vec) {
 # Now let's go through them one TRANSCRIPT at a time
 
 
-
-
-
-
-
-
-
-
-
+xprint("### Start time was: ", startTime)
+xprint("### Current time is: ", date())
