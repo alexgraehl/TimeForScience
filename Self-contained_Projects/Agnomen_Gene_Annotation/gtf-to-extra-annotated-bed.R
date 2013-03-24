@@ -19,9 +19,9 @@ if (!exists("hugeData")) {
 }
 
 #TESTRANGE <- 12250:12255
-TESTRANGE <- 1000:1500
-tomato <- hugeData[TESTRANGE,]
-#tomato <- hugeData
+TESTRANGE <- 1000:1800
+#tomato <- hugeData[TESTRANGE,]
+tomato <- hugeData
 
 FREETEXT_COL_IDX <- 9
 
@@ -67,25 +67,39 @@ xPrintRowExceptStartStop <- function(type, range, rowItem) {
                , "\n", sep="\t"))
 }
 
-
-featureIsEntirelyBetween <- function(irange1, irange2) {
-     return(length(IRanges::findOverlaps(irange1, irange2, type="within")) > 0) # Type: WITHIN only
+coordsAreEntirelyBetween <- function(start1, end1, start2, end2) {
+     # is the ONE item entirely within the TWO item?
+     return(start1 >= start2 && end1 <= end2)
 }
 
-featureIsPartiallyWithin <- function(irange1, irange2) {
-     return(length(IRanges::findOverlaps(irange1, irange2)) > 0)
+featureIsEntirelyBetween <- function(irange1, irange2) {
+     # range 1 is ENTIRELY within range2 !
+     return((irange1@start >= irange2@start) && ((irange1@start+irange1@width) <= (irange2@start+irange2@width)))
+     #return(length(IRanges::findOverlaps(irange1, irange2, type="within")) > 0) # Type: WITHIN only
+}
+
+#featureIsPartiallyWithin <- function(irange1, irange2) {
+#     return(length(IRanges::findOverlaps(irange1, irange2)) > 0)
+#}
+
+coordsAreEntirelyOutside <- function(start1, end1, start2, end2) {
+     # is the ONE item entirely outside, with no overlap, the TWO item?
+     return(end1 < start2 || start1 > end2)
 }
 
 featureIsEntirelyOutside <- function(irange1, irange2) {
-     return(0 == length(IRanges::findOverlaps(irange1, irange2)))
+     ## Either 11111111 22222222222
+     ## or:    2222222222 11111111111
+     return(((irange1@start+irange1@width-1) < irange2@start) || ((irange2@start+irange2@width-1) < irange1@start))
+     #return(0 == length(IRanges::findOverlaps(irange1, irange2)))
 }
 
 rangeStr <- function(irange) {
      # returns the string for a range. Example: [1094-2094] (101) . Note that the width is INCLUSIVE! (e.g. 200 to 300 has 101 elements.)
-     if (length(irange) == 0) {
-          return("[ NULL RANGE ]")
-     } else if (length(irange) == 1) {
+     if (length(irange) == 1) {
           return(paste("[", irange@start, "-", (irange@start+irange@width-1), " width=", irange@width, "]", sep=''))
+     } else if (length(irange) == 0) {
+          return("[ NULL RANGE ]")
      } else {
           return("[ MULTIPLE IRANGES ARE NOT SUPPORTED BY rangeStr ]");
      }
@@ -94,10 +108,10 @@ rangeStr <- function(irange) {
 
 rangeStrTab <- function(irange) {
      # returns the tab-delimited three-element string for a range. Note that the width is INCLUSIVE! (e.g. 2 to 3 has a width of TWO.)
-     if (length(irange) == 0) {
-          return("NA\tNA\tNA")
-     } else if (length(irange) == 1) {
+     if (length(irange) == 1) {
           return(paste(irange@start, (irange@start+irange@width-1), irange@width, sep='\t'))
+     } else if (length(irange) == 0) {
+          return("NA\tNA\tNA")
      } else {
           return("[ MULTIPLE IRANGES ARE NOT SUPPORTED BY rangeStrTab ]\tERROR\tERROR");
      }
@@ -147,8 +161,10 @@ devour <- function(key, searchInThisVector) {
 
 
 
-
 startTime = date() # save the time when we started
+
+xprint("### About to redirect all future output to the file alex.test.r.txt...")
+sink(file="alex.test.r.txt", append=FALSE)
 
 BIGGEST_POSSIBLE_GENOMIC_COORDINATE <- (.Machine$integer.max - 100) # This needs to be greater than any valid genomic coordinate, but not so big as to instantly cause integer overflow. What a mess. Why did I use IRanges anyway!!!
 NUM_INTERESTING_ITEMS_IN_RESULT_VEC <- 5
@@ -169,11 +185,12 @@ colnames(ddd) <- c("CHR","ABOUT","TYPE","START","STOP","STRAND","GENE","TS","EXO
 
 uniqTS.vec <- as.character(unique(ddd$TS)) # unique transcripts only (as characters)
 
+numRowsProcessed <- 0
 for (ut in uniqTS.vec) {
      b.frame <- ddd[ ddd$TS == ut, , drop=F] # we dont' actually even care if the transcripts are presented in order, although it's nice if they are
-     ec.frame <- b.frame[ b.frame$TYPE %in% c("exon", "CDS"), c("START","STOP")] # exons and CDs #print("Got the 'ec.frame', which contains the start and stop locations for all EXON and CDS elements in this transcript.")
      tsFullRange <- IRanges(start=min(b.frame$START, b.frame$STOP), end=max(b.frame$START, b.frame$STOP)) # Start it at the FULL transcript range -- min to max
-     intronRanges <- setdiff(tsFullRange, IRanges(start=ec.frame$START, end=ec.frame$STOP))
+     exons.frame <- b.frame[ b.frame$TYPE %in% c("exon"), c("START","STOP")] # exons only!
+     intronRanges <- setdiff(tsFullRange, IRanges(start=exons.frame$START, end=exons.frame$STOP)) # take the FULL range and then subtract out any exons! What's left is the introns.
      
      nStartCodons = sum(b.frame$TYPE == "start_codon")
      nStopCodons  = sum(b.frame$TYPE ==  "stop_codon")
@@ -188,7 +205,8 @@ for (ut in uniqTS.vec) {
           #print("WARNING: UNEQUAL NUMBER OF START & STOP CODONS. This appears to be a common situation, so I guess it is by design?")
           #stopifnot(nStartCodons == nStopCodons)
      }
-     
+
+
      codingLimitLeft  <- -1 # <-- can be any out-of-bounds invalid genomic coordinate
      codingLimitRight <- (codingLimitLeft-1) # one less than codingLimitLeft, so that IRanges is happy. CANNOT be more than one unit less!
      if (nStartCodons > 0) {
@@ -201,16 +219,33 @@ for (ut in uniqTS.vec) {
           }
      }
 
+     if (length(codingLimitLeft) > 1 || length(codingLimitRight) > 1) {
+          xprint("### WARNING: For transcript ", as.character(ut), ", the number of start codons (", nStartCodons, ") or number of stop codons (", nStopCodons, ") was greater than 1! We are going to just take the EARLIER start codon and LATEST stop codon (for positive strand; for negative, we do it the opposite way).")
+          codingLimitLeft <- min(codingLimitLeft)
+          codingLimitRight <- max(codingLimitRight) # just pick the "more extreme" of the start/stop codons
+     }
+
+     
      codingRange <- IRanges(start=codingLimitLeft, end=codingLimitRight)
      #xprint("Anything within ", rangeStr(codingRange), " is within the coding sequence.")
      
      for (rrr in seq_along(rownames(b.frame))) {
           rowItem <- b.frame[rrr, ]
-          queryRange <- IRanges(start=rowItem$START, end=rowItem$STOP)  # IRanges::intersect(IRanges(10,20), IRanges(40,51))
+
+          qstart <- rowItem[4] # 4 is the start
+          qend   <- rowItem[5] # 5 is the end
+          
+          #queryRange <- IRanges(start=rowItem$START, end=rowItem$STOP)  # IRanges::intersect(IRanges(10,20), IRanges(40,51))
           #print( paste("Query: ", codingRange@start, " and ", (codingRange@start + codingRange@width - 1), " is within the coding sequence.", sep=''))
-          if (featureIsEntirelyBetween(queryRange, codingRange)) {
+
+          #if ((queryRange@start >= codingRange@start) && ((queryRange@start+queryRange@width) <= (codingRange@start+codingRange@width))) {
+          #if (featureIsEntirelyBetween(queryRange, codingRange)) {
+          if (coordsAreEntirelyBetween(qstart, qend, codingLimitLeft, codingLimitRight)) {
                xPrintRow(toupper(rowItem$TYPE), queryRange, rowItem)
-          } else if (featureIsEntirelyOutside(queryRange, codingRange)) {
+          #} else if (((queryRange@start+queryRange@width-1) < codingRange@start) || ((codingRange@start+codingRange@width-1) < queryRange@start)) {
+          #} else if (featureIsEntirelyOutside(queryRange, codingRange)) {
+          } else if (coordsAreEntirelyOutside(qstart, qend, codingLimitLeft, codingLimitRight)) {
+               queryRange <- IRanges(start=rowItem$START, end=rowItem$STOP)  # IRanges::intersect(IRanges(10,20), IRanges(40,51))
                # Any exons BEFORE the start codon are 5' UTR, and any exons AFTER the stop codon are 3' UTR
                isFivePrimeUtr = (isPositiveStrand && queryRange@start < codingRange@start) || (!isPositiveStrand && queryRange@start > codingRange@start)               # it's either  HERE >>>>>>>>>>>>>>>>>> (on the positive strand)   or                <<<<<<<<<<<<<<<<<<<<<<< HERE (on the negative strand)
                isThreePrimeUtr = (!isPositiveStrand && queryRange@start < codingRange@start) || (isPositiveStrand && queryRange@start > codingRange@start)               # it's either       HERE <<<<<<<<<<<<<<<<<<<<<<<< (negative strand) or                           >>>>>>>>>>>>>>>>>> HERE   (positive strand)
@@ -218,6 +253,7 @@ for (ut in uniqTS.vec) {
                utrTypeString <- ifelse(isFivePrimeUtr, yes="UTR_FIVE_PRIME", no="UTR_THREE_PRIME")
                xPrintRowRaw(utrTypeString, queryRange, rowItem)
           } else {
+               queryRange <- IRanges(start=rowItem$START, end=rowItem$STOP)  # IRanges::intersect(IRanges(10,20), IRanges(40,51))
                #print(paste("Partially inside at ", rangeStr(queryRange), " ****", sep=''))
                queryCodeOnly  <- IRanges::intersect(queryRange, codingRange) # only the part of the query that is ALSO in the coding region
                queryUtrOnly   <-   IRanges::setdiff(queryRange, codingRange) # subtract out the coding part from the query
@@ -225,6 +261,8 @@ for (ut in uniqTS.vec) {
                xPrintRowExceptStartStop("UTR_SECTION_OF_EXON", queryUtrOnly, rowItem) # only the NON-CODING part
                xPrintRow(paste(toupper(rowItem$TYPE), "_INCLUDING_UTR", sep=''), queryRange, rowItem) # the exon with both coding AND non-coding parts
           }
+
+          numRowsProcessed <- (numRowsProcessed+1)
      }
 
      #apply(b.frame, 1, handleARow)
@@ -233,7 +271,6 @@ for (ut in uniqTS.vec) {
           theIntronRange <- intronRanges[i]
           xPrintRowRaw("INTRON", theIntronRange, b.frame[1,])
      }
-     
 }
 
 #for (i in seq_along(column9)) {
@@ -241,5 +278,15 @@ for (ut in uniqTS.vec) {
 # Now let's go through them one TRANSCRIPT at a time
 
 
+
 xprint("### Start time was: ", startTime)
 xprint("### Current time is: ", date())
+xprint("### Processed this many features: ", numRowsProcessed)
+
+
+sink(file=NULL) # stop redirecting printed output to a file!
+
+xprint("### Check the file alex.test.r.txt for output!")
+xprint("### Start time was: ", startTime)
+xprint("### Current time is: ", date())
+xprint("### Processed this many features: ", numRowsProcessed)
