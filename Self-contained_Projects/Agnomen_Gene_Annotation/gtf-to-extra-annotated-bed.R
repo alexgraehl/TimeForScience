@@ -9,21 +9,21 @@ print("Ok...")
 if (!exists("hugeData")) {
      print("Loading a huge GTF file!")
      hugeData <- read.table("Homo_sapiens.GRCh37.70.gtf.txt", sep="\t"
-                            , stringsAsFactors=F
-#                            , stringsAsFactors=TRUE
-#                            , colClasses=c("factor","factor","factor" # CHROMOSOME, type (e.g. "retained_intron"), exon/CDS/whatever
-#                              , "integer", "integer", "character" # START, STOP, SCORE (usually score is just a '.')
-#                              , "factor", "factor", "character") # STRAND, something, character
+                            , stringsAsFactors=F  # Factors just seems to make things SLOWER amazingly
+                            , colClasses=c("character","character","character" # CHROMOSOME, type (e.g. "retained_intron"), exon/CDS/whatever
+                              , "integer", "integer", "character" # START, STOP, SCORE (usually score is just a '.')
+                              , "character", "character", "character") # STRAND, something, character
                             )
      print("Loaded the huge GTF file!")
 }
 
 print("Setting stuff up...")
 
+xprint("By the way, there are a total of ", nrow(hugeData), " rows that we will probably have to process in all.")
 #TESTRANGE <- 12250:12255
-TESTRANGE <- 1000:10000
-tomato <- hugeData[TESTRANGE,]
-#tomato <- hugeData
+#TESTRANGE <- 1000:1800
+#tomato <- hugeData[TESTRANGE,]
+tomato <- hugeData
 
 FREETEXT_COL_IDX <- 9
 
@@ -40,21 +40,20 @@ print("All set to go...")
 # gene_name
 
 xprint <- function(...) {
-     print(paste(..., sep=''))
+     cat(paste(..., sep=''), "\n")
 }
 
-xPrintRow <- function(type, range, rowItem) {
+xPrintRangeAndRow <- function(type, range, rowItem) {
      cat(paste(type, rangeStrTab(range), paste(rowItem, collapse="\t"), "\n", sep="\t"))
 }
 
-
-xPrintManualRow <- function(type, smallCoord, bigCoord, rowItem) {
+xPrintCoordsRow <- function(type, smallCoord, bigCoord, rowItem) {
      # prints the two coordinates and the width.
      # (bigCoord - smallCoord + 1) is the width of this feature!
      cat(paste(type, smallCoord, bigCoord, (bigCoord - smallCoord + 1), paste(rowItem, collapse="\t"), "\n", sep="\t"))
 }
 
-xPrintManualRowRaw <- function(type, smallCoord, bigCoord, rowItem) {
+xPrintCoordsRowRaw <- function(type, smallCoord, bigCoord, rowItem) {
      # prints the two coordinates and the width.
      # (bigCoord - smallCoord + 1) is the width of this feature!
      #colnames(ddd) <- c("CHR","ABOUT","TYPE","START","STOP","STRAND","GENE","TS","EXON","EXNUM","COMMON")
@@ -64,7 +63,7 @@ xPrintManualRowRaw <- function(type, smallCoord, bigCoord, rowItem) {
                , "\n", sep="\t"))
 }
 
-xPrintRowRaw <- function(type, range, rowItem) {
+xPrintRangeAndRowRaw <- function(type, range, rowItem) {
      # Print ths row, but without the type, start, stop, and exon/exnum fields.
      # Used for printing introns and UTRs, which don't have valid data for those files in the input row data.
      #                      1   2        3     4       5      6         7     8     9     10      11
@@ -75,8 +74,7 @@ xPrintRowRaw <- function(type, range, rowItem) {
                , "\n", sep="\t"))
 }
 
-
-xPrintRowExceptStartStop <- function(type, range, rowItem) {
+xPrintRangeAndRowExceptStartStop <- function(type, range, rowItem) {
      # Print ths row with everything EXCEPT the start and stop
      # Used for printing the split-up exons that are partially coding and partially UTR.
      #colnames(ddd) <- c("CHR","ABOUT","TYPE","START","STOP","STRAND","GENE","TS","EXON","EXNUM","COMMON")
@@ -151,32 +149,7 @@ devour <- function(key, searchInThisVector) {
      }
 }
 
-## handleARow <- function(rowItem) {
-##      # "type" index is 3
-##      # start index is 4, stop index is 5
-##      queryRange <- IRanges(start=as.numeric(rowItem[4]), end=as.numeric(rowItem[5]))  # IRanges::intersect(IRanges(10,20), IRanges(40,51))
-##      #print( paste("Query: ", codingRange@start, " and ", (codingRange@start + codingRange@width - 1), " is within the coding sequence.", sep=''))
-##      if (featureIsEntirelyBetween(queryRange, codingRange)) {
-##           xPrintRow(toupper(rowItem[3]), queryRange, rowItem)
-##      } else if (featureIsEntirelyOutside(queryRange, codingRange)) {
-##           # Any exons BEFORE the start codon are 5' UTR, and any exons AFTER the stop codon are 3' UTR
-##           isFivePrimeUtr = (isPositiveStrand && queryRange@start < codingRange@start) || (!isPositiveStrand && queryRange@start > codingRange@start)               # it's either  HERE >>>>>>>>>>>>>>>>>> (on the positive strand)   or                <<<<<<<<<<<<<<<<<<<<<<< HERE (on the negative strand)
-##           isThreePrimeUtr = (!isPositiveStrand && queryRange@start < codingRange@start) || (isPositiveStrand && queryRange@start > codingRange@start)               # it's either       HERE <<<<<<<<<<<<<<<<<<<<<<<< (negative strand) or                           >>>>>>>>>>>>>>>>>> HERE   (positive strand)
-##           stopifnot(isFivePrimeUtr + isThreePrimeUtr == 1) # EXACTLY one of the two conditions must be true, or there's something wrong in how I programmed this!
-##           utrTypeString <- ifelse(isFivePrimeUtr, yes="UTR_FIVE_PRIME", no="UTR_THREE_PRIME")
-##           xPrintRowRaw(utrTypeString, queryRange, rowItem)
-##      } else {
-##           #print(paste("Partially inside at ", rangeStr(queryRange), " ****", sep=''))
-##           queryCodeOnly  <- IRanges::intersect(queryRange, codingRange) # only the part of the query that is ALSO in the coding region
-##           queryUtrOnly   <-   IRanges::setdiff(queryRange, codingRange) # subtract out the coding part from the query
-##           xPrintRowExceptStartStop("EXON_CODING_ONLY",   queryCodeOnly, rowItem) # only the coding part!
-##           xPrintRowExceptStartStop("UTR_SECTION_OF_EXON", queryUtrOnly, rowItem) # only the NON-CODING part
-##           xPrintRow(paste(toupper(rowItem[3]), "_INCLUDING_UTR", sep=''), queryRange, rowItem) # the exon with both coding AND non-coding parts
-##      }
-## }
-
 startTime = date() # save the time when we started
-
 BIGGEST_POSSIBLE_GENOMIC_COORDINATE <- (.Machine$integer.max - 100) # This needs to be greater than any valid genomic coordinate, but not so big as to instantly cause integer overflow. What a mess. Why did I use IRanges anyway!!!
 NUM_INTERESTING_ITEMS_IN_RESULT_VEC <- 5
 
@@ -196,19 +169,19 @@ for (i in seq_along(column9)) {
 
 xprint("Done setting up the results matrix...")
 xprint("### Current time is: ", date())
-
-stopifnot(1==2)
-
-INTERESTING_ORIGINAL_COLUMNS <- c(1,2,3,4,5,7) # everything but the free text column and useless score columns
-ddd <- cbind( tomato[ , INTERESTING_ORIGINAL_COLUMNS], resMat) # smash them together!
+xprint("### Mashing the two matrices together now this takes a while... ", date())
+INTERESTING_ORIGINAL_COLUMNS <- c(1,2,3,4,5,7) # <-- this means "everything but the free text column and useless score columns!"
+ddd           <- cbind( tomato[ , INTERESTING_ORIGINAL_COLUMNS], resMat) # smash them together!
 colnames(ddd) <- c("CHR","ABOUT","TYPE","START","STOP","STRAND","GENE","TS","EXON","EXNUM","COMMON")
 
-uniqTS.vec <- as.character(unique(ddd$TS)) # unique transcripts only (as characters)
-
+xprint("### Done mashing the two matrices together... ", date())
 xprint("### About to redirect all future output to the file alex.test.r.txt...")
-#sink(file="alex.test.r.txt", append=FALSE)
+sink(file="alex.test.r.txt", append=FALSE)
+
+xprint("### Started this file generation at ", date())
 
 numRowsProcessed <- 0
+uniqTS.vec <- as.character(unique(ddd$TS)) # unique transcripts only (as characters)
 for (ut in uniqTS.vec) {
      b.frame <- ddd[ ddd$TS == ut, , drop=F] # we dont' actually even care if the transcripts are presented in order, although it's nice if they are
      tsFullRange <- IRanges(start=min(b.frame$START, b.frame$STOP), end=max(b.frame$START, b.frame$STOP)) # Start it at the FULL transcript range -- min to max
@@ -241,71 +214,58 @@ for (ut in uniqTS.vec) {
      }
 
      if (length(codingLimitLeft) > 1 || length(codingLimitRight) > 1) {
-          xprint("### WARNING: For transcript ", as.character(ut), ", the number of start codons (", nStartCodons, ") or number of stop codons (", nStopCodons, ") was greater than 1! We are going to just take the EARLIER start codon and LATEST stop codon (for positive strand; for negative, we do it the opposite way).")
+          xprint("### WARNING: For transcript ", as.character(ut), ", the number of start codons (", nStartCodons, ") or number of stop codons (", nStopCodons, ") was greater than 1! We are going to just going to use the start/stop pair that covers the most area.")
           codingLimitLeft <- min(codingLimitLeft)
           codingLimitRight <- max(codingLimitRight) # just pick the "more extreme" of the start/stop codons
      }
      
      codingRange <- IRanges(start=codingLimitLeft, end=codingLimitRight)
-     #xprint("Anything within ", rangeStr(codingRange), " is within the coding sequence.")
-     
      for (rrr in seq_along(rownames(b.frame))) {
-          rowItem <- b.frame[rrr, ]
-
-          qstart <- rowItem[4] # 4 is the start
-          qend   <- rowItem[5] # 5 is the end
-          
-          #queryRange <- IRanges(start=rowItem$START, end=rowItem$STOP)  # IRanges::intersect(IRanges(10,20), IRanges(40,51))
-          #print( paste("Query: ", codingRange@start, " and ", (codingRange@start + codingRange@width - 1), " is within the coding sequence.", sep=''))
-
+          #rowItem <- b.frame[rrr,] # list
+          if ("CDS" == b.frame[rrr,3] ) { # column 3 is the TYPE
+               next; # skip the "CDS" entries---they appear to be totally redundant with the exons, and contribute no useful information... maybe
+          }
+          qstart <- b.frame[rrr,4] # 4 is the start index. Is it faster to address it as a '4' instead of "START" ? I don't actually know. qstart = QUERY START.
+          qend   <- b.frame[rrr,5] # 5 is the end index. qend = QUERY END
           if (coordsAreEntirelyBetween(qstart, qend, codingLimitLeft, codingLimitRight)) {
-               xPrintRow(toupper(rowItem$TYPE), queryRange, rowItem)
+               xPrintCoordsRowRaw(toupper(b.frame[rrr,"TYPE"]), qstart, qend, b.frame[rrr,])
           } else if (coordsAreEntirelyOutside(qstart, qend, codingLimitLeft, codingLimitRight)) {
                # Any exons BEFORE the start codon are 5' UTR, and any exons AFTER the stop codon are 3' UTR
                isFivePrimeUtr  <- ( isPositiveStrand && qstart < codingLimitLeft) || (!isPositiveStrand && qstart > codingLimitLeft)               # it's either  HERE >>>>>>>>>>>>>>>>>> (on the positive strand)   or                <<<<<<<<<<<<<<<<<<<<<<< HERE (on the negative strand)
                isThreePrimeUtr <- (!isPositiveStrand && qstart < codingLimitLeft) || ( isPositiveStrand && qstart > codingLimitLeft)               # it's either       HERE <<<<<<<<<<<<<<<<<<<<<<<< (negative strand) or                           >>>>>>>>>>>>>>>>>> HERE   (positive strand)
                stopifnot(isFivePrimeUtr + isThreePrimeUtr == 1) # EXACTLY one of the two conditions must be true, or there's something wrong in how I programmed this!
                utrTypeString <- ifelse(isFivePrimeUtr, yes="UTR_FIVE_PRIME", no="UTR_THREE_PRIME")
-               xPrintManualRowRaw(utrTypeString, qstart, qend, rowItem)
+               xPrintCoordsRowRaw(utrTypeString, qstart, qend, b.frame[rrr,])
           } else {
-               queryRange <- IRanges(start=rowItem$START, end=rowItem$STOP)  # IRanges::intersect(IRanges(10,20), IRanges(40,51))
+               queryRange <- IRanges(start=b.frame[rrr,"START"], end=b.frame[rrr,"STOP"])  # IRanges::intersect(IRanges(10,20), IRanges(40,51))
                #print(paste("Partially inside at ", rangeStr(queryRange), " ****", sep=''))
                queryCodeOnly  <- IRanges::intersect(queryRange, codingRange) # only the part of the query that is ALSO in the coding region
                queryUtrOnly   <-   IRanges::setdiff(queryRange, codingRange) # subtract out the coding part from the query
-               xPrintRowExceptStartStop("EXON_CODING_ONLY",   queryCodeOnly, rowItem) # only the coding part!
-               xPrintRowExceptStartStop("UTR_SECTION_OF_EXON", queryUtrOnly, rowItem) # only the NON-CODING part
-               xPrintRow(paste(toupper(rowItem$TYPE), "_INCLUDING_BOTH_CODING_AND_UTR", sep=''), queryRange, rowItem) # the exon with both coding AND non-coding parts
+               xPrintRangeAndRowExceptStartStop("EXON--CODING_SECTION_ONLY",   queryCodeOnly, b.frame[rrr,]) # only the coding part!
+               xPrintRangeAndRowExceptStartStop("EXON--UTR_SECTION_ONLY", queryUtrOnly, b.frame[rrr,]) # only the NON-CODING part
+               xPrintRangeAndRow(paste(toupper(b.frame[rrr,"TYPE"]), "--COMPLETE--BOTH_CODING_AND_UTR", sep=''), queryRange, b.frame[rrr,]) # the exon with both coding AND non-coding parts
+               #rm(queryRange)
           }
 
           numRowsProcessed <- (numRowsProcessed+1)
           if (numRowsProcessed %% 1000 == 0) {
+               xprint("#### DEBUG: processed a total of ", numRowsProcessed, " rows by time ", date())
                flush.console()
-               #stopifnot(1 == 2)
           }
      }
-
-     #apply(b.frame, 1, handleARow)
-     
      for (i in seq_along(intronRanges)) {
           theIntronRange <- intronRanges[i]
-          xPrintRowRaw("INTRON", theIntronRange, b.frame[1,])
+          xPrintRangeAndRowRaw("INTRON", theIntronRange, b.frame[1,])
      }
-
 }
-
-#for (i in seq_along(column9)) {
-
-# Now let's go through them one TRANSCRIPT at a time
-
-
 
 xprint("### Start time was: ", startTime)
 xprint("### Current time is: ", date())
 xprint("### Processed this many features: ", numRowsProcessed)
 
-
 sink(file=NULL) # stop redirecting printed output to a file!
 
+## ========== PRINT TO CONSOLE (after we remove the 'sink') ===============
 xprint("### Check the file alex.test.r.txt for output!")
 xprint("### Start time was: ", startTime)
 xprint("### Current time is: ", date())
