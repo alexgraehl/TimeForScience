@@ -999,6 +999,7 @@ current line."
 (add-hook 'sh-set-shell-hook 'my-disable-here-document)
 (defun my-disable-here-document ()
   (local-set-key "<" 'self-insert-command))
+(add-hook 'sh-mode-hook 'my-disable-here-document)
 
 
 (defun iswitchb-local-keys ()
