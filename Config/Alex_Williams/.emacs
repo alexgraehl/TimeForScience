@@ -995,11 +995,14 @@ current line."
 ;;     (browse-kill-ring-default-keybindings))
 
 
-;; Prevent entering '<<<' from also inserting an EOF. Very annoying!
-(add-hook 'sh-set-shell-hook 'my-disable-here-document)
-(defun my-disable-here-document ()
-  (local-set-key "<" 'self-insert-command))
-(add-hook 'sh-mode-hook 'my-disable-here-document)
+
+
+;(defun my-disable-here-document ()
+;  (local-set-key "<" 'self-insert-command)
+;  (global-set-key "<" 'self-insert-command))
+;(add-hook 'sh-set-shell-hook 'my-disable-here-document)
+;(add-hook 'sh-mode-hook 'my-disable-here-document)
+(add-hook 'sh-mode-hook (lambda () (sh-electric-here-document-mode -1))) ;; Prevent entering '<<<' from also inserting an EOF. Very annoying!
 
 
 (defun iswitchb-local-keys ()
