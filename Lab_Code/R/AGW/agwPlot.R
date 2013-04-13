@@ -457,7 +457,7 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
      if (missing(labelVec) || is.null(labelVec)) {
           COLUMN_THAT_PROBABLY_HAS_THE_FILENAMES <- 1 ## usually the first column in the keys file...
           filenamesMostLikely.vec <- keys$table[,COLUMN_THAT_PROBABLY_HAS_THE_FILENAMES]
-          labelVec <- paste(filenamesMostLikely.vec, "\n(", keys$groups, ")", sep='')
+          labelVec <- paste(filenamesMostLikely.vec, "\n(", keys$groups[keys$group.assignments], ")", sep='')
      }
      labelVec <- gsub("[ ]+", "\n", labelVec, perl=TRUE, ignore.case=TRUE) ## labelVec with a newline added for any spaces
      labelVec <- gsub("\\.(CEL|gpr)", " ", labelVec, perl=TRUE, ignore.case=TRUE )  ## put a newline before the .CEL or .gpr extension at the end of the filename
@@ -517,7 +517,7 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
      NUM_DECIMAL_PLACES_FOR_CORR_OUTPUT <- 4
      write.table(signif(vvv, NUM_DECIMAL_PLACES_FOR_CORR_OUTPUT), corrMatrixOutputFilePath, sep="\t", col.names=NA, row.names=TRUE, quote=T)
      print.green.agw("[Done] writing output correlations to <", corrMatrixOutputFilePath,">.")
-
+     
      ## "graphics::pairs" plot is one of those big matrix plots that is ususally used to display many scatterplots at once. In this case, it's scatterplots (top right -- upper.panel) and correlation values (bottom left -- lower.panel)
      graphics::pairs(dataMatrix
                      , main=main, labels=labelVec
