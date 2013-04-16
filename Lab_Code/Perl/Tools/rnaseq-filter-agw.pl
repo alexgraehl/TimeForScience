@@ -138,9 +138,9 @@ foreach my $file (@ARGV) {
     }
 
     datePrint("Now processing the file <$file>...\n");
-    my $filteredFile          = "$prefix.filtered.tmp.bam";
-    my $sortedFile            = "$prefix.sorted.tmp.bam";
-    my $dedupFile             = "$prefix.no_duplicates.tmp.bam";
+    my $filteredFile          = "tmp.$prefix.filtered.tmp.bam";
+    my $sortedFile            = "tmp.$prefix.sorted.tmp.bam";
+    my $dedupFile             = "tmp.$prefix.no_duplicates.tmp.bam";
     my $dedupExtraMetricsFile = "$prefix.no_duplicates.extra.txt";
     my $summaryStatsFile      = "$prefix.summary.stats.txt";
     
