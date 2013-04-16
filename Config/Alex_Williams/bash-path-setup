@@ -12,13 +12,15 @@ export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience ## Location of the TIME FOR SCI
 
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/ ## <-- Used by Josh Stuart's scripts. Mostly these are enhanced perl versions of UNIX scripts, like "cut.pl" and "join.pl".
 
+
+# PATH: The FIRST things get run first!
 # Low priority: Normal UNIX paths. Clear out the initial path here.
-export PATH=/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/sbin:/usr/X11/bin:/sw/bin:/opt/bin ## <-- clear out initial path!!
+export PATH=/usr/bin:/bin/:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/X11/bin:/sw/bin:/opt/bin ## <-- clear out initial path!!
 # Medium priority: lab-specific tools
 export PATH=/work/Apps/bin:/work/Apps/kent_tools:/projects/bin:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 
 # Highest priority: things in the HOME directory or TimeForScience or /bioinformatics/bin
-export PATH=${HOME}/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:/bioinformatics/bin
+export PATH=${HOME}/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:/bioinformatics/bin:${PATH}
 
 export PERL5LIB=/usr/local/lib/perl5/site_perl/5.12.1/  # note: sometimes it's in /usr/lib instead of /usr/local!!
 
