@@ -7,6 +7,7 @@
 ## Convert SAM or BAM to Genome Browser format
 
 use strict;  use warnings;  use diagnostics;
+use List::Util qw/max min/;
 
 use Getopt::Long;
 use File::Basename;
@@ -48,49 +49,75 @@ sub browserTrackString($$) {
     return($str);
 }
 
-
-
-#my $genomeFastaFile = undef;
-##my $faiFile = undef;  ## <-- "fai" means genome "fasta index (fai)" file
 my $makeWig = 1; ## By default, generate a bigwig track too. Specify "nowig" to avoid this.
 my $shouldSort = 1; ## By default, assume the input SAM/BAM file will still require sorting.
+my $shouldScale = 0; ## By default, just make PLAIN files, do not SCALE all the wiggle tracks to the same scale. If we SHOULD scale, then we divide all the values by the (number of reads in the BIGGEST file / number of reads in THIS file)
 
+# ==============================================================================
 GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
 	   , "wig!" => \$makeWig ## specify "--nowig" to avoid making a wiggle track
 	   , "sort!" => \$shouldSort ## "--nosort" avoids the slow sorting step
-#	   , "fasta=s" => \$genomeFastaFile
+	   , "scale!" => \$shouldScale ## "--noscale" doesn't scale the output wiggle files. BAM files are never scaled. Default: DO NOT scale
     ) or printUsageAndQuit();
 
 if (scalar(@ARGV) == 0) { die "ARGUMENT ERROR: This script requires ONE OR MORE SAM/BAM filenames as arguments!\nIt cannot read from STDIN---sorry!\nExample: convert_SAM_or_BAM_for_Genome_Browser.pl  mySamFile.sam\n[Quitting now.]\n"; }
 
-my $random_number = rand();
-my $chrLenTempFile = "/tmp/chr_length_" . rand() . "-" . time() . "_from_convert_SAM_or_BAM_for_Genome_Browser.tmp";
+my @INPUT_FILES = @ARGV;
+chomp(@INPUT_FILES);
+# ==============================================================================
 
+my $random_number = rand();
+my $chrLenTempFile = "Browser.tmp.chr_length_" . rand() . "-" . time() . "_from_convert_SAM_or_BAM_for_Genome_Browser.tmp";
 
 print STDOUT "Files to be processed by convert_SAM_or_BAM_for_Genome_Browser:\n";
-foreach (@ARGV) {
+foreach (@INPUT_FILES) {
     my $fname = $_;
     print STDOUT "  - ${fname}\n";
     if (!(-e ${fname}) or (!(-s $fname))) { die "Curses, one of the input files ($fname) appears to be missing or zero-length!\n"; }
 }
 
-for my $originalInputFilename (@ARGV) {
+# ==============================================================================
+for my $in (@INPUT_FILES) {
+    my $isSAM = ($in =~ m/\.sam$/i); # result: a true/false value
+    my $isBAM = ($in =~ m/\.bam$/i); # result: a true/false value
+    ($isSAM || $isBAM) or die "Alas, the input file <$in> was apparently neither SAM nor BAM, but those are the only file types we support! We can't continue! Fix the input arguments and only include BAM/SAM files. The file names must also end with '.sam' or '.bam'.";
+}
+
+# ==============================================================================
+my %numReadsHash = ();
+
+if ($shouldScale) {
+    # Figure out which bam/sam file is the LARGEST. We will need this data later.
+    print "We will be re-scaling all the wiggle tracks to make them comparable between input files with different sequencing depths.\n";
+    for my $inFile (@INPUT_FILES) {
+	my $isSAM = ($inFile =~ m/\.sam$/i); # result: a true/false value
+	my $isBAM = ($inFile =~ m/\.bam$/i); # result: a true/false value
+	my $displayCommand = "samtools view" . (($isSAM) ? " -S " : " "); # sam files require the '-S' flag to view with samtools. Do NOT just use 'cat', as it displays the header as well, which we do not want.
+	my $numLinesThisFile = `$displayCommand $inFile | wc -l`;
+	chomp($numLinesThisFile); # remove the newline!
+	$numReadsHash{$inFile} = $numLinesThisFile;
+	print " * Number of reads in <$inFile>: $numLinesThisFile\n";
+    }
+    print "Highest number of reads in a single input file: " . List::Util::max(values(%numReadsHash)) . "\n";
+} else {
+    print "We will NOT be re-scaling the wiggle tracks. You may want to specify scaling with --scale. Otherwise, beware when comparing wiggle tracks between files---a file with higher sequencing depth will tend to have greater values in the wiggle track, even if a gene had lower expression in reality!\n";
+}
+# ==============================================================================
+
+for my $originalInputFilename (@INPUT_FILES) {
     ## Go through each file...
-## wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/bigWigToBedGraph
-
+    ## wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/bigWigToBedGraph
+    # Everything about BAM -> browser is described here http://genome.ucsc.edu/goldenPath/help/bam.html
     my $thingToTypeForBrowser = qq{track type=bam name="Control_EB" color=0,128,255 bigDataUrl="http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/sorted_ctrl.bam"};
+    (-e $originalInputFilename) or die "ARGUMENT ERROR: The argument to this program must be a single BAM/SAM file that already exists.\n";
+    (-r $originalInputFilename) or die "FILE ERROR: The argument to this program must be a single file that already exists AND is also readable. We couldn't read the file <$originalInputFilename> though!\n";
+    (not (-z $originalInputFilename)) or die "FILE ERROR: The file <$originalInputFilename> was 0-length. It's not a real BAM/SAM file!\n";
 
-    unless (-e $originalInputFilename) { die "ARGUMENT ERROR: The argument to this program must be a single BAM/SAM file that already exists.\n"; }
-    unless (-r $originalInputFilename) { die "FILE ERROR: The argument to this program must be a single file that already exists AND is also readable. We couldn't read the file <$originalInputFilename> though!\n"; }
-    unless (not (-z $originalInputFilename)) { die "FILE ERROR: The file <$originalInputFilename> was 0-length. It's not a real BAM/SAM file!\n"; }
-
-# Everything about BAM -> browser is described here http://genome.ucsc.edu/goldenPath/help/bam.html
-
-    my $fileIsSAM = ($originalInputFilename =~ m/\.sam$/i);
-    my $fileIsBAM = ($originalInputFilename =~ m/\.bam$/i);
+    my $isFileSamFormat = ($originalInputFilename =~ m/\.sam$/i); # result: a true/false value
+    my $isFileBamBinaryFormat = ($originalInputFilename =~ m/\.bam$/i); # result: a true/false value
     my $bamFilename = undef;
 
-    if ($fileIsSAM) {
+    if ($isFileSamFormat) {
 	print "<$originalInputFilename> appears to be a SAM file.\n";
 	## User specified a SAM file, so we're going to CONVERT it to a BAM file. Samtools must be installed for this to work!
 	$bamFilename = $originalInputFilename;
@@ -100,30 +127,28 @@ for my $originalInputFilename (@ARGV) {
 	    my $exitCode = system("samtools view -S -b $originalInputFilename > $bamFilename"); ## generate a BAM file from the sam file
 	    if (0 != $exitCode) { 
 		unlink($bamFilename); # Definitely remove the screwed-up bam file first!! Otherwise we will think this is a valid input file.
-		print STDERR "ERROR of type SAM99 (exit code $exitCode)! The attempted conversion from SAM -> BAM ($originalInputFilename -> $bamFilename) FAILED, probably because the input SAM file was either: 1) not a real SAM file or 2) did not have a header (which is mandatory).\n";
-
+		print "ERROR of type SAM99 (exit code $exitCode)! The attempted conversion from SAM -> BAM ($originalInputFilename -> $bamFilename) FAILED, probably because the input SAM file was either: 1) not a real SAM file or 2) did not have a header (which is mandatory).\n";
 		my $checkHeaderCmd = "samtools view -S -H $originalInputFilename 2>&1 | tee"; # <-- "tee" redirects even samtools' bizarre output messages to a file! If you try just capturing STDERR by other methods, it is a huge mess.
 		my $results = `$checkHeaderCmd`; # this also prints to the screen, by the way!
 		if ($results =~ /no .*lines in .*header/) {
-		    print STDERR "ADDITIONAL INFORMATION: Sure enough, the problem was that there was NO HEADER DATA in your sam file! Specifically, here is the error message from tunning the command <$checkHeaderCmd>:\n$results\n";
+		    print "ADDITIONAL INFORMATION: Sure enough, the problem was that there was NO HEADER DATA in your sam file! Specifically, here is the error message from tunning the command <$checkHeaderCmd>:\n$results\n";
 		} else {
-		    print STDERR "ADDITIONAL INFORMATION: It was unclear whether the header was the problem, but you should check the input sam file yourself. View <$originalInputFilename> with 'less' or another tool, and see if you can figure out what is wrong with it.\n$results";
+		    print "ADDITIONAL INFORMATION: It was unclear whether the header was the problem, but you should check the input sam file yourself. View <$originalInputFilename> with 'less' or another tool, and see if you can figure out what is wrong with it.\n$results";
 		}
-		print STDERR "FAILURE: fix the SAM file and try again!\n";
+		print "FAILURE: fix the SAM file and try again!\n";
 		exit(1);
 	    }
 	} else {
 	    print "Not remaking the BAM file named <$bamFilename>, because it already existed.\n";
 	}
-    } elsif ($fileIsBAM) {
+    } elsif ($isFileBamBinaryFormat) {
 	print "<$originalInputFilename> appears to be a BAM (Binary SAM) file.\n";
 	$bamFilename = $originalInputFilename; # that was easy, the user's specified file was ALREADY a bam file
     } else {
 	die "INPUT FILE ERROR: input file <$originalInputFilename> must be sequence data in either SAM or BAM format!\n";
     }
 
-
-## At this point, we can assume the file is DEFINITELY a bam file--if it was SAM, we have already converted it!
+    # At this point, we can assume the file is DEFINITELY a bam file--if it was SAM, we have already converted it!
     if ($makeWig) {
 	system(qq{samtools view -H $bamFilename | grep "^\@SQ" | sed -e "s/SN://" -e "s/LN://" | cut -f 2,3 > ${chrLenTempFile} });
 	## make a temp file with chromosome lengths in it!
@@ -134,56 +159,93 @@ for my $originalInputFilename (@ARGV) {
     $bamPrefixWithoutFileExtension =~ s/[\/:;,]/_/g; ## slashes and ':;,' characters go to underscores
 
     my $browserTrackDescriptionFile = "Browser.Track.Descriptions.${bamPrefixWithoutFileExtension}.txt";
-    my $sortBamFilePrefix   = "Browser.sort.${bamPrefixWithoutFileExtension}";
-    my $sortBamFullFilename = "${sortBamFilePrefix}.bam";
-    my $bamIndexOutfile     = "${sortBamFilePrefix}.bam.bai";
-    my $bedGraphIntermediateFile = "Browser.tmp.${bamPrefixWithoutFileExtension}.bedgraph";
-    my $bigWigOutFile       = "Browser.${bamPrefixWithoutFileExtension}.bw";
-
+    my $sortBamFilePrefix           = "Browser.sort.${bamPrefixWithoutFileExtension}";
+    my $sortBamFullFilename         = "${sortBamFilePrefix}.bam";
+    my $bamIndexOutfile             = "${sortBamFilePrefix}.bam.bai";
+    my $bedGraphIntermediateFile    = "Browser.tmp.${bamPrefixWithoutFileExtension}.bedgraph";
+    my $bedGraphScaledFile          = "Browser.tmp.${bamPrefixWithoutFileExtension}.scaled.bedgraph";
+    my $bigWigOutFile               = "Browser.${bamPrefixWithoutFileExtension}.bw";
+    
     if ((-e $sortBamFullFilename) && (-s $sortBamFullFilename) and (-e $bamIndexOutfile) && (-s $bamIndexOutfile)) {
-	print STDERR "[Skipping] We are NOT continuing with the sorted-BAM-file generation, because such a file already exists. Remove it if you want to recompute it!\n"
+	datePrint(": [Skipping] We are NOT continuing with the sorted-BAM-file generation, because such a file already exists. Remove it if you want to recompute it!\n");
     } else {
 	if (!$shouldSort) {
-	    print(">> Assuming that the file <$bamFilename> is already sorted---we will make a symlink to <$sortBamFullFilename> rather than re-sorting it.\n");
+	    datePrint(": Assuming that the file <$bamFilename> is already sorted---we will make a symlink to <$sortBamFullFilename> rather than re-sorting it.\n");
 	    system("ln -s $bamFilename $sortBamFullFilename");
 	} else {
 	    my $sortCmd = "samtools sort $bamFilename $sortBamFilePrefix"; ## <-- Note: this should NOT have the .bam extension, because samtools automatically adds the ".bam" extension
-	    print(">> Running the SAMTOOLS sort command: $sortCmd\n...\n");
+	    datePrint(": Running the SAMTOOLS sort command: ${sortCmd}...\n");
 	    system($sortCmd);
 	}
-}
-
+    }
+    
     if ((-e $bamIndexOutfile) && (-s $bamIndexOutfile > 0)) {
-	print STDERR "[Skipping] We are NOT re-generating an index file. One already exists ($bamIndexOutfile).\n";
+	print "[Skipping] We are NOT re-generating an index file. One already exists ($bamIndexOutfile).\n";
     } else {
 	my $indexCmd = "samtools index ${sortBamFullFilename}";
-	print(">> Running the SAMTOOLS index command: $indexCmd\n...\n");
+	datePrint(": Running the SAMTOOLS index command: ${indexCmd}...\n");
 	system($indexCmd);
     }
 
     if ($makeWig) {
 	if ((-e $bigWigOutFile) && (-s $bigWigOutFile > 0)) {
-	    print STDERR "[Skipping] We are NOT continuing with the generation of a bigwig file, because the bigwig file $bigWigOutFile already exists. Remove it if you want to recompute it!\n";
+	    datePrint(": [Skipping] We are NOT continuing with the generation of a bigwig file, because the bigwig file $bigWigOutFile already exists. Remove it if you want to recompute it!\n");
 	} else {
-	    print "Now generating a 'bigWig' browser wiggle track named $bedGraphIntermediateFile (this is slow, and can take up to an hour per input RNASeq file!)...\n";
+	    datePrint(": Now generating a 'bigWig' browser wiggle track named $bedGraphIntermediateFile (this is slow, and can take up to an hour per input RNASeq file!)...\n");
 	    
-	    if (-e $bedGraphIntermediateFile && (-s $bedGraphIntermediateFile > 0)) {
-		print STDERR "[Skipping] We are NOT creating the wiggle temp file <$bedGraphIntermediateFile>, because it already exists and has non-zero size. Remove it if you want to recompute it.\n";
+	    ## Note: genomeCoverageBed REQUIRES that the input bam file be sorted by position. Luckily, we just sorted it!
+	    ## The "-g" genome file needs the chromosome sizes. Luckily, this is information we can find in the $chrLenTempFile that we just made!
+	    my $wigCmd1 = (qq{genomeCoverageBed -split -bg -ibam $sortBamFullFilename -g $chrLenTempFile > $bedGraphIntermediateFile});
+	    datePrint(": Now running this command: $wigCmd1\n");
+	    system($wigCmd1);
+	    
+	    my $whichFileToWigify = undef;
+
+	    if ($shouldScale) {
+		if (!defined($numReadsHash{$originalInputFilename})) { die "Programming error: the numReadsHash was not defined for <$originalInputFilename>! Something is wrong here."; }
+		my $numReadsThisFile = $numReadsHash{$originalInputFilename};
+		
+		my $scaleFactor;
+		my $maxReads = List::Util::max(values(%numReadsHash));
+		if ($numReadsThisFile == 0) {
+		    print("************\nThat's weird, there were NO reads in this file, <$originalInputFilename>. That could indicate something being wrong.\n********\n");
+		    $scaleFactor = 1.0; # don't scale anything, I guess!
+		} else {
+		    $scaleFactor = $maxReads / $numReadsThisFile;
+		    # Scales all the values!
+		}
+		($scaleFactor >= 0.99999) or die "BUG REPORT 87X: how is the scale factor LESS than 1? That should be impossible. This is a programming error! We are supposed to scale the smaller files UP to the largest file, so no files should be scaled down at all!";
+		
+
+		if ($scaleFactor == 1.0) {
+		    datePrint(": Skipping scaling the largest bedGraph file by a factor of $scaleFactor, since that would have no effect.\n");
+		    # No need to "scale" this file by a factor of 1.0 (since that will change nothing)! Instead we'll just use the original bedGraph file
+		    $whichFileToWigify = $bedGraphIntermediateFile; # <-- use the OLD intermediate file! Not a new scaled one
+		} else {
+		    datePrint(": About to scale the bedGraph file by a factor of $scaleFactor ($maxReads / $numReadsThisFile)...\n");
+		    open SCALED, "> $bedGraphScaledFile" or die $!;
+		    open BWFILE, $bedGraphIntermediateFile or die $!;
+		    while (my $line = <BWFILE>) {
+			chomp($line);
+			my @arr = split(/\t/, $line);
+			my $scaledArr3 = ($arr[3]) * $scaleFactor; # scale the column with the actual bedgraph values in it. # 4th column in a bedgraph file, so index (counting from 0) is 3
+			print SCALED (join("\t", $arr[0], $arr[1], $arr[2], $scaledArr3) . "\n");
+		    }
+		    close BWFILE or die $!;
+		    close SCALED or die $!;
+		    $whichFileToWigify = $bedGraphScaledFile;
+		}
 	    } else {
-		## Note: genomeCoverageBed REQUIRES that the input bam file be sorted by position. Luckily, we just sorted it!
-		## The "-g" genome file needs the chromosome sizes. Luckily, this is information we can find in the $chrLenTempFile that we just made!
-		my $wigCmd1 = (qq{genomeCoverageBed -split -bg -ibam $sortBamFullFilename -g $chrLenTempFile > $bedGraphIntermediateFile});
-		datePrint(": Now running this command:\n  $wigCmd1\n"); 
-		system($wigCmd1);
+		$whichFileToWigify = $bedGraphIntermediateFile; # there isn't a scaled file, so don't look for one!
 	    }
 	    ## -clip means "allow errant entries off the end of the chromosome". This is important, because otherwise wigToBigWig quits with errors like "something went off the end of chr12_random"
-	    my @wigCmd2 = ("wigToBigWig", "-clip", $bedGraphIntermediateFile, $chrLenTempFile, $bigWigOutFile);
-	    datePrint("Now running this command:\n @wigCmd2\n");
+	    my @wigCmd2 = ("wigToBigWig", "-clip", $whichFileToWigify, $chrLenTempFile, $bigWigOutFile);
+	    datePrint("Now running this command: @wigCmd2\n");
 	    system(@wigCmd2); ## makes a BIGWIG file from the WIG file
+	    unlink($chrLenTempFile); ## <-- delete the $chrLenTempFile now! We don't need it anymore.
 	}
-	unlink($chrLenTempFile); ## <-- delete the $chrLenTempFile now! We don't need it anymore.
     } else {
-	print STDERR qq{[Skipping] the generation of a bigWig file, because "--nowig" was specified on the command line.\n};
+	print qq{[Skipping] the generation of a bigWig file, because "--nowig" was specified on the command line.\n};
     }
 
     open FILE, ">>", $browserTrackDescriptionFile or die $!; ## APPEND TO THE FILE!!!
@@ -253,6 +315,15 @@ Input to program:
 These files can be viewed in the genome browser.
 
 OPTIONS:
+
+   --scale: Resize the wiggle files so that they are on the same scale with
+            respect to the total number of reads in each file.
+            Does NOT affect the BAM files.
+            Example: if you have file A with 100 reads and file B with 50 reads,
+            the values in file B will be scaled by (100/50) = 2.0 and
+            the values in file A will be scaled by (100/100) = 1.0 (unchanged).
+            This way you can compare wiggle tracks between files with different
+            sequencing depth.
 
    --nosort: Assume the input file is ALREADY sorted. Speeds things up.
 
