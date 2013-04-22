@@ -67,7 +67,7 @@ chomp(@INPUT_FILES);
 # ==============================================================================
 
 my $random_number = rand();
-my $chrLenTempFile = "Browser.tmp.chr_length_" . rand() . "-" . time() . "_from_convert_SAM_or_BAM_for_Genome_Browser.tmp";
+my $chrLenTempFile = "Browser.tmp.TEMPORARY.chrlen_" . rand() . "-" . time() . "_convert_SAM_or_BAM_for_Genome_Browser.tmp";
 
 print STDOUT "Files to be processed by convert_SAM_or_BAM_for_Genome_Browser:\n";
 foreach (@INPUT_FILES) {
@@ -163,8 +163,6 @@ for my $originalInputFilename (@INPUT_FILES) {
     my $sortBamFullFilename         = "${sortBamFilePrefix}.bam";
     my $bamIndexOutfile             = "${sortBamFilePrefix}.bam.bai";
     my $bedGraphIntermediateFile    = "Browser.tmp.${bamPrefixWithoutFileExtension}.bedgraph";
-    my $bedGraphScaledFile          = "Browser.tmp.${bamPrefixWithoutFileExtension}.scaled.bedgraph";
-    my $bigWigOutFile               = "Browser.${bamPrefixWithoutFileExtension}.bw";
     
     if ((-e $sortBamFullFilename) && (-s $sortBamFullFilename) and (-e $bamIndexOutfile) && (-s $bamIndexOutfile)) {
 	datePrint(": [Skipping] We are NOT continuing with the sorted-BAM-file generation, because such a file already exists. Remove it if you want to recompute it!\n");
@@ -187,41 +185,44 @@ for my $originalInputFilename (@INPUT_FILES) {
 	system($indexCmd);
     }
 
+    my $scaleFactor      = "ERROR_UNDEFINED";
+    my $maxReads         = $shouldScale ? List::Util::max(values(%numReadsHash)) : "ERROR_UNDEFINED";
+    my $numReadsThisFile = $shouldScale ? $numReadsHash{$originalInputFilename} : "ERROR_UNDEFINED";
+    if ($shouldScale) {
+	if (!defined($numReadsHash{$originalInputFilename})) { die "Programming error: the numReadsHash was not defined for <$originalInputFilename>! Something is wrong here."; }
+	if ($numReadsThisFile == 0) {
+	    print("************\nThat's weird, there were NO reads in this file, <$originalInputFilename>. That could indicate something being wrong.\n********\n");
+	    $scaleFactor = 1.0; # this is a weird condition, but don't scale anything if there are no reads!
+	} else {
+	    $scaleFactor = $maxReads / $numReadsThisFile;
+	    # Scales all the values!
+	}
+	($scaleFactor >= 0.99999) or die "BUG REPORT 87X: how is the scale factor LESS than 1? That should be impossible. This is a programming error! We are supposed to scale the smaller files UP to the largest file, so no files should be scaled down at all!";
+    }
+
+    my $scaleString = $shouldScale ? ".scaled_by_${scaleFactor}" : "";
+
+    my $bedGraphScaledFile = "Browser.tmp.${bamPrefixWithoutFileExtension}${scaleString}.bedgraph";
+    my $bigWigOutFile      = "Browser.${bamPrefixWithoutFileExtension}${scaleString}.bw";
+
     if ($makeWig) {
 	if ((-e $bigWigOutFile) && (-s $bigWigOutFile > 0)) {
 	    datePrint(": [Skipping] We are NOT continuing with the generation of a bigwig file, because the bigwig file $bigWigOutFile already exists. Remove it if you want to recompute it!\n");
 	} else {
 	    datePrint(": Now generating a 'bigWig' browser wiggle track named $bedGraphIntermediateFile (this is slow, and can take up to an hour per input RNASeq file!)...\n");
-	    
 	    ## Note: genomeCoverageBed REQUIRES that the input bam file be sorted by position. Luckily, we just sorted it!
 	    ## The "-g" genome file needs the chromosome sizes. Luckily, this is information we can find in the $chrLenTempFile that we just made!
 	    my $wigCmd1 = (qq{genomeCoverageBed -split -bg -ibam $sortBamFullFilename -g $chrLenTempFile > $bedGraphIntermediateFile});
 	    datePrint(": Now running this command: $wigCmd1\n");
 	    system($wigCmd1);
-	    
 	    my $whichFileToWigify = undef;
-
 	    if ($shouldScale) {
-		if (!defined($numReadsHash{$originalInputFilename})) { die "Programming error: the numReadsHash was not defined for <$originalInputFilename>! Something is wrong here."; }
-		my $numReadsThisFile = $numReadsHash{$originalInputFilename};
-		
-		my $scaleFactor;
-		my $maxReads = List::Util::max(values(%numReadsHash));
-		if ($numReadsThisFile == 0) {
-		    print("************\nThat's weird, there were NO reads in this file, <$originalInputFilename>. That could indicate something being wrong.\n********\n");
-		    $scaleFactor = 1.0; # don't scale anything, I guess!
-		} else {
-		    $scaleFactor = $maxReads / $numReadsThisFile;
-		    # Scales all the values!
-		}
-		($scaleFactor >= 0.99999) or die "BUG REPORT 87X: how is the scale factor LESS than 1? That should be impossible. This is a programming error! We are supposed to scale the smaller files UP to the largest file, so no files should be scaled down at all!";
-		
-
 		if ($scaleFactor == 1.0) {
 		    datePrint(": Skipping scaling the largest bedGraph file by a factor of $scaleFactor, since that would have no effect.\n");
 		    # No need to "scale" this file by a factor of 1.0 (since that will change nothing)! Instead we'll just use the original bedGraph file
 		    $whichFileToWigify = $bedGraphIntermediateFile; # <-- use the OLD intermediate file! Not a new scaled one
 		} else {
+		    # Now we will write out the SCALED wiggle track
 		    datePrint(": About to scale the bedGraph file by a factor of $scaleFactor ($maxReads / $numReadsThisFile)...\n");
 		    open SCALED, "> $bedGraphScaledFile" or die $!;
 		    open BWFILE, $bedGraphIntermediateFile or die $!;
@@ -251,7 +252,7 @@ for my $originalInputFilename (@INPUT_FILES) {
     open FILE, ">>", $browserTrackDescriptionFile or die $!; ## APPEND TO THE FILE!!!
     print FILE "\n";
     print FILE browserTrackString("bam", ${sortBamFullFilename});
-    print FILE browserTrackString("bigWig", ${bigWigOutFile});
+    if ($makeWig) { print FILE browserTrackString("bigWig", ${bigWigOutFile}); }
     print FILE "\n";
     close(FILE);
 
