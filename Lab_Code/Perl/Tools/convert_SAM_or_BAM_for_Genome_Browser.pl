@@ -203,7 +203,7 @@ for my $originalInputFilename (@INPUT_FILES) {
 	($scaleFactor >= 0.99999) or die "BUG REPORT 87X: how is the scale factor LESS than 1? That should be impossible. This is a programming error! We are supposed to scale the smaller files UP to the largest file, so no files should be scaled down at all!";
     }
 
-    my $scaleString = ($shouldScale) ? ".scaled_by_${scaleFactor}" : "";
+    my $scaleString = ($shouldScale) ? ".scaled_by_${scaleFactor}" : ""; # Change the title of the files, if the user specified scaling.
 
     my $bedGraphScaledFile = "Browser.tmp.${bamPrefixWithoutFileExtension}${scaleString}.bedgraph";
     my $bigWigOutFile      = "Browser.${bamPrefixWithoutFileExtension}${scaleString}.bw";
@@ -223,7 +223,7 @@ for my $originalInputFilename (@INPUT_FILES) {
 		if ($scaleFactor == 1.0) {
 		    datePrint(": Skipping scaling the largest bedGraph file by a factor of $scaleFactor, since that would have no effect.\n");
 		    # No need to "scale" this file by a factor of 1.0 (since that will change nothing)! Instead we'll just use the original bedGraph file
-		    $whichFileToWigify = $bedGraphIntermediateFile; # <-- use the OLD intermediate file! Not a new scaled one
+		    $whichFileToWigify = $bedGraphIntermediateFile; # <-- just use the OLD intermediate file, don't waste time recomputing a new scaled one.
 		} else {
 		    # Now we will write out the SCALED wiggle track
 		    datePrint(": About to scale the bedGraph file by a factor of $scaleFactor ($maxReads / $numReadsThisFile)...\n");
