@@ -50,13 +50,16 @@ sub browserTrackString($$) {
 
 my $makeWig = 1; ## By default, generate a bigwig track too. Specify "nowig" to avoid this.
 my $shouldSort = 1; ## By default, assume the input SAM/BAM file will still require sorting.
-my $shouldScale = 0; ## By default, just make PLAIN files, do not SCALE all the wiggle tracks to the same scale. If we SHOULD scale, then we divide all the values by the (number of reads in the BIGGEST file / number of reads in THIS file)
+my $shouldScale = 1; ## By default, scale the wiggle tracks to a common height. If we SHOULD scale, then we divide all the values by the (number of reads in the BIGGEST file / number of reads in THIS file)
+
+my $shouldKeepTempFiles = 0;
 
 # ==============================================================================
 GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
 	   , "wig!" => \$makeWig ## specify "--nowig" to avoid making a wiggle track
 	   , "sort!" => \$shouldSort ## "--nosort" avoids the slow sorting step
-	   , "scale!" => \$shouldScale ## "--noscale" doesn't scale the output wiggle files. BAM files are never scaled. Default: DO NOT scale
+	   , "scale!" => \$shouldScale ## "--noscale" doesn't scale the output wiggle files. BAM files are never scaled. Default: DO scale
+	   , "keeptemp!" => \$shouldKeepTempFiles
     ) or printUsageAndQuit();
 
 if (scalar(@ARGV) == 0) { die "ARGUMENT ERROR: This script requires ONE OR MORE SAM/BAM filenames as arguments!\nIt cannot read from STDIN---sorry!\nExample: convert_SAM_or_BAM_for_Genome_Browser.pl  mySamFile.sam\n[Quitting now.]\n"; }
@@ -243,7 +246,11 @@ for my $originalInputFilename (@INPUT_FILES) {
 	    my @wigCmd2 = ("wigToBigWig", "-clip", $whichFileToWigify, $chrLenTempFile, $bigWigOutFile);
 	    datePrint("Now running this command: @wigCmd2\n");
 	    system(@wigCmd2); ## makes a BIGWIG file from the WIG file
-	    unlink($chrLenTempFile); ## <-- delete the $chrLenTempFile now! We don't need it anymore.
+	    if (!$shouldKeepTempFiles) {
+		if (-e $chrLenTempFile)           { unlink($chrLenTempFile) }; ## <-- delete the $chrLenTempFile now! We don't need it anymore.
+		if (-e $bedGraphScaledFile)       { unlink($bedGraphScaledFile); }
+		if (-e $bedGraphIntermediateFile) { unlink($bedGraphIntermediateFile); }
+	    }
 	}
     } else {
 	print qq{[Skipping] the generation of a bigWig file, because "--nowig" was specified on the command line.\n};
@@ -317,7 +324,8 @@ These files can be viewed in the genome browser.
 
 OPTIONS:
 
-   --scale: Resize the wiggle files so that they are on the same scale with
+   --noscale: Do NOT scale. Default is to rescale the wiggle files.
+            --scale resizes the wiggle files so that they are on the same scale with
             respect to the total number of reads in each file.
             Does NOT affect the BAM files.
             Example: if you have file A with 100 reads and file B with 50 reads,
