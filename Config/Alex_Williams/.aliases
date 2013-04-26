@@ -348,6 +348,9 @@ alias che=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${CLUS_IP}'
 alias newv='ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${NEWV_IP}'
 alias tuck='ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PS_IP}'
 
+alias oso='ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${OSO_IP}'
+alias osox='ssh ${AGW_SSH_OPTIONS} -Y ${ACC_U}@${OSO_IP}'
+
 ## ===============================================
 ## ====== LESS ===================================
 export PAGER=less
