@@ -558,27 +558,27 @@ agwSymmetricAxis <- function(dataPoints) {
 ## ====================================================
 ## Prints with logging-to-file behavior by default
 log.red.agw <- function(..., newline=T, log=T) {
-     print.color.agw(..., newline=newline, fg="#FF0000", log=log)
+     print.color.agw(..., newline=newline, fg="red", log=log)
 }
 
 log.yellow.agw <- function(..., newline=T, log=T) {
-     print.color.agw(..., newline=newline, fg="#FFFF00", log=log)
+     print.color.agw(..., newline=newline, fg="yellow", log=log)
 }
 
 log.green.agw <- function(..., newline=T, log=T) {
-     print.color.agw(..., newline=newline, fg="#00FF00", log=log)
+     print.color.agw(..., newline=newline, fg="green", log=log)
 }
 
 log.cyan.agw <- function(..., newline=T, log=T) {
-     print.color.agw(..., newline=newline, fg="#00FFFF", log=log)
+     print.color.agw(..., newline=newline, fg="cyan", log=log)
 }
 
 log.magenta.agw <- function(..., newline=T, log=T) {
-     print.color.agw(..., newline=newline, fg="#FF00FF", log=log)
+     print.color.agw(..., newline=newline, fg="magenta", log=log)
 }
 
 log.blue.agw <- function(..., newline=T, log=T) {
-     print.color.agw(..., newline=newline, fg="#0000FF", log=log)
+     print.color.agw(..., newline=newline, fg="blue", log=log)
 }
 ## ====================================================
 ## ====================================================
@@ -587,38 +587,39 @@ log.blue.agw <- function(..., newline=T, log=T) {
 ## ====================================================
 ## Prints to the console, default is NOT to log to a file
 print.red.agw <- function(..., newline=T, log=F) {
-     print.color.agw(..., newline=newline, fg="#FF0000", log=log)
+     print.color.agw(..., newline=newline, fg="red", log=log)
 }
 
 print.yellow.agw <- function(..., newline=T, log=F) {
-     print.color.agw(..., newline=newline, fg="#FFFF00", log=log)
+     print.color.agw(..., newline=newline, fg="yellow", log=log)
 }
 
 print.green.agw <- function(..., newline=T, log=F) {
-     print.color.agw(..., newline=newline, fg="#00FF00", log=log)
+     print.color.agw(..., newline=newline, fg="green", log=log)
 }
 
 print.cyan.agw <- function(..., newline=T, log=F) {
-     print.color.agw(..., newline=newline, fg="#00FFFF", log=log)
+     print.color.agw(..., newline=newline, fg="cyan", log=log)
 }
 
 print.magenta.agw <- function(..., newline=T, log=F) {
-     print.color.agw(..., newline=newline, fg="#FF00FF", log=log)
+     print.color.agw(..., newline=newline, fg="magenta", log=log)
 }
 
 print.blue.agw <- function(..., newline=T, log=F) {
-     print.color.agw(..., newline=newline, fg="#0000FF", log=log)
+     print.color.agw(..., newline=newline, fg="blue", log=log)
 }
 
 ## ====================================================
 ## ====================================================
 
 print.color.agw <- function(..., newline=T, log=F, fg=NULL, bg=NULL) {
-     if (require(xterm256)) {
+
+     # xterm256 is now deprecated. Use "xtermStyle" instead.
+     
+     if (require(xtermStyle)) {
           ## "require" checks the currently loaded packages and doesn't reload code that is already loaded.
-          #warning("Note that requiring xterm256 apparently also breaks the ability to inspect functions: you will get an error about \"renderer$translator\".")
-          print.agw( style(paste(..., collapse=NULL, sep=''), fg=fg, bg=bg, check.xterm=FALSE)
-                    , newline=newline, log=log)
+          print.agw( xtermStyle::style(paste(..., collapse=NULL, sep=''), fg=fg, bg=bg) , newline=newline, log=log)
      } else {
           print.agw(..., newline=newline, log=log)
      }
