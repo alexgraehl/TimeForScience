@@ -465,8 +465,6 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
      labelVec <- gsub("\n\n+", "\n", labelVec, perl=TRUE, ignore.case=TRUE) ## One newline in a row at most!
      labelVecNoNewlines <- gsub("\n", "", labelVec, perl=TRUE, ignore.case=TRUE)
      print.agw("Drawing a \"pairs\" plot matrix with many sub-plots to file <", filePath, ">... (note, this can take a couple of minutes)\n")
-     #datA <- apply(dataMatrix, APPLY_BY_ROW, mean) ## get the mean of each row
-     #datM <- as.matrix(dataMatrix) - datA          ## get the difference of each row
      ## cumul/whichBin: Shows which "bins" each number is in. So like, experiment #2 might be in experimental group #1, if there were 2 replicates of that experiment.
      cumul <- c(0, cumsum(keys$"experimentsInEachGroup")) ## <-- 0 is the leftmost boundary!
      whichBin <- function(value, binMarkers) { ## right sides! The first value is NOT a valid one
