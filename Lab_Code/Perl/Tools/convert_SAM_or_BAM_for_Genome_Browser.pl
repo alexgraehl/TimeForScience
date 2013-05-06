@@ -170,11 +170,11 @@ for my $originalInputFilename (@INPUT_FILES) {
 	datePrint(": [Skipping] We are NOT continuing with the sorted-BAM-file generation, because such a file already exists. Remove it if you want to recompute it!\n");
     } else {
 	if (!$shouldSort) {
-	    datePrint(": Assuming that the file <$bamFilename> is already sorted---we will make a symlink to <$sortBamFullFilename> rather than re-sorting it.\n");
+	    datePrint(": Assuming that the file <$bamFilename> is already COORDINATE sorted---we will make a symlink to <$sortBamFullFilename> rather than re-sorting it with Samtools.\n");
 	    system("ln -s $bamFilename $sortBamFullFilename");
 	} else {
 	    my $sortCmd = "samtools sort $bamFilename $sortBamFilePrefix"; ## <-- Note: this should NOT have the .bam extension, because samtools automatically adds the ".bam" extension
-	    datePrint(": Running the SAMTOOLS sort command: ${sortCmd}...\n");
+	    datePrint(": Running the SAMTOOLS sort-by-leftmost-coordinate command: ${sortCmd}...\n");
 	    system($sortCmd);
 	}
     }
@@ -294,15 +294,12 @@ for my $originalInputFilename (@INPUT_FILES) {
 
 __DATA__
 
-convert_SAM_or_BAM_for_Genome_Browser.pl <INPUT BAM / SAM FILES>
+convert_SAM_or_BAM_for_Genome_Browser.pl  <INPUT BAM / SAM FILES>
+
+Example: convert_SAM_or_BAM_for_Genome_Browser.pl   myFile.bam   otherFile.bam
 
 Processes SAM or BAM alignment files to generate files for the UCSC Genome Browser.
-
-You can now specify multiple input files.
-
-Options:
-    * --nowig: If you do not want to generate a wiggle track, you can say `--nowig`.
-    * --alreadysorted: If your file is already coordinate-sorted, then you can say `--alreadysorted` to avoid re-sorting it.
+You can now specify multiple BAM input files at once.
 
 This is a script that will generate UCSC-genome-browser-ready BAM files.
 It will convert / produce the UCSC-ready files from any SAM or BAM file you want.
