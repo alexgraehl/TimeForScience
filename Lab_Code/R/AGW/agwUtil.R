@@ -124,14 +124,18 @@ join.left.outer.agw <- function(left.mat, right.mat, both.key, left.key, right.k
 ## ==============================================
 mkdir.agw <- function(..., ignore.errors=FALSE) {
      for (d in c(...)) {
-          dir.create(d, recursive=TRUE, showWarnings=FALSE)
-          # showWarnings is FALSE above, because otherwise a warning is generated
-          # every time the directory *already* exists, which is not a problem, and
-          # does not warrant cluttering the screen with a superfluous warning.
-          if (!file.exists(d)) {
-               warning(paste("mkdir.agw: Unable to create the new directory", d))
-               if (!ignore.errors) { stop("Failed to create a directory: halting.") }
-               # But if we fail to make the directory, that actually probably IS a problem.
+          if (is.na(d) || is.null(d) || nchar(d) == 0) {
+               # Skipping creating a directory with invalid inputs...
+          } else {
+               dir.create(d, recursive=TRUE, showWarnings=FALSE)
+               # showWarnings is FALSE above, because otherwise a warning is generated
+               # every time the directory *already* exists, which is not a problem, and
+               # does not warrant cluttering the screen with a superfluous warning.
+               if (!file.exists(d)) {
+                    warning(paste("mkdir.agw: Unable to create the new directory", d))
+                    if (!ignore.errors) { stop("Failed to create a directory: halting.") }
+                    # But if we fail to make the directory, that actually probably IS a problem.
+               }
           }
      }
 }
