@@ -258,8 +258,8 @@ for my $originalInputFilename (@INPUT_FILES) {
 
     open FILE, ">>", $browserTrackDescriptionFile or die $!; ## APPEND TO THE FILE!!!
     print FILE "\n";
-    print FILE browserTrackString("bam", ${sortBamFullFilename});
     if ($makeWig) { print FILE browserTrackString("bigWig", ${bigWigOutFile}); }
+    print FILE browserTrackString("bam", ${sortBamFullFilename});
     print FILE "\n";
     close(FILE);
 
