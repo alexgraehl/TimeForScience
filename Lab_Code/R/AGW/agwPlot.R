@@ -441,19 +441,12 @@ panel.correlation.local <- function(x, y, digits=2, prefix="", cex.cor=4.0, boxW
 }
 
 ### ===============================================================================
-### Used in the scatterplots that compare values across two arrays
-### ===============================================================================
-geneST.pairs.plot <- function(..., celKeys) {
-     pairsCorMatrixPlot(..., keys=celKeys)
-}
-
-### ===============================================================================
 ## Makes a big multi-plot matrix of correlations between arrays.
 ## Uses the data in "dataMatrix" to figure out what to plot.
 ## if you for some reason actually want NO labels, set labelVec to "" in the arguments
 ### ===============================================================================
 pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, main="log2(Intensity).  Red points = within-group comparison. Values in lower left are Pearson's R of the log-transformed values.") {
-     assert.agw(nrow(keys$"table") == ncol(dataMatrix))
+     assert.agw(nrow(keys$"table") == ncol(dataMatrix), "problem! keys were not the same length as the dataMatrix.")
      if (missing(labelVec) || is.null(labelVec)) {
           COLUMN_THAT_PROBABLY_HAS_THE_FILENAMES <- 1 ## usually the first column in the keys file...
           filenamesMostLikely.vec <- keys$table[,COLUMN_THAT_PROBABLY_HAS_THE_FILENAMES]
