@@ -338,6 +338,8 @@ OPTIONS:
             Also, if you specify --nowig, then you no longer need to specify
             a "fai" fasta index file.
 
+   --keeptemp: Keeps the temp files (bedgraph files) instead of deleting them.
+
 EXAMPLES:
 
 convert_SAM_or_BAM_for_Genome_Browser.pl alignment.bam
