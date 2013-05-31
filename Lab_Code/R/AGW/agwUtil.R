@@ -654,65 +654,6 @@ agwNames <- function(thingToExamineInDetail) {
      return(v)
 }
 
-## =================================================================
-
-## agwPreparePlot <- function(directory=NULL, file=NULL, filetype="png", pointsize=DEFAULT.POINTSIZE, width=NULL, height=NULL, res=SCREEN.RES.DPI, verbose=TRUE, func=NULL, fullPath=NULL, ...) {
-##      ## This can be handy if you want to iterate over a bunch of plots without figuring out the parameters for each one.
-##      ## It's sort of not actually that useful, though.
-     
-##      # Height and width should be given in PIXELS, even for pdfs. If you want to make your 8.5-by-11 pdf the right
-##      # size image-wise, you should call it like:  agwPreparePlot(.. , res=72, width=(8.5*72), height=(11*72))
-##      agwFinishPlot() ## <-- finish a plot if there was already one
-     
-##      completeFilename <- NULL
-     
-##      if (is.null(file) && is.null(fullPath)) {
-##           if (verbose) { cat(paste(">>>> agwPreparePlot: Status message: About to plot to the standard screen.\n")) }
-          
-##      } else {    ## Ok, the user DOES want output to a file...
-##           if (!is.null(fullPath)) {
-##                completeFilename <- paste(fullPath, '.', filetype, sep='')
-##           } else {
-##                stopifnot(!is.null(directory))
-##                stopifnot(!is.null(file))
-##                completeFilename <- paste(directory, '/', file, '.', filetype, sep='')
-##           }
-          
-##           if (verbose) { cat(paste(">>>> agwPreparePlot: Status message: About to plot to the file <", completeFilename, ">...", "\n", sep='')) }
-          
-##           if (!is.null(directory) && !(file.exists(directory))) {
-##                cat(agwGlue("\n\n\n>>>> agwPreparePlot: ERROR: Quitting, because the directory \"", directory, "\" did not exist!\n>>>>        You will need to manually create it!\n"))
-##                stop(agwGlue("ERROR: agwPreparePlot: Quitting early because directory \"", directory, "\" does not exist! You will need to manually create it!"))
-##           }
-##           ## Note: you probably want to call agwFinishPlot after you make your plot!
-##           if ("png" == filetype) {
-##                if (is.null(width)) { width <- STANDARD.PLOT.WIDTH; }
-##                if (is.null(height)) { height <- STANDARD.PLOT.HEIGHT; }
-##                png(filename=completeFilename, pointsize=pointsize
-##                    , width=width, height=height, res=res)
-##           } else if ("pdf" == filetype) {
-##                ## width and height are assumed to have been
-##                ## given in PIXELS
-##                pdf(file=completeFilename, pointsize=pointsize, width=(width/res), height=(height/res))
-##           } else {
-##                stop("agwPreparePlot: Sorry, only PNG and PDF filetypes are supported for now!!!")
-##           }
-##      }
-     
-##      if (!is.null(func)) {  ## If there is a function to call, then call it!
-##           func(...) ;
-##      }
-##      gvGLOBAL.LAST.PLOT <<- file ;
-## }
-
-## agwFinishPlot <- function() {
-##      if (length(dev.list()) > 0) {
-##           dev.off();
-##      }
-##      gvGLOBAL.LAST.PLOT <<- NULL
-## }
-
-
 
 ## =================================================================
 
