@@ -618,9 +618,7 @@ print.blue.agw <- function(..., newline=T, log=F) {
 ## ====================================================
 
 print.color.agw <- function(..., newline=T, log=F, fg=NULL, bg=NULL) {
-
      # xterm256 is now deprecated. Use "xtermStyle" instead.
-     
      if (require(xtermStyle)) {
           ## "require" checks the currently loaded packages and doesn't reload code that is already loaded.
           print.agw( xtermStyle::style(paste(..., collapse=NULL, sep=''), fg=fg, bg=bg) , newline=newline, log=log)
@@ -1205,7 +1203,7 @@ agwGetHeatColors <- function(n) {
 ## ==============================================
 system.agw <- function(...
                        , sep=''
-                       , formatted=TRUE
+                       , formatted=TRUE # <-- if true, then we split commands with " | " and multiple spaces onto their own lines. Keeps the output cleaner, at the expense of potentially being confusing. Set to FALSE to just print the command verbatim.
                        , requireZeroExitCode=FALSE ## Aborts on a non-zero exit code
                        , dryrun=FALSE
                        , wait=TRUE
@@ -1225,14 +1223,14 @@ system.agw <- function(...
      numPrefixSpaces <- 1 + nchar(syscallPrefix) # <-- how many spaces required to indent the following lines of the combined system call properly?
      prefixWhitespace <- paste(rep(' ', numPrefixSpaces), collapse='') ## <-- a whitespace region to indent things properly
 
-     if (time) { print.color.agw(paste("[", Sys.time(), "] ", "\n", sep=''), fg=fgColor, log=log, newline=F) } ## <-- note the lack of a newline!
+     if (time) { print.color.agw(paste("Syscall started at [", Sys.time(), "] ", "\n", sep=''), fg=fgColor, log=log, newline=F) } ## <-- note the lack of a newline!
      
-     if (formatted) {
+     if (formatted) { # "Formatted" means we should be auto-splitting the line onto new lines
           formattedCmd = gsub("    ", paste("\n", prefixWhitespace, sep=''), theCommand, perl=TRUE) ## <-- four spaces becomes a newline
           formattedCmd = gsub(" [|] ", paste("\n", prefixWhitespace,"| ", sep=''), formattedCmd, perl=TRUE) # <-- a vertical bar surrounded by spaces becomes a newline, then a vertical bar
-          print.color.agw(syscallPrefix, formattedCmd, "\n", fg=fgColor, log=log)
+          print.color.agw(syscallPrefix, formattedCmd, fg=fgColor, log=log)
      } else {
-          print.color.agw(syscallPrefix, theCommand, "\n", sep='', fg=fgColor, log=log)
+          print.color.agw(syscallPrefix, theCommand, sep='', fg=fgColor, log=log)
      }
 
      exitCode <- 0
@@ -1250,7 +1248,7 @@ system.agw <- function(...
           }
      }
 
-     if (time) { print.color.agw(paste("Done at [", Sys.time(), "]", "\n", sep=''), fg=fgColor, log=log, newline=TRUE) }
+     if (time) { print.color.agw(paste("Syscall done at [", Sys.time(), "]", sep=''), fg=fgColor, log=log, newline=TRUE) }
      
      if (requireZeroExitCode) {
           assert.agw(exitCode == 0, paste("Uh oh! The exit code for the command was NOT zero (zero indicates a success in most utilities)! Instead, the exit code was: ", exitCode, "\n", sep=''))
