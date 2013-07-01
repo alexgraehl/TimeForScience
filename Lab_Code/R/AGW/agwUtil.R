@@ -425,6 +425,8 @@ file.path.that.exists.agw <- function(..., missing.message="File not found.") {
 ## Result:
 ###  c(TRUE, FALSE)
 file.nonzero.agw <- function(...) {
+     if (!all(nchar(...) > 0)) { print("ERROR: You passed a ZERO LENGTH argument into 'file.nonzero.agw'!"); stop() }
+     if (!all(!is.null(...))) { print("ERROR: You passed a NULL argument into 'file.nonzero.agw'!"); stop() }
      return(sapply(list(...)
                    , function(x) { return(file.exists(x) && file.info(x)>0) }
                    ))
