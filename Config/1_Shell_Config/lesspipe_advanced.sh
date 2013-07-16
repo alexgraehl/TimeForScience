@@ -29,13 +29,19 @@ STG="\033[33m" # start color G: 33 = yellow
 STT="\033[35m" # start color T: 36 = cyan. 35 = magenta
 STN="\033[45m" # start color N: magenta background, doesn't change the foreground
 
-ENC="\033[0m" # RESET color
+RES="\033[0m" # RESET color
 
 basecolor() {
     ## Colors the A, C, G, and T
     ## Assumes that you pass something INTO it via a pipe -- otherwise it fails
     ## Example:  cat myfile | sed 's/1/2/' | basecolor 
-    sed -e 's/A/'"$(printf ${STA}A${ENC})"'/g' -e 's/C/'"$(printf ${STC}C${ENC})"'/g' -e 's/G/'"$(printf ${STG}G${ENC})"'/g' -e 's/T/'"$(printf ${STT}T${ENC})"'/g' -e 's/N/'"$(printf ${STN}N${ENC})"'/g'
+    #sed -e 's/\(AA*\)/\1'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
+
+    # One-at-a-time coloration-and-termination for each individual character
+    sed -e 's/A/'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
+
+    # Colorize based on entire blocks of identical characters. Turns out not to be any faster, unfortunately!
+    #sed -e 's/\(AA*\)/'"$(printf $STA)"'\1'"$(printf $RES)"'/g' -e 's/\(CC*\)/'"$(printf $STC)"'\1'"$(printf $RES)"'/g' -e 's/\(GG*\)/'"$(printf $STG)"'\1'"$(printf $RES)"'/g' -e 's/\(TT*\)/'"$(printf $STT)"'\1'"$(printf $RES)"'/g' -e 's/\(NN*\)/'"$(printf $STN)"'\1'"$(printf $RES)"'/g'
 }
 
 lesspipe() {
