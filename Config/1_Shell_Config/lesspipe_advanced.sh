@@ -11,13 +11,40 @@
 
 # Changes from the default script are annotated below
 
+smartdecompress() {
+    # "Smart" picking of a decompressing utility (or none!) and echoing to STDOUT. Normally you pipe this into ANOTHER utility!
+    # Example:   smartdecompress "$1" | sed 's/ABC/DEF/'
+    case "$1" in
+	*.gz)	DECOMPRESSOR="gunzip -c" ;;
+	*.bz2)	DECOMPRESSOR="bunzip2 -c" ;;
+	*)	DECOMPRESSOR="cat" ;;
+    esac
+    $DECOMPRESSOR $1; # <-- this is what we pass into the relevant "smart" function below
+}
+
+STO="\033[1m" # start color
+STA="\033[31m" # start color A: 31 = red
+STC="\033[36m" # start color C: 36 = cyan. 32 = green. 35 = magenta
+STG="\033[33m" # start color G: 33 = yellow
+STT="\033[35m" # start color T: 36 = cyan. 35 = magenta
+STN="\033[45m" # start color N: magenta background, doesn't change the foreground
+
+ENC="\033[0m" # RESET color
+
+basecolor() {
+    ## Colors the A, C, G, and T
+    ## Assumes that you pass something INTO it via a pipe -- otherwise it fails
+    ## Example:  cat myfile | sed 's/1/2/' | basecolor 
+    sed -e 's/A/'"$(printf ${STA}A${ENC})"'/g' -e 's/C/'"$(printf ${STC}C${ENC})"'/g' -e 's/G/'"$(printf ${STG}G${ENC})"'/g' -e 's/T/'"$(printf ${STT}T${ENC})"'/g' -e 's/N/'"$(printf ${STN}N${ENC})"'/g'
+}
+
 lesspipe() {
     case "$1" in
 	*.[1-9n]|*.man|*.[1-9n].bz2|*.man.bz2|*.[1-9].gz|*.[1-9]x.gz|*.[1-9].man.gz) ## <--- For viewing multi-part archives!
 	    case "$1" in
-		*.gz)	DECOMPRESSOR="gunzip -c" ;;  ## <-- For viewing multi-part archives only!
-		*.bz2)	DECOMPRESSOR="bunzip2 -c" ;; ## <-- For viewing multi-part archives only!
-		*)	DECOMPRESSOR="cat" ;;        ## <-- For viewing multi-part archives only!
+		*.gz)	DECOMPRESSOR="gzip  -dc" ;;
+		*.bz2)	DECOMPRESSOR="bzip2 -dc" ;;
+		*)	DECOMPRESSOR="cat" ;;
 	    esac
 	    if $DECOMPRESSOR -- "$1" | file - | grep -q troff; then
 		if echo "$1" | grep -q ^/; then	#absolute path
@@ -40,7 +67,13 @@ lesspipe() {
 	*.tab.gz|*.matrix.gz) gunzip -c "$1" | sheet.pl --notify --color="always" ;;
 	*.tab|*.matrix) sheet.pl --notify --color="always" "$1" ;;
 
-	*.bam) echo '######\n### Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format ###\n######' ; samtools view -h "$1" ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
+	# Color code the bases A, C, G, and T
+	*.bam) echo '######\n### Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format ###\n######' ; samtools view -h "$1" | basecolor ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
+
+	# Color code the bases A, C, G, and T
+	*.sam|*.sam.gz|*.sam.bz2|*.fasta|*.fasta.gz|*.fasta.bz2|*.fastq|*.fastq.gz|*.fastq.bz2|*.fa|*.fa.gz|*.fa.bz2|*.fq|*.fq.gz|*.fq.bz2) smartdecompress "$1" | basecolor ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
+
+#	*.bam) echo '######\n### Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format ###\n######' ; samtools view -h "$1" | sed 's/A/'"$(printf '\033[1mA\033[0m')"'/g' ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
 
 	*.tar) tar tvvf "$1" ;;
 	*.tgz|*.tar.gz|*.tar.[zZ]) tar tzvvf "$1" ;;
