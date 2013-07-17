@@ -101,21 +101,23 @@ alias cheat="echo \
 \">>> Bash: Literal tab in bash: \$'\\t' \" ${NL}\
 \">>> sh: Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
 \">>> Python debugger: Crashing program? Run python -m pdb YOURPROG --yourargs . 'c' continues execution. \" ${NL}\
+\" \" ${NL}\
 \">>> R: Read bzip/gz file:  x <- read.table(bzfile(\\\"name.bz2\\\") or gzfile(...) \" ${NL}\
 \">>> R: Read from stdin:    x <- read.table(pipe(\\\"cat something name.bz2 | bunzip2\\\") \" ${NL}\
 \">>> R: Install new package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
 \">>> R: Install new package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
 \">>> R: sessionInfo(): show package versions. ls('package:something') shows package details. \" ${NL}\
+\">>> R: traceback() - way to properly debug. Also: options(error=recover()) \" ${NL}\
 \">>> R: t.test failing? Use tryCatch: tryCatch(something, error=function() { return('NA'); }); \" ${NL}\
 \">>> R: Need to un-list things? Use unlist! \" ${NL}\
 \">>> R: Perpendicular axis labels: las=2 (1=horiz, 3=vertical) \" ${NL}\
-\">>> R: Draw beyond graph region: par(xpd=T/F/NA) \" ${NL}\
-\">>> R: Square plot: par(pty='s') \" ${NL}\
-\">>> R: Figure out attributes of a variable: attr(x, 'theAttribute'); Works even when names()/attributes() does not! \" ${NL}\
-\">>> R: Inspect object: str(...) \" ${NL}\
-\">>> R: Totally blank plot: plot(c(0,1),c(0,1),ann=F,bty='n',type='n',xaxt='n',yaxt='n') \" ${NL}\
-\">>> R: Cut things into bins, like a histogram: cut(...) \" ${NL}\
-\">>> R: Factor -> Integers: unclass(...) \" ${NL}\
+\">>> R: draw beyond graph region: par(xpd=T/F/NA) \" ${NL}\
+\">>> R: square plot: par(pty='s') \" ${NL}\
+\">>> R: figure out attributes of a variable: attr(x, 'theAttribute'); Works even when names()/attributes() does not! \" ${NL}\
+\">>> R: inspect object: str(...) \" ${NL}\
+\">>> R: totally blank plot: plot(c(0,1),c(0,1),ann=F,bty='n',type='n',xaxt='n',yaxt='n') \" ${NL}\
+\">>> R: cut things into bins, like a histogram: cut(...) \" ${NL}\
+\">>> R: factor -> Integers: unclass(...) \" ${NL}\
 \">>> R: Perpendicular axis: par(las=2) (1 = horiz, 3 = vertical) \" ${NL}\
 \">>> R: Draw BEYOND the axes / plot region: par(xpd=...) \" ${NL}\
 \">>> R: Show package contents: ls('package:some_package_name_here') \" ${NL}\
