@@ -193,7 +193,10 @@ alias cheat="echo \
 
 alias ls='/bin/ls ${AGW_LS_OPT}'
 alias l='ls'
+
 alias ll='/bin/ls -l -h -A -F ${AGW_LS_OPT}'
+alias lo='ll -r -t' # Depends on "ll" already being defined above. List by TIME so that NEWEST files are at the bottom
+
 alias p='pwd -P'
 alias tc='randomize_terminal_color.pl -cycle'
 #alias cd='pushd'
