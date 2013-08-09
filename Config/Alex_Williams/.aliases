@@ -169,7 +169,7 @@ alias cheat="echo \
 \">>> RNASEQ BAM --> SAM:  samtools view -h  in.bam > out.sam \" ${NL}\
 \">>> RNASEQ sorting and setting the 'sorted' flag:  java -Xmx2g  -jar SortSam.jar INPUT=in.sam SORT_ORDER=coordinate OUTPUT=out_sorted.sam \" ${NL}\
 \">>> RNASEQ View BAM header: samtools view -H  in.bam \" ${NL}\
-\">>> RNASEQ SAM flags / remove non-primary alignments: samtools view -c -F 0x100 in.bam > primary.bam \" ${NL}\
+\">>> RNASEQ SAM flags / remove non-primary alignments: samtools view -F 0x100 in.bam > primary.bam \" ${NL}\
 \">>> RNASEQ Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ${NL}\
 \">>> DNA Reverse-complement:  perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
 \">>> APACHE error log: sudo less -S /var/log/apache2/error.log \" ${NL}\
