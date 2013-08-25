@@ -13,6 +13,8 @@ for (f in zips) {
 		print(paste("CSV file <", csvName, "> appears to already have been extracted. Skipping unzip.", sep=''))
 	} else {
 		unzip(f, exdir=dirname(f));
+		#system(paste("bzip2 ", csvName, sep=''))
+		#stopifnot(file.exists(csvName))
 	}
 }
 
@@ -20,6 +22,8 @@ csvs <- list.files(path=WAHOO_FITNESS_DIRECTORY, recursive=T, pattern="*.csv", f
 
 for (fff in csvs) {
 	#"~/Desktop/2012-06-03_0101_Golfing_WF.csv" #HRM 5-20 after is when slpn/2012-06-02_0205_Golfing_WF.csv"
+	
+	#system(
 	
 	FIRST_INTERESTING_HEADER_REGEXP <- "^time,pwr_accdist,pwr_cadence" # regular expression
 	MAX_LINES_TO_LOOK_FOR_INTERESTING_HEADER <- 500
