@@ -7,27 +7,43 @@ options(error=recover)
 WAHOO_FITNESS_DIRECTORY <- "~/Dropbox/Apps/WahooFitness"
 
 zips <- list.files(path=WAHOO_FITNESS_DIRECTORY, recursive=T, pattern="*.zip", full.names=T)
+
+print("Assuming that we will find a whole bunch of ZIP files of CSV files. We will extract the ZIP, but then immediately bzip and/or remove the large files so we don't use up all the dropbox storage space.")
 for (f in zips) {
-	csvName <- sub("zip$","csv", f, perl=T, ignore.case=T)
-	if (file.exists(csvName)) {
-		print(paste("CSV file <", csvName, "> appears to already have been extracted. Skipping unzip.", sep=''))
-	} else {
+	csvNameBzipped <- sub("zip$","csv.bz2", f, perl=T, ignore.case=T)
+	csvNameUncompressed <- sub("zip$","csv", f, perl=T, ignore.case=T)
+	prefixOnly <- sub("[.]zip$","", f, perl=T, ignore.case=T)
+	
+	if (file.exists(csvNameBzipped)) {
+		print(paste("BZIPPED CSV file <", csvNameBzipped, "> appears to already have been extracted. Skipping unzip.", sep=''))
 		unzip(f, exdir=dirname(f));
-		#system(paste("bzip2 ", csvName, sep=''))
-		#stopifnot(file.exists(csvName))
+	} else {
+		print(paste("BZIPPED CSV file <", csvNameBzipped, "> didn't exist, so we will unzip the zip file ", f, " and hope that there was a CSV file in it. Then we will BZIP2 that .CSV file and look for it again.", sep=''))
+		unzip(f, exdir=dirname(f));
+		system(paste("bzip2 ", csvNameUncompressed, sep=''))
+		system(paste("bzip2 ", paste(prefixOnly, c("gpx", "pwx", "tcx", "wf"), sep='.', collapse=" "), sep=''), wait=FALSE) # background task!
+		
+		stopifnot(file.exists(csvNameBzipped))
 	}
 }
 
-csvs <- list.files(path=WAHOO_FITNESS_DIRECTORY, recursive=T, pattern="*.csv", full.names=T)
+csvs <- list.files(path=WAHOO_FITNESS_DIRECTORY, recursive=T, pattern="*.csv.bz2", full.names=T)
 
 for (fff in csvs) {
+	pdfname <- sub("[.]csv.*", ".pdf", fff, perl=T, ignore.case=T)
+	pngname <- sub("[.]csv.*", ".png", fff, perl=T, ignore.case=T)
+	
+	if (file.exists(pdfname)) {
+		print("Skipping! PDF already exists");
+		next;
+	}
 	#"~/Desktop/2012-06-03_0101_Golfing_WF.csv" #HRM 5-20 after is when slpn/2012-06-02_0205_Golfing_WF.csv"
 	
 	#system(
 	
 	FIRST_INTERESTING_HEADER_REGEXP <- "^time,pwr_accdist,pwr_cadence" # regular expression
 	MAX_LINES_TO_LOOK_FOR_INTERESTING_HEADER <- 500
-	findHeader <- readLines(fff, n=MAX_LINES_TO_LOOK_FOR_INTERESTING_HEADER) #, blank.lines.skip=F)
+	findHeader <- readLines(bzfile(fff), n=MAX_LINES_TO_LOOK_FOR_INTERESTING_HEADER) #, blank.lines.skip=F)
 	header.vec <- grep(FIRST_INTERESTING_HEADER_REGEXP, findHeader, perl=T, ignore.case=T)
 	if (length(header.vec) != 1) {
 		warning(paste("ERROR: No single header line was found in the file <", fff, ">. Maybe it's not the right type of CSV file. Skipping."))
@@ -35,15 +51,14 @@ for (fff in csvs) {
 	}
 	print(paste("Reading the file <", fff, ">...", sep=''))
 	
-	pdfname <- sub("csv", "pdf", fff, perl=T, ignore.case=T)
-	pngname <- sub("csv", "png", fff, perl=T, ignore.case=T)
+
 	
 	## For filtering out totally bizarre broken values from the data
 	MAX_THEORETICAL_HEARTRATE <- 500
 	MIN_THEORETICAL_HEARTRATE <-  25
 	# ========================================
 	NUM_USELESS_TOP_LINES <- (header.vec[1] - 1) ## num lines in the input file before we get to the table part
-	dat.all <- read.csv(fff, skip=NUM_USELESS_TOP_LINES, header=T)
+	dat.all <- read.csv(bzfile(fff), skip=NUM_USELESS_TOP_LINES, header=T)
 	# ========================================
 	
 	dd <- dat.all[, c("time","hr_heartrate")] ## only get the fields of interest
@@ -166,4 +181,9 @@ for (fff in csvs) {
 	
 	# ==============================================================
 }
-	
+
+
+print(paste(warnings(), collapse=" \n "))
+
+warnings()
+
