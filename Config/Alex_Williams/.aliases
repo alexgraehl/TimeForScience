@@ -135,6 +135,10 @@ alias cheat="echo \
 \" \" ${NL}\
 \">>> AWK: sum numbers in a column 1 of a file: cat THEFILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
 \">>> HG: Mercurial: revert to previous version : hg revert FILENAME -r-2 (or -r-3 for two versions ago, etc) \" ${NL}\
+\">>> NIX: list files w/modified time MORE THAN one week ago: find . -mtime +7 \" ${NL}\
+\">>> NIX: list files w/modified time LESS THAN one week ago: find . -mtime -7 \" ${NL}\
+\">>> NIX: list files w/modified time two days ago: find . -mtime 2 \" ${NL}\
+\">>> NIX: list files w/modified time between 6 and 9 minutes ago: find . -mmin +5 -mmin -10 \" ${NL}\
 \">>> NIX: list ONLY dot files, no .. or up a directory: ls -l .??* \" ${NL}\
 \">>> NIX: set up symlinks from Mercurial/TimeForScience: ln -sfn ~/TimeForScience/Config/Alex_Williams/.??* ~/ \" ${NL}\
 \">>> NIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
