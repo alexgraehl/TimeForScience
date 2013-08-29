@@ -39,12 +39,31 @@
 use strict;
 use warnings;
 
+my $hasBasename = 1; # if "File::Basename" is installed and can be relied on for "basename" and "dirname"
+my $outputIsColorTerminal = (-t STDOUT); # Check if the output is to the TERMINAL (then we should print color), or to a redirect (then don't print color!)
+
+
 use Cwd ('abs_path', 'getcwd');
-use File::Basename;
 
-use Term::ANSIColor;
+eval {
+    require File::Basename;
+    File::Basename->import();
+}; # <-- mandatory semicolon!!! or it breaks horribly
+if($@) {
+    $hasBasename = 0;
+    warn "Note: File::Basename Perl library is not installed / not in the include path.";
+    # FAILURE!!! Cannot find File::Basename apparently
+}
 
-my $outputIsColorTerminal = (-t STDOUT);
+eval {
+    require Term::ANSIColor;
+    Term::ANSIColor->import();
+}; # <-- mandatory semicolon!!! or it breaks horribly
+if($@) {
+    $outputIsColorTerminal = 0;
+    warn "Note: Term::ANSIColor Perl library is not installed / not in the include path. Disabling color output.";
+    # FAILURE!!! Cannot find Term::ANSIColor apparently
+}
 
 # sub hasBashColor() {
 #     {
@@ -168,9 +187,20 @@ foreach my $itemToDelete (@ARGV) {
 
     #print "Item to delete: " . $thepath . "\n";
 
-    my $basename = basename($thepath);
-    my $dirname  = dirname($thepath);
+    my $basename;
+    my $dirname;
 
+    if ($hasBasename) {
+	$basename = File::Basename::basename($thepath);
+	$dirname  = File::Basename::dirname($thepath);
+    } else {
+	#fall back onto the system version of these commands!
+	print "trash.pl note: Perl File::Basename could not be located, so we are falling back to the system version of 'basename' and 'dirname'.\n";
+	$basename = `basename "${thepath}"`; # this might be unsafe...?
+	chomp($basename); # Critical to remove the newline!
+	$dirname  = `dirname "${thepath}"`;
+	chomp($dirname); # Critical to remove the newline!
+    }
     #print "Full name of the thing we are deleting to make: " . $thepath . "\n";
     #print "Location to put it: " . "/tmp/alexgw/Trash" . $thepath . "\n";
 
