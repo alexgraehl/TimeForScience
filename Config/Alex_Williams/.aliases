@@ -247,6 +247,9 @@ function sudoshowoff {
     done
 }
 
+
+alias google="gcutil --project blast-meta ssh test-micro-instance"
+
 ## Mac-specific commands:
 
 SETFILE_LOCATION=/Applications/Xcode*/Contents/Developer/Tools/SetFile
