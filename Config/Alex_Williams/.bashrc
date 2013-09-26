@@ -144,7 +144,7 @@ fi
 
 
 #PS1="[\D{%e}=\t \h:\W]$ "
-PS1="[\D{%e}/\t:${HOSTNAME:0:3}:\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
+PS1="[\D{%e}~\t~${HOSTNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
 
 ## Conditional logic IS allowed in the ps1, bizarrely!
 #PS1='$(if [[ $USER == alexgw ]]; then echo "$REGULAR_PROMPT"; else echo "$PWD%"; fi)'
