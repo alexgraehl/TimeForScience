@@ -253,8 +253,8 @@ alias google="gcutil --project blast-meta ssh test-micro-instance"
 ## Mac-specific commands:
 
 SETFILE_LOCATION=/Applications/Xcode*/Contents/Developer/Tools/SetFile
-alias invisible='$SETFILE_LOCATION -P -a V' ## Mac-only: Make a file/folder invisible to the Finder
-alias visible='$SETFILE_LOCATION -P -a v' ## Mac-only: opposite of "invisible"
+alias invisible='chflags hidden' #$SETFILE_LOCATION -P -a V' ## Mac-only: Make a file/folder invisible to the Finder
+alias visible='chflags nohidden' #$SETFILE_LOCATION -P -a v' ## Mac-only: opposite of "invisible"
 alias clearicon='$SETFILE_LOCATION -P -a c' ## clear mac custom icons. Useful for images that have old custom icons.
 
 alias version="lsb_release -a" # Tells you which version of Ubuntu you are running!
