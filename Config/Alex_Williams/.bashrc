@@ -117,9 +117,9 @@ fi
 ## ===============================================
 ## ====== TERMINAL HISTORY =======================
 export HISTSIZE=30123
-export HISTCONTROL=ignoredups # duplicate and blank lines are not saved in the history
-export HISTIGNORE="ls:ll:kpk:exit:p:pwd:rr:clear:history:fg:bg" ## Commands that are NOT saved to the history!
-set revert-all-at-newline on # <-- prevents editing of history lines! This is SUPER important, and SUPER annoying if it gets set to 'off'
+export HISTCONTROL=ignoredups # Do not save duplicate/blank lines to the history
+export HISTIGNORE="ls:kpk:exit:p:pwd:rr:clear:history:fg:bg" ## Commands that are NOT saved to the history!
+set revert-all-at-newline on # <-- prevents editing of history lines! If this gets turned off, it is SUPER annoying.
 shopt -s histappend # Save terminal history between sessions
 PROMPT_COMMAND='history -a' ## save ALL terminal histories
 ## ====== TERMINAL HISTORY =======================
@@ -129,7 +129,7 @@ stty -ixon -ixoff  # Disable the totally useless START/STOP output control (enab
 
 shopt -s globstar # With globstar set (bash 4.0+), bash recurses all the directories.
 
-set   -o ignoreeof  # Prevent Ctrl-D from exiting!
+set   -o ignoreeof  # Prevent Ctrl-D from exiting! Still exits if you press it 10 times.
 shopt -s checkwinsize # Check the window size after each command and, if necessary, update the values of LINES and COLUMNS.
 shopt -s cdspell ## Fix common mis-spellings in directories to "cd" to
 shopt -s cmdhist ## Save multi-line pasted commands into one single history command
