@@ -19,7 +19,7 @@ if (!exists("print.agw")) {
 ## =================================================================
 ## Colors -- gradient, like heat.colors
 ## =================================================================
-colors.agw <- function(n=12, type="blueblackyellow", reverse=FALSE) {
+colors.agw <- function(n=12, type="blueblackyellow2", reverse=FALSE) {
      # Returns a color gradient, much like "heat.colors(...)" Several options for "type" are available.
      stopifnot(is.numeric(n)); stopifnot(n >= 1)
      totalColors <- n
