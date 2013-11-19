@@ -187,8 +187,8 @@ alias cheat="echo \
 \">>> LINES: Every Xth, starting with line Y (starts at 1, not 0): awk 'NR%X==Y' FILE \" ${NL}\
 \">>> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">>> LINES Count characters on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
-\">>> TOPHAT/rename #1: for f in *; do echo ${f}/accepted_hits.bam ${f}/accepted_hits_${f}.bam ; done \" ${NL}\
-\">>> TOPHAT/rename #2: for f in *; do   mv ${f}/accepted_hits.bam ${f}/accepted_hits_${f}.bam ; done \" ${NL}\
+\">>> TOPHAT/rename TEST: for f in *; do echo \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
+\">>> TOPHAT/rename RUN : for f in *; do   mv \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
 "
 
 # Shell navigation / commands
