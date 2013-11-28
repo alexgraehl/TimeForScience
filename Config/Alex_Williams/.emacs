@@ -1004,6 +1004,9 @@ current line."
 ;(add-hook 'sh-mode-hook 'my-disable-here-document)
 (add-hook 'sh-mode-hook (lambda () (sh-electric-here-document-mode -1))) ;; Prevent entering '<<<' from also inserting an EOF. Very annoying!
 
+(add-hook 'python-mode-hook
+  (lambda () (setq indent-tabs-mode t)))
+
 
 (defun iswitchb-local-keys ()
   (mapc (lambda (K) 
