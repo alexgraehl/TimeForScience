@@ -55,6 +55,10 @@ set visible-stats on
 #"\e[5~": history-search-backward
 #"\e[6~": history-search-forward
 
+# supposedly sets page up / page down to history search. Doesn't seem to work however.
+"\e[5~": history-search-forward
+"\e[6~": history-search-backward
+
 
 "\e[A": history-search-backward
 "\e[B": history-search-forward

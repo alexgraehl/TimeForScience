@@ -125,7 +125,7 @@ PROMPT_COMMAND='history -a' ## save ALL terminal histories
 ## ====== TERMINAL HISTORY =======================
 ## ===============================================
 
-stty -ixon -ixoff  # Disable the totally useless START/STOP output control (enables you to pause input by pressing the Ctrl-S key sequence and resume output by pressing the Ctrl-Q key sequence)
+stty -ixon  # Disable the totally useless START/STOP output control (enables you to pause input by pressing the Ctrl-S key sequence and resume output by pressing the Ctrl-Q key sequence)
 
 shopt -s globstar # With globstar set (bash 4.0+), bash recurses all the directories.
 
