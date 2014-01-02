@@ -399,9 +399,17 @@ alias sweep='trash.pl *.tmp *.temp' ## Sweep out the .tmp files
 
 alias htop='htop --sort-key PERCENT_CPU'
 
+function acol {
+    column -s $'\t' -t # columns delimited by tabs! Like 'sheet.py'
+}
+
 function s { ## <-- this needs to come BEFORE the other things that use less!
     # "s" uses "magicless" to run files through sheet.pl
     magicless --LINE-NUMBERS --status-column "$@"
+}
+
+function acols {
+    s "$@" | acol | s # Pipe it through magicless, then 'acol', then magicless AGAIN. Like a poor man's sheet.py (way faster, though)
 }
 
 function sf {

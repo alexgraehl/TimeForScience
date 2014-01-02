@@ -62,7 +62,7 @@ sub numPossibleQualScoresRemaining($) { # takes a hash as input
 
 sub isProbably($$$$) {
     my ($lo, $hi, $expectedLo, $expectedHi) = @_;
-    if ($lo == $expectedLo and ($hi == $expectedHi or ($hi == ($expectedHi - 1)))) {
+    if (defined($lo) && defined($hi) && $lo==$expectedLo &&    ( $hi==$expectedHi || $hi==($expectedHi-1) )    ) {
 	return 1; # note that we allow the HIGH value to not exactly match the expected Wikipedia high value. This is because in practice we see the quality score 105 ('i'), but Wikipedia says the max score is actually 104. Not sure what is up with that. The low score matches what Wikipedia says, however.
     } else {
 	return 0; # the ACTUALLY SEEN values were not in this exact range
@@ -99,12 +99,12 @@ sub main() { # Main program
 			, "L illumina 1.8" => undef
 	); # <-- to initialize the hash properly, these MUST be parens and not braces!!!
 
-    my %outputAnnotation = (       "S sanger"         => "QUALITY=SANGER${OUT_DELIM}SCALE=Phred+33${OUT_DELIM}OFFSET=33${OUT_DELIM}RANGE=[0,40]${OUT_DELIM}LETTERS=['!','I']"
-				   , "X solexa"       => "QUALITY=SOLEXA${OUT_DELIM}SCALE=Solexa+64${OUT_DELIM}OFFSET=64${OUT_DELIM}RANGE=[-5,40] or [0,45]${OUT_DELIM}LETTERS=[';','h']"
-				   , "I illumina 1.3" => "QUALITY=ILLUMINA_1.3${OUT_DELIM}SCALE=Phred+33${OUT_DELIM}OFFSET=33${OUT_DELIM}RANGE=[0,40]${OUT_DELIM}LETTERS=['\@','h']"
-				   , "J illumina 1.5" => "QUALITY=ILLUMINA_1.5${OUT_DELIM}SCALE=Phred+64${OUT_DELIM}OFFSET=64${OUT_DELIM}RANGE=[3,40]${OUT_DELIM}LETTERS=['B','h']"
-				   , "L illumina 1.8" => "QUALITY=ILLUMINA_1.8${OUT_DELIM}SCALE=Phred+33${OUT_DELIM}OFFSET=64${OUT_DELIM}RANGE=[0,41]${OUT_DELIM}LETTERS=['!','I']"
-				   , "INVALID"        => "QUALITY=INVALID${OUT_DELIM}SCALE=INVALID${OUT_DELIM}OFFSET=INVALID${OUT_DELIM}RANGE=INVALID${OUT_DELIM}LETTERS=INVALID"
+    my %outputAnnotation = (       "S sanger"         => join($OUT_DELIM, ("QUALITY=SANGER",       "SCALE=Phred+33",  "OFFSET=33",      "TOPHAT_PARAM=(nothing, phred33 is default)",   "RANGE=[0,40]",            "LETTERS=['!','I']") )
+				   , "X solexa"       => join($OUT_DELIM, ("QUALITY=SOLEXA",       "SCALE=Solexa+64", "OFFSET=64",      "TOPHAT_PARAM=--solexa-quals",    "RANGE=[-5,40] or [0,45]", "LETTERS=[';','h']") )
+				   , "I illumina 1.3" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.3", "SCALE=Phred+64",  "OFFSET=64",      "TOPHAT_PARAM=--solexa1.3-quals", "RANGE=[0,40]",            "LETTERS=['\@','h']") )
+				   , "J illumina 1.5" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.5", "SCALE=Phred+64",  "OFFSET=64",      "TOPHAT_PARAM=--solexa1.3-quals", "RANGE=[3,40]",            "LETTERS=['B','h']") )
+				   , "L illumina 1.8" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.8", "SCALE=Phred+33",  "OFFSET=33",      "TOPHAT_PARAM=(nothing, phred33 is default)",   "RANGE=[0,41]",            "LETTERS=['!','J']") )
+				   , "INVALID"        => join($OUT_DELIM, ("QUALITY=INVALID",       "SCALE=INVALID",  "OFFSET=INVALID", "TOPHAT_PARAM=INVALID",           "RANGE=INVALID",           "LETTERS=INVALID") )
 	); # <-- to initialize the hash properly, these MUST be parens and not braces!!!
 
     foreach my $fname (@ARGV) { # these were arguments that were not understood by GetOptions
@@ -193,10 +193,9 @@ sub main() { # Main program
 
 	    my $numBestGuesses = numPossibleQualScoresRemaining(\%guessHash);
 	    if ($numBestGuesses != 1) {
-		print STDERR "\nWARNING: Bad news, we could NOT make a best guess for the quality for the file <$fname>; apparently we made multiple guesses for some reason? This is probably a programming error.\n";
-		print STDERR "There were in fact this many best guesses for the quality score: " . $numBestGuesses . "\n";
-		print STDERR "Quitting the program now....\n\n";
-		exit(1);
+		my $noGuessMessage = "NO_GUESS: Bad news, we could NOT make a best guess for the quality for the file <$fname>! Perhaps that file is invalid? We had $numBestGuesses guesses instead.\n";
+		print STDOUT $noGuessMessage;
+		print STDERR "STDERR: $noGuessMessage";
 	    }
 	    while (my ($key, $value) = each(%guessHash)) {
 		# Best guess!
