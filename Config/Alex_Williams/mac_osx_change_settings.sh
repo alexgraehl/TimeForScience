@@ -611,6 +611,29 @@ defaults write com.twitter.twitter-mac ShowFullNames -bool true
 # Hide the app in the background if it’s not the front-most window
 defaults write com.twitter.twitter-mac HideInBackground -bool true
 
+
+## Extra stuff that Alex found online
+defaults write com.apple.dock workspaces-swoosh-animation-off -bool true
+defaults write com.apple.finder AnimateWindowZoom -bool false
+defaults write NSGlobalDomain NSAutomaticWindowAnimationsEnabled -bool NO
+# showing and hiding sheets, resizing preference windows, zooming windows
+# float 0 doesn't work
+defaults write -g NSWindowResizeTime -float 0.001
+# opening and closing Quick Look windows
+defaults write -g QLPanelAnimationDuration -float 0
+# rubberband scrolling (doesn't affect web views)
+defaults write -g NSScrollViewRubberbanding -bool false
+# resizing windows before and after showing the version browser
+# also disabled by NSWindowResizeTime -float 0.001
+defaults write -g NSDocumentRevisionsWindowTransformAnimation -bool false
+# showing a toolbar or menu bar in full screen
+defaults write -g NSToolbarFullScreenAnimationDuration -float 0
+# scrolling column views
+defaults write -g NSBrowserColumnAnimationSpeedMultiplier -float 0
+# showing the Dock
+defaults write com.apple.dock autohide-time-modifier -float 0
+defaults write com.apple.dock autohide-delay -float 0
+
 ###############################################################################
 # Kill affected applications                                                  #
 ###############################################################################
