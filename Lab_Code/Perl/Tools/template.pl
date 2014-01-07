@@ -13,6 +13,8 @@ use strict;  use warnings;  use diagnostics;
 use POSIX      qw(ceil floor);
 use List::Util qw(max min);
 use Getopt::Long;
+use Carp; # backtrace on errors. Has the "confess" function. Use this instead of "die" if you want useful information!   
+
 #use File::Basename;
 
 $| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buffer terminal output! Setting this to zero can cause STDERR and STDOUT to be interleaved in weird ways.
@@ -126,6 +128,8 @@ sub main() { # Main program
 	    print STDERR "Unprocessed argument: $_\n";
 	}
     }
+
+    # You can use 'confess' instead of 'die' if you want a backtrace!
 
     #print "\t" . sprintf("%.${numDecimalPointsToPrint}f", $levFraction);
     #my @col1 = @{readFileColumn($filename1, 0, $delim)};
