@@ -9,29 +9,55 @@
 #@shuffled = shuffle(@list);
 # Check out: perldoc -q array
 
+use strict;  use warnings;  use diagnostics;
 use POSIX      qw(ceil floor);
 use List::Util qw(max min);
+use Getopt::Long;
+#use File::Basename;
+
+$| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buffer terminal output! Setting this to zero can cause STDERR and STDOUT to be interleaved in weird ways.
+
+#no warnings 'numeric';
+#use Scalar::Util;
+#print Scalar::Util::looks_like_number($string), "\n";
 
 sub tryToLoadModule($) {
     my $x = eval("require $_[0]");
     if ((defined($@) && $@)) {
-	warn "Module loading of $_[0] FAILED. Skipping this module.";
-	return 0; # FAILURE: return 0(false)
+	warn "We FAILED to load module $_[0]. Skipping this module, but continuing with the program.";
+	return 0; # FAILURE
     } else {
 	$_[0]->import();
-	return 1; # SUCCESS: return 1(true)
+	return 1; # SUCCESS
     }
 }
 
 my $SHOULD_USE_COLORS = tryToLoadModule("Term::ANSIColor");
 
-sub warnPrint($) { chomp($_[0]); warn(safeColor("[WARNING]: " . $_[0] . "", "yellow on_black")); } # regarding "warn": if it ends with a newline it WON'T print the line number
+sub warnPrint($) { chomp($_[0]); warn(safeColor("[WARNING]: " . $_[0] . "", "yellow on_black")); } # regarding "warn": if the string ends with a newline it WON'T print the line number!
 
 sub safeColor($;$) { # one required and one optional argument
-    ## Prints colored text, but only if USER_COLORS_CONSTANT is set.
-    ## Allows you to totally disable colored printing by just changing USE_COLORS_CONSTANT to 0 at the top of this file
-    my ($str, $color) = @_;
-    return ((USE_COLORS_CONSTANT) ? colored($str, $color) : $str);
+    ## Returns colored text, but only if $SHOULD_USE_COLORS is set.
+    ## Allows you to totally disable colored printing by just changing $SHOULD_USE_COLORS to 0 at the top of this file
+    # Colorstring is OPTIONAL, and can be something like "red on_blue" or "red" or "magenta on_green"
+    # Example usage:
+    #    *    print STDERR safeColor("This warning message is red on yellow", "red on_yellow");
+    my ($message, $color) = @_;
+    return (($SHOULD_USE_COLORS && defined($color)) ? (Term::ANSIColor::colored($message, $color) . Term::ANSIColor::color("reset")) : $message);
+}
+
+sub printColorStderr($;$) {
+    # prints color to STDERR *UNLESS* it is re-directed to a file, in which case NO COLOR IS PRINTED.
+    my ($msg, $col) = @_; # Only prints in color if STDERR is to a terminal, NOT if it is redirected to an output file!
+    if (! -t STDERR) { $col = undef; } # no coloration if this isn't to a terminal
+    print STDERR safeColor($msg, $col);
+}
+
+sub printColorStdout($;$) {
+    # prints color to STDOUT *UNLESS* it is re-directed to a file, in which case NO COLOR IS PRINTED.
+    my ($msg, $col) = @_; # Only prints in color if STDOUT is to a terminal, NOT if it is redirected to an output file!
+    if (! -t STDOUT) { $col = undef; } # no coloration if this isn't to a terminal
+    print STDOUT safeColor($msg, $col);
 }
 
 sub dryNotify(;$) { # one optional argument
@@ -43,51 +69,12 @@ sub dryNotify(;$) { # one optional argument
 sub notify($) { # one required argument
     my ($msg) = @_;
     warn safeColor("[DRY RUN]: $msg\n", "cyan on_blue");
-
 }
 
+if ($SHOULD_USE_COLORS) { use Term::ANSIColor; }
 
-
-if (USE_COLORS_CONSTANT) {
-    use Term::ANSIColor;
-}
-
-#use File::Basename;
-use Getopt::Long;
-
-#no warnings 'numeric';
-#use Scalar::Util;
-#print Scalar::Util::looks_like_number($string), "\n";
-
-use strict;  use warnings;  use diagnostics;
 
 sub main();
-
-#print colorString("blue");
-#print "Arr";
-#colorResetString();
-
-sub safeColor($$) {
-    my ($msg, $colorString) = @_;
-    # Colorstring should be something like "red on_blue" or "red" or "magenta on_green"
-    if (USE_COLORS_CONSTANT) {
-	return(Term::ANSIColor::colored($msg, $colorString));
-    } else {
-	return($msg); # no color support apparently
-    }
-}
-
-sub colorString($) {
-    # Requires "use Term::AnsiColor". Note: you have to PRINT the result of this function!
-    # It also only sets the output color if the output is a TERMINAL.
-    # If the output is NOT a terminal, then colorizing output
-    # results in lots of garbage characters (color control characters) written to the screen,
-    # so we don't do it.
-    # Example usage: print colorString("red"); print "something red"; print colorString("reset");
-    return ((-t STDOUT && USE_COLORS_CONSTANT) ? (Term::ANSIColor::color($_[0])) : ""); # <-- checks to see if STDOUT goes directly to the terminal (instead of, say, outputting to a file with a redirect)
-    ## probably should actually use "colored( ... , "red")" as an example
-}
-
 sub quitWithUsageError($) { print($_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
 sub printUsageAndQuit() { printUsage(); exit(1); }
 
@@ -107,11 +94,18 @@ sub main() { # Main program
 	       , "dp=i" => \$decimalPlaces
 	) or printUsageAndQuit();
 
-    print STDERR colorString("green");
+
     print STDERR "===============================\n";
+    print STDOUT safeColor("test color\n", "blue on_yellow");
+    printColorStdout("hey", "red");
+    printColorStdout("what", "red");
+    printColorStderr("stderr what", "blue on_white");
+    printColorStdout("is", "red on_blue");
+    printColorStdout("this", "red on_green");
+    printColorStderr("stderr what", "red on_white");
+    print STDERR "hellow\n";
     print STDERR "Test color!\n";
     print STDERR "===============================\n";
-    print STDERR colorString("reset");
 
     if (1 == 0) {
 	quitWithUsageError("1 == 0? Something is wrong!");
@@ -136,10 +130,8 @@ sub main() { # Main program
     #print "\t" . sprintf("%.${numDecimalPointsToPrint}f", $levFraction);
     #my @col1 = @{readFileColumn($filename1, 0, $delim)};
 
-    print STDERR colorString("green");
-    print STDERR "===============================\n";
-    print STDERR "Done!\n";
-    print STDERR colorString("reset");
+    print STDERR safeColor("===============================\n", "green");
+    #print STDERR "Done!\n";
 } # end main()
 
 
@@ -149,7 +141,7 @@ main();
 END {
     # Runs after everything else.
     # Makes sure that the terminal text is back to its normal color.
-    print STDERR colorString("reset");
+    if ($SHOULD_USE_COLORS) { print STDERR Term::ANSIColor::color("reset"); print STDOUT Term::ANSIColor::color("reset"); }
 }
 
 exit(0);
