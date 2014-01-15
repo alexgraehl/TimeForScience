@@ -163,6 +163,8 @@ alias cheat="echo \
 \">>> BASH: Foreach / rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
 \">>> BASH: redirect STDERR & STDOUT both to console and to a file: THECMD 2>&1 | tee --append LOGFILE\" ${NL}\
 \">>> BASH: See a function definition:   type FUNCTIONNAME \" ${NL}\
+\">>> BASH: Change tab width in bash:  setterm -regtabs 16 (16 = huge!) \" ${NL}\
+\">>> BASH: Expand tabs / tab width: something | expand -t 32 \" ${NL}\
 \">>> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ${NL}\
 \">>> XARGS/FIND: find . -name SOMEFILE -print0 | xargs -0 -I {} sh -c \\\"echo {}; thing {} | piped here | wc -l\\\"  \" ${NL}\
 \">>> GNU FIND delete-a-file option: find . -name SOMEFILE -delete \" ${NL}\
