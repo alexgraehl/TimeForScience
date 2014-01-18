@@ -402,6 +402,11 @@ alias sweep='trash.pl *.tmp *.temp' ## Sweep out the .tmp files
 
 alias htop='htop --sort-key PERCENT_CPU'
 
+function playnicely { # requires sudo privileges. Takes one argument, the username to make play nicely: example: playnicely theuser
+    SSS=$(ps -fu "$1" | perl -pe 's/[ ]+/\t/g' | cut -f 2 | tail -n +2);
+    for pid in $SSS ; do echo 'ionice-ing and nice+15-ing process ID' $pid; sudo ionice -c3 -p $pid ; sudo renice +15 -p $pid ; done 
+}
+
 function acol {
     column -s $'\t' -t # columns delimited by tabs! Like 'sheet.py'
 }
