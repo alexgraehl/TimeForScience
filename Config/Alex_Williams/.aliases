@@ -407,6 +407,12 @@ function playnicely { # requires sudo privileges. Takes one argument, the userna
     for pid in $SSS ; do echo 'ionice-ing and nice+15-ing process ID' $pid; sudo ionice -c3 -p $pid ; sudo renice +15 -p $pid ; done 
 }
 
+function disknicely {
+    SSS=$(ps -eopid,uid,cmd | grep "nfsd" | grep -v "grep" | perl -p -e "s/^[ ]+//" | cut -d " " -f 1) # Get any 'nfsd' processes
+    for pid in $SSS ; do echo 'ionice-ing and nice+15-ing the NFS process ID' $pid; sudo ionice -c3 -p $pid ; sudo renice +15 -p $pid ; done 
+}
+
+
 function acol {
     column -s $'\t' -t # columns delimited by tabs! Like 'sheet.py'
 }
