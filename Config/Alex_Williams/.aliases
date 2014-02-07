@@ -128,6 +128,7 @@ alias cheat="echo \
 \">>> R: make libraries usable by non-root users: sudo chmod -R a+r /usr/local/lib/R ; sudo find /usr/local/lib/R -type d | sudo xargs chmod a+x \" ${NL}\
 \">>> R: update all installed packages: update.packages(ask=FALSE, checkBuilt=TRUE) \" ${NL}\
 \" \" ${NL}\
+\">>> GZIP: verify files: for f in **/*.gz; do gunzip --test -v \\\$f ; done; \" ${NL}\
 \">>> Shell/bash: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
 \">>> Shell/bash: Pipe stderr (and stdout too): CMD 2>&1 | less -S \" ${NL}\
 \">>> Shell/bash: Modify variable: newV=\\\$(sed -e's/a/1/; s/b/2/; s/c/3/' <<< \\\$oldV) \" ${NL}\
