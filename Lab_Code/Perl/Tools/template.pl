@@ -35,6 +35,7 @@ sub tryToLoadModule($) {
 }
 
 my $SHOULD_USE_COLORS = tryToLoadModule("Term::ANSIColor");
+if ($SHOULD_USE_COLORS) { use Term::ANSIColor; }
 
 sub warnPrint($) { chomp($_[0]); warn(safeColor("[WARNING]: " . $_[0] . "", "yellow on_black")); } # regarding "warn": if the string ends with a newline it WON'T print the line number!
 
@@ -72,9 +73,6 @@ sub notify($) { # one required argument
     my ($msg) = @_;
     warn safeColor("[DRY RUN]: $msg\n", "cyan on_blue");
 }
-
-if ($SHOULD_USE_COLORS) { use Term::ANSIColor; }
-
 
 sub main();
 sub quitWithUsageError($) { print($_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
