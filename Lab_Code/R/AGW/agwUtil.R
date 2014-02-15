@@ -814,13 +814,9 @@ agwHashGet <- function(hash, key, notFoundValue=NULL) {
      ## otherwise returns the value in the hash
      ## This is constant-time, even with 500,000+ elements, unlike accessing
      ## vectors and lists by name.
-     
      stopifnot(typeof(hash) == "environment") ## check for a hash argument...
-     
      if (is.null(key)) { return(notFoundValue) }
-     
      stopifnot(length(key) == 1)
-     
      if (nchar(key) == 0 || is.na(key)) { ## <-- blank key string -> return "not found"
           return(notFoundValue)
      } else {
@@ -828,8 +824,21 @@ agwHashGet <- function(hash, key, notFoundValue=NULL) {
           return(mget(key,hash,ifnotfound=list(notFoundValue))[[1]])
      }
 }
+## =================================================================
 
-
+agwHashPut <- function(hash, key, value) {
+     ### This is for setting a SINGLE key-value pair in a hash.
+     ### The "getter" function is "agwHashGet" , which returns the value when given a key.
+     ### Example:
+     ### myHash <- agwNewHash()
+     ### agwHashPut(myHash, "year", 1776)
+     ### print(agwHashGet(myHash, "year"))
+     ### Note: nothing happens if you try to add a "" / null key
+     stopifnot(typeof(hash) == "environment") ## check for a hash argument...
+     if (length(key) == 0 || nchar(key) == 0) { return() }
+     else { assign(key,value,hash) }
+}
+## =================================================================
 agwHashOfHashesPut <- function(hash, key1, key2, value) {
      ## Puts it into a hash within a hash
      ## Example: agwHashOfHashesPut(zom, "z", "xxj", 123)
@@ -901,22 +910,6 @@ agwHashContains <- function(hash, key) {
      if (nchar(key) == 0) { return(FALSE) }
      else { return(!is.null(mget(key,hash,ifnotfound=list(NULL))[[1]])) }
 }
-## =================================================================
-## =================================================================
-
-agwHashPut <- function(hash, key, value) {
-     ### This is for setting a SINGLE key-value pair in a hash.
-     ### The "getter" function is "agwHashGet" , which returns the value when given a key.
-     ### Example:
-     ### myHash <- agwNewHash()
-     ### agwHashPut(myHash, "year", 1776)
-     ### print(agwHashGet(myHash, "year"))
-     ### Note: nothing happens if you try to add a "" / null key
-     stopifnot(typeof(hash) == "environment") ## check for a hash argument...
-     if (length(key) == 0 || nchar(key) == 0) { return() }
-     else { assign(key,value,hash) }
-}
-
 ## =================================================================
 
 agwHashPutMultiple <- function(hash, keys, values) {
@@ -1736,11 +1729,13 @@ panel.correlation.local <- function(x, y, digits=2, prefix="", cex.cor=4.0, boxW
 }
 
 ### ===============================================================================
-## Makes a big multi-plot matrix of correlations between arrays.
+## Makes a big multi-plot matrix of correlations between arrays / values
 ## Uses the data in "dataMatrix" to figure out what to plot.
 ## if you for some reason actually want NO labels, set labelVec to "" in the arguments
 ### ===============================================================================
 pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, main="log2(Intensity).  Red points = within-group comparison. Values in lower left are Pearson's R of the log-transformed values.") {
+
+	print("Note: this is an OLD function for microarrays only, you should use pairs.agw for all future code.")
      assert.agw(nrow(keys$"table") == ncol(dataMatrix), "problem! keys were not the same length as the dataMatrix.")
      if (missing(labelVec) || is.null(labelVec)) {
           COLUMN_THAT_PROBABLY_HAS_THE_FILENAMES <- 1 ## usually the first column in the keys file...
@@ -1843,7 +1838,84 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
      print.agw("[Done] with pairs plot.")
 }
 
+### ===============================================================================
+### 
+### ===============================================================================
 
+pairs.agw <- function(data, groups.vec=NULL, main="Pairs plot. Red points = within-group comparison. Values in lower left are Pearson's R.") { # plot pairs
+	# "data": a (numeric) data matrix.
+	# "groups.vec": a vector of the experimental groups for each COLUMN in the data matrix: example: groups.vec=c("WT","WT","DrugX","DrugY")
+	if (is.null(groups.vec)) { groups.vec <- 1:ncol(data) } # Default: puts every item into its own group
+	stopifnot(is.vector(groups.vec)); stopifnot(ncol(data) == length(groups.vec)) # Every array (column) must be in a group.
+    binAssignments.vec <- as.numeric(as.factor(groups.vec))
+
+	labelVec <- colnames(data)
+	if (is.null(labelVec)) { labelVec <- paste("Column_", 1:ncol(data), sep='') }
+	labelVec <- paste(labelVec, "\n(", groups.vec, ")", sep='')
+
+	themin <- min(data,na.rm=T); themax=max(data,na.rm=T); mmdist <- themax-themin
+	dataWithTwoFakeRowsForPlotting <- rbind(data, "MIN_ROW_AT_END"=rep(themin, times=ncol(data)), "MAX_ROW_AT_END"=rep(themax, times=ncol(data)) )
+	
+    nGroups    <- nlevels(as.factor(groups.vec))
+    pointAlpha <- 0.75  ## 0.75 = 75% opaque.
+    regularPointColor <- hsv(h=1, s=1, v=0, alpha=pointAlpha) ## The foreground color for points in each "bin"
+    backgroundAlpha   <- 1.0
+    allBackColors     <- rainbow(n=nGroups*(nGroups-1), s = 0.25, v = 1.0, alpha=backgroundAlpha) ## The background colors for each "bin"
+    WITHIN_GROUP_POINT_COLOR <- hsv(h=1, s=1, v=1, alpha=pointAlpha)
+    WITHIN_GROUP_BACK_COLOR   <- "white"
+    PLOT_BORDER_THICKNESS <- 1.0   ## Thickness of the border around each scatterplot
+
+    par(mar=c("bottom"=2, "left"=2, "right"=2, "top"=8))
+    par(cex.axis=1.0, cex.lab=1.2, cex.main=1.0)     
+    dimSize <- ncol(dataWithTwoFakeRowsForPlotting)
+    whichSubplot <- list("x"=2,"y"=1)  ## <-- have to MANUALLY keep track of which sub-plot we are plotting in the "upper.panel" function using these vars and the <<- global assignment operator
+
+	panel.correlation.agw <- function(x, y, digits=2, cex.cor=4.0, boxWidth=2) {
+	     usr <- par("usr"); on.exit(par(usr)) ## restore settings on finishing the plot
+	     par(usr=c(0,1,0,1)) # <- gives th extremes of the user coordinates of the plotting region.
+		 # Note: correlation is NOT computed on the last two elements: (hence the x-2, y-2 below). This is because those are FAKE maximum / minimum points that are required in order to make graphics::pairs plot everything on the same scale.
+	     origR   <- cor(x[1:(length(x)-2)], y[1:(length(y)-2)], use="complete", method="pearson")
+	     absR    <- abs(ifelse(is.finite(origR), origR, 0.00))
+	     MIN_CEX_FAC <- 0.4
+	     theCex <- cex.cor*max(MIN_CEX_FAC, absR**2) ## don't let the CEX get any smaller than the MIN_CEX. Correlations closer to zero have smaller text size.
+	     backgroundColor <- hsv(s=0.0,  v=1.0 - 5*(1.0 - max(0.9, absR))) ## v=1.0 is white, and lower scores = a dark-ish gray. Basically it gets as dark as it's going to get around R=0.7 or thereabouts.
+	     rect(xleft=-1, ybottom=-1, xright=2, ytop=2, col=backgroundColor)
+	     text(0.5, 0.5, paste("r=", format(origR, digits=digits, nsmall=digits, scientific=FALSE), sep='')
+	          , cex=theCex) ## <-- The closer the correlation value is to zero, the smaller the text size
+	     box(lwd=boxWidth)
+	}
+
+	par(pty='s') # Square plot
+    graphics::pairs(dataWithTwoFakeRowsForPlotting
+                    , main=main
+					, labels=labelVec
+                    , cex.labels=1.5 ## <-- this determines the labels on the diagonal
+                    , cex.main=1.0 ## <-- this is related to the size of the graph in a non-intuitive way
+                    , lower.panel=function(x,y) {
+                         #rect(-10,-10,10,10, col="gray", border=NA) ;
+                         cat(paste("Correlating", sep=''))
+                         panel.correlation.agw(x,y, boxWidth=PLOT_BORDER_THICKNESS) ;
+                         cat("[Done]\n")
+                    }
+                    , upper.panel=function(x,y) {
+                        binX <- binAssignments.vec[whichSubplot$x]
+                        binY <- binAssignments.vec[whichSubplot$y]
+                        binQuasiRandom <- (((binY-1) * nGroups * 13) + binX*17)  ## hash it to get a "random" color
+                        pointColor <- ifelse((binX == binY), WITHIN_GROUP_POINT_COLOR, regularPointColor)
+                        backColor  <- ifelse((binX == binY), WITHIN_GROUP_BACK_COLOR , allBackColors[1 + (binQuasiRandom %% length(allBackColors))] )
+                        cat(paste("Now calculating the box at X,Y (", whichSubplot$x, ", ", whichSubplot$y, "), which is in bin (", binX, ", ", binY, "). ", length(x), " points.", sep=''))
+                        rect(xleft=themin-mmdist, ybottom=themin-mmdist, xright=themax+mmdist, ytop=themax+mmdist, col=backColor, border=NA)
+                        points(x[1:(length(x)-2)],y[1:(length(y)-2)], pch='.', cex=4, col=pointColor) ## <-- pch='.' is 10x faster than any other plot character
+						# Note: we do NOT plot the last two elements (hence the x-2, y-2 above). This is because those are FAKE maximum / minimum points that are required in order to make graphics::pairs plot everything on the same scale.
+						abline(a=0, b=1, lty=2, lwd=1, col="black")
+                        box(lwd=PLOT_BORDER_THICKNESS)
+                        whichSubplot$x <<- (whichSubplot$x+1); ## next column... note that this is a GLOBAL assignment (<<-)
+                        if (whichSubplot$x > dimSize) {
+                             whichSubplot$x <<- (whichSubplot$y+2) ## <-- upper.panel is a right triangle, so we start from a point farther to the right on the plot each time.
+                             whichSubplot$y <<- (whichSubplot$y+1) ## <-- pper.panel is a *right triangle*, so it just happens that the X axis index where we start a new row is the same as the Y axis index.
+                        }
+                    })
+}
 
 
 ### ===============================================================================
