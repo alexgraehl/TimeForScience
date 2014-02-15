@@ -1845,14 +1845,18 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
 pairs.agw <- function(data, groups.vec=NULL, main="Pairs plot. Red points = within-group comparison. Values in lower left are Pearson's R.") { # plot pairs
 	# "data": a (numeric) data matrix.
 	# "groups.vec": a vector of the experimental groups for each COLUMN in the data matrix: example: groups.vec=c("WT","WT","DrugX","DrugY")
-	if (is.null(groups.vec)) { groups.vec <- 1:ncol(data) } # Default: puts every item into its own group
-	stopifnot(is.vector(groups.vec)); stopifnot(ncol(data) == length(groups.vec)) # Every array (column) must be in a group.
-    binAssignments.vec <- as.numeric(as.factor(groups.vec))
 
 	labelVec <- colnames(data)
 	if (is.null(labelVec)) { labelVec <- paste("Column_", 1:ncol(data), sep='') }
-	labelVec <- paste(labelVec, "\n(", groups.vec, ")", sep='')
 
+	if (is.null(groups.vec)) {
+		groups.vec <- 1:ncol(data)  # Default: puts every item into its own group, but DON'T bother listing these (mostly useless) numeric groups in the labelVec.
+	} else {
+		stopifnot(is.vector(groups.vec)); stopifnot(ncol(data) == length(groups.vec)) # Every array (column) must be in a group, if groups were manually specified.
+		labelVec <- paste(labelVec, "\n(", groups.vec, ")", sep='') # <-- only add groups to the name if they were in fact specified in the function call
+	}
+    binAssignments.vec <- as.numeric(as.factor(groups.vec))
+	
 	themin <- min(data,na.rm=T); themax=max(data,na.rm=T); mmdist <- themax-themin
 	dataWithTwoFakeRowsForPlotting <- rbind(data, "MIN_ROW_AT_END"=rep(themin, times=ncol(data)), "MAX_ROW_AT_END"=rep(themax, times=ncol(data)) )
 	
