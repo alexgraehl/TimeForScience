@@ -1702,30 +1702,29 @@ plot.multi.agw <- function(type.func, plot.func) {
 
 
 
-
 ### ===============================================================================
 ### Used in the scatterplots that compare values across two arrays
 ### ===============================================================================
 panel.correlation.local <- function(x, y, digits=2, prefix="", cex.cor=4.0, boxWidth=2) {
-     usr <- par("usr"); on.exit(par(usr)) ## restore settings on finishing the plot
-     SQUARE_MAX <- 1.0 ; SQUARE_MIN <- 0.0
-     MIDDLE_OF_SQUARE <- (SQUARE_MAX + SQUARE_MIN)/2.0
-     par(usr = c(SQUARE_MIN, SQUARE_MAX, SQUARE_MIN, SQUARE_MAX))
-     #‘usr’ A vector of the form ‘c(x1, x2, y1, y2)’ giving the extremes of the user coordinates of the plotting region.
+    usr <- par("usr"); on.exit(par(usr)) ## restore settings on finishing the plot
+    SQUARE_MAX <- 1.0 ; SQUARE_MIN <- 0.0
+    MIDDLE_OF_SQUARE <- (SQUARE_MAX + SQUARE_MIN)/2.0
+    par(usr = c(SQUARE_MIN, SQUARE_MAX, SQUARE_MIN, SQUARE_MAX))
+    #‘usr’ A vector of the form ‘c(x1, x2, y1, y2)’ giving the extremes of the user coordinates of the plotting region.
      
-     origR   <- cor(x, y, use="complete", method="pearson")
-     absR <- abs(ifelse(is.finite(origR), origR, 0.00))
-     MIN_CEX_FAC <- 0.4
-     theCex <- cex.cor * max(MIN_CEX_FAC, absR**2) ## don't let the CEX get any smaller than the MIN_CEX
+    origR  <- cor(x, y, use="pairwise.complete.obs", method="pearson")
+    absR   <- abs(origR)
+    MIN_CEX_FAC <- 0.4
 
-     backgroundColor <- hsv(s = 0.0,  v = 1.0 - 5*(1.0 - max(0.9, absR))) ## uhh... 1.0 = white, and lower scores = a dark-ish gray... kind of hack-ish. Basically it gets as dark as it's going to get around R=0.7 or thereabouts.
-     rect(xleft=-100, ybottom=-100, xright=100, ytop=100, col=backgroundColor)
-     text(MIDDLE_OF_SQUARE, MIDDLE_OF_SQUARE
-          , format(origR, digits=2, nsmall=2, scientific=FALSE)
-          , cex=theCex ## <-- The closer R is to zero, the smaller the text size
-          )
-     box(lwd=boxWidth)
-     cat(".") ## progress indicator
+	theCex <- cex.cor * max(MIN_CEX_FAC, absR**2, na.rm=T) ## don't let the CEX get any smaller than the MIN_CEX
+
+    backgroundColor <- hsv(s = 0.0,  v = 1.0 - 5*(1.0 - max(0.9, absR, na.rm=T))) ## uhh... 1.0 = white, and lower scores = a dark-ish gray... kind of hack-ish. Basically it gets as dark as it's going to get around R=0.7 or thereabouts.
+    rect(xleft=-100, ybottom=-100, xright=100, ytop=100, col=backgroundColor)
+    text(MIDDLE_OF_SQUARE, MIDDLE_OF_SQUARE
+         , format(origR, digits=2, nsmall=2, scientific=FALSE)
+         , cex=theCex ## <-- The closer R is to zero, the smaller the text size
+         )
+    box(lwd=boxWidth)
 }
 
 ### ===============================================================================
@@ -1808,9 +1807,7 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
                      , cex.main=1.0 ## <-- this is related to the size of the graph in a non-intuitive way
                      , lower.panel=function(x,y) {
                           #rect(-10,-10,10,10, col="gray", border=NA) ;
-                          cat(paste("Correlating", sep=''))
                           panel.correlation.local(x,y, boxWidth=MINI_PLOT_BORDER_THICKNESS) ;
-                          cat("[Done]\n")
                      }
                      , upper.panel=function(x,y) {
                           binX <- whichBin(whichSubplot$x, cumul)
@@ -1878,11 +1875,11 @@ pairs.agw <- function(data, groups.vec=NULL, main="Pairs plot. Red points = with
 	     usr <- par("usr"); on.exit(par(usr)) ## restore settings on finishing the plot
 	     par(usr=c(0,1,0,1)) # <- gives th extremes of the user coordinates of the plotting region.
 		 # Note: correlation is NOT computed on the last two elements: (hence the x-2, y-2 below). This is because those are FAKE maximum / minimum points that are required in order to make graphics::pairs plot everything on the same scale.
-	     origR   <- cor(x[1:(length(x)-2)], y[1:(length(y)-2)], use="complete", method="pearson")
-	     absR    <- abs(ifelse(is.finite(origR), origR, 0.00))
+	     origR   <- cor(x[1:(length(x)-2)], y[1:(length(y)-2)], use="pairwise.complete.obs", method="pearson")
+	     absR   <- abs(origR)
 	     MIN_CEX_FAC <- 0.4
-	     theCex <- cex.cor*max(MIN_CEX_FAC, absR**2) ## don't let the CEX get any smaller than the MIN_CEX. Correlations closer to zero have smaller text size.
-	     backgroundColor <- hsv(s=0.0,  v=1.0 - 5*(1.0 - max(0.9, absR))) ## v=1.0 is white, and lower scores = a dark-ish gray. Basically it gets as dark as it's going to get around R=0.7 or thereabouts.
+	     theCex <- cex.cor*max(MIN_CEX_FAC, absR**2, na.rm=T) ## don't let the CEX get any smaller than the MIN_CEX. Correlations closer to zero have smaller text size.
+	     backgroundColor <- hsv(s=0.0,  v=1.0 - 5*(1.0 - max(0.9, absR, na.rm=T))) ## v=1.0 is white, and lower scores = a dark-ish gray. Basically it gets as dark as it's going to get around R=0.7 or thereabouts.
 	     rect(xleft=-1, ybottom=-1, xright=2, ytop=2, col=backgroundColor)
 	     text(0.5, 0.5, paste("r=", format(origR, digits=digits, nsmall=digits, scientific=FALSE), sep='')
 	          , cex=theCex) ## <-- The closer the correlation value is to zero, the smaller the text size
@@ -1897,9 +1894,7 @@ pairs.agw <- function(data, groups.vec=NULL, main="Pairs plot. Red points = with
                     , cex.main=1.0 ## <-- this is related to the size of the graph in a non-intuitive way
                     , lower.panel=function(x,y) {
                          #rect(-10,-10,10,10, col="gray", border=NA) ;
-                         cat(paste("Correlating", sep=''))
                          panel.correlation.agw(x,y, boxWidth=PLOT_BORDER_THICKNESS) ;
-                         cat("[Done]\n")
                     }
                     , upper.panel=function(x,y) {
                         binX <- binAssignments.vec[whichSubplot$x]
@@ -1907,7 +1902,7 @@ pairs.agw <- function(data, groups.vec=NULL, main="Pairs plot. Red points = with
                         binQuasiRandom <- (((binY-1) * nGroups * 13) + binX*17)  ## hash it to get a "random" color
                         pointColor <- ifelse((binX == binY), WITHIN_GROUP_POINT_COLOR, regularPointColor)
                         backColor  <- ifelse((binX == binY), WITHIN_GROUP_BACK_COLOR , allBackColors[1 + (binQuasiRandom %% length(allBackColors))] )
-                        cat(paste("Now calculating the box at X,Y (", whichSubplot$x, ", ", whichSubplot$y, "), which is in bin (", binX, ", ", binY, "). ", length(x), " points.", sep=''))
+                        cat(paste("pairs.agw: calculating the box at (", whichSubplot$x, ", ", whichSubplot$y, ") in bin (", binX, ", ", binY, ") with ", length(x), " points.\n", sep=''))
                         rect(xleft=themin-mmdist, ybottom=themin-mmdist, xright=themax+mmdist, ytop=themax+mmdist, col=backColor, border=NA)
                         points(x[1:(length(x)-2)],y[1:(length(y)-2)], pch='.', cex=4, col=pointColor) ## <-- pch='.' is 10x faster than any other plot character
 						# Note: we do NOT plot the last two elements (hence the x-2, y-2 above). This is because those are FAKE maximum / minimum points that are required in order to make graphics::pairs plot everything on the same scale.
