@@ -293,11 +293,9 @@ alias wcl='wc -l'
 alias sortt='sort -t "	"' # sort with tab as separator
 alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
 
-if [[ -f /Applications/Emacs.app/Contents/MacOS/Emacs ]]; then
-    echo -e "${a_echo_color}>>> BASH: Note: aliasing 'e' to the Mac Application version of emacs.${a_end_color}"
-    alias e='/Applications/Emacs.app/Contents/MacOS/Emacs -nw'
-elif [[ -n "$isMac" ]]; then
-    alias e='/usr/local/bin/emacs '
+#if [[ -f /usr/local/bin/emacs ]]; then
+if [[ -n "$isMac" ]]; then
+    alias e='/usr/local/bin/emacs --no-splash -nw ' # use 'brew install emacs' to update emacs
 else
     alias e="/usr/local/bin/emacsclient -nw -c --alternate-editor=\"\"" # "As a special exception, if command is the empty string, then emacsclient starts Emacs in daemon mode (as emacs --daemon) and then tries connecting again."
 fi
