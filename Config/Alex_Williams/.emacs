@@ -1022,3 +1022,4 @@ current line."
 
 ;(setq iswitchb-buffer-ignore '("^\\*" "^ " "*Buffer"))
 ;(setq iswitchb-buffer-ignore '("^\\*")) ;; This one is useful if you want to lose the *…* special buffers from the list. It’s helpful if you’re using the JDEE for editing Java apps, as you end up with buffers named org.whatever.package.Class which you might want to eliminate:
+(put 'downcase-region 'disabled nil)
