@@ -295,11 +295,11 @@ alias sortt='sort -t "	"' # sort with tab as separator
 alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
 
 #if [[ -f /usr/local/bin/emacs ]]; then
-if [[ -n "$isMac" ]]; then
-    alias e='/usr/local/bin/emacs --no-splash -nw ' # use 'brew install emacs' to update emacs
-else
-    alias e="/usr/local/bin/emacsclient -nw -c --alternate-editor=\"\"" # "As a special exception, if command is the empty string, then emacsclient starts Emacs in daemon mode (as emacs --daemon) and then tries connecting again."
-fi
+#if [[ -n "$isMac" ]]; then
+#    alias e='emacs --no-splash -nw ' # use 'brew install emacs' to update emacs
+#else
+alias e="emacsclient -nw -c --alternate-editor=\"\"" # "As a special exception, if command is the empty string, then emacsclient starts Emacs in daemon mode (as emacs --daemon) and then tries connecting again."
+#fi
 
 alias t='transpose.pl -q'
 alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl --color=always \
