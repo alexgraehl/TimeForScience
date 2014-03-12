@@ -15,15 +15,15 @@ export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/ ## <-- Used by Josh Stua
 
 # PATH: The FIRST things get run first!
 # Low priority: Normal UNIX paths. Clear out the initial path here.
-export PATH=/usr/bin:/bin/:/usr/sbin:/sbin:/usr/local/bin:/usr/local/sbin:/usr/X11/bin:/sw/bin:/opt/bin ## <-- clear out initial path!!
-# Medium priority: lab-specific tools
-export PATH=/work/Apps/bin:/work/Apps/kent_tools:/projects/bin:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
+export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin ## <-- clear out initial path!!
+# Medium priority: specific installs of tools
+export PATH=/usr/local/bin:/work/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 
 # Highest priority: things in the HOME directory or TimeForScience or /bioinformatics/bin
 export PATH="${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:/bioinformatics/bin:${PATH}"
 export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:$LD_LIBRARY_PATH"
 
-export PERL5LIB=/usr/local/lib/perl5/site_perl/5.12.1/  # note: sometimes it's in /usr/lib instead of /usr/local!!
+#export PERL5LIB=/usr/local/lib/perl5/site_perl/5.12.1/  # note: sometimes it's in /usr/lib instead of /usr/local!!
 
 ### ============== Below: Added Nov 27, 2012 for MRC metagenomics classifier project ======================
 ### Setup stuff for MRC for Tom Sharpton
@@ -32,7 +32,7 @@ export PERL5LIB=/usr/local/lib/perl5/site_perl/5.12.1/  # note: sometimes it's i
 #export WNHOME=/home/sharpton/projects/s_clustering/data/WNdb-3.0.tar.gz
 ### ============== Above: Added Nov 27, 2012 for MRC metagenomics classifier project ======================
 
-export PERLLIB=${PERL5LIB}
+#export PERLLIB=${PERL5LIB}
 
 if [[ $isAgwHomeMachine -eq 1 ]]; then
     # It is the home machine! Some things are in different places, as a result
