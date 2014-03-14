@@ -82,7 +82,7 @@ if [[ -n "$color_prompt" ]] ; then
 		iterm_top="40 120 40" ; # iTerm window top bar color
 		;;
 	    $BC_IP)
-		a_machine_prompt_main_color="${color_prefix}[1;34m"
+		a_machine_prompt_main_color="${color_prefix}[1;34m" # ???
 		iterm_bg=000022 ;
 		iterm_top="80 80 250" ;
 		;;
