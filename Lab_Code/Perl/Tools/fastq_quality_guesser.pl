@@ -28,6 +28,9 @@ my $J_ILLUMINA_1_5_MAX = 105; #104; # 104 == 'h' (possibly sometimes 'i' ?)
 my $L_ILLUMINA_1_8_MIN = 2;  #  2 == '#'
 my $L_ILLUMINA_1_8_MAX = 74; # 74 == 'J'
 
+my $M_IONTORRENT_MIN = 36; # '$'
+my $M_IONTORRENT_MAX = 71; # 'G'
+
 my $NUM_QUAL_LINES_BEFORE_MAKING_A_GUESS = 100; # Default: check this many lines before making a guess
 my $OUT_DELIM = "\t";
 my $SHOULD_REPORT_ALTERNATIVES = 0;
@@ -81,6 +84,8 @@ sub getStringWithFilename($$$$$) {
 sub main() { # Main program
     $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV. Important for reading in files!
 
+    my $should_warn_the_user_about_alternatives = 0; # don't tell them about the "alternative" flag unless there's a reason to
+
     GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	       , "delim|d=s" => \$OUT_DELIM
 	       , "a|report-alternatives!" => \$SHOULD_REPORT_ALTERNATIVES
@@ -91,20 +96,13 @@ sub main() { # Main program
     ($numUnprocessedArgs >= 1) or quitWithUsageError("Error in arguments! You must send AT LEAST ONE fastq (or bzip / gzip compressed!) file to this program!\n");
     ($NUM_QUAL_LINES_BEFORE_MAKING_A_GUESS >= 1) or quitWithUsageError("You can't set --lines (-n) to a value less than 1.\n");
 
-    # Make sure that the keys in %canBe and %outputAnnotation are all identical!!!
-    my %canBe = (       "S sanger"         => undef   # It's a hash that keeps track of how many possible quality scores haven't been disqualified yet.
-			, "X solexa"       => undef   # <-- note that the values are all expected to be set to ONE initially!
-			, "I illumina 1.3" => undef  # <-- if something CAN BE this quality type, it's set to 1
-			, "J illumina 1.5" => undef  # <-- if this quality score type has been ruled out, it becomes ZERO
-			, "L illumina 1.8" => undef
-	); # <-- to initialize the hash properly, these MUST be parens and not braces!!!
-
     my %outputAnnotation = (       "S sanger"         => join($OUT_DELIM, ("QUALITY=SANGER",       "SCALE=Phred+33",  "OFFSET=33",      "TOPHAT_PARAM=(nothing, phred33 is default)",   "RANGE=[0,40]",            "LETTERS=['!','I']") )
-				   , "X solexa"       => join($OUT_DELIM, ("QUALITY=SOLEXA",       "SCALE=Solexa+64", "OFFSET=64",      "TOPHAT_PARAM=--solexa-quals",    "RANGE=[-5,40] or [0,45]", "LETTERS=[';','h']") )
-				   , "I illumina 1.3" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.3", "SCALE=Phred+64",  "OFFSET=64",      "TOPHAT_PARAM=--solexa1.3-quals", "RANGE=[0,40]",            "LETTERS=['\@','h']") )
-				   , "J illumina 1.5" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.5", "SCALE=Phred+64",  "OFFSET=64",      "TOPHAT_PARAM=--solexa1.3-quals", "RANGE=[3,40]",            "LETTERS=['B','h']") )
+				   , "X solexa"       => join($OUT_DELIM, ("QUALITY=SOLEXA",       "SCALE=Solexa+64", "OFFSET=64",      "TOPHAT_PARAM=--solexa-quals",                  "RANGE=[-5,40] or [0,45]", "LETTERS=[';','h']") )
+				   , "I illumina 1.3" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.3", "SCALE=Phred+64",  "OFFSET=64",      "TOPHAT_PARAM=--solexa1.3-quals",               "RANGE=[0,40]",            "LETTERS=['\@','h']") )
+				   , "J illumina 1.5" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.5", "SCALE=Phred+64",  "OFFSET=64",      "TOPHAT_PARAM=--solexa1.3-quals",               "RANGE=[3,40]",            "LETTERS=['B','h']") )
 				   , "L illumina 1.8" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.8", "SCALE=Phred+33",  "OFFSET=33",      "TOPHAT_PARAM=(nothing, phred33 is default)",   "RANGE=[0,41]",            "LETTERS=['!','J']") )
-				   , "INVALID"        => join($OUT_DELIM, ("QUALITY=INVALID",       "SCALE=INVALID",  "OFFSET=INVALID", "TOPHAT_PARAM=INVALID",           "RANGE=INVALID",           "LETTERS=INVALID") )
+				   , "M iontorrent"   => join($OUT_DELIM, ("QUALITY=IONTORRENT"  , "SCALE=Phred???",  "OFFSET=36?",     "TOPHAT_PARAM=(Probably phred)",                "RANGE=[36,71]",           "LETTERS=['\$','G']") )
+				   , "INVALID"        => join($OUT_DELIM, ("QUALITY=INVALID",       "SCALE=INVALID",  "OFFSET=INVALID", "TOPHAT_PARAM=INVALID",                         "RANGE=INVALID",           "LETTERS=INVALID") )
 	); # <-- to initialize the hash properly, these MUST be parens and not braces!!!
 
     foreach my $fname (@ARGV) { # these were arguments that were not understood by GetOptions
@@ -113,7 +111,9 @@ sub main() { # Main program
 	my $highestValue = undef;
 	my $lowestChar = undef; # stores the CHARACTER value of the lowest score
 	my $highestChar = undef;
-	foreach my $key (keys(%canBe)) {
+
+	my %canBe = (); # hash
+	foreach my $key (keys(%outputAnnotation)) {
 	    $canBe{$key} = 1; # <-- Reset the "can be hash" to 1 every time (meaning that a new file could be this option)
 	}
 	# ================ [FINISHED] resetting variables that are specific to each file ===========
@@ -153,11 +153,12 @@ sub main() { # Main program
 		}
 		#print "Hi: $highestValue   Low: $lowestValue\n"; print "Hi: $highestChar  Low: $lowestChar\n"; # debugging
 
-		if ($lowestValue < $S_SANGER_MIN || $highestValue > $S_SANGER_MAX) { $canBe{"S sanger"} = 0; } # can't be Sanger anymore...
-		if ($lowestValue < $X_SOLEXA_MIN || $highestValue > $X_SOLEXA_MAX) { $canBe{"X solexa"} = 0; } # can't be Solexa anymore...
+		if ($lowestValue < $S_SANGER_MIN       || $highestValue > $S_SANGER_MAX) {       $canBe{"S sanger"} = 0; } # can't be Sanger anymore...
+		if ($lowestValue < $X_SOLEXA_MIN       || $highestValue > $X_SOLEXA_MAX) {       $canBe{"X solexa"} = 0; } # can't be Solexa anymore...
 		if ($lowestValue < $I_ILLUMINA_1_3_MAX || $highestValue > $I_ILLUMINA_1_3_MAX) { $canBe{"I illumina 1.3"} = 0; } # can't be Illumina 1.3+ anymore...
 		if ($lowestValue < $J_ILLUMINA_1_5_MIN || $highestValue > $J_ILLUMINA_1_5_MAX) { $canBe{"J illumina 1.5"} = 0; } # can't be Illumina 1.5+ anymore...
 		if ($lowestValue < $L_ILLUMINA_1_8_MIN || $highestValue > $L_ILLUMINA_1_8_MAX) { $canBe{"L illumina 1.8"} = 0; } # can't be Illumina 1.8+ anymore...
+		if ($lowestValue < $M_IONTORRENT_MIN   || $highestValue > $M_IONTORRENT_MAX) {   $canBe{"M iontorrent"} = 0; } # can't be Illumina 1.8+ anymore...
 	    }
 	    $numPossibleScoreTypes = numPossibleQualScoresRemaining(\%canBe);
 	    $numQualScoreLinesRead++; # Every FOUR lines is a qual score: this should be one! Note that this is separate from "$lineNum", which counts ALL lines (even non-quality score lines)
@@ -190,12 +191,14 @@ sub main() { # Main program
 	    if (isProbably($lowestValue, $highestValue, $I_ILLUMINA_1_3_MIN, $I_ILLUMINA_1_3_MAX)) { $guessHash{"I illumina 1.3"} = 1; }
 	    if (isProbably($lowestValue, $highestValue, $J_ILLUMINA_1_5_MIN, $J_ILLUMINA_1_5_MAX)) { $guessHash{"J illumina 1.5"} = 1; }
 	    if (isProbably($lowestValue, $highestValue, $L_ILLUMINA_1_8_MIN, $L_ILLUMINA_1_8_MAX)) { $guessHash{"L illumina 1.8"} = 1; }
+	    if (isProbably($lowestValue, $highestValue, $M_IONTORRENT_MIN, $M_IONTORRENT_MAX))     { $guessHash{"M iontorrent"} = 1; }
 
 	    my $numBestGuesses = numPossibleQualScoresRemaining(\%guessHash);
 	    if ($numBestGuesses != 1) {
-		my $noGuessMessage = "NO_GUESS: Bad news, we could NOT make a best guess for the quality for the file <$fname>! Perhaps that file is invalid? We had $numBestGuesses guesses instead.\n";
-		print STDOUT $noGuessMessage;
-		print STDERR "STDERR: $noGuessMessage";
+		my $noGuessMessage = "NO_GUESS: Bad news, we could NOT make a best quality score guess for <$fname>! We had a total of $numPossibleScoreTypes possible scores to guess from, and $numBestGuesses guesses. The lowest character was '$lowestChar' ($lowestValue), the highest was '$highestChar' ($highestValue)";
+		print STDOUT $noGuessMessage . "\n";
+		print STDERR "STDERR: $noGuessMessage\n";
+		if (!$SHOULD_REPORT_ALTERNATIVES) { $should_warn_the_user_about_alternatives = 1; }
 	    }
 	    while (my ($key, $value) = each(%guessHash)) {
 		# Best guess!
@@ -209,6 +212,8 @@ sub main() { # Main program
 	    }
 	}
     } # <-- end of handling each individual file
+
+    if ($should_warn_the_user_about_alternatives) { print STDERR "STDERR: *** Note that you can specify -a (--report-alternatives) to report all the alternative possible scores that this file could theoretically be.\n"; }
 } # end main()
 
 main();
@@ -275,6 +280,9 @@ Score descriptions from Wikipedia:
    
    L - Illumina 1.8+ Phred+33,  raw reads typically (0, 41)
        ASCII values are between 35 ("#") and 74 ("J")
+
+   M - IonTorrent **unknown** quality score (probably Phred+36 ?)
+       ASCII values are between 36 ("$") and 71 ("G")
 
 CAVEATS:
 
