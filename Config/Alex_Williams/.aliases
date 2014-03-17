@@ -368,6 +368,10 @@ alias naux='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${BN_IP}'
 alias bus=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${BC_IP}'
 alias wes=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${WES_IP}'
 alias wesx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${WES_IP}'
+
+alias rig=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${RIG_IP}'
+alias rigx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
+
 alias lig=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PL_IP}'
 alias ligx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${PL_IP}'
 alias bue=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PB_IP}'
