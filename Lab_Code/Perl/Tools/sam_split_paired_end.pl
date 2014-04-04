@@ -54,8 +54,8 @@ sub main() { # Main program
 	
 	my $SAM_SPECIFIC_OPTIONS = ($isSAM) ? " -S " : " ";
 	
-	system("samtools view $SAM_SPECIFIC_OPTIONS -h -f 0x40 $in > $out1"); # always output a bam file!
-	system("samtools view $SAM_SPECIFIC_OPTIONS -h -f 0x80 $in > $out2"); # always output a bam file!
+	system("samtools view -b $SAM_SPECIFIC_OPTIONS -h -f 0x40 $in > $out1"); # always output a bam file!
+	system("samtools view -b $SAM_SPECIFIC_OPTIONS -h -f 0x80 $in > $out2"); # always output a bam file!
     }
 } # end main()
 
