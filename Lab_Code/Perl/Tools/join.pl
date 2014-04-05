@@ -130,7 +130,6 @@ sub readIntoHash($$$$$) {
 		# Key was valid, OR we are allowing empty keys!
 		if (defined($uppercaseHashMapRef)) { # apparently we want to deal with things case-insensitively
 		    $uppercaseHashMapRef->{uc($theKey)} = $theKey; # maps from the UPPER-CASE version of this key back to the one we ACTUALLY put in the hash
-		    
 		}
 		# masterHashRef is a hash of ARRAYS: each line is ALREADY SPLIT UP by its delimiter
 		@{$masterHashRef->{$theKey}} = @sp1; # whole SPLIT UP line, even the key, goes into the hash!!!
@@ -183,18 +182,16 @@ sub joinedUpOutputLine($$$$$$$) {
     }
 }
 
-
-
 my %hash2 = ();
 my %uppercaseHash = ();
 my $uppercaseHashRef = ($shouldIgnoreCase) ? \%uppercaseHash : undef; # UNDEFINED if we aren't ignoring case
 readIntoHash($file2, $delim2, $keyCol2, \%hash2, $uppercaseHashRef);
 debugPrint("Read in this many keys: " . scalar(keys(%hash2)) . " from secondary file.\n");
 
-my $lineNumPrimary = 1;
-my $primaryFH = openSmartAndGetFilehandle($file1);
-my $prevLineCount1 = undef;
-my $prevLineCount2 = undef;
+my $lineNumPrimary  = 1;
+my $primaryFH       = openSmartAndGetFilehandle($file1);
+my $prevLineCount1  = undef;
+my $prevLineCount2  = undef;
 my $numWeirdLengths = 0;
 foreach my $line (<$primaryFH>) {
     chomp($line);
@@ -272,6 +269,8 @@ key in the DICTIONARY_FILE. The data from those corresponding rows is then
 printed out. It does not handle cross-products.
 
 Unlike the UNIX "join", join.pl does NOT require sorted keys.
+
+ * Note that join.pl reads the ENTIRE contents of the second file into memory! It may be unsuitable for joining very large (> 1000 MB) files.
 
 DESCRIPTION:
 

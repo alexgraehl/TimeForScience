@@ -11,6 +11,7 @@ my @columns;
 my @files;
 my $num_files = 0;
 
+# This is a bit of a mess but it's basically "getopt"
 while(@ARGV)
 {
    my $arg = shift @ARGV;
