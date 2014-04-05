@@ -316,7 +316,8 @@ alias make='make --warn-undefined-variables --print-directory'
 alias mcm='make clean && make'
 function remake {
     ## Lets you type "remake" to remove a file and then use GNU make to try to re-generate it
-	trash.pl "$1" && make --warn-undefined-variables --print-directory "$1"
+    trash.pl "$@" ;
+    make --warn-undefined-variables --print-directory "$@"
 }
 
 # Aliases related to COLOR GREP
@@ -410,12 +411,16 @@ alias sweep='trash.pl *.tmp *.temp' ## Sweep out the .tmp files
 
 alias htop='htop --sort-key PERCENT_CPU'
 
-function playnicely { # requires sudo privileges. Takes one argument, the username to make play nicely: example: playnicely theuser
+function playnicely {
+    # Takes one argument.
+    # requires sudo privileges. Takes one argument, the username to make play nicely:
+    # example: playnicely THEUSERNAME
     SSS=$(ps -fu "$1" | perl -pe 's/[ ]+/\t/g' | cut -f 2 | tail -n +2);
     for pid in $SSS ; do echo 'ionice-ing and nice+15-ing process ID' $pid; sudo ionice -c3 -p $pid ; sudo renice +15 -p $pid ; done 
 }
 
 function disknicely {
+    # Takes ZERO arguments. Just for making the 'nfsd' processes less annoying.
     SSS=$(ps -eopid,uid,cmd | grep "nfsd" | grep -v "grep" | perl -p -e "s/^[ ]+//" | cut -d " " -f 1) # Get any 'nfsd' processes
     for pid in $SSS ; do echo 'ionice-ing and nice+15-ing the NFS process ID' $pid; sudo ionice -c3 -p $pid ; sudo renice +15 -p $pid ; done 
 }
