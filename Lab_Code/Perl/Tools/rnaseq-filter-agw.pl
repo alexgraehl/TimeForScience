@@ -19,7 +19,7 @@ my $SUCCESS_STATUS = 0; ## <-- this should be ZERO
 my $isDryRun = 0;
 my $shouldSort = 1;
 my $shouldFilterDubiousReads = 1;
-my $shouldRemoveDupes = 1;
+my $shouldKeepDupes = 1;
 #my $shouldRemoveSingletons = 1; # for paired-end reads, remove anything where the mate pair did NOT map
 my $shouldQC = 1;
 #my $genomeFastaFile = undef;
@@ -90,7 +90,7 @@ sub generateIndex($$) {
 GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
 	   , "sort!" => \$shouldSort ## specify "--nosort" to avoid sorting
 	   , "keepdubious" => sub { $shouldFilterDubiousReads = 0; } ## specify "--nomapfilter" to avoid filtering out the unmappable reads
-	   , "keepdupes" => sub { $shouldRemoveDupes = 0; }
+	   , "dupes!" => \$shouldKeepDupes
 	   #, "keepsingletons" => sub { $shouldRemoveSingletons = 0; }
 #	   , "f|fasta" => \$genomeFastaFile ## used for generating the index
 	   , "qc!" => \$shouldQC
@@ -111,7 +111,7 @@ if ($keepAllReads) {
     print STDOUT "   * Unmapped reads will be RETAINED.\n";
     print STDOUT "   * Duplicate-location reads will be RETAINED.\n";
     print STDOUT "If you specified 'nomapfilter', that option is now OVERRIDDEN.\n";
-    $shouldRemoveDupes = 0;
+    $shouldKeepDupes = 1;
     $shouldFilterDubiousReads = 0;
     #$shouldRemoveSingletons = 0;
 }
@@ -267,7 +267,8 @@ foreach my $file (@ARGV) {
 
 #    my $dedupCmd = qq{samtools view -H $latest > a.tmp ; samtools view $latest | sort -u -g -k3,3 -k4,4 -k7,7 -k8,8 >> a.tmp ; samtools view -bS a.tmp > $dedupFile ;};
 
-    if ($shouldRemoveDupes) {
+    if (!$shouldKeepDupes) {
+	# remove duplicates!!!
 	my $result = alexSystemCall($dedupCmd);
 	if ($result != $SUCCESS_STATUS) { reportCommandFailure($dedupCmd, $latest); next; } ## go to the next file...
 	$latest = $dedupFile;
@@ -326,19 +327,20 @@ datePrint("[DONE]\n\n");
 
 __DATA__
 
-rnaseq_filter_agw.pl   [any number of bam/sam files may be specified here]
+rnaseq-filter-agw.pl   [any number of bam/sam files may be specified here]
 
 Processes input SAM/BAM alignment files, and:
-   1. Removes any UNMAPPED reads (unless you say --keepall)
-   2. SORTS the files in COORDINATE order (unless you say --nosort)
-   3. Removes duplicates
+   1. Removes any UNMAPPED reads.
+   2. Sorts the BAM in COORDINATE order (unless you say --nosort)
+   3. ** Can OPTIONALLY remove duplicates if you specify (--nodupes) **
    4. Removes reads with the 'failed QC' BAM flag
    5. Removes reads with the 'mate pair did not map' BAM flag
+   6. Removes NON-PRIMARY reads.
    6. Generates an output BAM file and a BAI index file.
 
 The output is always a BAM file, regardless of the input.
 
-Example:   rnaseq_filter_agw.pl  test.bam samtest2.sam test3.bam
+Example:   rnaseq-filter-agw.pl  test.bam samtest2.sam test3.bam
 
 Output: For the example above, the output filenames would be:
    BAM: "test.processed.bam" and "samtest2.processed.bam" and "test3.processed.bam"
@@ -350,6 +352,9 @@ Note that this is a DESTRUCTIVE operation that removes reads:
 
 OPTIONS:
    --keep or --keepall: Do NOT remove any reads. Just sort & index.
+
+   --nodupes:     Remove duplicate reads. Default is to KEEP them.
+
    --keepdubious:   Do not remove the 'dubious' unmapped reads, such as:
                     * Unmapped reads (as reported by the BAM flag)
                     * Non-primary alignments (as reported by the BAM flag)
