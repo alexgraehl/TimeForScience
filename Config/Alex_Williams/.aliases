@@ -369,6 +369,7 @@ AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
 alias nau=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${BN_IP}'  # From the not-uploaded file /work/Common/Code/alexgw/aliases-server-config
 alias naux='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${BN_IP}'
 alias bus=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${BC_IP}'
+alias busx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${BC_IP}'
 alias wes=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${WES_IP}'
 alias wesx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${WES_IP}'
 
