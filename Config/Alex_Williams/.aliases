@@ -220,6 +220,7 @@ alias tc='randomize_terminal_color.pl -cycle'
 alias b='popd'
 alias ..='cd ..'
 #alias ..='pushd ..'
+alias recrash='sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist; sleep 1; sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist'
 alias res='source ~/.bashrc ; source ~/.bash_profile'
 alias mv='mv -i'
 alias cp='cp -i'
@@ -273,8 +274,6 @@ alias visible='chflags -h nohidden'
 alias clearicon='$SETFILE_LOCATION -P -a c' ## clear mac custom icons. Useful for images that have old custom icons.
 
 alias version="lsb_release -a" # Tells you which version of Ubuntu you are running!
-
-alias res="source ~/.bashrc" ## Re-load the source file
 
 function mac2unix { # Convert a Mac-style line-ending file to a UNIX one. Useful for when you save a file in Excel and then UNIX won't read it.
     if [[ -f "$1" ]] ; then cat "$1" | tr '\r' '\n' ## if a filename is passed in, then auto-cat that file
