@@ -56,6 +56,13 @@ sub main() { # Main program
 	
 	system("samtools view -b $SAM_SPECIFIC_OPTIONS -h -f 0x40 $in > $out1"); # always output a bam file!
 	system("samtools view -b $SAM_SPECIFIC_OPTIONS -h -f 0x80 $in > $out2"); # always output a bam file!
+
+	if ((-s $out1) < 1024*1024) { # less than 1 Megabyte
+	    print STDERR "*** WARNING: The output paired end (first end of each pair) file was LESS THAN ONE MEGABYTE -- maybe you tried to split an UN-PAIRED sam/bam file? This DOES NOT WORK, the input file must be paired end, or you'll just end up with a file with zero records! ***\n";
+	}
+	if ((-s $out2) < 1024*1024) { # less than 1 Megabyte
+	    print STDERR "*** WARNING: The output paired end (second end of each pair) file was LESS THAN ONE MEGABYTE -- maybe you tried to split an UN-PAIRED sam/bam file? This DOES NOT WORK, the input file must be paired end, or you'll just end up with a file with zero records! ***\n";
+	}
     }
 } # end main()
 
