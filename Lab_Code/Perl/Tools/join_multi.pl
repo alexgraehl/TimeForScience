@@ -24,8 +24,9 @@ my @flags   = (
 
 my %args = %{&parseArgs(\@ARGV, \@flags, 1)};
 
-if(exists($args{'--help'}))
-{
+if (exists($args{'-k'})) { die "-k is not an option--you probably mean '-f'."; }
+
+if(exists($args{'--help'})) {
    print STDOUT <DATA>;
    exit(0);
 }
@@ -40,7 +41,7 @@ my $fnames_delim   = $args{'-fnames'};
 my @files          = @{$args{'--file'}};
 my @extra          = @{$args{'--extra'}};
 
-my $blank_placeholder = '___@@@_THIS_IS_A_BLANK_VALUE_@@@___';
+my $blank_placeholder = '___@@@_BLANK_VALUE_@@@___';
 
 my @global_cols;
 
@@ -63,7 +64,7 @@ if(defined($list)) {
    close($file_list);
 }
 
-(scalar(@files) >= 2) or die("Must supply 2 or more files");
+(scalar(@files) >= 2) or die("You must supply 2 or more files to 'join_multi'!");
 
 my @cols = @{&parseColsFromArgs(\@extra)};
 
@@ -93,51 +94,36 @@ for(my $j = 0; $j < $num_files; $j++) {
 
       my $key = &extractKey(\@tuple, $key_cols, \@sorted_key_cols);
 
-      if(not(exists($file_keys{$key})))
-      {
+      if(not(exists($file_keys{$key}))) {
          $file_keys{$key} = 1;
-
          push(@file_keys, $key);
       }
-
       if(not(defined($max_tuple[$j])) or $max_tuple[$j] < scalar(@tuple)) {
          $max_tuple[$j] = scalar(@tuple);
       }
    }
    close($file);
 
-   foreach my $key (@file_keys)
-   {
-      if(not(exists($count{$key})))
-      {
+   foreach my $key (@file_keys) {
+      if (!exists($count{$key})) {
          $count{$key} = 1;
-
          push(@keys_in_order, $key);
-      }
-      else
-      {
-         $count{$key} += 1;
+      } else {
+         $count{$key}++;
       }
    }
    $verbose and print STDERR " done.\n";
 }
 
 my $num_keys_total = scalar(keys(%count));
-
 my %row;
-
 my @data;
-
 my $num_keys_kept = 0;
 
-foreach my $key (@keys_in_order)
-{
-   if($count{$key} >= $min)
-   {
+foreach my $key (@keys_in_order) {
+   if($count{$key} >= $min) {
       $data[$num_keys_kept][0] = $key;
-
       $row{$key} = $num_keys_kept;
-
       $num_keys_kept++;
    }
 }
@@ -146,41 +132,27 @@ $verbose and print STDERR "$num_keys_kept keys present in $min or more files kep
 
 my @blanks;
 
-for(my $j = 0; $j < $num_files; $j++)
-{
+for(my $j = 0; $j < $num_files; $j++) {
    $verbose and print STDERR "(", $j+1, "/$num_files). ",
                              "Collecting data from file '$files[$j]'...";
-
-   my $file = &openFile($files[$j]);
-
+   my $file = &openFile($files[$j]); # OPEN THE FILE HERE
    my %keys_not_seen = %count;
-
    $blanks[$j] = &duplicate($max_tuple[$j], $blank_placeholder);
-
    my $key_cols  = defined($cols[$j]) ? $cols[$j] : \@global_cols;
-
    my @sorted_key_cols = sort { $a <=> $b; } @{$key_cols};
 
    my $line_no = 0;
-   while(my $line = <$file>)
-   {
+   while(my $line = <$file>) {
       $line_no++;
-
       # my @tuple = split($delim, $line);
       my $tuple = &mySplit($delim, $line);
-
       my $last = scalar(@{$tuple}) - 1;
-
       chomp($$tuple[$last]);
-
       my $key = &extractKey($tuple, $key_cols, \@sorted_key_cols);
-
       if(defined($fnames_delim) and $line_no == 1) {
          &listPrepend($tuple, $files[$j] . $fnames_delim);
       }
-
-      if(exists($row{$key}))
-      {
+      if(exists($row{$key})) {
          if(exists($keys_not_seen{$key})) {
             my $i = $row{$key};
             push(@{$data[$i]}, &pad($tuple, $blanks[$j]));
@@ -195,26 +167,21 @@ for(my $j = 0; $j < $num_files; $j++)
          push(@{$data[$i]}, $blanks[$j]);
       }
    }
-
-   close($file);
-
+   close($file); # close the file here!
    $verbose and print STDERR " done.\n";
 }
 
 $verbose and print STDERR "Printing out the combined data...\n";
 
-for(my $i = 0; $i < $num_keys_kept; $i++)
-{
+for(my $i = 0; $i < $num_keys_kept; $i++) {
    my $key = defined($data[$i][0]) ? $data[$i][0] : $blank_placeholder;
-
    my $printable = $key;
    for(my $j = 1; $j <= $num_files; $j++) {
       my $val_list = defined($data[$i][$j]) ? $data[$i][$j] : $blanks[$j-1];
       my $values   = join($delim, @{$val_list});
       $printable .= $delim . $values;
    }
-   $printable =~ s/$blank_placeholder/$blank/g;
-
+   $printable =~ s/$blank_placeholder/$blank/g; # replace the placeholder with the blank value again
    print STDOUT $printable, "\n";
 }
 $verbose and print STDERR " done.\n";
@@ -313,6 +280,8 @@ OPTIONS are:
         second column.
 
 -b BLANK: Set the blank character to BLANK (default is empty).
+          This is whatever gets printed when there is NO MATCH in a file.
+          You could set it to (for example) -b "NA".
 
 -fnames DELIM: Use the file prepended to the column field header
                delimited by DELIM. Default does not prepend the
