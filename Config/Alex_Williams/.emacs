@@ -213,6 +213,8 @@
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
       (setq load-path (cons "/usr/local/share/emacs/site-lisp/ess" load-path))
+      (setq load-path (cons "/usr/share/emacs/site-lisp/ess" load-path))
+      (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
       (setq should-load-ess t)
       (require 'show-wspace nil t)			; Show whitespace!
       ))
@@ -221,14 +223,6 @@
 ;;(load (expand-file-name "~/.emacs.d/cperl-mode.el.6.2")) ; <-- note: compiled version!
 ;;(autoload 'cperl-mode "cperl-mode" "Fancier mode Perl highlighting." t)
 
-;; ##########################################################################
-;; ESS (Emacs Speaks Statistics == "R-project" R.app r-project.org R stuff)
-;;(if (system-type-is-gnu) ; load only on the GNU filesystem at work
-;;    (load (expand-file-name "~/.emacs.d/ess/lisp/ess-site")))
-;; Parameters to load that will make it not complain/warn: 'nomessage 'noerror
-;; NB: loading the ess-module slows down emacs' load time a lot, even if ESS is compiled.
-
-;; ##########################################################################
 
 
 
@@ -759,8 +753,15 @@ current line."
 
 ;; Keyword highlight options: t (OVERRIDE) /  prepend (prioritize) / append / keep (keep existing coloring, if any)
 
-(if should-load-ess (message "[AGW]: SHOULD LOAD ESS") (message "[AGW]: SHOULD NOT LOAD ESS"))
+(if should-load-ess (message "[AGW]: Loading ESS (Emacs Speaks Statistics)") (message "[AGW]: NOT loading ESS (Emacs Speaks Statistics)"))
 
+;; ##########################################################################
+;; ESS (Emacs Speaks Statistics == "R-project" R.app r-project.org R stuff)
+;;(if (system-type-is-gnu) ; load only on the GNU filesystem at work
+;;    (load (expand-file-name "~/.emacs.d/ess/lisp/ess-site")))
+;; Parameters to load that will make it not complain/warn: 'nomessage 'noerror
+;; NB: loading the ess-module slows down emacs' load time a lot, even if ESS is compiled.
+;; ##########################################################################
 (if should-load-ess
     (progn
       (require 'ess-site) ;; nil t)

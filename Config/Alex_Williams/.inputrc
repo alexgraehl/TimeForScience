@@ -4,8 +4,7 @@ set horizontal-scroll-mode off
 set mark-directories       on
 
 
-#set mark-symlinked-directories on
-## Fixes it so that tab-completion automatically adds a '/' to symlinked directories, just like real directories.
+set mark-symlinked-directories on  ## Fixes it so that tab-completion automatically adds a '/' to symlinked directories, just like real directories.
 
 set completion-ignore-case on
 
