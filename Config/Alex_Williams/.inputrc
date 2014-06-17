@@ -1,9 +1,7 @@
 # -*-Sh-*-  <-- Tells emacs what syntax highlighting to use
 
 set horizontal-scroll-mode off
-set mark-directories       on
-
-
+set mark-directories on
 set mark-symlinked-directories on  ## Fixes it so that tab-completion automatically adds a '/' to symlinked directories, just like real directories.
 
 set completion-ignore-case on
@@ -27,8 +25,6 @@ set completion-prefix-display-length 6
 set meta-flag on
 set input-meta on
 set output-meta on
-
-
 set visible-stats on
 
 "\e[1~": beginning-of-line
@@ -57,7 +53,6 @@ set visible-stats on
 # supposedly sets page up / page down to history search. Doesn't seem to work however.
 "\e[5~": history-search-forward
 "\e[6~": history-search-backward
-
 
 "\e[A": history-search-backward
 "\e[B": history-search-forward
