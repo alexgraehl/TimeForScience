@@ -511,4 +511,16 @@ function unmini {
 
 
 
-
+function checkbackup {
+    # checks the MOST RECENT file in /it/backup/log, and gives you the last 10 lines from that file
+    echo ""
+    echo "Reporting the last 10 lines of the most recent backup on this machine."
+    echo "If these lines are not from yesterday or today's date, then something is seriously wrong!"
+    tail -n 10 /it/backup/log/$(ls -1t /it/backup/log/ | head -n 1)
+    TODAY=$(date +"%Y%m%d")
+    YESTERDAY=$(date +"%Y%m%d" --date='1 day ago')
+    LAST_BACKUP_DATE=$(ls -1t /it/backup/log/ | head -n 1 | cut -f 1 -d '-')
+    [[ ("$LAST_BACKUP_DATE" == "$TODAY") || ("$LAST_BACKUP_DATE" == "$YESTERDAY") ]]; RESULT=$?
+    if [[ $RESULT -ne 0 ]] ; then echo -e "***\n**\n*\n******************** WARNING --- last backup date was on $LAST_BACKUP_DATE ************\n*\n**\n***";
+    else echo -e "\nOK: The last backup ($LAST_BACKUP_DATE) was made within the last 2 days.\n"; fi
+}
