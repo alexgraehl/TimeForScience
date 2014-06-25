@@ -207,6 +207,7 @@ alias cheat="echo \
 [[ "$color_prompt" && "$isMac" ]] && AGW_LS_OPT=' -F -G -@ ' ## Mac: Color option is -G. Also, on a Mac, show the extended attributes (-@)
 [[ "$color_prompt" && (-z "$isMac") ]] && AGW_LS_OPT=' --indicator-style=slash --color=auto ' ## Ubuntu: color is --color=auto
 
+
 alias ls='/bin/ls ${AGW_LS_OPT}'
 alias l='ls'
 
@@ -508,6 +509,28 @@ function unmini {
 }
 
 
+function singlea {
+    # Requires exactly ONE argument!
+    if [ -f "$1/.describe" ]; then
+	echo -e "\n-------------------------------------------------"
+	cat .describe
+	echo "-------------------------------------------------"
+    fi
+    ls $1
+}
+
+function aa {
+    PREFIX="./"
+    if [ $# -eq 0 ]
+    then
+	singlea "./"
+    else
+	for arg in "$@"
+	do
+	    singlea "$arg"
+	done
+    fi
+}
 
 
 
