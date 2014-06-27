@@ -532,7 +532,13 @@ function aa {
     fi
 }
 
-
+function qin { # qstat with colors for job status, automatic piping into "less"
+    # R = running, C = complete (these go away soon), H = hold (waiting)
+    qstat -s | perl -p -e 's/(.*\bR\b.*)/\033[32m$1\033[0m/g' \
+	     | perl -p -e 's/(.*\bC\b.*)/\033[35m$1\033[0m/g' \
+	     | perl -p -e 's/(.*\bH\b.*)/\033[34m$1\033[0m/g' \
+	     | less -R -S
+}
 
 function checkbackup {
     # checks the MOST RECENT file in /it/backup/log, and gives you the last 10 lines from that file
