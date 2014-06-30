@@ -136,7 +136,7 @@ alias cheat="echo \
 \">>> Shell/bash: Script run with ionice:  ionice -c3 -p\\\$\\\$ (top line of a /bin/sh script) \" ${NL}\
 \">>> Shell/bash: Rename files to include parent directory in filename for f in \\\`ls DIRS*/file.whatever\\\`; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).\\\$(basename \\\$f).whatever ; done \" ${NL}\
 \" \" ${NL}\
-\">>> AWK: sum numbers in a column 1 of a file: cat THEFILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
+\">>> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
 \">>> HG: Mercurial: revert to previous version : hg revert FILENAME -r-2 (or -r-3 for two versions ago, etc) \" ${NL}\
 \">>> NIX: convert RELATIVE symlinks to ABSOLUTE PATHS: for fff in *; do FULL=\\\$(readlink -f \\\$fff); ln -sf \\\$FULL \\\$fff ; done \" ${NL}\
 \">>> NIX: delete ORPHANED symlinks: find /path/to/search -xtype l -delete ; \" ${NL}\
@@ -165,9 +165,9 @@ alias cheat="echo \
 \">>> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ${NL}\
 \" \" ${NL}\
 \">>> ZIP: Zip a folder: zip -r ARCHIVENAME FOLDER \" ${NL}\
-\">>> BASH: Foreach / rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
+\">>> BASH: Foreach/rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
 \">>> BASH: redirect STDERR & STDOUT both to console and to a file: THECMD 2>&1 | tee --append LOGFILE\" ${NL}\
-\">>> BASH: See a function definition:   type FUNCTIONNAME \" ${NL}\
+\">>> BASH: See a function definition: type FUNCTIONNAME \" ${NL}\
 \">>> BASH: Change tab width in bash:  setterm -regtabs 16 (16 = huge!) \" ${NL}\
 \">>> BASH: Expand tabs / tab width: something | expand -t 32 \" ${NL}\
 \">>> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ${NL}\
