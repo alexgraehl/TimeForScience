@@ -243,7 +243,8 @@ defaults write com.apple.finder ShowStatusBar -bool true
 defaults write com.apple.finder ShowPathbar -bool true
 
 # Finder: allow text selection in Quick Look
-defaults write com.apple.finder QLEnableTextSelection -bool true
+# BUT HAS A BUG IN IT that causes quicklook to break and display white images sometimes.
+defaults write com.apple.finder QLEnableTextSelection -boolean NO
 
 # Display full POSIX path as Finder window title
 defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
