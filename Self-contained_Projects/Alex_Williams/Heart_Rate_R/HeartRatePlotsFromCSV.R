@@ -27,14 +27,20 @@ for (f in zips) {
 	}
 }
 
+uncompressed_csvs.vec <- list.files(path=WAHOO_FITNESS_DIRECTORY, recursive=T, pattern="*.csv", full.names=T)
+for (unc in uncompressed_csvs.vec) {
+	print(paste("Found an uncompressed .csv file named <", unc, ">, compressing it now...", sep=''))
+	system(paste("bzip2 ", unc, sep=''))
+}
+	
 csvs <- list.files(path=WAHOO_FITNESS_DIRECTORY, recursive=T, pattern="*.csv.bz2", full.names=T)
 
-for (fff in csvs) {
+for (fff in csvs) { # looking for BZIPPED csv files
 	pdfname <- sub("[.]csv.*", ".pdf", fff, perl=T, ignore.case=T)
 	pngname <- sub("[.]csv.*", ".png", fff, perl=T, ignore.case=T)
 	
 	if (file.exists(pdfname)) {
-		print("Skipping! PDF already exists");
+		print(paste("Skipping! A PDF named <", pdfname, "> already exists.", sep=''));
 		next;
 	}
 	#"~/Desktop/2012-06-03_0101_Golfing_WF.csv" #HRM 5-20 after is when slpn/2012-06-02_0205_Golfing_WF.csv"
