@@ -1,4 +1,4 @@
-#!/bin/sh -
+#!/bin/bash -
 #
 # To use this filter with less, define LESSOPEN:
 # export LESSOPEN="|/usr/bin/lesspipe.sh %s"
@@ -22,7 +22,7 @@ smartdecompress() {
     $DECOMPRESSOR $1; # <-- this is what we pass into the relevant "smart" function below
 }
 
-STO="\033[1m" # start color
+STO="\033[1m" # start color... not useful?
 STA="\033[31m" # start color A: 31 = red
 STC="\033[36m" # start color C: 36 = cyan. 32 = green. 35 = magenta
 STG="\033[33m" # start color G: 33 = yellow
@@ -37,8 +37,9 @@ basecolor() {
     ## Example:  cat myfile | sed 's/1/2/' | basecolor 
     #sed -e 's/\(AA*\)/\1'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
 
-    # One-at-a-time coloration-and-termination for each individual character
-    sed -e 's/A/'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
+    perl /data/home/alexgw/TimeForScience/Config/1_Shell_Config/perlformat.pl
+
+   #sed -e 's/A/'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
 
     # Colorize based on entire blocks of identical characters. Turns out not to be any faster, unfortunately!
     #sed -e 's/\(AA*\)/'"$(printf $STA)"'\1'"$(printf $RES)"'/g' -e 's/\(CC*\)/'"$(printf $STC)"'\1'"$(printf $RES)"'/g' -e 's/\(GG*\)/'"$(printf $STG)"'\1'"$(printf $RES)"'/g' -e 's/\(TT*\)/'"$(printf $STT)"'\1'"$(printf $RES)"'/g' -e 's/\(NN*\)/'"$(printf $STN)"'\1'"$(printf $RES)"'/g'
@@ -53,7 +54,7 @@ lesspipe() {
 		*)	DECOMPRESSOR="cat" ;;
 	    esac
 	    if $DECOMPRESSOR -- "$1" | file - | grep -q troff; then
-		if echo "$1" | grep -q ^/; then	#absolute path
+		if echo "$1" | grep -q ^/; then	# absolute path
 		    man -- "$1" | cat -s
 		else
 		    man -- "./$1" | cat -s
@@ -74,7 +75,7 @@ lesspipe() {
 	*.tab|*.matrix) sheet.pl --notify --color="always" "$1" ;;
 
 	# Color code the bases A, C, G, and T
-	*.bam) echo '######\n### Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format ###\n######' ; samtools view -h "$1" | basecolor ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
+	*.bam) echo -e '##################\n# Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format #\n##################' ; samtools view -h "$1" | basecolor ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
 
 	# Color code the bases A, C, G, and T
 	*.sam|*.sam.gz|*.sam.bz2|*.fasta|*.fasta.gz|*.fasta.bz2|*.fastq|*.fastq.gz|*.fastq.bz2|*.fa|*.fa.gz|*.fa.bz2|*.fq|*.fq.gz|*.fq.bz2) smartdecompress "$1" | basecolor ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
