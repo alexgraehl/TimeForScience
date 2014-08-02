@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+# Instructions for pylint below:
+# pylint: disable=line-too-long, superfluous-parens, bad-whitespace, unused-wildcard-import, trailing-whitespace, unnecessary-pass, missing-docstring, invalid-name, global-statement, multiple-statements, too-many-locals, too-many-statements, too-many-branches, too-few-public-methods, too-many-lines, too-many-instance-attributes, too-many-arguments, wildcard-import
+
 '''
 Sheet.py
 
@@ -18,8 +21,7 @@ Example usage: "sheet.py -i ~/T" (tab-delimted file)
 Note the line at the top of this file (the one that looks like "#!/somewhere/python")! That points to the current Python installation. It must be a real python distribution in order for you to be able to run sheet.py! (Otherwise try typing "which python" or "python sheet.py")
 '''
 
-#http://www.amk.ca/python/howto/curses/curses.html
-# Semi-decent docs on how to use curses: http://www.amk.ca/python/howto/curses/
+# Docs on how to use curses: http://www.amk.ca/python/howto/curses/curses.html
 
 import sys
 
@@ -28,9 +30,9 @@ import curses.ascii   # <-- docs at http://docs.python.org/library/curses.ascii.
 import curses.textpad
 import curses.wrapper
 
-import pdb; #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
+import pdb #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
 
-try: 
+try:
     from numpy import * # The matrices use this
 except ImportError:
     print("[sheet.py]: Unable to load the module 'numpy'. Probably it is not installed")
@@ -272,13 +274,13 @@ class Point:
         self.x = argX
         self.y = argY
 
-class RowCol: # Like a Point, but ROW (Y) comes first, then COL (X)
-    def __init__(self, argRow, argCol):
-        self.row = argRow
-        self.col = argCol
+# class RowCol: # Like a Point, but ROW (Y) comes first, then COL (X)
+#     def __init__(self, argRow, argCol):
+#         self.row = argRow
+#         self.col = argCol
 
-    def __init__(self, rowColList): # Used to init size from "getmaxyx()"
-        (self.row, self.col) = rowColList
+#     def __init__(self, rowColList): # Used to init size from "getmaxyx()" apparently python doesn't like multiple constructors!
+#         (self.row, self.col) = rowColList
 
 class Size:
     def __init__(self, argWidth, argHeight):
@@ -381,7 +383,7 @@ class AGW_File_Data:
         '''Remove the last <numChars> characters from the end of the search term (i.e., it is like pressing backspace). Clears the search term (which sets it to None) if it is going to be zero-length.'''
         currentRegexLength = lenFromAny(self.__regex)
         if (currentRegexLength <= 1): self.clearCurrentSearchTerm()
-        else: self.changeCurrentSearchTerm(self.__regex[:(currentRegexLength-1)])
+        else: self.changeCurrentSearchTerm(self.__regex[:(currentRegexLength-numChars)])
         return
 
     def regexIsActive(self):
@@ -819,7 +821,7 @@ def stringFromAny(argString): # Returns a string, even if given None as an input
 
 
 def cursesClearLine(window, lineYPos):
-    window.move(lineYPos, 0);
+    window.move(lineYPos, 0)
     window.clrtoeol()
     pass
 
@@ -842,13 +844,10 @@ def attributeForNumeric(theProspectiveNumber, defaultAttr):
     try:
         if (float(theProspectiveNumber) < 0):
             return curses.color_pair(NUMERIC_NEGATIVE_COLOR_ID)
-            pass
         elif (float(theProspectiveNumber) > 0):
             return curses.color_pair(NUMERIC_POSITIVE_COLOR_ID)
-            pass
         else: # for zero, maybe NaN too
             return defaultAttr
-        pass
     except (ValueError, TypeError):
         return defaultAttr # not a number
     pass
@@ -905,12 +904,12 @@ def usageAndQuit(exitCode, message=None):
         print("sheet.py: ")
         print(message)
         print("sheet.py: Printing usage information below.")
-        print("*"*fillWidth) ; print("*"*fillWidth) ;
+        print("*"*fillWidth) ; print("*"*fillWidth)
         pass
     print(ALEX_PROGRAM_USAGE_TEXT) # at the very bottom of this file
     if (message is not None):
         print("(End of usage information for sheet.py.)")
-        print("*"*fillWidth) ; print("*"*fillWidth) ;
+        print("*"*fillWidth) ; print("*"*fillWidth)
         print("sheet.py: ")
         print(message)
         pass
@@ -1093,7 +1092,7 @@ def drawHelpWin(theScreen):
     helpWin.safeAddStr(0, 0
                        ,("Help: [Q]uit   [ijkl]: Move cursor (faster with [Shift])" +
                          "   [/]: Search             [T]ranspose table                  ")
-                         , curses.color_pair(HELP_AREA_ID))
+		       , curses.color_pair(HELP_AREA_ID))
                        
     helpWin.safeAddStr(1, 0
                        ,("      [a/e/g/G]: Go to left/right/top/bottom of table   " +
@@ -1521,7 +1520,7 @@ def handleKeysForNormalMode(argCh, currentTable, theScreen):
 
 def GLOBAL_exitSearchMode():
     if (gCurrentMode != KEY_MODE_SEARCH_INPUT):
-        raise "Uh oh, tried to exit search mode... but we were not even IN search mode!!"
+        raise Exception("Uh oh, tried to exit search mode... but we were not even IN search mode!!")
     else:
         GLOBAL_setUserInteractionMode(KEY_MODE_NORMAL_INPUT)
         pass
