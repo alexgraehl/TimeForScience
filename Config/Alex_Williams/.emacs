@@ -275,7 +275,7 @@
  scroll-conservatively     1
  show-trailing-whitespace  t
  tab-width                 8 ;; <-- tab indent width!
- indent-tabs-mode          t
+ indent-tabs-mode          t ;; <-- except for python
  default-fill-column       80 ;; <-- when you "meta-q" to fit text, what line widths are used for wrapping?
  transient-mark-mode       t ;; show when we mark text for copying/selection, BUT also makes the selection disappear after one use. (if unset, we can use ctrl-space ctrl-space)
 
@@ -1006,7 +1006,7 @@ current line."
 (add-hook 'sh-mode-hook (lambda () (sh-electric-here-document-mode -1))) ;; Prevent entering '<<<' from also inserting an EOF. Very annoying!
 
 (add-hook 'python-mode-hook
-  (lambda () (setq indent-tabs-mode t)))
+  (lambda () (setq indent-tabs-mode nil))) ;; whatever you do, don't let python use tabs!
 
 
 (defun iswitchb-local-keys ()
