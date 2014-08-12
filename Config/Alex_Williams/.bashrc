@@ -199,6 +199,8 @@ export CVSEDITOR="emacs -nw"
 export SVN_EDITOR="emacs -nw"
 export EDITOR="emacs -nw"
 
+export LANG=C    # Set the LANG to C. Speeds some tools up, but means UTF-8 stuff won't work properly anymore. OH WELL!!
+
 # Keybindings: Add IJKL navigation to supplement/replace the arrow keys
 bind "\M-J:backward-word"
 bind "\M-L:forward-word"
