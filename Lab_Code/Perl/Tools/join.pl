@@ -262,7 +262,7 @@ exit(0); # looks like we were successful
 ################# END MAIN #############################
 
 __DATA__
-syntax: join.pl [OPTIONS] LOOKUP_FILE  DICTIONARY_FILE
+syntax: join.pl [OPTIONS] LOOKUP_FILE  HUGE_DICTIONARY_FILE
 
 join.pl goes through each line/key in the LOOKUP_FILE, and finds the *first* matching
 key in the DICTIONARY_FILE. The data from those corresponding rows is then
