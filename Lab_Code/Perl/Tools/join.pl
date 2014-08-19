@@ -143,10 +143,8 @@ sub readIntoHash($$$$$) {
     if ($filename ne '-') { close($theFileHandle); } # close the file we opened in 'openSmartAndGetFilehandle' . This may not actually be necessary
 }
 
-
 #my %hash1 = readIntoHash($file1  , $delim1, $keyCol1);
 #($isDebugging) && print STDERR ("Read in this many keys: " . scalar(keys(%hash1)) . " from primary file.\n");
-
 
 sub arrayOfNonKeyElements(\@$) {
     # Returns everything EXCEPT the key! This is because by default, when joining, you move the key to the FRONT of the line, and then do not print it again later on the line.
