@@ -48,17 +48,16 @@ else
 fi
 
 function delve {
-    ## Finds, in any subdirectories, any files that have a name that matches the input text.
-    ## Sort of like a poor man's "locate"
+    ## Finds, in any subdirectories, any files that have a name that matches the input text. Sort of like a poor man's "locate"
     find ./ -iname "*$@*"
 }
 
-function vncnau {    # Forwards the ports from this machine to the localhost
+function vncnau { # Forwards the ports from this machine to the localhost
     echo "Now forwarding port 590$* from $BN_HOSTNAME... you should launch your VNC client now and connect to localhost:$*"
     ssh -L 590$*:localhost:590$* -p 22 alexgw@${BN_IP} -N
 }
 
-function vnccat {    # Forwards the ports from this machine to the localhost
+function vnccat { # Forwards the ports from this machine to the localhost
     echo "Now forwarding port 590$* from $BC_HOSTNAME ... you should launch your VNC client now and connect to localhost:$*"
     ssh -L 590$*:localhost:590$* -p 22 alexgw@${BC_IP} -N
 }
@@ -67,13 +66,9 @@ function vncstart {
     vncserver -geometry 1600x1000 -depth 16
 }
 
-
-
 BRACKET_OPEN='{'
 PAREN_OPEN='('
-
 NL="\$'\\n'" # newline!
-
 alias cheat="echo \
 \">>> Mac: check code signing: codesign -vvv /Applications/iTunes.app \" ${NL}\
 \">>> Mac: delete time machine backups: tmutil delete /Volumes/DISK/Backups.backupdb/COMPNAME/ \" ${NL}\
@@ -269,13 +264,9 @@ alias google="gcutil --project blast-meta ssh test-micro-instance"
 ## Mac-specific commands:
 
 SETFILE_LOCATION=/Applications/Xcode*/Contents/Developer/Tools/SetFile
-alias invisible='chflags -h hidden'
-alias visible='chflags -h nohidden'
-#alias invisible='chflags hidden' #$SETFILE_LOCATION -P -a V' ## Mac-only: Make a file/folder invisible to the Finder
-#alias visible='chflags nohidden' #$SETFILE_LOCATION -P -a v' ## Mac-only: opposite of "invisible"
-
+alias invisible='chflags -h hidden'  #alias invisible='chflags hidden' #$SETFILE_LOCATION -P -a V' ## Mac-only: Make a file/folder invisible to the Finder
+alias visible='chflags -h nohidden' #alias visible='chflags nohidden' #$SETFILE_LOCATION -P -a v' ## Mac-only: opposite of "invisible"
 alias clearicon='$SETFILE_LOCATION -P -a c' ## clear mac custom icons. Useful for images that have old custom icons.
-
 alias version="lsb_release -a" # Tells you which version of Ubuntu you are running!
 
 function mac2unix { # Convert a Mac-style line-ending file to a UNIX one. Useful for when you save a file in Excel and then UNIX won't read it.
@@ -305,24 +296,19 @@ alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
 alias e="emacsclient -nw  -c --alternate-editor=\"\"" # "As a special exception, if command is the empty string, then emacsclient starts Emacs in daemon mode (as emacs --daemon) and then tries connecting again."
 #fi
 
-alias t='transpose.pl -q'
+#alias t='transpose.pl -q'
 alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl --color=always \
 --ht=75 --trunc=60 | tail -n +2 ; echo -e -n '$a_end_color'"
-
-
-# Rename the tmux window: usage is "tre NEW_NAME"
-alias tre='tmux rename-window $1'
 
 # GNU Make-related
 alias make='make --warn-undefined-variables --print-directory'
 alias mcm='make clean && make'
-function remake {
-    ## Lets you type "remake" to remove a file and then use GNU make to try to re-generate it
-    trash.pl "$@" ;
-    make --warn-undefined-variables --print-directory "$@"
+function remake { ## Lets you type "remake" to remove a file and then use GNU make to try to re-generate it
+    trash.pl "$@" ;  make --warn-undefined-variables --print-directory "$@"
 }
 
 # Aliases related to COLOR GREP
+alias grepi='grep   -i' # <-- runs fast if "LANG=C" is the specified language
 alias grepc='grep   --color=always --with-filename --line-number'
 alias egrepc='egrep --color=always --with-filename --line-number'
 alias fgrepc='fgrep --color=always --with-filename --line-number'
@@ -504,35 +490,33 @@ function mini {
 	echo "[Done]" ;
     fi
 }
-
 ## Extracts a "mini"-fied archive.
 function unmini {
     ionice -c3 tar --bzip2 --keep-old-files -xvf $1
 }
 
+# function singlea {
+#     # Requires exactly ONE argument!
+#     if [ -f "$1/.describe" ]; then
+# 	echo -e "\n-------------------------------------------------"
+# 	cat .describe
+# 	echo "-------------------------------------------------"
+#     fi
+#     ls $1
+# }
 
-function singlea {
-    # Requires exactly ONE argument!
-    if [ -f "$1/.describe" ]; then
-	echo -e "\n-------------------------------------------------"
-	cat .describe
-	echo "-------------------------------------------------"
-    fi
-    ls $1
-}
-
-function aa {
-    PREFIX="./"
-    if [ $# -eq 0 ]
-    then
-	singlea "./"
-    else
-	for arg in "$@"
-	do
-	    singlea "$arg"
-	done
-    fi
-}
+# function aa {
+#     PREFIX="./"
+#     if [ $# -eq 0 ]
+#     then
+# 	singlea "./"
+#     else
+# 	for arg in "$@"
+# 	do
+# 	    singlea "$arg"
+# 	done
+#     fi
+# }
 
 function qin { # qstat with colors for job status, automatic piping into "less"
     # R = running, C = complete (these go away soon), H = hold (waiting)
