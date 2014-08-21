@@ -43,7 +43,7 @@ sub browserTrackString($$) {
     $cleanedUpName =~ s/\.bam$//i; $cleanedUpName =~ s/\.bw$//i; ## remove file extensions
     $cleanedUpName =~ s/.accepted_hits//i; $cleanedUpName =~ s/.sort//i; $cleanedUpName =~ s/Browser.//i;
     
-    my $url = "http://lighthouse.ucsf.edu/public_files_no_password/browser_custom_bed/YOUR_FILE_LOCATION/${filename}";
+    my $url = "https://gb.ucsf.edu/bio/browser/YOURLOCATION/${filename}";
     my $str = qq{track type=${type} name="${cleanedUpName}${parenthetical}" description="${cleanedUpName}${parenthetical}" bigDataUrl="${url}" visibility=${visStatus} ${color}\n};
     return($str);
 }
