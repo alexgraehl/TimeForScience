@@ -135,6 +135,7 @@ alias cheat="echo \
 \">>> Shell/bash: Modify variable: newV=\\\$(sed -e's/a/1/; s/b/2/; s/c/3/' <<< \\\$oldV) \" ${NL}\
 \">>> Shell/bash: Script run with ionice:  ionice -c3 -p\\\$\\\$ (top line of a /bin/sh script) \" ${NL}\
 \">>> Shell/bash: Rename files to include parent directory in filename for f in \\\`ls DIRS*/file.whatever\\\`; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).\\\$(basename \\\$f).whatever ; done \" ${NL}\
+\">>> Shell/bash: Rename files to have unique names: for f in **/*fastqc.html; do /bin/cp \\\$f DESTINATION_DIR/\\\$(md5sum \\\$f | cut -d ' ' -f 1).\\\$(basename \\\$f); done \" ${NL}\
 \" \" ${NL}\
 \">>> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
 \">>> HG: Mercurial: revert to previous version : hg revert FILENAME -r-2 (or -r-3 for two versions ago, etc) \" ${NL}\
