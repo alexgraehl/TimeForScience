@@ -85,7 +85,10 @@ sub printUsage() {
 sub main() { # Main program
     $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 
+    my $bestOnly = 0; # if this is set to 1, then we ignore all the different core selections, sequences
+
     GetOptions("help|?|man" => sub { printUsageAndQuit(); }
+	       , "best-only|bestonly|best|best_only!" => \$bestOnly
 	) or printUsageAndQuit();
     # print STDERR "hellow\n";
     # print STDERR "Test color!\n";
@@ -106,22 +109,17 @@ sub main() { # Main program
     while (my $line = <>) {
 	chomp $line;
 	$lineNum++;
-
 	if ($line =~ /Inspecting sequence ID(.*)/i) {
 	    printColorStderr("Gathering data for sequence id '$1'...\n", "green");
 	    $sid = $1;
-
 	    if (exists($ah{$sid})) { die "Somehow the sequence ID '$sid' has appeared twice in your input file! Fatal error, quitting now...\n"; }
 	    $ah{$sid} = (); # new hash
 	    next; # <-- done processing this line!
 	}
-
 	next if !defined($sid); # // skip things until we find a sequence ID
-
 	my $z = $line;
 	$z =~ s/\s//g; # remove whitespace
 	#print $z . "\n";
-
 	my @a = split(/\|/, $z); # the bar character requires wonkiness to split on it: just plain '|' will FAIL!!!
 
 	next if (scalar(@a) <= 1); # if there's no info on this line, skip it!
@@ -132,10 +130,15 @@ sub main() { # Main program
 	my $coreMatch   = $a[2];
 	my $matrixMatch = $a[3];
 	my $motif       = $a[4]; # capitalization matters! core is always 5 capital letters
-	my $key = $motifID . "|" . $motif;
-	print STDERR $key . " is the key.\n";
-	$allids{$key} = 1; # just remember we saw this key!
-	$ah{$sid}{$key} = $z; # save the rest
+	my $key = $motifID . "|" . ($bestOnly ? "BEST_ONLY" : "$motif"); # append 'BEST_ONLY' if the motifs are collapsed. Otherwise, show the actual motif.
+	printColorStderr("Progress report... got the key '$key'...\n", "green");
+	if (exists($allids{$key}) && defined($allids{$key})) { 
+	    printColorStderr("Discarding an alternative sequence for the motif '$motifID' (only keeping the first one found, which should also be the best one)...\n", "yellow");
+	    next; # next please!
+	} else {
+	    $allids{$key} = 1; # just remember we saw this key!
+	    $ah{$sid}{$key} = $z; # save the rest
+	}
     }
 
     my @seqNames = sort(keys(%ah));
@@ -204,7 +207,9 @@ CAVEATS:
 
 OPTIONS:
 
-  No options
+ --bestonly: If this is specified, then instead of reporting the different sequences (e.g., cccccG and cccccA), we just report
+             the OVERALL motif, which basically means we only report the BEST match per motif.
+             This reduces output file size (and number of rows) significantly, but also discards some data! Use with caution.
 
 EXAMPLES:
 
