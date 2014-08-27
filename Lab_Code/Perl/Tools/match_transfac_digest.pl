@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 
+# By Alex Williams, 2014.
+
 # This program processes 'match' output for multiple input fastq sequences. 'match' is the TRANSFAC program for motif finding.
 # You give it one "match" output file (which is a super LONG file) and it gives you a tabular file as output.
 
@@ -86,9 +88,11 @@ sub main() { # Main program
     $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 
     my $bestOnly = 0; # if this is set to 1, then we ignore all the different core selections, sequences
+    my $verbose = 0;
 
     GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	       , "best-only|bestonly|best|best_only!" => \$bestOnly
+	       , "verbose|v!" => \$verbose
 	) or printUsageAndQuit();
     # print STDERR "hellow\n";
     # print STDERR "Test color!\n";
@@ -110,9 +114,9 @@ sub main() { # Main program
 	chomp $line;
 	$lineNum++;
 	if ($line =~ /Inspecting sequence ID(.*)/i) {
-	    printColorStderr("Gathering data for sequence id '$1'...\n", "green");
+	    ($verbose) && printColorStderr("Gathering data for sequence id '$1'...\n", "green");
 	    $sid = $1;
-	    if (exists($ah{$sid})) { die "Somehow the sequence ID '$sid' has appeared twice in your input file! Fatal error, quitting now...\n"; }
+	    if (exists($ah{$sid})) { die "Somehow the sequence ID '$sid' has appeared a second time on line <$lineNum> in your input file (which is probably named '$fn', unless it was read from STDIN)! Fatal error, quitting now...\n"; }
 	    $ah{$sid} = (); # new hash
 	    next; # <-- done processing this line!
 	}
@@ -131,13 +135,13 @@ sub main() { # Main program
 	my $matrixMatch = $a[3];
 	my $motif       = $a[4]; # capitalization matters! core is always 5 capital letters
 	my $key = $motifID . "|" . ($bestOnly ? "BEST_ONLY" : "$motif"); # append 'BEST_ONLY' if the motifs are collapsed. Otherwise, show the actual motif.
-	printColorStderr("Progress report... got the key '$key'...\n", "green");
-	if (exists($allids{$key}) && defined($allids{$key})) { 
-	    printColorStderr("Discarding an alternative sequence for the motif '$motifID' (only keeping the first one found, which should also be the best one)...\n", "yellow");
+	($verbose) && printColorStderr("Progress report... got the key '$key'...\n", "green");
+	if (exists($ah{$sid}{$key}) && defined($ah{$sid}{$key})) { 
+	    ($verbose) && printColorStderr("Discarding an alternative sequence for the motif '$motifID' (only keeping the first one found for this specific sequence, which should also be the best one)...\n", "yellow");
 	    next; # next please!
 	} else {
-	    $allids{$key} = 1; # just remember we saw this key!
-	    $ah{$sid}{$key} = $z; # save the rest
+	    $allids{$key}   = 1; # just remember we saw this key! (It's OK if this hash assignment overwrites a previous occurrence of this same key.)
+	    $ah{$sid}{$key} = $z; # save the rest of the info about this sequence
 	}
     }
 
