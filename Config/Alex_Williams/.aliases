@@ -365,6 +365,9 @@ alias rig=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${RIG_IP}'
 alias rigx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
 
 alias lig=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PL_IP}'
+
+alias ligv='ssh ${AGW_SSH_OPTIONS}     ${LIGV_US}@${LIGV_IP}'
+
 alias ligx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${PL_IP}'
 alias bue=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PB_IP}'
 alias buex='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${PB_IP}'
