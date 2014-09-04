@@ -127,7 +127,7 @@ PROMPT_COMMAND='history -a' ## save ALL terminal histories
 
 stty -ixon  # Disable the totally useless START/STOP output control (enables you to pause input by pressing the Ctrl-S key sequence and resume output by pressing the Ctrl-Q key sequence)
 
-shopt -s globstar # With globstar set (bash 4.0+), bash recurses all the directories.
+shopt -s globstar # With globstar set (bash 4.0+), bash recurses all the directories. In other words, enables '**'
 
 set   -o ignoreeof  # Prevent Ctrl-D from exiting! Still exits if you press it 10 times.
 shopt -s checkwinsize # Check the window size after each command and, if necessary, update the values of LINES and COLUMNS.
