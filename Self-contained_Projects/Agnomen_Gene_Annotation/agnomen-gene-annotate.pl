@@ -205,6 +205,7 @@ sub main() { # Main program
     my $databaseStr = undef; # comma-delimited string
     my $longOutputNames = 0;
     my $intersectBedExeManuallySpecifiedLocation = undef;
+    my $canAssumeSorted = 0;
     $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 
     GetOptions("help|?|man" => sub { printUsageAndQuit(); }
@@ -214,6 +215,7 @@ sub main() { # Main program
 	       , "longnames|longname!" => \$longOutputNames
 	       , "annotdir|a=s" => \$globalAnnotDir
 	       , "databases|database|db=s" => \$databaseStr # comma-delimited string
+	       , "assume-sorted!" => \$canAssumeSorted # assume sorted -by -k1,1 -k2,2n for intersectBed
 	       , "ib=s" => \$intersectBedExeManuallySpecifiedLocation
 	) or printUsageAndQuit();
 
@@ -370,7 +372,9 @@ sub main() { # Main program
 		    my $theOutputNameBase = ($longOutputNames) ? $input : basename($input); # see if we should use the FULL output name, with directory paths, or just the filename without the path. This is an option (--longnames)
 		    my $agnomenOutputFile = qq{agnomen.$theOutputNameBase.$annotShortName.out.txt};
 		    $agnomenOutputFile =~ s/[;:,\/\\]/_/g; ## Remove potentially "unsafe" characters from the output filename
-		    my $cmd = qq{ ${intersectBedExe} -wao -a ${input} -b ${annotFile} > $tempFile } . qq{ && } . qq{ /bin/mv -f $tempFile $agnomenOutputFile}; # <-- we WRITE to a temp file so that when the file actually moves to the FINAL location, it is guaranteed to be 100% finished
+
+		    my $SORT_OPTION = $canAssumeSorted ? " -sorted " : " "; # bedIntersect has a '-sorted' option that can be used if BOTH input files have been sorted -by -k1,1 -k2,2n
+		    my $cmd = qq{ ${intersectBedExe} $SORT_OPTION -wao -a ${input} -b ${annotFile} > $tempFile } . qq{ && } . qq{ /bin/mv -f $tempFile $agnomenOutputFile}; # <-- we WRITE to a temp file so that when the file actually moves to the FINAL location, it is guaranteed to be 100% finished
 		    progressReport(qq{[ANNOTATING] using the data in $annotShortName\n});
 		    progressReport(qq{[ANNOTATING]...\n    Running this command: $cmd\n});
 		    my $intersectStatus = systemBash($cmd);
