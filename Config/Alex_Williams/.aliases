@@ -134,6 +134,7 @@ alias cheat="echo \
 \" \" ${NL}\
 \">>> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
 \">>> HG: Mercurial: revert to previous version : hg revert FILENAME -r-2 (or -r-3 for two versions ago, etc) \" ${NL}\
+\">>> TERM: Get terminal width/height: tput cols  or  tput lines \" ${NL}\
 \">>> NIX: convert RELATIVE symlinks to ABSOLUTE PATHS: for fff in *; do FULL=\\\$(readlink -f \\\$fff); ln -sf \\\$FULL \\\$fff ; done \" ${NL}\
 \">>> NIX: delete ORPHANED symlinks: find /path/to/search -xtype l -delete ; \" ${NL}\
 \">>> NIX: list files w/modified time MORE THAN one week ago: find . -mtime +7 \" ${NL}\
