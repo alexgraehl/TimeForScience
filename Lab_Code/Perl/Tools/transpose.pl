@@ -59,7 +59,7 @@ my $c       = 0;
 my $ncols   = -1;
 my @x;
 
-$verbose and print STDERR "Reading in table from '$file'...";
+$verbose and print STDERR "Reading in table from '$file'...\n";
 my $filep = &openFile($file);
 while(<$filep>)
 {
@@ -79,17 +79,16 @@ close($filep);
 
 my $nrows = $r;
 
-$verbose and print STDERR " done ($nrows by $ncols).\n";
+$verbose and print STDERR " done ($nrows by $ncols)!\n";
 
-$verbose and print STDERR "Transposing to $ncols by $nrows...";
+$verbose and print STDERR "Transposing to $ncols by $nrows...\n";
 for($c = 0; $c < $ncols; $c++)
 {
   for($r = 0; $r < $nrows; $r++)
   {
     my $x = defined($x[$r][$c]) ? $x[$r][$c] : '';
     print "$x";
-    if($r < $nrows - 1)
-      { print $delim; }
+    if ($r < $nrows - 1) { print $delim; }
   }
   print "\n";
 }
