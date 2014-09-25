@@ -323,8 +323,8 @@ alias gitdiff="git difftool"
 alias hgcom="hg commit -u '${USER}' -m 'Changes committed by ${USER}' && echo '[Done] committing changes locally with Mercurial.'"
 alias hgpush="hg commit -u '${USER}' -m 'Changes committed by ${USER}' && hg push && echo '[Done] pushing changes to the remote server with Mercurial.'"
 alias hgpull="hg pull ; hg update && echo '[Done] pulling remote changes and updating the local Mercurial repository.'"
-alias hgup="hg update && echo '[Done] updating local changes in Mercurial'"
-alias hgs="hg status"
+alias hgup="hg update -v && echo '[Done] updating local changes in Mercurial'"
+alias hgs="echo '[hg status]:'; hg status; echo '[hg status --rev .:tip]:'; hg status --rev .:tip ; echo 'Note: to see every little detail, type \"hg log --patch -r .:tip\"' "
 
 function hglog {
     hg status
