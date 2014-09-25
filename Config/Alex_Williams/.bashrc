@@ -71,6 +71,8 @@ if [[ $isAgwHomeMachine -eq 1 ]]; then
     # It is the home machine! Some things are in different places, as a result
     # Add things to Alex's home machine's path
     export BINF_CORE_WORK_DIR="/Users/${USER}/work" # <-- set BINF_CORE work directory
+elif [[ $HOSTNAME == "westway" ]] || [[ $HOSTNAME == "bueno" ]]; then
+    export BINF_CORE_WORK_DIR="/home/alexgw/work"
 else
     export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
 fi
