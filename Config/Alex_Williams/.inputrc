@@ -2,7 +2,7 @@
 
 set horizontal-scroll-mode off
 set mark-directories on
-set mark-symlinked-directories on  ## Fixes it so that tab-completion automatically adds a '/' to symlinked directories, just like real directories.
+set mark-symlinked-directories on  ## Fixes it so that tab-completion automatically adds a '/' to symlinked directories, just like real directories. Does not appear to actually work UNLESS you put it in your ~/.bashrc as "bind 'set mark-symlinked directories on' " where it somehow works for unknown reasons.
 
 set completion-ignore-case on
 
