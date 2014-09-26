@@ -40,6 +40,8 @@ fi
 
 echo -e "${a_echo_color}>>> BASH: Loading .bashrc...${a_end_color}" ## <-- comes after the colors are set up in platform-specific fashion
 
+bind 'set mark-directories on'
+bind 'set mark-symlinked-directories on'
 
 
 # ============================= PATH STUFF ============================
