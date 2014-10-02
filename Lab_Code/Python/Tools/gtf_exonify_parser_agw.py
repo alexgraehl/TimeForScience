@@ -58,7 +58,8 @@ if __name__ == "__main__":
     # Columns in a GTF file look like this:
     # 0000    11111111111111111111    2222    3333333 4444444 5       6       7       88888888888888888888888888888888888
     # chr1    processed_transcript    exon    3195982 3197398 .       -       .       exon_number "2"; gene_biotype "protein_coding"; gene_id "ENSMUSG00000051951"; gene_name "Xkr4"; transcript_id "ENSMUST00000162897"; transcript_name "Xkr4-003"; tss_id "TSS49891";
-    FEATURE_TYPE_COLUMN = 2 # i.e., "exon" or whatever
+    GENERAL_TYPE_COLUMN = 1
+    SUBFEATURE_TYPE_COLUMN = 2 # i.e., "exon" or whatever
     EXON_LEFT_COLUMN = 3  # Numbered from ZERO, not 1!
     EXON_RIGHT_COLUMN = 4
     STRAND_COLUMN     = 6
@@ -81,7 +82,7 @@ if __name__ == "__main__":
             continue # Don't do anything with this weird malformed line
             pass
 
-        if (s[FEATURE_TYPE_COLUMN] != 'exon'):
+        if (s[SUBFEATURE_TYPE_COLUMN] != 'exon'):
             sys.stderr.write("Skipping non-exon on line " + str(lineNum) + "...\n")
             continue
 
@@ -89,7 +90,8 @@ if __name__ == "__main__":
         strand = s[STRAND_COLUMN]
         posLeft = int(s[EXON_LEFT_COLUMN])
         posRight = int(s[EXON_RIGHT_COLUMN])
-
+        generalType = s[GENERAL_TYPE_COLUMN]
+        
         exSearch = exonNumPat.search(freeText)
         gSearch = geneIdPat.search(freeText)
         tSearch = tNamePat.search(freeText)
@@ -108,10 +110,10 @@ if __name__ == "__main__":
             pass
 
         if (tn not in gdict[gid]): # tn = transcript ID
-            gdict[gid][tn] = {} # new hash...
+            gdict[gid][tn] = {'strand':strand, 'general_type':generalType, 'exons':{} } # 'exons' is a new hash...
             pass
 
-        gdict[gid][tn][ex] = {"left":posLeft, "right":posRight, "size":abs(posLeft-posRight), "num":int(ex)}
+        gdict[gid][tn]['exons'][ex] = {"left":posLeft, "right":posRight, "size":abs(posLeft-posRight), "num":int(ex)}
 
         dbug = False
 
@@ -135,8 +137,10 @@ if __name__ == "__main__":
         sys.stdout.write(":" + gkey + ":"  + "\n")
         for tkey in gdict[gkey]:
             sys.stdout.write(" * " + tkey + ":"  + "\n")
-            for ekey,edict in gdict[gkey][tkey].iteritems():
-                sys.stdout.write("       E " + ekey + ":" + str(edict['size']) + " bases \n")
+            tStrand = gdict[gkey][tkey]['strand']
+            tType   = gdict[gkey][tkey]['general_type']
+            for ekey,edict in gdict[gkey][tkey]['exons'].iteritems():
+                sys.stdout.write("       E " + ekey + ":" + str(edict['size']) + " bases (strand " + tStrand + ") -- general type is " + tType +" \n")
 
 
                 pass # end "for exon key"
