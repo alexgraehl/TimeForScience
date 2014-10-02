@@ -24,7 +24,7 @@ if [[ "$OSTYPE" == darwin* ]] ; then isMac=1 ; fi
 
 COMPYNAME="$HOSTNAME" # <-- we will have to modify this if it's my home machine / some machine where $HOSTNAME doesn't work
 
-if [[ !$(command -v "scutil" > /dev/null) ]] && [[ $(scutil --get ComputerName) == "Slithereens" ]]; then
+if [[ 0 == $(command -v "scutil") ]] && [[ $(scutil --get ComputerName) == "Slithereens" ]]; then
     isAgwHomeMachine=1
     COMPYNAME="Slithereens"
 fi
