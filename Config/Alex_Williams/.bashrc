@@ -21,8 +21,13 @@ case "$TERM" in
     *)	                        ;;
 esac
 if [[ "$OSTYPE" == darwin* ]] ; then isMac=1 ; fi
-if [[ "$HOSTNAME" == "Slithereens.local" ]]; then isAgwHomeMachine=1 ; fi
 
+COMPYNAME="$HOSTNAME" # <-- we will have to modify this if it's my home machine / some machine where $HOSTNAME doesn't work
+
+if [[ !$(command -v "scutil" > /dev/null) ]] && [[ $(scutil --get ComputerName) == "Slithereens" ]]; then
+    isAgwHomeMachine=1
+    COMPYNAME="Slithereens"
+fi
 
 if [[ -n "$color_prompt" ]] ; then
     color_prefix="\033" ## <-- \033 works everywhere. \e works on Linux
@@ -69,7 +74,7 @@ export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:$LD_LIBRARY_PATH"
 
 #export PERLLIB=${PERL5LIB}
 
-if [[ $isAgwHomeMachine -eq 1 ]]; then
+if [[ $COMPYNAME == "Slithereens" ]]; then
     # It is the home machine! Some things are in different places, as a result
     # Add things to Alex's home machine's path
     export BINF_CORE_WORK_DIR="/Users/${USER}/work" # <-- set BINF_CORE work directory
@@ -109,7 +114,7 @@ if [[ -n "$color_prompt" ]] ; then
 	iterm_top="180 180 180"
     else
 	## Ok, we are SSHed into a remote machine...
-	case "$HOSTNAME"
+	case "$COMPYNAME"
 	    in
 	    $BN_IP)
 		a_machine_prompt_main_color="${color_prefix}[1;35m" ; ## 1;35m == Bold magenta
@@ -179,7 +184,7 @@ fi
 
 
 #PS1="[\D{%e}=\t \h:\W]$ "
-PS1="[\D{%e}~\t~${HOSTNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
+PS1="[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
 
 ## Conditional logic IS allowed in the ps1, bizarrely!
 #PS1='$(if [[ $USER == alexgw ]]; then echo "$REGULAR_PROMPT"; else echo "$PWD%"; fi)'
