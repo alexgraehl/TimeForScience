@@ -74,7 +74,7 @@ export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:$LD_LIBRARY_PATH"
 
 #export PERLLIB=${PERL5LIB}
 
-if [[ $COMPYNAME == "Slithereens" ]]; then
+if [[ "$COMPYNAME" == "Slithereens" ]]; then
     # It is the home machine! Some things are in different places, as a result
     # Add things to Alex's home machine's path
     export BINF_CORE_WORK_DIR="/Users/${USER}/work" # <-- set BINF_CORE work directory
