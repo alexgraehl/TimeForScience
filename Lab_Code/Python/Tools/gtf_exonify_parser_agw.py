@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     exonNumPat = re.compile("exon_number \"(\d+)\"", re.IGNORECASE)
     geneIdPat = re.compile("gene_id \"([^\"]+)\"", re.IGNORECASE)
-    tNamePat = re.compile("transcript_name \"([^\"]+)\"", re.IGNORECASE)
+    tIdPat = re.compile("transcript_id \"([^\"]+)\"", re.IGNORECASE)
 
 
     gdict = {};
@@ -94,11 +94,11 @@ if __name__ == "__main__":
         
         exSearch = exonNumPat.search(freeText)
         gSearch = geneIdPat.search(freeText)
-        tSearch = tNamePat.search(freeText)
+        tSearch = tIdPat.search(freeText)
 
         ex  = exSearch.group(1) if exSearch else '<somehow, no exon number!>' # ".group(1)" (not zero!) is how you get the first captured text in parens
         gid = gSearch.group(1) if gSearch else '<somehow, no gene id!>'
-        tn  = tSearch.group(1) if tSearch else '<somehow, no transcript id!>'
+        tid  = tSearch.group(1) if tSearch else '<somehow, no transcript id!>'
 
         if (not exSearch or not gSearch or not tSearch):
             sys.stderr.write("Skipping the odd/invalid line " + str(lineNum) + "...")
@@ -106,47 +106,86 @@ if __name__ == "__main__":
             pass
 
         if (gid not in gdict): # gid = gene ID
-            gdict[gid] = {} # new hash...
+            gdict[gid] = {'maxExons':-999, 'trHash':{} } # new hash...
             pass
 
-        if (tn not in gdict[gid]): # tn = transcript ID
-            gdict[gid][tn] = {'strand':strand, 'general_type':generalType, 'exons':{} } # 'exons' is a new hash...
+        if (tid not in gdict[gid]['trHash']): # tid = transcript ID
+            gdict[gid]['trHash'][tid] = {'strand':strand, 'general_type':generalType, 'trSize':-999, 'exHash':{} } # 'exHash' is a new hash...
             pass
 
-        gdict[gid][tn]['exons'][ex] = {"left":posLeft, "right":posRight, "size":abs(posLeft-posRight), "num":int(ex)}
+        #print "ex is " + str(ex)
+        #print "populating the hash at " + gid + "-" + tid + "-[" + ex + "]..."
+        gdict[gid]['trHash'][tid]['exHash'][ex] = {"left":posLeft, "right":posRight, "exSize":abs(posLeft-posRight), "num":int(ex)}
 
         dbug = False
-
         if dbug:
             sys.stdout.write(s[0] + "\t")
-            sys.stdout.write(ex + "\t")
+            sys.stdout.write("Ex#" + ex + "\t")
             sys.stdout.write(gid + "\t")
-            sys.stdout.write(tn + "\t")
+            sys.stdout.write(tid + "\t")
             sys.stdout.write("\n")
             pass
         
 
         #sys.stdout.write(lineStr.rstrip('\n') + ((globalOptions.delim + globalOptions.pad)*numElementsToAddToThisLine) + "\n")
         pass
-
     
     fff.close()
 
+    # Calculate the TRANSCRIPT TOTAL SIZES and MAX NUM EXONS FOR THIS GENE by adding up the exons
+    for gkey in gdict:
+        maxExonsSeenSoFar = 0
+        sys.stdout.write(":" + gkey + ":"  + "\n")
+        for tkey,trHash in gdict[gkey]['trHash'].iteritems():
+            numExonsThisTranscript = len(trHash['exHash'])
+            maxExonsSeenSoFar = max(maxExonsSeenSoFar, numExonsThisTranscript)
+            tStrand = trHash['strand']
+            tType   = trHash['general_type']
+            for ekey,exHash in trHash['exHash'].iteritems():
+                pass # end "for exon key"
+            pass # end "for transcript key"
+
+
+        gdict[gkey]['maxExons'] = maxExonsSeenSoFar
+        sys.stdout.write("Gene " + gkey + " had " + str(gdict[gkey]['maxExons']) + " exons in the most-exony transcript.\n")
+        pass # end "for gene key"
+
+
+    # 1 exon:
+    #   XX
+    # 2 exons:
+    #   XX--XX
+
 
     for gkey in gdict:
+        maxExonsSeenSoFar = 0
         sys.stdout.write(":" + gkey + ":"  + "\n")
-        for tkey in gdict[gkey]:
-            sys.stdout.write(" * " + tkey + ":"  + "\n")
-            tStrand = gdict[gkey][tkey]['strand']
-            tType   = gdict[gkey][tkey]['general_type']
-            for ekey,edict in gdict[gkey][tkey]['exons'].iteritems():
-                sys.stdout.write("       E " + ekey + ":" + str(edict['size']) + " bases (strand " + tStrand + ") -- general type is " + tType +" \n")
-
-
+        for tkey,trHash in gdict[gkey]['trHash'].iteritems():
+            sys.stdout.write("   * " + tkey + ":"  + "\n")
+            tStrand = trHash['strand']
+            tType   = trHash['general_type']
+            maxExonsThisGene = gdict[gkey]['maxExons']
+            for i in range(maxExonsThisGene):
+                exonIdentifier = str(i+1)
+                hasThisExon = exonIdentifier in trHash['exHash']
+                if (hasThisExon):
+                    sys.stdout.write("--XXXX--")
+                else:
+                    sys.stdout.write("--------")
+                    pass
                 pass # end "for exon key"
+
+            # This part is after this transcript's exons are ALL processed
+            sys.stdout.write("\n")
+
             pass # end "for transcript key"
         pass # end "for gene key"
 
 
-    pass
+                #for ekey,exHash in trHash['exHash'].iteritems():
+                #sys.stdout.write("       Exon #" + ekey + ":" + str(exHash['exSize']) + " bases (strand " + tStrand + ") -- general type is " + tType +" \n")
+
+
+
+    pass # end of the <<if __name__ == "__main__">>  part
 
