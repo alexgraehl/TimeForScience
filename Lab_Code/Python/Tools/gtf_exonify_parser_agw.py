@@ -106,7 +106,7 @@ if __name__ == "__main__":
             pass
 
         if (gid not in gdict): # gid = gene ID
-            gdict[gid] = {'maxExons':-999, 'trHash':{} } # new hash...
+            gdict[gid] = {'maxExons':-999, 'maxSizePerExon':{}, 'trHash':{} } # new hash...
             pass
 
         if (tid not in gdict[gid]['trHash']): # tid = transcript ID
@@ -133,23 +133,58 @@ if __name__ == "__main__":
     fff.close()
 
     # Calculate the TRANSCRIPT TOTAL SIZES and MAX NUM EXONS FOR THIS GENE by adding up the exons
-    for gkey in gdict:
-        maxExonsSeenSoFar = 0
-        sys.stdout.write(":" + gkey + ":"  + "\n")
-        for tkey,trHash in gdict[gkey]['trHash'].iteritems():
-            numExonsThisTranscript = len(trHash['exHash'])
-            maxExonsSeenSoFar = max(maxExonsSeenSoFar, numExonsThisTranscript)
+    for gKey,gHash in gdict.iteritems():
+        sys.stdout.write(":" + gKey + ":"  + "\n")
+
+        exonSizes = {} # Key: the exon number, value: a LIST of the various sizes we've seen for this specific exon only
+
+        for tKey,trHash in gdict[gKey]['trHash'].iteritems():
             tStrand = trHash['strand']
             tType   = trHash['general_type']
-            for ekey,exHash in trHash['exHash'].iteritems():
+            for eKey,exHash in trHash['exHash'].iteritems():
+                thisExonSize = exHash['exSize']
+                if (eKey not in exonSizes):
+                    exonSizes[eKey] = [] # new list
+                    pass
+
+                exonSizes[eKey].append(thisExonSize) # save this exon size
+
+                if (eKey not in gdict[gKey]['maxSizePerExon']):
+                    gHash['maxSizePerExon'][eKey] = -999
+                    pass
+                gHash['maxSizePerExon'][eKey] = max( gHash['maxSizePerExon'][eKey], thisExonSize) # store the max size for this exon!
+
                 pass # end "for exon key"
             pass # end "for transcript key"
 
+        gHash['maxExons'] = len(gHash['maxSizePerExon'])
 
-        gdict[gkey]['maxExons'] = maxExonsSeenSoFar
-        sys.stdout.write("Gene " + gkey + " had " + str(gdict[gkey]['maxExons']) + " exons in the most-exony transcript.\n")
+        print "SORTED: "
+
+
+        for exonName,sizesForThisExon in exonSizes.iteritems():
+            #sizes = sorted(gHash['maxSizePerExon'].values())
+            #print sizes
+            #print list(set(sizes))
+            sortedUniqueSizes = sorted(list(set(sizesForThisExon)))
+            print(sortedUniqueSizes)
+
+            relativeExonSizeOrdering = []
+            for theSize in sizesForThisExon:
+                relativeExonSizeOrdering.append(  sortedUniqueSizes.index(theSize)  ) # get the RELATIVE ranking of sizes for this exon. 0 = shortest exon, 1 = slightly longer, etc etc. If all exons are the same size, they will all have "0" as their value.
+                pass
+            print(sizesForThisExon)
+            print(relativeExonSizeOrdering)
+            assert(len(relativeExonSizeOrdering) == len(sizesForThisExon))
+
+
+            for i in range(maxExonsThisGene):
+                exonIdentifier = str(i+1)
+
+            pass
+
+        sys.stdout.write("Gene " + gKey + " had " + str(gdict[gKey]['maxExons']) + " exons in the most-exony transcript.\n")
         pass # end "for gene key"
-
 
     # 1 exon:
     #   XX
@@ -160,8 +195,8 @@ if __name__ == "__main__":
     for gkey in gdict:
         maxExonsSeenSoFar = 0
         sys.stdout.write(":" + gkey + ":"  + "\n")
-        for tkey,trHash in gdict[gkey]['trHash'].iteritems():
-            sys.stdout.write("   * " + tkey + ":"  + "\n")
+        for tKey,trHash in gdict[gkey]['trHash'].iteritems():
+            sys.stdout.write("   * " + tKey + ":"  + "\n")
             tStrand = trHash['strand']
             tType   = trHash['general_type']
             maxExonsThisGene = gdict[gkey]['maxExons']
@@ -182,8 +217,8 @@ if __name__ == "__main__":
         pass # end "for gene key"
 
 
-                #for ekey,exHash in trHash['exHash'].iteritems():
-                #sys.stdout.write("       Exon #" + ekey + ":" + str(exHash['exSize']) + " bases (strand " + tStrand + ") -- general type is " + tType +" \n")
+                #for eKey,exHash in trHash['exHash'].iteritems():
+                #sys.stdout.write("       Exon #" + eKey + ":" + str(exHash['exSize']) + " bases (strand " + tStrand + ") -- general type is " + tType +" \n")
 
 
 
