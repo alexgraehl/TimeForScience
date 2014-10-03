@@ -45,6 +45,15 @@ def handleCommandLineOptions():
 
     return
 
+
+
+def initNonexistent(theHash, theKeyToCheck, initThing):
+    # Puts "initThing" into theHash if theHash doesn't ALREADY contain something at theKeyToCheck
+    if (theKeyToCheck not in theHash):
+        theHash[theKeyToCheck] = initThing
+        pass
+    return
+
 # Must come at the VERY END!
 if __name__ == "__main__":
     handleCommandLineOptions()
@@ -105,16 +114,8 @@ if __name__ == "__main__":
             continue
             pass
 
-        if (gid not in gdict): # gid = gene ID
-            gdict[gid] = {'maxExons':-999, 'maxSizePerExon':{}, 'trHash':{} } # new hash...
-            pass
-
-        if (tid not in gdict[gid]['trHash']): # tid = transcript ID
-            gdict[gid]['trHash'][tid] = {'strand':strand, 'general_type':generalType, 'trSize':-999, 'exHash':{} } # 'exHash' is a new hash...
-            pass
-
-        #print "ex is " + str(ex)
-        #print "populating the hash at " + gid + "-" + tid + "-[" + ex + "]..."
+        initNonexistent(gdict               , gid, {'maxExons':-999, 'maxSizePerExon':{}, 'trHash':{} }) # new hash...
+        initNonexistent(gdict[gid]['trHash'], tid, {'strand':strand, 'general_type':generalType, 'trSize':-999, 'exHash':{} })
         gdict[gid]['trHash'][tid]['exHash'][ex] = {"left":posLeft, "right":posRight, "exSize":abs(posLeft-posRight), "num":int(ex)}
 
         dbug = False
@@ -135,53 +136,59 @@ if __name__ == "__main__":
     # Calculate the TRANSCRIPT TOTAL SIZES and MAX NUM EXONS FOR THIS GENE by adding up the exons
     for gKey,gHash in gdict.iteritems():
         sys.stdout.write(":" + gKey + ":"  + "\n")
-
-        exonSizes = {} # Key: the exon number, value: a LIST of the various sizes we've seen for this specific exon only
-
+        
         for tKey,trHash in gdict[gKey]['trHash'].iteritems():
             tStrand = trHash['strand']
             tType   = trHash['general_type']
             for eKey,exHash in trHash['exHash'].iteritems():
+                initNonexistent(gdict[gKey]['maxSizePerExon'], eKey, -999)
                 thisExonSize = exHash['exSize']
-                if (eKey not in exonSizes):
-                    exonSizes[eKey] = [] # new list
-                    pass
-
-                exonSizes[eKey].append(thisExonSize) # save this exon size
-
-                if (eKey not in gdict[gKey]['maxSizePerExon']):
-                    gHash['maxSizePerExon'][eKey] = -999
-                    pass
                 gHash['maxSizePerExon'][eKey] = max( gHash['maxSizePerExon'][eKey], thisExonSize) # store the max size for this exon!
-
                 pass # end "for exon key"
             pass # end "for transcript key"
+        
+        gHash['maxExons'] = len(gHash['maxSizePerExon']) # number of exons in LONGEST transcript
 
-        gHash['maxExons'] = len(gHash['maxSizePerExon'])
+
+        exonSizes = {} # Key: the exon number, value: a LIST of the various sizes we've seen for this specific exon only
+        for tKey,trHash in gdict[gKey]['trHash'].iteritems():
+
+            for eKey,exHash in trHash['exHash'].iteritems():
+                initNonexistent(exonSizes, eKey, [])
+                thisExonSize = exHash['exSize']
+                exonSizes[eKey].append(thisExonSize) # save this exon size                
+                pass
+            pass
+
+
 
         print "SORTED: "
 
+        # gene X:
+        #            exon1:100      (gene X -> transcript -> exon1 -> size)
+        #            exon1:150      (gene X -> transcript -> exon1 -> size)
+        #            exon1:200      (gene X -> transcript -> exon1 -> size)
 
-        for exonName,sizesForThisExon in exonSizes.iteritems():
-            #sizes = sorted(gHash['maxSizePerExon'].values())
-            #print sizes
-            #print list(set(sizes))
-            sortedUniqueSizes = sorted(list(set(sizesForThisExon)))
-            print(sortedUniqueSizes)
+        # for exonName,sizesForThisExon in exonSizes.iteritems():
+        #     #sizes = sorted(gHash['maxSizePerExon'].values())
+        #     #print sizes
+        #     #print list(set(sizes))
+        #     sortedUniqueSizes = sorted(list(set(sizesForThisExon)))
+        #     print(sortedUniqueSizes)
 
-            relativeExonSizeOrdering = []
-            for theSize in sizesForThisExon:
-                relativeExonSizeOrdering.append(  sortedUniqueSizes.index(theSize)  ) # get the RELATIVE ranking of sizes for this exon. 0 = shortest exon, 1 = slightly longer, etc etc. If all exons are the same size, they will all have "0" as their value.
-                pass
-            print(sizesForThisExon)
-            print(relativeExonSizeOrdering)
-            assert(len(relativeExonSizeOrdering) == len(sizesForThisExon))
+        #     relativeExonSizeOrdering = []
+        #     for theSize in sizesForThisExon:
+        #         relativeExonSizeOrdering.append(  sortedUniqueSizes.index(theSize)  ) # get the RELATIVE ranking of sizes for this exon. 0 = shortest exon, 1 = slightly longer, etc etc. If all exons are the same size, they will all have "0" as their value.
+        #         pass
+        #     print(sizesForThisExon)
+        #     print(relativeExonSizeOrdering)
+        #     assert(len(relativeExonSizeOrdering) == len(sizesForThisExon))
 
 
-            for i in range(maxExonsThisGene):
-                exonIdentifier = str(i+1)
+        #     #for i in range(sizesForThisExon):
+        #         #exonIdentifier = str(i+1)
 
-            pass
+        #     pass
 
         sys.stdout.write("Gene " + gKey + " had " + str(gdict[gKey]['maxExons']) + " exons in the most-exony transcript.\n")
         pass # end "for gene key"
