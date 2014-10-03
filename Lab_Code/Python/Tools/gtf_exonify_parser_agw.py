@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
         initNonexistent(gdict               , gid, {'maxExons':-999, 'maxSizePerExon':{}, 'trHash':{} }) # new hash...
         initNonexistent(gdict[gid]['trHash'], tid, {'strand':strand, 'general_type':generalType, 'trSize':-999, 'exHash':{} })
-        gdict[gid]['trHash'][tid]['exHash'][ex] = {"left":posLeft, "right":posRight, "exSize":abs(posLeft-posRight), "num":int(ex)}
+        initNonexistent(gdict[gid]['trHash'][tid]['exHash'], ex, {"left":posLeft, "right":posRight, "exSize":abs(posLeft-posRight), "num":int(ex)} )
 
         dbug = False
         if dbug:
