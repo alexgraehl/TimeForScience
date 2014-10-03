@@ -21,7 +21,6 @@ import operator
 globalOptions = None
 globalArgs    = None
 
-
 MINIMUM_EXON_SIZE_TO_PRINT = 4
 INTRON_SPACING_TO_PRINT    = 1
 
@@ -195,7 +194,7 @@ if __name__ == "__main__":
                 xToPrint       = 0 if not hasThisExon else trHash['exHash'][eKey]['exRelativeSize'] + MINIMUM_EXON_SIZE_TO_PRINT
                 blankToPrint   = totalExonSpace - xToPrint
                 leadingIntronToPrint   = 0 if eKey == "1" else INTRON_SPACING_TO_PRINT
-                sys.stdout.write(("_" * leadingIntronToPrint) + "X"*xToPrint + "-"*blankToPrint)
+                sys.stdout.write("_"*leadingIntronToPrint + "X"*xToPrint + "-"*blankToPrint)
                 pass # end "for exon key"
             sys.stdout.write("\n") # This part is after this transcript's exons are ALL processed
             pass # end "for transcript key"
