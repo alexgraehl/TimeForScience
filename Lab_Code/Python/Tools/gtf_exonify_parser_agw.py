@@ -89,7 +89,6 @@ if __name__ == "__main__":
         if (len(s) < (FREE_COLUMN+1)):
             sys.stderr.write("WARNING: line " + str(lineNum) + " in the input GTF file \"" + gtfFilename + "\" does not have " + str(FREE_COLUMN+1) + " elements as we expected it to. Skipping it. This may indicate a malformed GTF input file!\n")
             continue # Don't do anything with this weird malformed line
-            pass
 
         if (s[SUBFEATURE_TYPE_COLUMN] != 'exon'):
             sys.stderr.write("Skipping non-exon on line " + str(lineNum) + "...\n")
@@ -110,13 +109,13 @@ if __name__ == "__main__":
         tid  = tSearch.group(1) if tSearch else '<somehow, no transcript id!>'
 
         if (not exSearch or not gSearch or not tSearch):
-            sys.stderr.write("Skipping the odd/invalid line " + str(lineNum) + "...")
+            sys.stderr.write("Skipping the odd/invalid line " + str(lineNum) + "...\n")
             continue
             pass
 
-        initNonexistent(gdict               , gid, {'maxExons':-999, 'maxSizePerExon':{}, 'trHash':{} }) # new hash...
-        initNonexistent(gdict[gid]['trHash'], tid, {'strand':strand, 'general_type':generalType, 'trSize':-999, 'exHash':{} })
-        initNonexistent(gdict[gid]['trHash'][tid]['exHash'], ex, {"left":posLeft, "right":posRight, "exSize":abs(posLeft-posRight), "num":int(ex)} )
+        initNonexistent(gdict                              , gid, {'totalExons':-999, 'sizesPerExon':{}, 'trHash':{} }) # new hash...
+        initNonexistent(gdict[gid]['trHash']               , tid, {'strand':strand, 'general_type':generalType, 'trSize':-999, 'exHash':{} })
+        initNonexistent(gdict[gid]['trHash'][tid]['exHash'], ex , {"left":posLeft, "right":posRight, "exSize":abs(posLeft-posRight), "num":int(ex)} )
 
         dbug = False
         if dbug:
@@ -136,19 +135,16 @@ if __name__ == "__main__":
     # Calculate the TRANSCRIPT TOTAL SIZES and MAX NUM EXONS FOR THIS GENE by adding up the exons
     for gKey,gHash in gdict.iteritems():
         sys.stdout.write(":" + gKey + ":"  + "\n")
-        
         for tKey,trHash in gdict[gKey]['trHash'].iteritems():
             tStrand = trHash['strand']
             tType   = trHash['general_type']
             for eKey,exHash in trHash['exHash'].iteritems():
-                initNonexistent(gdict[gKey]['maxSizePerExon'], eKey, -999)
-                thisExonSize = exHash['exSize']
-                gHash['maxSizePerExon'][eKey] = max( gHash['maxSizePerExon'][eKey], thisExonSize) # store the max size for this exon!
+                initNonexistent(gdict[gKey]['sizesPerExon'], eKey, []) # new list
+                gHash['sizesPerExon'][eKey].append( exHash['exSize'] ) # save this exon's size
                 pass # end "for exon key"
             pass # end "for transcript key"
         
-        gHash['maxExons'] = len(gHash['maxSizePerExon']) # number of exons in LONGEST transcript
-
+        gHash['totalExons'] = len(gHash['sizesPerExon']) # number of unique numbered/named exons that are theoretically possible for a transcript, even if no single transcript actually contains all the named/numbered exons
 
         exonSizes = {} # Key: the exon number, value: a LIST of the various sizes we've seen for this specific exon only
         for tKey,trHash in gdict[gKey]['trHash'].iteritems():
@@ -190,7 +186,7 @@ if __name__ == "__main__":
 
         #     pass
 
-        sys.stdout.write("Gene " + gKey + " had " + str(gdict[gKey]['maxExons']) + " exons in the most-exony transcript.\n")
+        sys.stdout.write("Gene " + gKey + " had " + str(gdict[gKey]['totalExons']) + " exons in the most-exony transcript.\n")
         pass # end "for gene key"
 
     # 1 exon:
@@ -206,7 +202,7 @@ if __name__ == "__main__":
             sys.stdout.write("   * " + tKey + ":"  + "\n")
             tStrand = trHash['strand']
             tType   = trHash['general_type']
-            maxExonsThisGene = gdict[gkey]['maxExons']
+            maxExonsThisGene = gdict[gkey]['totalExons']
             for i in range(maxExonsThisGene):
                 exonIdentifier = str(i+1)
                 hasThisExon = exonIdentifier in trHash['exHash']
