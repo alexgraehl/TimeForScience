@@ -22,6 +22,9 @@ globalOptions = None
 globalArgs    = None
 
 
+MINIMUM_EXON_SIZE_TO_PRINT = 4
+INTRON_SPACING_TO_PRINT    = 1
+
 def warnToConsole(msg):
     sys.stderr.write(msg + "\n")
     return
@@ -51,13 +54,9 @@ def handleCommandLineOptions():
 
     return
 
-
-
-def initNonexistent(theHash, theKeyToCheck, initThing):
-    # Puts "initThing" into theHash if theHash doesn't ALREADY contain something at theKeyToCheck
+def initNonexistent(theHash, theKeyToCheck, initThing):     # Puts "initThing" into theHash if theHash doesn't ALREADY contain something at theKeyToCheck
     if (theKeyToCheck not in theHash):
         theHash[theKeyToCheck] = initThing
-        pass
     return
 
 def getAllExonKeysForGene(theGeneHash):
@@ -149,7 +148,7 @@ if __name__ == "__main__":
 
     # Calculate the TRANSCRIPT TOTAL SIZES and MAX NUM EXONS FOR THIS GENE by adding up the exons
     for gKey,gHash in gdict.iteritems():
-        sys.stdout.write(":" + gKey + ":"  + "\n")
+        #sys.stdout.write(":" + gKey + ":"  + "\n")
         for tKey,trHash in gdict[gKey]['trHash'].iteritems():
             tStrand = trHash['strand']
             tType   = trHash['general_type']
@@ -181,24 +180,22 @@ if __name__ == "__main__":
 
 
     for gKey,gHash in gdict.iteritems():
-        sys.stdout.write(":" + gKey + ":"  + "\n")
         for tKey,trHash in gHash['trHash'].iteritems():
-            sys.stdout.write("   * " + tKey + ":"  + "\n")
             tStrand = trHash['strand']
             tType   = trHash['general_type']
             maxExonsThisGene = gHash['totalExons']
+
+            sys.stdout.write(gKey + "\t" + tKey + "\t")
             for eKey in getAllExonKeysForGene(gHash):
-                numDifferentLengthsForThisExon = gHash['sizesPerExonHash'][eKey]['sizeOrder']
-
                 hasThisExon = eKey in trHash['exHash']
-                print numDifferentLengthsForThisExon
-                #longestThisExon = trHash['exHash'][eKey]['exRelativeSize']
-
-                if (hasThisExon):
-                    sys.stdout.write("--XXXX--")
-                else:
-                    sys.stdout.write("--------")
-                    pass
+                listOfAllSizesForThisExon = map(lambda k: k['size'], gHash['sizesPerExonHash'][eKey])
+                numDifferentLengthsForThisExon = len(set(listOfAllSizesForThisExon))
+                biggestExonRank = (numDifferentLengthsForThisExon-1)
+                totalExonSpace = (biggestExonRank + MINIMUM_EXON_SIZE_TO_PRINT)
+                xToPrint       = 0 if not hasThisExon else trHash['exHash'][eKey]['exRelativeSize'] + MINIMUM_EXON_SIZE_TO_PRINT
+                blankToPrint   = totalExonSpace - xToPrint
+                leadingIntronToPrint   = 0 if eKey == "1" else INTRON_SPACING_TO_PRINT
+                sys.stdout.write(("_" * leadingIntronToPrint) + "X"*xToPrint + "-"*blankToPrint)
                 pass # end "for exon key"
             sys.stdout.write("\n") # This part is after this transcript's exons are ALL processed
             pass # end "for transcript key"
