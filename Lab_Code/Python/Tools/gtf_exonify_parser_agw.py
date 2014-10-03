@@ -21,6 +21,11 @@ import operator
 globalOptions = None
 globalArgs    = None
 
+
+def warnToConsole(msg):
+    sys.stderr.write(msg + "\n")
+    return
+
 def handleCommandLineOptions():
     global globalArgs
     global globalOptions
@@ -36,12 +41,12 @@ def handleCommandLineOptions():
         pass
 
     if len(globalArgs) < 1:
-        sys.stderr.write("Since no filenames were specified, we are reading from STDIN...\n")
+        warnToConsole("[Note] Since no filenames were specified, we are reading from STDIN...")
         #parser.error("We need one un-parsed argument (a filename to read). This program is NOT currently able to handle reading from STDIN (standard in)!")
         pass
 
     if len(globalArgs) > 1:
-        parser.error("You can only specify ONE filename on the command line! You specified more than one.")
+        parser.error("[ERROR in arguments] You can only specify ONE filename on the command line! You specified more than one.")
         pass
 
     return
@@ -97,11 +102,11 @@ if __name__ == "__main__":
         s = lineStr.split(gtfDelim)
 
         if (len(s) < (FREE_COLUMN+1)):
-            sys.stderr.write("WARNING: line " + str(lineNum) + " in the input GTF file \"" + gtfFilename + "\" does not have " + str(FREE_COLUMN+1) + " elements as we expected it to. Skipping it. This may indicate a malformed GTF input file!\n")
+            warnToConsole("WARNING: line " + str(lineNum) + " in the input GTF file \"" + gtfFilename + "\" does not have " + str(FREE_COLUMN+1) + " elements as we expected it to. Skipping it. This may indicate a malformed GTF input file!")
             continue # Don't do anything with this weird malformed line
 
         if (s[SUBFEATURE_TYPE_COLUMN] != 'exon'):
-            sys.stderr.write("Skipping non-exon on line " + str(lineNum) + "...\n")
+            warnToConsole("Skipping non-exon on line " + str(lineNum) + "...")
             continue
 
         freeText = s[FREE_COLUMN]
@@ -119,13 +124,13 @@ if __name__ == "__main__":
         tid  = tSearch.group(1) if tSearch else '<somehow, no transcript id!>'
 
         if (not exSearch or not gSearch or not tSearch):
-            sys.stderr.write("Skipping the odd/invalid line " + str(lineNum) + "...\n")
+            warnToConsole("Skipping the odd/invalid line " + str(lineNum) + "...")
             continue
             pass
 
-        initNonexistent(gdict                              , gid, {'totalExons':-999, 'sizesPerExon':{}, 'trHash':{} }) # new hash...
+        initNonexistent(gdict                              , gid, {'totalExons':-999, 'sizesPerExonHash':{}, 'trHash':{} }) # new hash...
         initNonexistent(gdict[gid]['trHash']               , tid, {'strand':strand, 'general_type':generalType, 'trSize':-999, 'exHash':{} })
-        initNonexistent(gdict[gid]['trHash'][tid]['exHash'], ex , {"left":posLeft, "right":posRight, "exSize":abs(posLeft-posRight), "num":int(ex)} )
+        initNonexistent(gdict[gid]['trHash'][tid]['exHash'], ex , {"left":posLeft, "right":posRight, "exSize":abs(posLeft-posRight), "exRelativeSize":-999, "num":int(ex)} )
 
         dbug = False
         if dbug:
@@ -149,68 +154,55 @@ if __name__ == "__main__":
             tStrand = trHash['strand']
             tType   = trHash['general_type']
             for eKey,exHash in trHash['exHash'].iteritems():
-                initNonexistent(gdict[gKey]['sizesPerExon'], eKey, []) # new list
-                gHash['sizesPerExon'][eKey].append( { 'size':exHash['exSize'], 'assocTr':tKey, 'sizeOrder':-999 } ) # save this exon's size and which transcript it belongs to
-                # 'sizeOrder' is the exon's relative size in THIS transcript compared to the shortest transcript: 0 = shortest, 1 = slightly longer, etc... if this exon is the same length in all transcripts, then all values will be zero!
+                initNonexistent(gdict[gKey]['sizesPerExonHash'], eKey, []) # new list
+                gHash['sizesPerExonHash'][eKey].append( { 'size':exHash['exSize'], 'assocTr':tKey } ) # save this exon's size and which transcript it belongs to
                 pass
                 # end "for eKey,exHash..."
             pass
         # end "for tKey,trHash..."
-        gHash['totalExons'] = len(gHash['sizesPerExon']) # number of unique numbered/named exons that are theoretically possible for a transcript, even if no single transcript actually contains all the named/numbered exons
-
+        gHash['totalExons'] = len(gHash['sizesPerExonHash']) # number of unique numbered/named exons that are theoretically possible for a transcript, even if no single transcript actually contains all the named/numbered exons
         for eKey in getAllExonKeysForGene(gHash):
-            sizesList        = gHash['sizesPerExon'][eKey]
+            sizesList        = gHash['sizesPerExonHash'][eKey]
             orderedSizesList = sorted(sizesList, key=operator.itemgetter('size'))  # sorted by size
-            print sizesList
-            print orderedSizesList
             sortedUniqSizesList = sorted(set(map(lambda k: k['size'], sizesList)))
-            print sortedUniqSizesList
-            relativeExonSizeOrdering = []
-
-            for xHash in gHash['sizesPerExon'][eKey]:
+            for xHash in gHash['sizesPerExonHash'][eKey]:
                 thisSize = xHash['size']
-                xHash['sizeOrder'] = relativeExonSizeOrdering.append( sortedUniqSizesList.index(thisSize)  ) # get the RELATIVE ranking of sizes for this exon. 0 = shortest exon, 1 = slightly longer, etc etc. If all exons are the same size, they will all have "0" as their value.
+                associatedTranscript = xHash['assocTr']
+                assert(associatedTranscript in gHash['trHash'])
+                relativeSizeOrderForThisExon = sortedUniqSizesList.index(thisSize) # get the RELATIVE ranking of sizes for this exon. 0 = shortest exon, 1 = slightly longer, etc etc. If all exons are the same size, they will all have "0" as their value.
+                assert(relativeSizeOrderForThisExon >= 0)
+                gHash['trHash'][associatedTranscript]['exHash'][eKey]['exRelativeSize'] = relativeSizeOrderForThisExon
                 pass
-            #print sizesForThisExon
-            #print sortedUniqueSizes
-            #print relativeExonSizeOrdering
-            print "^^^^^^^^^^^^^"
-            #assert(len(relativeExonSizeOrdering) == len(sizesForThisExon))
             pass
         # end "for eKey..."
-        sys.stdout.write("Gene " + gKey + " had " + str(gdict[gKey]['totalExons']) + " exons in the most-exony transcript.\n")
+        #sys.stdout.write("Gene " + gKey + " had " + str(gdict[gKey]['totalExons']) + " exons in the most-exony transcript.\n")
         pass
      # end "for gene key"
 
 
-    for gkey in gdict:
-        maxExonsSeenSoFar = 0
-        sys.stdout.write(":" + gkey + ":"  + "\n")
-        for tKey,trHash in gdict[gkey]['trHash'].iteritems():
+    for gKey,gHash in gdict.iteritems():
+        sys.stdout.write(":" + gKey + ":"  + "\n")
+        for tKey,trHash in gHash['trHash'].iteritems():
             sys.stdout.write("   * " + tKey + ":"  + "\n")
             tStrand = trHash['strand']
             tType   = trHash['general_type']
-            maxExonsThisGene = gdict[gkey]['totalExons']
-            for i in range(maxExonsThisGene):
-                exonIdentifier = str(i+1)
-                hasThisExon = exonIdentifier in trHash['exHash']
+            maxExonsThisGene = gHash['totalExons']
+            for eKey in getAllExonKeysForGene(gHash):
+                numDifferentLengthsForThisExon = gHash['sizesPerExonHash'][eKey]['sizeOrder']
+
+                hasThisExon = eKey in trHash['exHash']
+                print numDifferentLengthsForThisExon
+                #longestThisExon = trHash['exHash'][eKey]['exRelativeSize']
+
                 if (hasThisExon):
                     sys.stdout.write("--XXXX--")
                 else:
                     sys.stdout.write("--------")
                     pass
                 pass # end "for exon key"
-
-            # This part is after this transcript's exons are ALL processed
-            sys.stdout.write("\n")
-
+            sys.stdout.write("\n") # This part is after this transcript's exons are ALL processed
             pass # end "for transcript key"
         pass # end "for gene key"
-
-
-                #for eKey,exHash in trHash['exHash'].iteritems():
-                #sys.stdout.write("       Exon #" + eKey + ":" + str(exHash['exSize']) + " bases (strand " + tStrand + ") -- general type is " + tType +" \n")
-
 
 
     pass # end of the <<if __name__ == "__main__">>  part
