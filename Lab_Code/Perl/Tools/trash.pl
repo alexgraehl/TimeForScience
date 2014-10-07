@@ -118,7 +118,7 @@ sub fatalComplaint($$) {
     exit(1);
 }
 
-sub minorComplaint($$) {
+sub complain($$) {
     return(anyComplaint(@_, "yellow"));
 }
 
@@ -159,20 +159,32 @@ foreach my $itemToDelete (@ARGV) {
     #print $itemToDelete . "\n";
     $itemToDelete = trim($itemToDelete);
     
+    if ($itemToDelete =~ m|/+$|) {
+	# Ends in a slash...
+	$itemToDelete =~ s|/+$||; # Remove the extraneous trailing slash(es) on any item to delete. Solves the problem of us deleting directories by following a symlink! Important; otherwise "rm SYMLINK/" removes the real directory instead of the symlink!
+	if (-l $itemToDelete || -d $itemToDelete) {
+	    # Looks like it was OK to delete, as long as we don't try to delete it with the '/' at the end (which we have removed already
+	} else {
+	    complain($itemToDelete, "it had a trailing slash, but was not a symlink or a directory!");
+	    next;
+	}
+
+    }
+
     if ($itemToDelete =~ m|^-| && (!(-l $itemToDelete)) && (!(-e $itemToDelete))) {
 	# If the option starts with a hyphen AND it isn't a file or symlink
-	minorComplaint($itemToDelete, "it was not a filename, and it appears to have been intended as a command line switch, which trash.pl does not make any use of.");
+	complain($itemToDelete, "it was not a filename, and it appears to have been intended as a command line switch, which trash.pl does not make any use of.");
     }
     
     if ((not (-l $itemToDelete)) and (not (-e $itemToDelete))) {
 	# The item doesn't even exist (and it isn't a symlink), so skip it
-	minorComplaint($itemToDelete, "it did either not exist or could not be read. Check that this file actually exists.");
+	complain($itemToDelete, "it did either not exist or could not be read. Check that this file actually exists.");
 	next;
     }
 	
     if (not (-f $itemToDelete || -d $itemToDelete || -l $itemToDelete)) {
 	# The thing to delete has to be either a file (-f), a directory (-d), or a symlink (-l).
-	minorComplaint($itemToDelete, "it was not a file, directory, or symlink. You can use /bin/rm to remove it if you really want to.");
+	complain($itemToDelete, "it was not a file, directory, or symlink. You can use /bin/rm to remove it if you really want to.");
 	next;
     }
 
