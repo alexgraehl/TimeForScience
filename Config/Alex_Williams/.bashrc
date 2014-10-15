@@ -76,11 +76,11 @@ export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:$LD_LIBRARY_PATH"
 #export PERLLIB=${PERL5LIB}
 
 if [[ "$COMPYNAME" == "Slithereens" ]]; then
-    # It is the home machine! Some things are in different places, as a result
-    # Add things to Alex's home machine's path
     export BINF_CORE_WORK_DIR="/Users/${USER}/work" # <-- set BINF_CORE work directory
-elif [[ $HOSTNAME == "westway" ]] || [[ $HOSTNAME == "bueno" ]]; then
+elif [[ "$HOSTNAME" == "westway" ]] || [[ "$HOSTNAME" == "bueno" ]]; then
     export BINF_CORE_WORK_DIR="/home/alexgw/work"
+elif [[ "$COMPYNAME" == "lighthousewww" ]] || [[ "$COMPYNAME" == "lighthouse" ]]; then
+    export BINF_CORE_WORK_DIR="/home/awilliams/work"
 else
     export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
 fi
@@ -96,12 +96,12 @@ export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"
 # ~/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 # Sets up the aliases whether or not this shell is interactive
-if [[ -f ~/TimeForScience/Config/Alex_Williams/.aliases ]]; then
-    source ~/TimeForScience/Config/Alex_Williams/.aliases
-elif [[ -f /work/Common/Code/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
-    source /work/Common/Code/TimeForScience/Config/Alex_Williams/.aliases
-elif [[ -f /home/alexgw/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
-    source /home/alexgw/TimeForScience/Config/Alex_Williams/.aliases
+if [[ -f ${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/.aliases ]]; then
+    source ${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/.aliases
+elif [[ -f ${BINF_CORE_WORK_DIR}/Common/Code/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
+    source ${BINF_CORE_WORK_DIR}/Common/Code/TimeForScience/Config/Alex_Williams/.aliases
+elif [[ -f ${HOME}/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
+    source ${HOME}/TimeForScience/Config/Alex_Williams/.aliases
 fi
 
 # ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
