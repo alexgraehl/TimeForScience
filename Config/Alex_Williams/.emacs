@@ -61,6 +61,7 @@
 ;; maybe highlight-blocks ?
 ;; maybe highlight-symbol ?
 
+ 
 (defvar ACTIVE_MODELINE       "white")   ;; Background for the active modeline
 (defvar ACTIVE_MODELINE_TEXT  "DodgerBlue1") ;; Text in the currently-active modeline
 
@@ -239,8 +240,17 @@
 ;;(load (expand-file-name "~/.emacs.d/cperl-mode.el.6.2")) ; <-- note: compiled version!
 ;;(autoload 'cperl-mode "cperl-mode" "Fancier mode Perl highlighting." t)
 
-
-
+(condition-case nil
+    (progn
+      (require 'highlight-symbol)
+      (setq highlight-symbol-on-navigation-p t)
+      (setq highlight-symbol-idle-delay 0.20)
+      (set-face-attribute 'highlight-symbol-face nil :inverse-video t :weight 'bold :slant 'italic) ; :foreground "blue" :background "red")
+      (add-hook 'python-mode-hook     '(lambda () (highlight-symbol-mode 1)) t) ; Enable "highlight-symbol-mode" for PYTHON
+      (add-hook 'perl-mode-hook     '(lambda () (highlight-symbol-mode 1)) t) ; Enable "highlight-symbol-mode" for PERL
+      (add-hook 'sh-mode-hook     '(lambda () (highlight-symbol-mode 1)) t) ; Enable "highlight-symbol-mode" for SH
+      )
+  (file-error (message "highlight-symbol mode not available--you should install it with 'list-packages'. See above!") ))
 
 (when window-system
   (mwheel-install) ;; enable wheelmouse
@@ -249,6 +259,8 @@
   )
 
 ;; Set default modes for various file endings
+
+;(add-to-list 'auto-mode-alist '("\\.py\\'" . highlight-symbol-mode))
 
 (add-to-list 'auto-mode-alist '("Rakefile" . ruby-mode))
 (add-to-list 'auto-mode-alist '("\\.rb\\'" . ruby-mode))
@@ -692,7 +704,6 @@ current line."
 ;; (add-hook 'font-lock-mode-hook 'highlight-tabs) ;; <-- uncomment if you want tabs ALWAYS highlighted
 ;font-lock-mode-hook
 ;(add-hook 'makefile-mode-hook 'highlight-trailing-whitespace) ;; <-- show trailing whitespaces in Makefile mode
-
 
 (add-hook 'c-mode-common-hook   'hs-minor-mode)
 (add-hook 'emacs-lisp-mode-hook 'hs-minor-mode)
