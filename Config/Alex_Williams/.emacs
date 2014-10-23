@@ -43,6 +43,24 @@
 
 ;; List of all emacs colors: http://raebear.net/comp/emacscolors.html
 
+;; Emacs is a monstrosity, but it only takes 2 or 3 hours to figure out how to
+;; configure it with additional packages (assuming you're already an expert)
+;; See here: http://ergoemacs.org/emacs/emacs_package_system.html
+(when (>= emacs-major-version 24)
+  (require 'package)
+  (package-initialize)
+  (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
+  (message "Loaded the other packages! Run M-x list-packages to install them.")
+  (message "Note: packages go into ~/.emacs.d/elpa/")
+  )
+;; The code above may also require you to run 'package-initialize' for unknown reasons
+;; Then you can  use M-x list-packages to get:
+;;   jedi -- python autocomplete: (also see http://jedi.jedidjah.ch/en/latest/)
+;;   pylint (minor mode) maybe?
+;;   highlight-indentation maybe? ;Customize `highlight-indentation-face', and `highlight-indentation-current-column-face' to suit your theme.
+;; maybe highlight-blocks ?
+;; maybe highlight-symbol ?
+
 (defvar ACTIVE_MODELINE       "white")   ;; Background for the active modeline
 (defvar ACTIVE_MODELINE_TEXT  "DodgerBlue1") ;; Text in the currently-active modeline
 
