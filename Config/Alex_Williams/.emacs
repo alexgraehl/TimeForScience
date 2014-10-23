@@ -246,9 +246,9 @@
       (setq highlight-symbol-on-navigation-p t)
       (setq highlight-symbol-idle-delay 0.20)
       (set-face-attribute 'highlight-symbol-face nil :inverse-video t :weight 'bold :slant 'italic) ; :foreground "blue" :background "red")
-      (add-hook 'python-mode-hook     '(lambda () (highlight-symbol-mode 1)) t) ; Enable "highlight-symbol-mode" for PYTHON
-      (add-hook 'perl-mode-hook     '(lambda () (highlight-symbol-mode 1)) t) ; Enable "highlight-symbol-mode" for PERL
-      (add-hook 'sh-mode-hook     '(lambda () (highlight-symbol-mode 1)) t) ; Enable "highlight-symbol-mode" for SH
+      (add-hook 'python-mode-hook  '(lambda () (highlight-symbol-mode 1)) t) ; Enable "highlight-symbol-mode" for PYTHON
+      (add-hook 'perl-mode-hook    '(lambda () (highlight-symbol-mode 1)) t) ; Enable "highlight-symbol-mode" for PERL
+      (add-hook 'sh-mode-hook      '(lambda () (highlight-symbol-mode 1)) t) ; Enable "highlight-symbol-mode" for SH
       )
   (file-error (message "highlight-symbol mode not available--you should install it with 'list-packages'. See above!") ))
 
