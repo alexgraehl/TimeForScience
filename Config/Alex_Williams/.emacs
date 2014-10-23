@@ -38,8 +38,6 @@
 
 ;; Emacs regexp: http://www.cs.utah.edu/dept/old/texinfo/emacs18/emacs_17.html
 
-
-
 ;; #  emacsclient -c -a "" $*
 
 
@@ -200,7 +198,7 @@
     (setq should-load-ess nil)) ;; <-- if should-load-ess is not already defined, then initialize a new variable if we haven't loaded ess, then this *remains* "nil"
 
 
-(setq load-path (cons "~/.emacs.d" load-path))
+(setq load-path (cons "~/.emacs.d/ess/" load-path))
 
 (if (system-type-is-darwin)
     (progn
@@ -858,7 +856,8 @@ current line."
 
 ;; ================= BACKUP FILES AND AUTOSAVING =================
 
-(iswitchb-mode t) ;; enhances buffer switching (C-x b)
+(icomplete-mode t)
+;(iswitchb-mode t) ;; enhances buffer switching (C-x b)
 
 ;;(message "My .emacs loaded in %ds" (destructuring-bind (hi lo ms) (current-time) (- (+ hi lo) (+ (first *emacs-load-start*) (second *emacs-load-start*)))))
 
