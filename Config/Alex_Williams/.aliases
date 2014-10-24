@@ -176,6 +176,8 @@ alias cheat="echo \
 \">>> UNIX/Perl fast sort with ONE header line: cat FILE | perl -e 'print scalar (<>); print sort <>' > OUTFILE \" ${NL}\
 \">>> Perl: Chrome web form 'nbsp' (ASCII 160) is [\\xA0] (or 'use feature qw(unicode_strings);') \" ${NL}\
 \">>> REGEXP EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
+\">>> EMACS: install new packages: list-packages \" ${NL}\
+\">>> EMACS: show variable: describe-variable \" ${NL}\
 \" \" ${NL}\
 \">>> RNASEQ SAM --> BAM:  samtools view -bS in.sam > out.bam \" ${NL}\
 \">>> RNASEQ BAM --> SAM:  samtools view -h  in.bam > out.sam \" ${NL}\
