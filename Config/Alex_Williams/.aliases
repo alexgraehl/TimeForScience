@@ -359,21 +359,19 @@ alias science="echo 'Time for science:' ; scienceup ${TIME_FOR_SCIENCE_DIR} ; sc
 
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
 
-alias nau=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${BN_IP}'  # From the not-uploaded file /work/Common/Code/alexgw/aliases-server-config
+alias nau=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${BN_IP}'  # From the not-uploaded file /work/Common/Code/alexgw/aliases-server-config (or .aliases-server-config in the home directory!)
 alias naux='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${BN_IP}'
 alias bus=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${BC_IP}'
 alias busx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${BC_IP}'
 alias wes=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${WES_IP}'
 alias wesx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${WES_IP}'
 
-alias rig=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${RIG_IP}'
+alias rig=' ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
 alias rigx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
 
-alias lig=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PL_IP}'
+alias lig=' ssh ${AGW_SSH_OPTIONS}     ${LIG_U}@${LIG_IP}' # <-- LIG = different username!
+alias ligx='ssh ${AGW_SSH_OPTIONS} -Y  ${LIG_U}@${LIG_IP}' # <-- LIG = different username!
 
-alias ligv='ssh ${AGW_SSH_OPTIONS}     ${LIGV_US}@${LIGV_IP}'
-
-alias ligx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${PL_IP}'
 alias bue=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PB_IP}'
 alias buex='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${PB_IP}'
 alias che=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${CLUS_IP}'
