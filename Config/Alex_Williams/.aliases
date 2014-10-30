@@ -175,7 +175,9 @@ alias cheat="echo \
 \">>> GNU FIND delete-a-file option: find . -name SOMEFILE -delete \" ${NL}\
 \">>> REGEXP Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \\\$ work \" ${NL}\
 \">>> UNIX/Perl fast sort with ONE header line: cat FILE | perl -e 'print scalar (<>); print sort <>' > OUTFILE \" ${NL}\
-\">>> Perl: Chrome web form 'nbsp' (ASCII 160) is [\\xA0] (or 'use feature qw(unicode_strings);') \" ${NL}\
+\">>> Perl/web: Chrome web form non-breaking space (ASCII 160) is [\\xA0] (or 'use feature qw(unicode_strings);') \" ${NL}\
+\">>> Perl:  CPAN invocation: perl -MCPAN -e shell \" ${NL}\
+\">>> Perl: CPAN upgrade-all: perl -MCPAN -e \\\"upgrade /(.\\*)/\\\" \" ${NL}\
 \">>> REGEXP EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
 \">>> EMACS: install new packages: list-packages \" ${NL}\
 \">>> EMACS: show variable: describe-variable \" ${NL}\
