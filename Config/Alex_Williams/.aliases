@@ -95,6 +95,7 @@ alias cheat="echo \
 \">>> Find all .R files in a directory:   find ./ -name \\\"*.R\\\" -exec ls \'{}\' \\\; \" ${NL}\
 \">>> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
 \" \" ${NL}\
+\">>> Bash script header (3 lines): #!/bin/bash -u   set -e   set -o pipefail \" ${NL}\
 \">>> Bash: Literal tab in bash: \$'\\t' (example: join -t \$'\\t' to join on tabs) or \\\$(echo -en '\\t') . In MAKE: printf '\\t' \" ${NL}\
 \">>> sh: Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
 \">>> Python debugger: Crashing program? Run python -m pdb YOURPROG --yourargs . 'c' continues execution. \" ${NL}\
@@ -211,7 +212,7 @@ alias cheat="echo \
 #pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
 
 [[ "$color_prompt" && "$isMac" ]] && AGW_LS_OPT=' -F -G -@ ' ## Mac: Color option is -G. Also, on a Mac, show the extended attributes (-@)
-[[ "$color_prompt" && (-z "$isMac") ]] && AGW_LS_OPT=' --indicator-style=slash --color=always ' ## Ubuntu: color is --color=auto
+[[ "$color_prompt" && (-z "$isMac") ]] && AGW_LS_OPT=' --indicator-style=slash --color=auto ' ## Ubuntu: color is --color=auto
 
 alias ls='/bin/ls ${AGW_LS_OPT}'
 alias l='ls'
