@@ -55,6 +55,7 @@ export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST 
 export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience ## Location of the TIME FOR SCIENCE directory. This is mostly Alex's code.
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/ ## <-- Used by Josh Stuart's scripts. Mostly these are enhanced perl versions of UNIX scripts, like "cut.pl" and "join.pl".
 
+
 # PATH: The FIRST things get run first!
 # Low priority: Normal UNIX paths. Clear out the initial path here.
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin ## <-- clear out initial path!!
@@ -84,6 +85,8 @@ elif [[ "$COMPYNAME" == "lighthousewww" ]] || [[ "$COMPYNAME" == "lighthouse" ]]
 else
     export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
 fi
+
+export PATH="${PATH}:$BINF_CORE_WORK_DIR/Common/Code/Python" # Tim's singular /work Python script lives in here
 
 export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"
 
