@@ -87,6 +87,14 @@ foreach my $ff ($file1, $file2) {
 (not ($shouldNegate && defined($stringWhenNoMatch))) or quitWithUsageError("Error in arguments! It doesn't make sense to both --neg (negate) the join AND ALSO specify -o or --ob -- the outer join specifies that we should print lines REGARDLESS of match, whereas the --neg specifies that we should ONLY print lines with no match. You cannot specifiy both of these options at the same time.");
 ($keyCol1 != 0) or die "Key1 CANNOT BE ZERO! These indices are numbered from ONE and not zero!";
 ($keyCol2 != 0) or die "Key2 CANNOT BE ZERO! These indices are numbered from ONE and not zero!";
+
+
+if (defined($stringWhenNoMatch)) { # replace any "\t" with actual tabs! No idea why it doesn't work on the command line otherwise
+    $stringWhenNoMatch =~ s/[\\][t]/\t/g; # replace a SINGLE backslash-then-t with a tab
+    $stringWhenNoMatch =~ s/[\\][n]/\n/g; # replace a SINGLE backslash-then-n with a newline
+    $stringWhenNoMatch =~ s/[\\][r]/\n/g; # replace a SINGLE backslash-then-r with a CR return
+}
+
 ## ================ DONE SANITY-CHECKING A BUNCH OF VARIABLES ==================
 
 sub openSmartAndGetFilehandle($) {
