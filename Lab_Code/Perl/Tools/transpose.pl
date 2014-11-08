@@ -34,21 +34,19 @@ use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl
 use strict;
 use warnings;
 
-# Flush output to STDOUT immediately.
-$| = 1;
+#$| = 1; # Actually no need to flush output to STDOUT immediately. Note: STDERR is still not synchronized with this, and STDERR output may be interleaved
 
 my @flags   = (
-                  [    '-q', 'scalar',     0,     1]
-                , [    '-d', 'scalar',  "\t", undef]
-                , ['--file', 'scalar',   '-', undef]
-              );
+    [    '-q', 'scalar',     0,     1]
+    , [    '-d', 'scalar',  "\t", undef]
+    , ['--file', 'scalar',   '-', undef]
+    );
 
 my %args = %{&parseArgs(\@ARGV, \@flags)};
 
-if(exists($args{'--help'}))
-{
-   print STDOUT <DATA>;
-   exit(0);
+if(exists($args{'--help'})) {
+    print STDOUT <DATA>;
+    exit(0);
 }
 
 my $verbose = not($args{'-q'});
@@ -61,38 +59,33 @@ my @x;
 
 $verbose and print STDERR "Reading in table from '$file'...\n";
 my $filep = &openFile($file);
-while(<$filep>)
-{
-  my @row = split($delim);
-  chomp($row[$#row]);
-  for($c = 0; scalar(@row) > 0; $c++)
-  {
-    $x[$r][$c] = shift @row;
-  }
-  if($c > $ncols)
-  {
-    $ncols = $c;
-  }
-  $r++;
+while(<$filep>) {
+    my @row = split($delim);
+    chomp($row[$#row]);
+    for($c = 0; scalar(@row) > 0; $c++)
+    {
+	$x[$r][$c] = shift @row;
+    }
+    if($c > $ncols)
+    {
+	$ncols = $c;
+    }
+    $r++;
 }
 close($filep);
 
 my $nrows = $r;
 
 $verbose and print STDERR " done ($nrows by $ncols)!\n";
-
 $verbose and print STDERR "Transposing to $ncols by $nrows...\n";
-for($c = 0; $c < $ncols; $c++)
-{
-  for($r = 0; $r < $nrows; $r++)
-  {
-    my $x = defined($x[$r][$c]) ? $x[$r][$c] : '';
-    print "$x";
-    if ($r < $nrows - 1) { print $delim; }
-  }
-  print "\n";
+for($c = 0; $c < $ncols; $c++) {
+    for($r = 0; $r < $nrows; $r++) {
+	my $x = defined($x[$r][$c]) ? $x[$r][$c] : '';
+	print "$x";
+	if ($r < $nrows - 1) { print $delim; }
+    }
+    print "\n";
 }
-$verbose and print STDERR " done.\n";
 
 exit(0);
 
