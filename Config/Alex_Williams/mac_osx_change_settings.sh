@@ -205,8 +205,8 @@ defaults write com.apple.screencapture location -string "${HOME}/Desktop"
 # Save screenshots in PNG format (other options: BMP, GIF, JPG, PDF, TIFF)
 defaults write com.apple.screencapture type -string "png"
 
-# Disable shadow in screenshots
-#defaults write com.apple.screencapture disable-shadow -bool true
+# Disable(true) /enable(false) shadow in screenshots
+defaults write com.apple.screencapture disable-shadow -bool false
 
 # Enable subpixel font rendering on non-Apple LCDs
 #defaults write NSGlobalDomain AppleFontSmoothing -int 2
@@ -224,11 +224,11 @@ defaults write com.apple.screencapture type -string "png"
 # Finder: disable window animations and Get Info animations
 defaults write com.apple.finder DisableAllAnimations -bool true
 
-# Show icons for hard drives, servers, and removable media on the desktop
-#defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool true
-#defaults write com.apple.finder ShowHardDrivesOnDesktop -bool true
-#defaults write com.apple.finder ShowMountedServersOnDesktop -bool true
-#defaults write com.apple.finder ShowRemovableMediaOnDesktop -bool true
+# Show/hide icons for hard drives, servers, and removable media on the desktop
+defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool false
+defaults write com.apple.finder ShowHardDrivesOnDesktop -bool false
+defaults write com.apple.finder ShowMountedServersOnDesktop -bool true
+defaults write com.apple.finder ShowRemovableMediaOnDesktop -bool true
 
 # Finder: show hidden files by default
 #defaults write com.apple.finder AppleShowAllFiles -bool true
@@ -356,7 +356,6 @@ defaults write com.apple.dock expose-group-by-app -bool false
 
 # Disable Dashboard
 defaults write com.apple.dashboard mcx-disabled -bool true
-
 # Don’t show Dashboard as a Space
 defaults write com.apple.dock dashboard-in-overlay -bool true
 
@@ -420,8 +419,8 @@ defaults write com.apple.Safari HomePage -string "about:blank"
 # Prevent Safari from opening ‘safe’ files automatically after downloading
 defaults write com.apple.Safari AutoOpenSafeDownloads -bool false
 
-# Allow hitting the Backspace key to go to the previous page in history
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2BackspaceKeyNavigationEnabled -bool true
+# Prevent the Backspace key from going to the previous page in history
+defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2BackspaceKeyNavigationEnabled -bool false
 
 # Hide Safari’s bookmarks bar by default
 defaults write com.apple.Safari ShowFavoritesBar -bool false
@@ -493,13 +492,13 @@ defaults write com.apple.spotlight orderedItems -array \
 '{"enabled" = 0;"name" = "MESSAGES";}' \
 '{"enabled" = 0;"name" = "CONTACT";}' \
 '{"enabled" = 0;"name" = "EVENT_TODO";}' \
-'{"enabled" = 0;"name" = "IMAGES";}' \
+'{"enabled" = 1;"name" = "IMAGES";}' \
 '{"enabled" = 0;"name" = "BOOKMARKS";}' \
 '{"enabled" = 0;"name" = "MUSIC";}' \
-'{"enabled" = 0;"name" = "MOVIES";}' \
-'{"enabled" = 0;"name" = "PRESENTATIONS";}' \
-'{"enabled" = 0;"name" = "SPREADSHEETS";}' \
-'{"enabled" = 0;"name" = "SOURCE";}'
+'{"enabled" = 1;"name" = "MOVIES";}' \
+'{"enabled" = 1;"name" = "PRESENTATIONS";}' \
+'{"enabled" = 1;"name" = "SPREADSHEETS";}' \
+'{"enabled" = 1;"name" = "SOURCE";}'
 # Load new settings before rebuilding the index
 #A#killall mds > /dev/null 2>&1
 # Make sure indexing is enabled for the main volume
@@ -549,13 +548,14 @@ defaults write com.apple.TimeMachine DoNotOfferNewDisksForBackup -bool true
 defaults write com.apple.addressbook ABShowDebugMenu -bool true
 
 # Enable Dashboard dev mode (allows keeping widgets on the desktop)
-defaults write com.apple.dashboard devmode -bool true
+#defaults write com.apple.dashboard devmode -bool true
 
 # Enable the debug menu in iCal (pre-10.8)
 defaults write com.apple.iCal IncludeDebugMenu -bool true
 
 # Use plain text mode for new TextEdit documents
 defaults write com.apple.TextEdit RichText -int 0
+
 # Open and save files as UTF-8 in TextEdit
 defaults write com.apple.TextEdit PlainTextEncoding -int 4
 defaults write com.apple.TextEdit PlainTextEncodingForWrite -int 4
