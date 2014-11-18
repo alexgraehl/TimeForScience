@@ -252,20 +252,22 @@
       )
   (file-error (message "highlight-symbol mode not available--you should install it with 'list-packages'. See above!") ))
 
-(condition-case nil
-    (progn
-      (require 'jedi) ; http://tkf.github.io/emacs-jedi/released/
-      (add-hook 'python-mode-hook 'jedi:setup)
-      (jedi:start-server)
-;      (eval((jedi:start-dedicated-server) nil))
-;      (jedi:start-dedicated-server '/home/alexgw/.emacs.d/.python-environments/default/bin/jediepcserver)
-      (setq jedi:setup-keys t)                      ; optional
-      (setq jedi:complete-on-dot t)                 ; optional
-      (setq jedi:get-in-function-call-delay 1)     ; milliseconds before function signature appears
-      (setq jedi:get-in-function-call-timeout 3000) ; milliseconds before a failed lookup for documentation is aborted
-      )
-  (file-error (message "jedi python mode not available--you should install it with 'list-packages'. See above!") ))
-
+; NOTE: Jedi also requires virtualenv!
+(when (not (eq system-type 'darwin))
+  (condition-case nil
+      (progn
+	(require 'jedi) ; http://tkf.github.io/emacs-jedi/released/
+	(add-hook 'python-mode-hook 'jedi:setup)
+	(jedi:start-server)
+	(eval((jedi:start-dedicated-server) nil))
+	(jedi:start-dedicated-server '/home/alexgw/.emacs.d/.python-environments/default/bin/jediepcserver)
+	(setq jedi:setup-keys t)                      ; optional
+	(setq jedi:complete-on-dot t)                 ; optional
+	(setq jedi:get-in-function-call-delay 1)     ; milliseconds before function signature appears
+	(setq jedi:get-in-function-call-timeout 3000) ; milliseconds before a failed lookup for documentation is aborted
+	)
+    (file-error (message "jedi python mode not available--you should install it with 'list-packages'. See above!") ))
+  )
 
 (when window-system
   (mwheel-install) ;; enable wheelmouse
