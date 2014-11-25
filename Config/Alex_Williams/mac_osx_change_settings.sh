@@ -519,7 +519,7 @@ defaults write com.apple.mail AddressesIncludeNameOnPasteboard -bool false
 # Disable Spotlight indexing for any volume that gets mounted and has not yet
 # been indexed before.
 # Use `sudo mdutil -i off "/Volumes/foo"` to stop indexing any volume.
-sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes"
+#sudo defaults write /.Spotlight-V100/VolumeConfiguration Exclusions -array "/Volumes"
 # Change indexing order and disable some search results
 # Yosemite-specific search results (remove them if your are using OS X 10.9 or older):
 # 	MENU_DEFINITION
@@ -544,11 +544,11 @@ defaults write com.apple.spotlight orderedItems -array \
 	'{"enabled" = 1;"name" = "MOVIES";}' \
 	'{"enabled" = 1;"name" = "PRESENTATIONS";}' \
 	'{"enabled" = 1;"name" = "SPREADSHEETS";}' \
-	'{"enabled" = 0;"name" = "SOURCE";}' \
+	'{"enabled" = 1;"name" = "SOURCE";}' \
 	'{"enabled" = 0;"name" = "MENU_DEFINITION";}' \
-	'{"enabled" = 0;"name" = "MENU_OTHER";}' \
-	'{"enabled" = 0;"name" = "MENU_CONVERSION";}' \
-	'{"enabled" = 0;"name" = "MENU_EXPRESSION";}' \
+	'{"enabled" = 1;"name" = "MENU_OTHER";}' \
+	'{"enabled" = 1;"name" = "MENU_CONVERSION";}' \
+	'{"enabled" = 1;"name" = "MENU_EXPRESSION";}' \
 	'{"enabled" = 0;"name" = "MENU_WEBSEARCH";}' \
 	'{"enabled" = 0;"name" = "MENU_SPOTLIGHT_SUGGESTIONS";}'
 # Load new settings before rebuilding the index
