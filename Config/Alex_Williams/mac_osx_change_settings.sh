@@ -82,7 +82,7 @@ defaults write com.apple.LaunchServices LSQuarantine -bool false
 
 # Display ASCII control characters using caret notation in standard text views
 # Try e.g. `cd /tmp; unidecode "\x{0000}" > cc.txt; open -e cc.txt`
-defaults write NSGlobalDomain NSTextShowsControlCharacters -bool true
+#defaults write NSGlobalDomain NSTextShowsControlCharacters -bool true
 
 # Disable Resume system-wide
 #defaults write NSGlobalDomain NSQuitAlwaysKeepsWindows -bool false
@@ -177,8 +177,8 @@ defaults write NSGlobalDomain AppleKeyboardUIMode -int 3
 # Use scroll gesture with the Ctrl (^) modifier key to zoom
 defaults write com.apple.universalaccess closeViewScrollWheelToggle -bool true
 defaults write com.apple.universalaccess HIDScrollZoomModifierMask -int 262144
-# Follow the keyboard focus while zoomed in
-defaults write com.apple.universalaccess closeViewZoomFollowsFocus -bool true
+# DO NOT Follow the keyboard focus while zoomed in
+defaults write com.apple.universalaccess closeViewZoomFollowsFocus -bool false
 
 # Disable press-and-hold for keys in favor of key repeat
 defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
@@ -272,24 +272,24 @@ defaults write com.apple.finder FXDefaultSearchScope -string "SCcf"
 # Disable the warning when changing a file extension
 defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
 
-# Enable spring loading for directories
-defaults write NSGlobalDomain com.apple.springing.enabled -bool true
+# Disable spring loading for directories
+defaults write NSGlobalDomain com.apple.springing.enabled -bool false
 
 # Remove the spring loading delay for directories
-defaults write NSGlobalDomain com.apple.springing.delay -float 0
+#defaults write NSGlobalDomain com.apple.springing.delay -float 0
 
 # Avoid creating .DS_Store files on network volumes
-defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
+#defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool true
 
 # Disable disk image verification
 #defaults write com.apple.frameworks.diskimages skip-verify -bool true
 #defaults write com.apple.frameworks.diskimages skip-verify-locked -bool true
 #defaults write com.apple.frameworks.diskimages skip-verify-remote -bool true
 
-# Automatically open a new Finder window when a volume is mounted
-defaults write com.apple.frameworks.diskimages auto-open-ro-root -bool true
-defaults write com.apple.frameworks.diskimages auto-open-rw-root -bool true
-defaults write com.apple.finder OpenWindowForNewRemovableDisk -bool true
+# DO NOT Automatically open a new Finder window when a volume is mounted
+defaults write com.apple.frameworks.diskimages auto-open-ro-root -bool false
+defaults write com.apple.frameworks.diskimages auto-open-rw-root -bool false
+defaults write com.apple.finder OpenWindowForNewRemovableDisk -bool false
 
 # Show item info near icons on the desktop and in other icon views
 #/usr/libexec/PlistBuddy -c "Set :DesktopViewSettings:IconViewSettings:showItemInfo true" ~/Library/Preferences/com.apple.finder.plist
@@ -325,7 +325,7 @@ defaults write com.apple.finder WarnOnEmptyTrash -bool false
 #defaults write com.apple.finder EmptyTrashSecurely -bool true
 
 # Enable AirDrop over Ethernet and on unsupported Macs running Lion
-defaults write com.apple.NetworkBrowser BrowseAllInterfaces -bool true
+#defaults write com.apple.NetworkBrowser BrowseAllInterfaces -bool true
 
 # Enable the MacBook Air SuperDrive on any Mac
 #sudo nvram boot-args="mbasd=1"
@@ -444,8 +444,8 @@ defaults write com.apple.Safari UniversalSearchEnabled -bool false
 defaults write com.apple.Safari SuppressSearchSuggestions -bool true
 
 # Press Tab to highlight each item on a web page
-defaults write com.apple.Safari WebKitTabToLinksPreferenceKey -bool true
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2TabsToLinks -bool true
+#defaults write com.apple.Safari WebKitTabToLinksPreferenceKey -bool true
+#defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2TabsToLinks -bool true
 
 # Show the full URL in the address bar (note: this still hides the scheme)
 defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool true
@@ -618,13 +618,13 @@ defaults write com.apple.ActivityMonitor SortDirection -int 0
 ###############################################################################
 
 # Enable the debug menu in Address Book
-defaults write com.apple.addressbook ABShowDebugMenu -bool true
+#defaults write com.apple.addressbook ABShowDebugMenu -bool true
 
 # Enable Dashboard dev mode (allows keeping widgets on the desktop)
 #defaults write com.apple.dashboard devmode -bool true
 
 # Enable the debug menu in iCal (pre-10.8)
-defaults write com.apple.iCal IncludeDebugMenu -bool true
+#defaults write com.apple.iCal IncludeDebugMenu -bool true
 
 # Use plain text mode for new TextEdit documents
 defaults write com.apple.TextEdit RichText -int 0
