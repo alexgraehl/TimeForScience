@@ -106,6 +106,18 @@ if ($shouldScale) {
 }
 # ==============================================================================
 
+if ($shouldSort) {
+    print "*"x80 . "\n";
+    print "NOTE: We are COORDINATE SORTING each .bam file here.\n";
+    print "      If the .bam files are ALREADY sorted by coordinate,\n";
+    print "      (which is the case if you used Tophat, but not necessarily with Bowtie)\n";
+    print "      you should cancel this command and re-run it with\n";
+    print "      --nosort, and it will complete 20 times faster.\n";
+    print "*"x80 . "\n";
+}
+
+# ==============================================================================
+
 for my $originalInputFilename (@INPUT_FILES) {
     ## Go through each file...
     ## wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/bigWigToBedGraph
