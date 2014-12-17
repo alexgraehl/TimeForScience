@@ -140,7 +140,7 @@ alias cheat="echo \
 \">>> HG: Mercurial: show diff from last version: hg diff -c -1 (or -2, -3, etc.) \" ${NL}\
 \">>> HG: Mercurial: <push creates new remote heads> is fixed by doing hg pull first! \" ${NL}\
 \">>> TERM: Get terminal width/height: tput cols  or  tput lines \" ${NL}\
-\">>> BACKUPS: Check for changed files of a certain name: grep -E '>f.[stpogua]' /it/backup/log/*.log | grep YOURNAME \" ${NL}\
+\">>> BACKUPS: Check for changed files of a certain name: grep -E '>f.' /it/backup/log/*.log | grep YOURNAME \" ${NL}\
 \">>> NIX: convert RELATIVE symlinks to ABSOLUTE PATHS: for fff in *; do FULL=\\\$(readlink -f \\\$fff); ln -sf \\\$FULL \\\$fff ; done \" ${NL}\
 \">>> NIX: delete ORPHANED symlinks: find /path/to/search -xtype l -delete ; \" ${NL}\
 \">>> NIX: list files w/modified time MORE THAN one week ago: find . -mtime +7 \" ${NL}\
