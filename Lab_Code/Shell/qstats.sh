@@ -9,7 +9,7 @@ HEAD=`mktemp`
 ZZZ=`mktemp`
 PRECOLOR=`mktemp`
 echo -e 'Job ID\tJob name\tUser\tStatus\tMax time\tElapsed time\tStart time\tSeconds Remaining' > $HEAD
-qstat -f | egrep -i '(Job Id|Job_Name|Job_Owner|job_state|list.walltime)' | perl -pe 's/(.*Job_Owner.*)@.*/\1/i' | perl -pe 's/.*=\s//' | perl -pe 's/\n/\t/g' | perl -pe 's/(Job Id:\s|$)/\n/ig'                                                > $ZZZ
+qstat -f | egrep -i '(Job Id|Job_Name|Job_Owner|job_state|list.walltime)' | perl -pe 's/\.gladstone\.internal//g' | perl -pe 's/(.*Job_Owner.*)@.*/\1/i' | perl -pe 's/.*=\s//' | perl -pe 's/\n/\t/g' | perl -pe 's/(Job Id:\s|$)/\n/ig'                                                > $ZZZ
 qstat -f | egrep -i '(Job Id|used.walltime|walltime.remaining|start_time)'                                       | perl -pe 's/.*=\s//' | perl -pe 's/\n/\t/g' | perl -pe 's/(Job Id:\s|$)/\n/ig' | cut -f 2- | paste -d '' $ZZZ - | cat $HEAD - > $PRECOLOR
 
 cat $PRECOLOR \
