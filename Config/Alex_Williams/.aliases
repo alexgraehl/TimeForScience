@@ -239,6 +239,20 @@ alias kpk='exit'
 alias diffdir='diff -rq' ## diff on directories
 
 
+# Stop Junos Pulse from automatically starting: from https://gist.github.com/Andrewpk/7558715
+# "Be sure to change your /Library/LaunchAgents/net.juniper.pulsetray.plist file to reflect the `KeepAlive` key being set to <false/> as well!"
+#alias startvpn2="sudo launchctl load -w /Library/LaunchDaemons/net.juniper.AccessService.plist; open -a '/Applications/Junos Pulse.app/Contents/Plugins/JamUI/PulseTray.app/Contents/MacOS/PulseTray'"
+#alias quitvpn2="osascript -e 'tell application \"PulseTray.app\" to quit';sudo launchctl unload -w /Library/LaunchDaemons/net.juniper.AccessService.plist"
+startvpn() {
+    sudo launchctl load -w /Library/LaunchDaemons/net.juniper.AccessService.plist
+    launchctl load -w /Library/LaunchAgents/net.juniper.pulsetray.plist
+}
+quitvpn() {
+    launchctl unload -w /Library/LaunchAgents/net.juniper.pulsetray.plist
+    sudo launchctl unload -w /Library/LaunchDaemons/net.juniper.AccessService.plist
+    osascript -e 'tell application "Junos Pulse" to quit'
+}
+
 ## ===============================================================
 ## ====== SAFER 'rm' COMMANDS ====================
 ## Below: aliases the command "rm" to actually run the script "trash.pl," which moves files to a trash directory in /tmp.
