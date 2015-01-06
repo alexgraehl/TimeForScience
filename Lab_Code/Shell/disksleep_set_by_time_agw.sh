@@ -48,21 +48,23 @@ WORKDAY_END_SLEEP=17  # 5 PM. MUST BE GREATER THAN "START"
 #echo $HR
 #echo $MIN
 
+# pmset -c means only set it for when we are CONNECTED TO WALL POWER (-c). Does not affect disk spin when on battery.
+
 if (( "$ISWEEKEND" == "1" && "$HR" >= "$WEEKEND_START_SLEEP" && "$HR" < "$WEEKEND_END_SLEEP" )); then
     # Ok, sleep the disk, it's a WEEKEND and it's between the "start" (inclusive) and "stop" (inclusive) sleep hours
-    pmset disksleep 10
+    pmset -c disksleep 10
     echo "$NOW $ISWEEKEND: turning ON WEEKEND disk sleep at" `date` >> "/disksleep_status.txt"
     exit 0;
 fi;
 
 if (( "$ISWEEKEND" == "0" && "$HR" >= "$WORKDAY_START_SLEEP" && "$HR" < "$WORKDAY_END_SLEEP" )); then
     # Ok, sleep the disk, it's a WORKDAY and it's between the "start" (inclusive) and "stop" (inclusive) sleep hours
-    pmset disksleep 10
+    pmset -c disksleep 10
     echo "$NOW $ISWEEKEND: turning ON WORKDAY disk sleep at" `date` >> "/disksleep_status.txt"
     exit 0; # our work here is done
 fi;
 
 echo "$NOW $ISWEEKEND: turning OFF disk sleep at" `date` >> "/disksleep_status.txt"
 
-pmset disksleep 0 # I guess we are in the "do not sleep" period so turn OFF disk sleeping!
+pmset -c disksleep 0 # I guess we are in the "do not sleep" period so turn OFF disk sleeping!
 
