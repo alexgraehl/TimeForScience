@@ -694,6 +694,9 @@ defaults write -g NSToolbarFullScreenAnimationDuration -float 0.001
 # scrolling column views
 defaults write -g NSBrowserColumnAnimationSpeedMultiplier -float 0
 
+# DON'T sleep when you push the power button! (Not sure if this works in 10.10+)
+defaults write com.apple.loginwindow PowerButtonSleepsSystem -bool no
+
 # ===============================================================
 
 
