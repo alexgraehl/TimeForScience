@@ -1838,7 +1838,7 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
 }
 
 ### ===============================================================================
-### 
+### pairs.agw
 ### ===============================================================================
 
 pairs.agw <- function(data, groups.vec=NULL, main="Pairs plot. Red points = within-group comparison. Values in lower left are Pearson's R.") { # plot pairs
@@ -1860,7 +1860,7 @@ pairs.agw <- function(data, groups.vec=NULL, main="Pairs plot. Red points = with
      dataWithTwoFakeRowsForPlotting <- rbind(data, "MIN_ROW_AT_END"=rep(themin, times=ncol(data)), "MAX_ROW_AT_END"=rep(themax, times=ncol(data)) )
      
      nGroups    <- nlevels(as.factor(groups.vec))
-     pointAlpha <- 0.75  ## 0.75 = 75% opaque.
+     pointAlpha <- 0.50  ## 0.50 = 50% opaque.
      regularPointColor <- hsv(h=1, s=1, v=0, alpha=pointAlpha) ## The foreground color for points in each "bin"
      backgroundAlpha   <- 1.0
      allBackColors     <- rainbow(n=nGroups*(nGroups-1), s = 0.25, v = 1.0, alpha=backgroundAlpha) ## The background colors for each "bin"
