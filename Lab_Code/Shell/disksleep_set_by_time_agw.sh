@@ -28,8 +28,12 @@ NOW=$(date "+%u-%H-%M") # DAY_OF_WEEK:HOUR24:MINUTE60  (e.g 1:18:22 or 8:18:22)
 
 NOWARR=(${NOW//-/ }) # Split the result of the 'date' command by the hyphen
 WEEKDAY=${NOWARR[0]} # NUMERIC: 1 = Monday... 6 = Saturday, 7 = Sunday
-HR=${NOWARR[1]}  # 0 to 23
-MIN=${NOWARR[2]} # 0 to 59
+HR=${NOWARR[1]}  # 00 to 23
+MIN=${NOWARR[2]} # 00 to 59
+
+HR=$(( 10#$HR ))   # Prevent "08" and "09" from being interpreted as an invalid OCTAL number due to its leading zeroes
+MIN=$(( 10#$MIN )) # Prevent "08" and "09" from being interpreted as an invalid OCTAL number due to its leading zeroes
+
 
 if (("$WEEKDAY" >= "6")); then
     ISWEEKEND=1
