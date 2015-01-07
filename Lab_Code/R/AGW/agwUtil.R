@@ -1880,11 +1880,12 @@ pairs.agw <- function(data, groups.vec=NULL, main="Pairs plot. Red points = with
           origR   <- cor(x[1:(length(x)-2)], y[1:(length(y)-2)], use="pairwise.complete.obs", method="pearson")
           absR   <- abs(origR)
           MIN_CEX_FAC <- 0.4
-          theCex <- cex.cor*max(MIN_CEX_FAC, absR**2, na.rm=T) ## don't let the CEX get any smaller than the MIN_CEX. Correlations closer to zero have smaller text size.
+          corCex <- cex.cor*max(MIN_CEX_FAC, absR**2, na.rm=T) ## don't let the CEX get any smaller than the MIN_CEX. Correlations closer to zero have smaller text size.
+	  if (origR < 0) { corColor = "#990000" } else { corColor = "black" } # Correlation color (negative is dark RED)
           backgroundColor <- hsv(s=0.0,  v=1.0 - 5*(1.0 - max(0.9, absR, na.rm=T))) ## v=1.0 is white, and lower scores = a dark-ish gray. Basically it gets as dark as it's going to get around R=0.7 or thereabouts.
           rect(xleft=-1, ybottom=-1, xright=2, ytop=2, col=backgroundColor)
           text(0.5, 0.5, paste("r=", format(origR, digits=digits, nsmall=digits, scientific=FALSE), sep='')
-               , cex=theCex) ## <-- The closer the correlation value is to zero, the smaller the text size
+               , cex=corCex, col=corColor) ## <-- The closer the correlation value is to zero, the smaller the text size
           box(lwd=boxWidth)
      }
 
