@@ -150,7 +150,8 @@ for(my $j = 0; $j < $num_files; $j++) {
       chomp($$tuple[$last]);
       my $key = &extractKey($tuple, $key_cols, \@sorted_key_cols);
       if(defined($fnames_delim) and $line_no == 1) {
-         &listPrepend($tuple, $files[$j] . $fnames_delim);
+	  die "This is broken, listPrepend doesn't exist for some reason.";
+	  #&listPrepend($tuple, $files[$j] . $fnames_delim);
       }
       if(exists($row{$key})) {
          if(exists($keys_not_seen{$key})) {
@@ -260,6 +261,8 @@ join_multi.pl has weird behavior when you use a totally empty file.
 It will usually add two tabs between fields instead of one. To fix this,
 echo '' >> PREVIOUSLY_EMPTY_FILE before you join_multi.pl it.
 
+
+If you want FILENAMES to be put in the header, try '-fnames "\t" '
 
 OPTIONS are:
 
