@@ -65,8 +65,7 @@ sub decapEnds # ($delim, $str)
 }
 
 # Possibly not necessary...
-sub myChop
-{
+sub myChop {
    if($#_ >= 0)
      { $_[0] =~ s/[\n]$//; }
    else
@@ -75,27 +74,21 @@ sub myChop
 
 
 # Does not clobber the trailing blank entries like split() does.
-sub mySplit
-{
+sub mySplit {
    my ($delim, $str) = @_;
    $delim = defined($delim) ? $delim : "\t";
    $str   = defined($str)   ? $str   : $_;
-
    # Stick a dummy on the beginning and end of the string.
    $str = '{}' . $delim . $str . $delim . '{}';
-
    my @tuple = split($delim, $str);
-
    # Remove the dummies.
    pop(@tuple);
    shift(@tuple);
-
    return \@tuple;
 }
 
 # Returns a permutation of the list passed in as an argument.
-sub permute
-{
+sub permute {
   my(@list) = @_;
   my(@p);
   my($i) = 0;
@@ -110,13 +103,10 @@ sub permute
   return @p;
 }
 
-sub unlexifyNumber
-{
+sub unlexifyNumber {
   my $oldNum = shift @_;
   my $newNum = $oldNum;
-
   $newNum =~ s/([^0-9])0+([1-9])/$1$2/g;
-
   return $newNum;
 }
 
