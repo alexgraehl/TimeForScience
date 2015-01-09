@@ -14,11 +14,13 @@ qstat -f | egrep -i '(Job Id|used.walltime|walltime.remaining|start_time)'      
 
 cat $PRECOLOR \
     | perl -p -e 's/\tC\t/\tCOMPLETE\t/g' \
+    | perl -p -e 's/\tE\t/\tEXITING \t/g' \
     | perl -p -e 's/\tQ\t/\tQUEUED  \t/g' \
     | perl -p -e 's/\tR\t/\tRUNNING \t/g' \
     | perl -p -e 's/\tH\t/\tON HOLD \t/g' \
     | perl -p -e       's/(.*Job ID.*)/\033[31m\t$1\t\033[0m/g' \
     | perl -p -e 's/(.*\bCOMPLETE\b.*)/\033[34m\t$1\t\033[0m/g' \
+    | perl -p -e  's/(.*\bEXITING\b.*)/\033[34m\t$1\t\033[0m/g' \
     | perl -p -e   's/(.*\bQUEUED\b.*)/\033[33m\t$1\t\033[0m/g' \
     | perl -p -e  's/(.*\bRUNNING\b.*)/\033[32m\t$1\t\033[0m/g' \
     | perl -p -e  's/(.*\bON HOLD\b.*)/\033[35m\t$1\t\033[0m/g' \
