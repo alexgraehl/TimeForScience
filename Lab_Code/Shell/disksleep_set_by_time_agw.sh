@@ -31,9 +31,8 @@ WEEKDAY=${NOWARR[0]} # NUMERIC: 1 = Monday... 6 = Saturday, 7 = Sunday
 HR=${NOWARR[1]}  # 00 to 23
 MIN=${NOWARR[2]} # 00 to 59
 
-HR=$(( 10#$HR ))   # Prevent "08" and "09" from being interpreted as an invalid OCTAL number due to its leading zeroes
-MIN=$(( 10#$MIN )) # Prevent "08" and "09" from being interpreted as an invalid OCTAL number due to its leading zeroes
-
+HR=${HR#0}   # strip leading 0--prevents "08" and "09" from being interpreted as an invalid OCTAL number due to its leading zeroes
+MIN=${MIN#0} # strip leading 0--prevents "08" and "09" from being interpreted as an invalid OCTAL number due to its leading zeroes
 
 if (("$WEEKDAY" >= "6")); then
     ISWEEKEND=1
@@ -57,18 +56,18 @@ WORKDAY_END_SLEEP=17  # 5 PM. MUST BE GREATER THAN "START"
 if (( "$ISWEEKEND" == "1" && "$HR" >= "$WEEKEND_START_SLEEP" && "$HR" < "$WEEKEND_END_SLEEP" )); then
     # Ok, sleep the disk, it's a WEEKEND and it's between the "start" (inclusive) and "stop" (inclusive) sleep hours
     pmset -c disksleep 10
-    echo "$NOW $ISWEEKEND: turning ON WEEKEND disk sleep at" `date` >> "/disksleep_status.txt"
+    #echo "$NOW $ISWEEKEND: turning ON WEEKEND disk sleep at" `date` >> "/disksleep_status.txt"
     exit 0;
 fi;
 
 if (( "$ISWEEKEND" == "0" && "$HR" >= "$WORKDAY_START_SLEEP" && "$HR" < "$WORKDAY_END_SLEEP" )); then
     # Ok, sleep the disk, it's a WORKDAY and it's between the "start" (inclusive) and "stop" (inclusive) sleep hours
     pmset -c disksleep 10
-    echo "$NOW $ISWEEKEND: turning ON WORKDAY disk sleep at" `date` >> "/disksleep_status.txt"
+    #echo "$NOW $ISWEEKEND: turning ON WORKDAY disk sleep at" `date` >> "/disksleep_status.txt"
     exit 0; # our work here is done
 fi;
 
-echo "$NOW $ISWEEKEND: turning OFF disk sleep at" `date` >> "/disksleep_status.txt"
+#echo "$NOW $ISWEEKEND: turning OFF disk sleep at" `date` >> "/disksleep_status.txt"
 
 pmset -c disksleep 0 # I guess we are in the "do not sleep" period so turn OFF disk sleeping!
 
