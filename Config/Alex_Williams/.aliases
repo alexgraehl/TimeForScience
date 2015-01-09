@@ -555,9 +555,11 @@ function qin { # qstat with colors for job status, automatic piping into "less"
 	| perl -p -e 's/ Q / QUEUED   /g' \
 	| perl -p -e 's/ R / RUNNING  /g' \
 	| perl -p -e 's/ H / ON HOLD  /g' \
+	| perl -p -e 's/ E / EXITING  /g' \
 	| perl -p -e 's/(.*\bRUNNING\b.*)/\033[32m$1\033[0m/g' \
 	| perl -p -e 's/(.*Job started on.*)/\033[32m$1\033[0m/g' \
 	| perl -p -e 's/(.*\bCOMPLETE\b.*)/\033[35m$1\033[0m/g' \
+	| perl -p -e 's/(.*\bEXITING\b.*)/\033[35m$1\033[0m/g' \
 	| perl -p -e 's/(.*\bON HOLD\b.*)/\033[34m$1\033[0m/g' \
 	| perl -p -e 's/(.*\bQUEUED\b.*)/\033[33m$1\033[0m/g' \
 	| perl -p -e 's/(.*Not Running.*)/\033[33m$1\033[0m/g' \
