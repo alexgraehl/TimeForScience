@@ -207,7 +207,7 @@ alias cheat="echo \
 \">>> GREP Count occurrences of a match per line: cat FILE | grep -o -n SEARCHTERM | cut -d : -f 1 | uniq -c \" ${NL}\
 \">>> TOPHAT/rename TEST: for f in *; do echo \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
 \">>> TOPHAT/rename RUN : for f in *; do   mv \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
-\">>> TORQUE/QSTAT: Delete / kill all your queue jobs: qselect -u \\\$USER | xargs qdel \" ${NL}\
+\">>> TORQUE/QSTAT: Delete / kill all your qsub/queue jobs: qselect -u \\\$USER | xargs qdel \" ${NL}\
 \">>> Perl: Backreferences/does something show up twice on a line: perl -n -e 'print ((\\\$_ =~ /\b(Something\d+)\s.\g1/) ? qq{match: \\\$1\\n} : qq{Nope\\n});' \" ${NL}\
 "
 
@@ -546,25 +546,7 @@ function unmini {
 #     fi
 # }
 
-function qin { # qstat with colors for job status, automatic piping into "less"
-    # R = running, C = complete (these go away soon), H = hold (waiting)
-    qstat -s | perl -p -e 's/ --------- - ---------/ --------- -------- ---------/g' \
-	| perl -p -e 's/ Req.d       Elap/Required           Elapsed/g' \
-	| perl -p -e 's/ Time    S   Time/ Time     Status    Time/g' \
-	| perl -p -e 's/ C / COMPLETE /g' \
-	| perl -p -e 's/ Q / QUEUED   /g' \
-	| perl -p -e 's/ R / RUNNING  /g' \
-	| perl -p -e 's/ H / ON HOLD  /g' \
-	| perl -p -e 's/ E / EXITING  /g' \
-	| perl -p -e 's/(.*\bRUNNING\b.*)/\033[32m$1\033[0m/g' \
-	| perl -p -e 's/(.*Job started on.*)/\033[32m$1\033[0m/g' \
-	| perl -p -e 's/(.*\bCOMPLETE\b.*)/\033[35m$1\033[0m/g' \
-	| perl -p -e 's/(.*\bEXITING\b.*)/\033[35m$1\033[0m/g' \
-	| perl -p -e 's/(.*\bON HOLD\b.*)/\033[34m$1\033[0m/g' \
-	| perl -p -e 's/(.*\bQUEUED\b.*)/\033[33m$1\033[0m/g' \
-	| perl -p -e 's/(.*Not Running.*)/\033[33m$1\033[0m/g' \
-	| less -R -S
-}
+#function qin { # qstat with colors for job status, automatic piping into "less" --- this is now the "qselect.sh" script
 
 function checkbackup {
     # checks the MOST RECENT file in /it/backup/log, and gives you the last 10 lines from that file
