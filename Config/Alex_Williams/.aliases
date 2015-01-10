@@ -548,6 +548,10 @@ function unmini {
 
 #function qin { # qstat with colors for job status, automatic piping into "less" --- this is now the "qselect.sh" script
 
+function qkiri { # kill all own jobs
+    qselect -u $USER | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats;
+}
+
 function checkbackup {
     # checks the MOST RECENT file in /it/backup/log, and gives you the last 10 lines from that file
     echo ""
