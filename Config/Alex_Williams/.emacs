@@ -284,10 +284,10 @@
 
 (add-to-list 'auto-mode-alist '("\\.mak\\'" . makefile-mode))
 (add-to-list 'auto-mode-alist '("/\\Makefile[^/]*\\'" . makefile-mode)) ; Filename has "Makefile" somewhere in it
-(add-to-list 'auto-mode-alist '("\\.txt\\'" . html-mode)) ; so that we get nice highlighting!
-(add-to-list 'auto-mode-alist '("\\.tab\\'" . html-mode)) ; "text-mode" is so plain, so we use the nice HTML mode with highlighting
-(add-to-list 'auto-mode-alist '("\\.lst\\'" . html-mode)) ; "text-mode" is so plain
-(add-to-list 'auto-mode-alist '("\\.dat\\'" . html-mode)) ; "text-mode" is so plain
+;(add-to-list 'auto-mode-alist '("\\.txt\\'" . html-mode)) ; so that we get nice highlighting!
+;(add-to-list 'auto-mode-alist '("\\.tab\\'" . html-mode)) ; "text-mode" is so plain, so we use the nice HTML mode with highlighting
+;(add-to-list 'auto-mode-alist '("\\.lst\\'" . html-mode)) ; "text-mode" is so plain
+;(add-to-list 'auto-mode-alist '("\\.dat\\'" . html-mode)) ; "text-mode" is so plain
 
 
 ;;(defun insert-literal-char (arg)
