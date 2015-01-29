@@ -22,6 +22,46 @@ sub datePrint($) {
     print $d . ":\t" . $_[0];
 }
 
+sub cleanedUpFilename($) {
+    my ($name) = @_;
+    $name =~ s/[.]bam$//i; $name =~ s/[.]bw$//i; ## remove recognized file extensions
+    $name =~ s/[-._]accepted_hits//i; $name =~ s/[-._]sort[e]?[d]?//i; $name =~ s/Browser[-._]//i;
+    return($name);
+}
+
+my %groupsColHash = (); # Key = group name. Value = color string.
+
+sub guessColorFromFilename($) {
+    my ($filename) = @_;
+    # Hopefully guesses a reasonable color based on the filename(s). Tries to cluster samples into groups that are the same color.
+    my @colors = (  "255,0,0" # red
+		    , "0,0,255" # blue
+		    , "0,128,0" # green
+		    , "128,0,128" # purple
+		    , "128,128,128" # gray
+		    , "255,140,0" # orange
+		    , "0,0,0"     # black
+		    , "128,128,0" # olive green
+		    , "0,255,0"   # lime green
+		    , "0,190,255" # sky blue
+		    , "255,0,255" # magenta pink
+		    , "0,255,255" # cyan blue
+		    , "0,128,128" # teal blue-green
+		    , "0,0,128"   # navy blue
+		    , "230,220,0" # dandelion yellow
+		    , "128,0,0"   # dark red
+		    , "100,100,150"); # dark blue-gray
+    my $thisGroup = cleanedUpFilename($filename);
+    $thisGroup = s/[-._:]*//i; # Delete everything after the first hyphen/dot/underscore/other spacer character. We assume whatever was at the BEGINNING was the group name.
+    ($thisGroup ne '') or print STDERR "[WARNING] We could not auto-guess the group name for filename '$filename'. Normally, we assume the grouop is whatever appears BEFORE the first period/hyphen/underscore, and the rest is a replicate number or other ignore-able ID. As a result, colors might not be auto-set by groups!\n";
+    if (!exists($groupsColHash{$thisGroup})) { # Haven't seen this group yet. Assign a color index to this group!
+	my $numGroupsSeenBeforeThis = scalar(keys(%groupsColHash));
+	$groupsColHash{$thisGroup} = $colors[ $numGroupsSeenBeforeThis % scalar(@colors) ]; # Get a color for this group!
+    }
+    my $thisColor = $groupsColHash{$thisGroup};
+    return($thisColor);
+}
+
 sub browserTrackString($$) {
     ## Takes "bigWig" or "bam" as its first argument
     ## and a filename as its second argument.
@@ -32,17 +72,16 @@ sub browserTrackString($$) {
     my $blueColor = "0,0,255"; ## R, G, B, from 0 to 255
     my $color;
     my $parenthetical = "NA"; ## <-- a user-visible additional comment that goes at the end of the track name
-    if ($type eq "bigWig") { $color = qq{color="$redColor"}; $parenthetical = qq{}; }
+    if ($type eq "bigWig") {
+	my $colorByGroup = guessColorFromFilename($filename);
+	$color = qq{color="$colorByGroup"}; $parenthetical = qq{};
+    }
     if ($type eq "bam") { $color = qq{colorByStrand="$redColor $blueColor"}; $parenthetical = qq{ (reads)}; }
     
     my $visStatus = "full";
     if ($type eq "bam") { $visStatus = qq{dense}; } ## bam tracks are DENSE (almost totally hidden) by default
     if ($type eq "bigWig") { $visStatus = qq{full}; } ## bigwig tracks are FULL (shown) by default
-
-    my $cleanedUpName = $filename;
-    $cleanedUpName =~ s/\.bam$//i; $cleanedUpName =~ s/\.bw$//i; ## remove file extensions
-    $cleanedUpName =~ s/.accepted_hits//i; $cleanedUpName =~ s/.sort//i; $cleanedUpName =~ s/Browser.//i;
-    
+    my $cleanedUpName = cleanedUpName($filename);
     my $url = "https://gb.ucsf.edu/bio/browser/YOURLOCATION/${filename}";
     my $str = qq{track type=${type} name="${cleanedUpName}${parenthetical}" description="${cleanedUpName}${parenthetical}" bigDataUrl="${url}" visibility=${visStatus} ${color}\n};
     return($str);
