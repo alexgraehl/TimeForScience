@@ -67,30 +67,33 @@ sub browserTrackString($$) {
     ## and a filename as its second argument.
     ## Output: a NEW string that is what the genome browser track description would look like for this file.
     my ($type, $filename) = @_; ## input arguments: type must be bigWig or bam
-    if ($type ne "bigWig" and $type ne "bam") { die "Sorry, we only know how to write BIGWIG and BAM files. Problem!\n"; }
-    my $redColor = "255,0,0";  ## R, G, B, from 0 to 255
-    my $blueColor = "0,0,255"; ## R, G, B, from 0 to 255
-    my $color;
-    my $parenthetical = "NA"; ## <-- a user-visible additional comment that goes at the end of the track name
+    my $parenthetical = ""; ## <-- a user-visible additional comment that goes at the end of the track name
+    my $options       = "";
     if ($type eq "bigWig") {
 	my $colorByGroup = guessColorFromFilename($filename);
-	$color = qq{color="$colorByGroup"}; $parenthetical = qq{};
+	$parenthetical = qq{ (wig)};
+	$options .= qq{ } . qq{alwaysZero="on"};
+	$options .= qq{ } . qq{visibility="full"}; ## bigwig tracks are FULL (shown) by default
+	$options .= qq{ } . qq{color="$colorByGroup"};
+    } elsif ($type eq "bam") {
+	$parenthetical = qq{ (reads)};
+	$options .= qq{ } . qq{visibility="dense"};  ## bam tracks are DENSE (almost totally hidden) by default
+	$options .= qq{ } . qq{colorByStrand="255,0,0 0,0,255"}; # Forward strand reads = red, reverse strand reads = blue.
+    } else {
+	die "[ERROR] Sorry, we only know how to write BIGWIG and BAM files. You specified '$type'. This is a problem!\n";
     }
-    if ($type eq "bam") { $color = qq{colorByStrand="$redColor $blueColor"}; $parenthetical = qq{ (reads)}; }
-    
-    my $visStatus = "full";
-    if ($type eq "bam") { $visStatus = qq{dense}; } ## bam tracks are DENSE (almost totally hidden) by default
-    if ($type eq "bigWig") { $visStatus = qq{full}; } ## bigwig tracks are FULL (shown) by default
-    my $cleanedUpName = cleanedUpName($filename);
     my $url = "https://gb.ucsf.edu/bio/browser/YOURLOCATION/${filename}";
-    my $str = qq{track type=${type} name="${cleanedUpName}${parenthetical}" description="${cleanedUpName}${parenthetical}" bigDataUrl="${url}" visibility=${visStatus} ${color}\n};
+    my $clean = cleanedUpFilename($filename);
+    my $cleanWithoutScale = $clean; $cleanWithoutScale =~ s/[-. _]scaled[-. _]by[-. _].*//;
+    my $cleanWithSpaces   = $clean; $cleanWithSpaces   =~ s/[-. _]scaled[-. _]by[-. _]/ scaled by /;
+    my $str = qq{track type=${type} name="${cleanWithoutScale}${parenthetical}" description="${cleanWithSpaces}${parenthetical}" bigDataUrl="${url}"} . $options . qq{\n};
     return($str);
 }
+
 
 my $makeWig = 1; ## By default, generate a bigwig track too. Specify "nowig" to avoid this.
 my $shouldSort = 1; ## By default, assume the input SAM/BAM file will still require sorting.
 my $shouldScale = 1; ## By default, scale the wiggle tracks to a common height. If we SHOULD scale, then we divide all the values by the (number of reads in the BIGGEST file / number of reads in THIS file)
-
 my $shouldKeepTempFiles = 0;
 
 # ==============================================================================
