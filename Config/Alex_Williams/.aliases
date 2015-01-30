@@ -271,8 +271,14 @@ alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv /tmp/${USER}/Tras
 ## "showoff" makes it so that everyone can a+rx any directories and a+r any files.
 ## Note that we don't want to make it so everyone can execute *files* necessarily, just folders
 ## ("Executing" a folder means you can "ls" it and see what's inside.)
-function showoff     { for var in "$@"; do echo "showoff: Using chmod -R to allow ANY USER to browse \"$var\""; chmod -R a+r "$var" ; find "$var" -type d -type d -exec chmod a+x \{\} \; ; done }
-function sudoshowoff { for var in "$@"; do echo "sudoshowoff: Using sudo chmod -R to allow ANY USER to browse \"$var\""; sudo chmod -R a+r "$var" ; sudo find "$var" -type d -type d -exec sudo chmod a+x \{\} \; ; done }
+function showoff {
+    if [ "$#" -eq 0 ]; then echo "Usage: 'showoff' requires path argument(s)! Example: 'showoff ./' for the current directory."; return; fi
+    for var in "$@"; do echo "showoff is now running 'chmod -R' to allow ANY USER to browse \"$var\""; chmod -R a+r "$var" ; find "$var" -type d -type d -exec chmod a+x \{\} \; ; done
+}
+function sudoshowoff {
+    if [ "$#" -eq 0 ]; then echo "Usage: 'sudoshowoff' requires path argument(s)! Example: 'sudoshowoff ./' for the current directory."; return; fi
+    for var in "$@"; do echo "sudoshowoff: Using sudo chmod -R to allow ANY USER to browse \"$var\""; sudo chmod -R a+r "$var" ; sudo find "$var" -type d -type d -exec sudo chmod a+x \{\} \; ; done
+}
 
 alias google="gcutil --project blast-meta ssh test-micro-instance"
 
