@@ -37,7 +37,7 @@ basecolor() {
     ## Example:  cat myfile | sed 's/1/2/' | basecolor 
     #sed -e 's/\(AA*\)/\1'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
 
-    perl /data/home/alexgw/TimeForScience/Config/1_Shell_Config/lesspipe_extra_bamfile_coloration.pl
+    perl ${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_extra_bamfile_coloration.pl
 
     #sed -e 's/A/'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
 
@@ -80,7 +80,7 @@ lesspipe() {
 	# Color code the bases A, C, G, and T
 	*.sam|*.sam.gz|*.sam.bz2|*.fasta|*.fasta.gz|*.fasta.bz2|*.fastq|*.fastq.gz|*.fastq.bz2|*.fa|*.fa.gz|*.fa.bz2|*.fq|*.fq.gz|*.fq.bz2) smartdecompress "$1" | basecolor ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
 
-#	*.bam) echo '######\n### Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format ###\n######' ; samtools view -h "$1" | sed 's/A/'"$(printf '\033[1mA\033[0m')"'/g' ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
+###########	*.bam) echo '######\n### Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format ###\n######' ; samtools view -h "$1" | sed 's/A/'"$(printf '\033[1mA\033[0m')"'/g' ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
 
 	*.tar) tar tvvf "$1" ;;
 	*.tgz|*.tar.gz|*.tar.[zZ]) tar tzvvf "$1" ;;
