@@ -69,20 +69,15 @@ my %sets;
 
 my $filep;
 open($filep, $file) or die("Could not open file '$file' for reading");
-while(<$filep>)
-{
+while(<$filep>) {
    my @tuple = split($delim, $_);
    chomp($tuple[$#tuple]);
    my $item1 = $tuple[$key_col1];
    my $item2 = $tuple[$key_col2];
 
-   if($item1 =~ /\S/ and $item2 =~ /\S/)
-   {
+   if($item1 =~ /\S/ and $item2 =~ /\S/) {
       &addEntry(\%sets, $item1, $item2);
-      if($symmetric)
-      {
-         &addEntry(\%sets, $item2, $item1);
-      }
+      if($symmetric) {    &addEntry(\%sets, $item2, $item1); }
    }
 }
 close($filep);
@@ -92,18 +87,14 @@ close($filep);
 
 exit(0);
 
-sub addEntry
-{
+sub addEntry {
    my ($sets, $from, $to) = @_;
 
-   if(not(exists($$sets{$from})))
-   {
+   if(not(exists($$sets{$from}))) {
       my %set;
       $$sets{$from} = \%set;
    }
-
    my $set = $$sets{$from};
-
    $$set{$to} = 1;
 }
 
