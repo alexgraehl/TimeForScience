@@ -47,21 +47,7 @@ print STDERR "Note: sets.pl does something similar to what this script does, but
 # For example, if you have a list of gene interactions of some kind,
 # it prints out "1" when the interaction is in the list, and "0" otherwise.
 
-# Give it TWO columns,:
-# A  B
-# A  C
-# A  D
-# B  C
-# D  E
 
-# And it will give you back:
-#    A  B  D
-# B  1  0  0
-# C  1  1  0
-# D  0  0  0
-# E  0  0  1
-
-# If you give it THREE columns instead, then it gives you the value in the third column!
 
 # Flush output to STDOUT immediately.
 #$| = 1;
@@ -124,10 +110,10 @@ while(my $line = <$filep>) {
 
     if (defined($numItemsSeenBefore) && ($numItemsSeenBefore != $numItems)) { print STDERR "[WARNING]: matrixFromEdges.pl: on line $lineNum of <$file>, we only detected a total of $numItems delimited items, whereas we had earlier seen $numItemsSeenBefore items! This may be a serious error.\n"; }
 
-    if ($key_col1 > $numItems) { print STDERR "[WARNING: matrixFromEdges.pl: on line $lineNum of <$file>. Num items on line: $numItems, but we were looking for a first key at position $key_col1 (counting from 1, not zero, but which is still out of bounds)!\n";
+    if ($key_col1 > $numItems) { print STDERR "[WARNING]: matrixFromEdges.pl: on line $lineNum of <$file>. Num items on line: $numItems, but we were looking for a first key at position $key_col1 (counting from 1, not zero, but which is still out of bounds)!\n";
     } else { $item1 = $lar[$key_col1 - 1]; }
 
-    if ($key_col2 > $numItems) { print STDERR "[WARNING: matrixFromEdges.pl: on line $lineNum of <$file>. Num items on line: $numItems, but we were looking for a second key at index $key_col2! (counting from 1, not zero, but which is still out of bounds)!\n";
+    if ($key_col2 > $numItems) { print STDERR "[WARNING]: matrixFromEdges.pl: on line $lineNum of <$file>. Num items on line: $numItems, but we were looking for a second key at index $key_col2! (counting from 1, not zero, but which is still out of bounds)!\n";
     } else { $item2 = $lar[$key_col2 - 1 ]; }
 
     if ($should_output_binary_options) {
@@ -137,8 +123,11 @@ while(my $line = <$filep>) {
     }
 
     if (!exists($seen{$item1})) { %{$seen{$item1}} = (); }
-    print "Value was $value...\n";
-    print "Value col was $val_col and num items was $numItems...\n";
+    #print STDERR "Value was $value...\n";
+    #print STDERR "Value col was $val_col and num items was $numItems...\n";
+
+    #if (exists($seen{$item1}{$item2})) { print STDERR "[WARNING]: matrixFromEdges.pl: on line $lineNum of <$file>, we saw a duplicate key/value pair ($item1 and $item2) that we had also seen earlier!\n"; }
+
     $seen{$item1}{$item2} = $value;
     $keySet1{$item1} = 1; $keySet2{$item2} = 1;
     
@@ -160,28 +149,46 @@ my @sortedKeys1 = sort(keys(%keySet1));
 my @sortedKeys2 = sort(keys(%keySet2));
 
 # ================ HEADER LINE =======================
-print "\t"; # <-- Empty cell in the top left corner of the output
+print STDOUT "\t"; # <-- Empty cell in the top left corner of the output
 foreach my $k2 (@sortedKeys2) {
-    print $k2 . $outdelim;
+    print STDOUT $k2 . $outdelim;
 }
-print "\n"; # Done with the header line
+print STDOUT "\n"; # Done with the header line
 # ================ [DONE] WITH HEADER LINE ============
 
 foreach my $k1 (@sortedKeys1) {
-    print $k1 . $outdelim;
+    print STDOUT $k1 . $outdelim;
     foreach my $k2 (@sortedKeys2) {
 	my $cell = (exists($seen{$k1}{$k2})) ? $seen{$k1}{$k2} : $missingVal;
-	print $cell . $outdelim;
+	print STDOUT $cell . $outdelim;
     }
-    print "\n";
+    print STDOUT "\n";
 }
-#setsPrintMatrix(\%seen, \*STDOUT, "\t"); # <-- in libset.pl
 
-exit(0);
-
+exit(0); # Done
 
 __DATA__
 syntax: edges2matrix.pl [OPTIONS]
+
+Runs in two modes: TWO COLUMN mode and THREE COLUMN mode:
+# Give it TWO columns,:
+# A  B
+# A  C
+# A  D
+# B  C
+# D  E
+
+# And it will give you back:
+#    A  B  D
+# B  1      
+# C  1  1   
+# D         
+# E        1     <-- '1's indicate the spaces that had a pairing in the input file
+
+# If you give it THREE columns instead, then instead of getting a 1, you get the value from that third column!
+# In the case of duplicates, you get the LAST value seen. This is not a well-defined behavior.
+
+* Note: "sets.pl" is very similar to this script, and has some additional features too!
 
 OPTIONS are:
 
