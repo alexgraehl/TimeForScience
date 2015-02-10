@@ -2,14 +2,21 @@
 
 # note: sets.pl will probably do this, only better
 
+print STDERR "Note: sets.pl does something similar to what this script does, but with more options!";
 
-die "Note: sets.pl probably does what this script does, only better.";
-
-# You feed this program two columns, and it gives you a matrix.
+# If you feed this program two columns, and it gives you a matrix.
 # For example, if you have a list of gene interactions of some kind,
 # it prints out "1" when the interaction is in the list, and "0" otherwise.
 
-# Give it this:
+
+# If you feed this program THREE columns, it gives you a matrix with the cell value being whatever was in the third column.
+# For example, if you have a list of gene interactions of some kind,
+# it prints out "1" when the interaction is in the list, and "0" otherwise.
+
+
+# There are TWO MODES for this:
+
+# Give it TWO columns,:
 # A  B
 # A  C
 # A  D
@@ -23,14 +30,12 @@ die "Note: sets.pl probably does what this script does, only better.";
 # D  0  0  0
 # E  0  0  1
 
+# If you give it THREE columns instead, then it gives you the value in the third column!
+
 # The FIRST column becomes the top of the matrix.
 # The SECOND column becomes the index on the left of the matrix.
 
 use strict;
-
-sub printMatrix;
-
-printMatrix();
 
 sub printMatrix {
     my(%matrix); # The hash that will have the IDs as keys
@@ -74,3 +79,6 @@ sub printMatrix {
     }
     
 }
+
+
+printMatrix();
