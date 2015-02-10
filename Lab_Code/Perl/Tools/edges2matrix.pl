@@ -25,6 +25,7 @@
 ##
 ## Written: 00/00/02
 ## Updated: 00/00/02
+## Updated by AGW: Feb 10 2015
 ##
 ##############################################################################
 ##############################################################################
@@ -34,8 +35,6 @@ use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl
 
 use strict;
 use warnings;
-
-print STDERR "Note: sets.pl does something similar to what this script does, but with more options!\n";
 
 # Two options: give this program TWO COLUMNS of data or THREE COLUMNS.
 
