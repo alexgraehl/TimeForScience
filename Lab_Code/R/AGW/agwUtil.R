@@ -1408,7 +1408,7 @@ heatmap.agw <- function(mmm, breaks=12, labRow=NULL, labCol=NULL, colorVec=NULL,
      ##                   or "gray" or "brown" or "sepia" or "heat"
 
      ## command for testing:
-     ## NN = 40; source("~/TimeForScience/Lab_Code/R/AGW/agwPlot.R") ; m=matrix(rnorm(NN*10),ncol=NN); m[1:10,1] <- 50; m[1:5,2] <- -10; pdf.for.heatmap.agw("zog.pdf", m); heatmap.agw(m, breaks=seq(-6,6,length.out=12), colorStyle="blueBlackYellow2") ; dev.off()
+     ## NN = 40; source("~/TimeForScience/Lab_Code/R/AGW/agwUtil.R") ; m=matrix(rnorm(NN*10),ncol=NN); m[1:10,1] <- 50; m[1:5,2] <- -10; pdf.for.heatmap.agw("zog.pdf", m); heatmap.agw(m, breaks=seq(-6,6,length.out=12), colorStyle="blueBlackYellow2") ; dev.off()
      
      ## colorVec: the SPECIFIC list of colors to pass in. Must be equal in length to (breaks - 1)
      ## colorStyle: OR you can specify the colors as a style. This is one of the strings accepted by "colors.agw"--for example, "sepia" or "gray" or "blueblackyellow"
