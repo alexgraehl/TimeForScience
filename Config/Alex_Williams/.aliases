@@ -78,27 +78,27 @@ alias cheat="echo \
 \">>> Filesystem: show what files are being read/written: sudo fs_usage \" ${NL}\
 \">>> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
 \">>> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
-\">>> Mac OS X show weird file flags: ls -l -@ \" ${NL}\
-\">>> Mac OS X recursively clear worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
-\">>> Mac OS X delete impossible-to-delete files find FILE -flags schg -exec chflags noschg {} \\; \" ${NL}\
-\">>> Mac OS X show library: chflags nohidden ~/Library/ \" ${NL}\
+\">>> Mac: show weird file flags: ls -l -@ \" ${NL}\
+\">>> Mac: recursively clear worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
+\">>> Mac: delete impossible-to-delete files find FILE -flags schg -exec chflags noschg {} \\; \" ${NL}\
+\">>> Mac: show library: chflags nohidden ~/Library/ \" ${NL}\
+\">>> Mac: batch change modification time: find . -print0 | xargs -0 SetFile -d '12/31/2012 12:00:00 PM' \" ${NL}\
+\">>> Mac: No quarantine warn  : defaults write com.apple.LaunchServices LSQuarantine -bool NO \" ${NL}\
+\">>> Mac: No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
+\">>> Mac: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
+\">>> Mac: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
 \">>> Image SIPS: PNG -> JPEG: mkdir outjpegs; sips -s format jpeg *.png --out outjpegs \" ${NL}\
 \">>> Imagemagick convert recursive: find ./ -name \\\"*.jp*\\\" -print0 | xargs -0 -I{} convert -resize 1024x768 -quality 85 {} {} \" ${NL}\
-\">>> Mac batch change modification time: find . -print0 | xargs -0 SetFile -d '12/31/2012 12:00:00 PM' \" ${NL}\
 \">>> MP3: Convert ogg->mp3 for name in *.ogg; do ffmpeg -i \\\"\\\$name\\\" -ab 256k -map_metadata 0:s:0 \\\"Converted_\\\${name/.ogg/.mp3}\\\"; done; \" ${NL}\
-\">>> No quarantine warn  : defaults write com.apple.LaunchServices LSQuarantine -bool NO \" ${NL}\
-\">>> No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
-\">>> Select in QuickLook : defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
-\">>> No smooth scroll    : defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
-\">>>  \" ${NL}\
+\" \" ${NL}\
 \">>> Check directories for differences (by modification time): ionice -c3 rsync --dry-run --delete -vr /dirA /dirB \" ${NL}\
 \">>> Find all .R files in a directory:   find ./ -name \\\"*.R\\\" -exec ls \'{}\' \\\; \" ${NL}\
 \">>> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
 \" \" ${NL}\
-\">>> Bash script header (3 lines): #!/bin/bash -u   set -e   set -o pipefail \" ${NL}\
-\">>> Bash: Literal tab in bash: \$'\\t' (example: join -t \$'\\t' to join on tabs) or \\\$(echo -en '\\t') . In MAKE: printf '\\t' \" ${NL}\
+\">>> BASH script header (3 lines): #!/bin/bash -u   set -e   set -o pipefail \" ${NL}\
+\">>> BASH: Literal tab: \$'\\t' (example: join -t \$'\\t' to join on tabs) or \\\$(echo -en '\\t') . In MAKE: printf '\\t' \" ${NL}\
 \">>> sh: Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
-\">>> Python debugger: Crashing program? Run python -m pdb YOURPROG --yourargs . 'c' continues execution. \" ${NL}\
+\">>> PYTHON debug a crashing program: python -m pdb YOURPROG --yourargs . 'c' continues execution. \" ${NL}\
 \" \" ${NL}\
 \">>> R: Save copy as pdf: dev.copy2pdf() \" ${NL}\
 \">>> R: Read bzip/gz file:  x <- read.table(bzfile(\\\"name.bz2\\\") or gzfile(...) \" ${NL}\
@@ -150,6 +150,7 @@ alias cheat="echo \
 \">>> NIX: list files w/modified time between 6 and 9 minutes ago: find . -mmin +5 -mmin -10 \" ${NL}\
 \">>> NIX: list ONLY dot files, no .. or up a directory: ls -l .??* \" ${NL}\
 \">>> NIX: set up symlinks from Mercurial/TimeForScience: ln -sfn ~/TimeForScience/Config/Alex_Williams/.??* ~/ \" ${NL}\
+\">>> NIX: symlink executables: for f in \\\$(find PATH -maxdepth 1 -perm -111 -type f); do ln -s \\\$f ./; done \" ${NL}\
 \">>> NIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
 \">>> NIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
 \">>> NIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
