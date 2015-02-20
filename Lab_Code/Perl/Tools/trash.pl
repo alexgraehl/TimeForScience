@@ -38,20 +38,25 @@
 
 use strict;
 use warnings;
+#use threads;
 
-my $hasBasename = 1; # if "File::Basename" is installed and can be relied on for "basename" and "dirname"
 my $outputIsColorTerminal = (-t STDOUT); # Check if the output is to the TERMINAL (then we should print color), or to a redirect (then don't print color!)
 
+my $debugMode = 0;
+my $pn = "trash.pl"; # program name
 
+use File::Path qw(make_path); # make_path is basically "mkdir -p"
 use Cwd ('abs_path', 'getcwd');
+use File::Copy; # copy(...) and move(...)
 
 eval {
     require File::Basename;
     File::Basename->import();
 }; # <-- mandatory semicolon!!! or it breaks horribly
 if($@) {
-    $hasBasename = 0;
+    #$GLOBAL_HAS_BASENAME = 0;
     warn "Note: File::Basename Perl library is not installed / not in the include path.";
+    exit(1);
     # FAILURE!!! Cannot find File::Basename apparently
 }
 
@@ -65,78 +70,62 @@ if($@) {
     # FAILURE!!! Cannot find Term::ANSIColor apparently
 }
 
-# sub hasBashColor() {
-#     {
-# 	## Check that the TERM is a color one...
-# 	my $theTerm = $ENV{'TERM'};
-# 	if (!defined($theTerm)) { return 0; }
-# 	if (!(($theTerm eq 'xterm-color') || ($theTerm eq 'xterm-256color'))) { return 0; }
-#     }
+sub trimWhitespace($) { my $str = shift; $str =~ s/^\s+//; $str =~ s/\s+$//; return $str; }
+sub getFilesystemIDForPath($) { my $path = shift; return ((stat("${path}"))[0]); } # "stat" is a perl built-in. Returns a number!
 
-#     ## Check that ths shell is BASH, because nothing else will understand these escape sequences...
-#     my $theShell = $ENV{'SHELL'};
-#     if (!defined($theShell)) { return 0; }
-    
-#     if ($theShell =~ /.*bash$/) { return 1; }
-#     else { return 0; }
 
-# }
+my $MAX_DUPE_FILENAMES = 1000; # <-- number of duplicate-named files allowed in a directory before we just give up
 
-sub trim($) {
-    my $string = shift;
-    $string =~ s/^\s+//;
-    $string =~ s/\s+$//;
-    return $string;
-}
+my $USER = getlogin() || ((getpwuid($<))[0]) || undef; # Note the fallbacks---getlogin SHOULD work however!
+(defined($USER) && (length($USER)>0)) or die qq{We could not get your current logged-in username! We need it to make the trash directory in /tmp!\n};
+($USER =~ m/^[-_.\w]+$/)              or die qq{The username (\"$USER\") contains DANGEROUS characters in it that would not be suitable for making a directory! (Examples: spaces, or a star, or a plus, or a quotation mark, or a slash, or a backslash, etc etc! We cannot reliably create a trash directory without it being dangerous!!! Quitting.\n};
 
-if ( scalar @ARGV == 0) {
-    die "trash.pl needs at least one argument. It works in a similar fashion to *rm*.\nUsage: trash.pl thing1 thing2 thing3 ...\n\n";
-}
+my $TRASH_ROOT = qq{/tmp/$USER/Trash};
 
-my $MAX_INDEX = 1000; # <-- number of duplicate-named files allowed in a directory
-
-my $username = `whoami`;
-chomp($username);
-if (!(length($username) > 0)) {
-    die qq{We could not get your username! We need it to make the trash directory in /tmp!\n};
-}
-if (!defined($username) || (length($username) <= 0) || $username =~ /[\/\\"' 	*+]/) {
-    die qq{The username is either blank, or it has either a space in it, or a tab, or a star, or a plus, or a quotation mark, or a slash, or a backslash! We cannot reliably create a trash directory without it being dangerous!!!\n};
-}
+my $tab = " " x length("$pn: "); # "tab" is just the number of spaces in the program name
 
 
 
-
-
-my $tab = " " x length("trash.pl: "); # "tab" is just the number of spaces in the program name
-
-print STDOUT (qq{-} x 80) . "\n";
-
-
-sub fatalComplaint($$) {
-    anyComplaint(@_, "red");
-    exit(1);
-}
-
-sub complain($$) {
-    return(anyComplaint(@_, "yellow"));
-}
-
-sub anyComplaint($$$) {
+sub printComplaintAboutFile($$$) {
     my ($aboutWhat, $why, $color) = @_;
     if ($outputIsColorTerminal) { print STDOUT color($color); }
-    print ("trash.pl: Not deleting \"$aboutWhat\": " . $why . "\n");
+    print ("$pn: Not deleting \"$aboutWhat\": " . $why . "\n");
     if ($outputIsColorTerminal) { print STDOUT color("reset"); }
 }
 
+sub fatalExit($$)   { printComplaintAboutFile($_[0], $_[1], "red"); exit(1); }
+sub complainAboutFile($$) { return(printComplaintAboutFile($_[0], $_[1], "yellow")); }
+
+sub printInfo($) {
+    my ($info) = @_;
+    chomp($info);
+    if ($outputIsColorTerminal) { print STDOUT color("green"); }
+    print ("$pn: $info\n");
+    if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+}
+
+# ========================================================================
+
+(scalar(@ARGV) > 0) or die "$pn needs at least one argument--the file(s) to delete. It works in a similar fashion to *rm*.\nUsage: $pn file1 file2 file3 ...\n\n";
+
+
+print STDOUT (qq{-} x 80) . "\n";
+
+if (not (-d ${TRASH_ROOT})) {
+    printInfo(qq{Making new trash directory: \"${TRASH_ROOT}\"});
+    File::Path::make_path(${TRASH_ROOT}, { verbose => ($debugMode ? 1 : 0), mode => 0700 } ) or die "Failed to make trash root directory \"${TRASH_ROOT}\". This may be a permissions issue."; # 0700 = we can read/write this file, but no one ELSE can!
+    (-d ${TRASH_ROOT}) or die "Failed to create trash root directory.";
+}
+
+my $TRASH_ROOT_FILESYSTEM_ID = getFilesystemIDForPath($TRASH_ROOT); # The actual physical(?) filesystem ID. We will use this check to see if a "mv" operation just moves the file on the same filesystem (fast) or has to copy it to the trash on a DIFFERENT filesystem (slow!)
 
 foreach my $itemToCheck (@ARGV) {
     ## Go through and CHECK first to see what files are super duper unsafe for deletion, and quit if we find any.
-    $itemToCheck = trim($itemToCheck);
+    $itemToCheck = trimWhitespace($itemToCheck);
 
     my $HOME = $ENV{"HOME"};
     if ($itemToCheck =~ /^[\/]*$HOME[.\/]*$/) {
-	fatalComplaint($itemToCheck, "you cannot remove the home directory! You can use /bin/rm to attempt to remove it if you really must.")
+	fatalExit($itemToCheck, "you cannot remove the home directory! You can use /bin/rm to attempt to remove it if you really must.")
     }
 
     if (($itemToCheck =~ /^[.\/]*Applications[.\/]+Utilities[.\/]*$/)
@@ -145,177 +134,110 @@ foreach my $itemToCheck (@ARGV) {
 	or ($itemToCheck =~ /^[.\/]*$HOME[.\/]+(Desktop|Library|Documents)[.\/]*$/) ## protect only the ROOT level of these
 	or ($itemToCheck =~ /^[.\/]*(Applications|sbin|bin|boot|dev|etc|lib|mnt|opt|sys|usr|var)[.\/]*$/) ## protect only the ROOT level of these
 	) {
-	fatalComplaint($itemToCheck, "removing this system file is unsafe! Trash.pl will not peform this operation! You can use /bin/rm if you REALLY want to remove it. Quitting.");
+	fatalExit($itemToCheck, "removing this system file is unsafe! $pn will not peform this operation! You can use /bin/rm if you REALLY want to remove it. Quitting.");
     }
     
-    if (($itemToCheck =~ /^[.\/]+$/) ## any combination of just dots or slashes, and nothing else
-	) {
-	fatalComplaint($itemToCheck, "removing a file that is the current directory or is directly above the current directory is not something that trash.pl thinks is safe! Trash.pl will not peform this operation! You can use /bin/rm if you REALLY want to remove it. Quitting.");
+    if (($itemToCheck =~ /^[.\/\\]+$/)) { ## any combination of just dots or slashes/backslashes, and nothing else
+	fatalExit($itemToCheck, "removing a file that is the current directory or is directly above the current directory is not something that $pn thinks is safe! $pn will not peform this operation! You can use /bin/rm if you REALLY want to remove it. Quitting.");
     }
 }
 
 my $numItemsDeleted = 0;
-foreach my $itemToDelete (@ARGV) {
-    #print $itemToDelete . "\n";
-    $itemToDelete = trim($itemToDelete);
-    
-    if ($itemToDelete =~ m|/+$|) {
-	# Ends in a slash...
-	$itemToDelete =~ s|/+$||; # Remove the extraneous trailing slash(es) on any item to delete. Solves the problem of us deleting directories by following a symlink! Important; otherwise "rm SYMLINK/" removes the real directory instead of the symlink!
-	if (-l $itemToDelete || -d $itemToDelete) {
-	    # Looks like it was OK to delete, as long as we don't try to delete it with the '/' at the end (which we have removed already
-	} else {
-	    complain($itemToDelete, "it had a trailing slash, but was not a symlink or a directory!");
-	    next;
-	}
-
+foreach my $deleteMe (@ARGV) {
+    $deleteMe = trimWhitespace($deleteMe);
+    if (($deleteMe =~ m|/+$|) and (not -l $deleteMe) and (not -d $deleteMe)) {
+	fatalExit($deleteMe, "ends in a trailing slash, but was not a symlink or a directory!");
+	next;
     }
+    $deleteMe =~ s|/+$||; # Remove any extraneous trailing slash(es) on any item to delete. Solves the problem of us deleting directories by following a symlink! Important; otherwise "rm SYMLINK/" removes the real directory instead of the symlink!
 
-    if ($itemToDelete =~ m|^-| && (!(-l $itemToDelete)) && (!(-e $itemToDelete))) {
-	# If the option starts with a hyphen AND it isn't a file or symlink
-	complain($itemToDelete, "it was not a filename, and it appears to have been intended as a command line switch, which trash.pl does not make any use of.");
+    if ($deleteMe =~ m/^-/ && (!(-l $deleteMe)) && (!(-e $deleteMe))) { # If the argument starts with a hyphen AND it isn't a file or symlink, it's probably a mistaken attempt at a command line argument.
+	complainAboutFile($deleteMe, "it was not a filename, and it appears to have been intended as a command line switch, which $pn does not make any use of.");
+	next;
     }
     
-    if ((not (-l $itemToDelete)) and (not (-e $itemToDelete))) {
-	# The item doesn't even exist (and it isn't a symlink), so skip it
-	complain($itemToDelete, "it did either not exist or could not be read. Check that this file actually exists.");
+    if ((not (-l $deleteMe)) and (not (-e $deleteMe))) {
+	complainAboutFile($deleteMe, "it did either not exist (and is not a symlink) or could not be read. Check that this file actually exists.");
 	next;
     }
 	
-    if (not (-f $itemToDelete || -d $itemToDelete || -l $itemToDelete)) {
-	# The thing to delete has to be either a file (-f), a directory (-d), or a symlink (-l).
-	complain($itemToDelete, "it was not a file, directory, or symlink. You can use /bin/rm to remove it if you really want to.");
+    if (not (-f $deleteMe || -d $deleteMe || -l $deleteMe)) { # The thing to delete has to be either a file (-f), a directory (-d), or a symlink (-l).
+	complainAboutFile($deleteMe, "it was not a file, directory, or symlink. You can use /bin/rm to remove it if you really want to.");
 	next;
     }
 
-    my $thepath = undef;
+    my $delPath = (-l $deleteMe) ? $deleteMe : abs_path($deleteMe);   # <-- If it's a symlink (-l), then DO NOT FOLLOW the symlink to the real file---just delete the symlink! Otherwise get the abs_path
+    my $basename = File::Basename::basename($delPath);
+    my $dirname  = File::Basename::dirname($delPath);
 
-    if (-l $itemToDelete) {
-	# the "item to delete" is a symbolic link. Therefore, do NOT follow the symlink and delete the real file. Instead, just delete the symlink.
-	$thepath = $itemToDelete; # <-- just delete the symlink, DON'T follow the link to the real file!!!
-    } else {
-	$thepath = abs_path($itemToDelete); # <-- figure out what the full path of this file is.
-    }
-
-    #print "Item to delete: " . $thepath . "\n";
-
-    my $basename;
-    my $dirname;
-
-    if ($hasBasename) {
-	$basename = File::Basename::basename($thepath);
-	$dirname  = File::Basename::dirname($thepath);
-    } else {
-	#fall back onto the system version of these commands!
-	print "trash.pl note: Perl File::Basename could not be located, so we are falling back to the system version of 'basename' and 'dirname'.\n";
-	$basename = `basename "${thepath}"`; # this might be unsafe...?
-	chomp($basename); # Critical to remove the newline!
-	$dirname  = `dirname "${thepath}"`;
-	chomp($dirname); # Critical to remove the newline!
-    }
-    #print "Full name of the thing we are deleting to make: " . $thepath . "\n";
-    #print "Location to put it: " . "/tmp/alexgw/Trash" . $thepath . "\n";
+    #print "Full name of the thing we are deleting to make: " . $delPath . "\n";
+    #print "Location to put it: " . "/tmp/alexgw/Trash" . $delPath . "\n";
 
     #print "Specific file/folder: " . $basename . "\n";
     #print "Directory that it is in: " . $dirname . "\n";
     #print "\n";
 
-    my $trash = qq{/tmp/${username}/Trash};
+    my $fsys = getFilesystemIDForPath($deleteMe);
+    my $moveIsOnSameFilesystem = ($fsys == $TRASH_ROOT_FILESYSTEM_ID); # Is our 'mv' operation actually COPYING the file? (To a different /tmp filesystem?)
 
-    if (! -e $trash) {
-	print qq{trash.pl: Making trash directory "$trash"\n};
-	`mkdir -p $trash`;
-	`chmod og-rwx $trash`; # making it so no one else can read it...
-	`chmod u+rwx $trash`; # but we can read it...
-    }
+    ((-l $delPath) or ((-e $delPath) and (-r $delPath)))    or fatalExit($delPath, "it was not possible to get the full path to this file, as it appears not to exist (or possibly is unreadable). For non-symlinks, we REQUIRE that the file exists and is readable if we are going to try to throw it away.");
 
-    if (!(-d $trash)) {
-	die "Error: $trash is not a directory";
-    }
-
-    if (!(-l $thepath) && !(-e $thepath)) {
-	# need to check that there is a symlink (-l) at the location, OR a real thing (-e)
-	die "Error getting full path to file: $thepath does not exist\n";
-    }
-
-    my $UNSAFE_CHARS = q{"'*+\$;};
-    if ($thepath =~ /[$UNSAFE_CHARS]/) {
-	if ($outputIsColorTerminal) { print STDERR color("red"); }
-	print STDERR "trash.pl: Uh oh, trash.pl has no idea how to deal with filenames with any of these " . length($UNSAFE_CHARS) . " unusual characters in them: $UNSAFE_CHARS . That might be bad news, so we are just going to abort. Try using the real version of 'rm' in /bin/rm in this case.\n";
-	if ($outputIsColorTerminal) { print STDERR color("reset"); }
-	exit(1)
-    }
+    #                vvvv This list below is of the SAFE characters. \w is alphanumeric "word" characters.
+    ($delPath =~ m/^[-\/\\\w .,;:\!\@\#\&\(\)\{\}\[\]=]+$/) or fatalExit($delPath, "it had certain 'unsafe' characters that we did not know how to handle. That might be bad news, so we are just going to abort. Try using the real version of 'rm' in /bin/rm in this case.\n");
 
     my $index = 1;
-    my $trashDupeSuffix = qq{.trash_duplicate};
+    my $trashDupeSuffix = qq{.trash_dupe};
+    my $trashedDirLoc   = qq{${TRASH_ROOT}/$dirname};
 
-    my $trashedDirLoc  = qq{$trash/$dirname};
+    (-d $trashedDirLoc) or File::Path::make_path($trashedDirLoc, { verbose => ($debugMode ? 1 : 0), mode => 0700 } ) or die "Failed to make \"$trashedDirLoc\".";
 
-    if (! -d $trashedDirLoc) {
-	#print qq{trash.pl: Making a new trash subdirectory at $trashedDirLoc\n};
-	system(qq{mkdir -p "$trashedDirLoc"});
-    }
-
-    my $trashedFileLoc =
-	($thepath =~ m{^\/})
-	? "${trash}${thepath}"
-	: "${trash}/${thepath}";
-
-    if (-e $trashedFileLoc) {
-	my $firstFailedAttempt = $trashedFileLoc;
-	while (-e $trashedFileLoc) {
+    my $moveTo = "${TRASH_ROOT}/${delPath}"; # Always a slash, even if there was one already
+    if (-e $moveTo) {
+	# If the file ALREADY EXISTS at the target location
+	my $failedMoveAttempt = $moveTo;
+	while (-e $moveTo) {
 	    $index++;
-	    $trashedFileLoc =
-		($thepath =~ m{^\/})
-		? "${trash}${thepath}${trashDupeSuffix}.${index}"
-		: "${trash}/${thepath}${trashDupeSuffix}.${index}";
-	    
-	    if ($index >= $MAX_INDEX) {
-		if ($outputIsColorTerminal) { print STDERR color("red"); }
-		print STDERR qq{Error trying to rename \"$itemToDelete\" to avoid overwriting an existing file with the same name that is already in the trash (there are too many files with the same name).\nYou should probably empty the trash.};
-		if ($outputIsColorTerminal) { print STDERR color("reset"); }
-		exit(1)
-	    }
+	    $moveTo = "${TRASH_ROOT}/${delPath}${trashDupeSuffix}.${index}";
+	    ($index < $MAX_DUPE_FILENAMES) or fatalExit($delPath, "Error trying to rename this file to avoid overwriting an existing file with the same name that is already in the trash (there are too many files with the same name).\nYou should probably empty the trash.");
 	}
 
 	if ($outputIsColorTerminal) { print STDOUT color("yellow"); }
-	print STDOUT "trash.pl: There was already a file in the trash named\n";
-	print STDOUT qq{${tab}${firstFailedAttempt}\n};
+	print STDOUT "$pn: There was already a file in the trash named\n";
+	print STDOUT qq{${tab}${failedMoveAttempt}\n};
 	print STDOUT qq{${tab}so \"};
 	print STDOUT qq{${trashDupeSuffix}.${index}};
 	print STDOUT qq{\" was appended to this filename before it was trashed.\n};
 	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
     }
 
-    my $mvResult = system(qq{mv "$thepath" "$trashedFileLoc"});
-    
-    if (0 != $mvResult) {
-	## mv operation FAILED for some reason...
-	if ($outputIsColorTerminal) { print STDERR color("red"); }
-	print STDERR "trash.pl: Failed to trash the file $itemToDelete.\n          Probably you do not have the permissions required to move this file.\n";
-	if ($outputIsColorTerminal) { print STDERR color("reset"); }
+    my $mvOK;
+
+    if ($moveIsOnSameFilesystem) {
+	$mvOK = File::Copy::move($delPath, $moveTo);
     } else {
-	## Move succeeded...
-	if (-l $itemToDelete) {
-	    if ($outputIsColorTerminal) { print STDOUT color("green"); }
-	    print STDOUT qq{trash.pl: Trashing the symbolic link $itemToDelete -> $trashedFileLoc\n};
-	    if ($outputIsColorTerminal) { print STDOUT color("reset"); }
-	} else {
-	    if ($outputIsColorTerminal) { print STDOUT color("green"); }
-	    print STDOUT qq{trash.pl: };
-	    print STDOUT qq{$itemToDelete};
-	    print STDOUT qq{ -> };
-	    print STDOUT qq{$trashedFileLoc\n};
-	    if ($outputIsColorTerminal) { print STDOUT color("reset"); }
-	}
+	# Move operation CROSSES FILESYSTEMS, which means it will be SLOW
+	my $delTEMP = $delPath . ".DELETION_IN_PROGRESS";
+	(not -e $delTEMP)                    or fatalExit($delPath, "Weirdly, the $delTEMP temp file already exists... exiting.");
+	File::Copy::move($delPath, $delTEMP) or fatalExit($delPath, "The command 'move' failed when moving from '$delPath' to '$delTEMP'.");
+	$mvOK = (0 == system(qq{/bin/mv "$delTEMP" "$moveTo" &})); # move in the ******BACKGROUND********
+	#my $pid = fork;
+	#return if $pid;     # in the parent process
+	#print "Running child 'delete' process\n";
+	#select undef, undef, undef, 5;
+	#print "Done with child 'delete' process\n";
+	#exit;  # end child process
+    }
+
+    if ($mvOK) {
+	printInfo( ((-l $deleteMe) ? qq{Trashing the symlink } : qq{}) .  qq{$deleteMe -> $moveTo});
+    } else {
+	printComplaintAboutFile($deleteMe, "Probably you do not have the permissions required to move this file: $!.", "red");
+	next;
     }
     $numItemsDeleted++;
 }
 
 if ($numItemsDeleted > 0) {
-
-    print STDOUT qq{trash.pl: Note: the trash directory will be auto-deleted every reboot, without warning.\n};
-
+    print STDOUT qq{$pn: Note: the trash directory will be auto-deleted every reboot, without warning.\n};
     print STDOUT (qq{-} x 80) . "\n";
-
 }
