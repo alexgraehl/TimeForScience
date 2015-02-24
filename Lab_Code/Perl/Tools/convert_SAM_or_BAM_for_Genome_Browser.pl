@@ -25,7 +25,7 @@ sub datePrint($) {
 sub cleanedUpFilename($) {
     my ($name) = @_;
     $name =~ s/[.]bam$//i; $name =~ s/[.]bw$//i; ## remove recognized file extensions
-    $name =~ s/[-._]accepted_hits//i; $name =~ s/[-._]sort[e]?[d]?//i; $name =~ s/Browser[-._]//i;
+    $name =~ s/[-._]accepted[-._]hits//i; $name =~ s/[-._]sort[e]?[d]?//i; $name =~ s/Browser[-._]//i;
     return($name);
 }
 
@@ -52,7 +52,8 @@ sub guessColorFromFilename($) {
 		    , "128,0,0"   # dark red
 		    , "100,100,150"); # dark blue-gray
     my $thisGroup = cleanedUpFilename($filename);
-    $thisGroup = s/[-._:]*//i; # Delete everything after the first hyphen/dot/underscore/other spacer character. We assume whatever was at the BEGINNING was the group name.
+    #print "GROUP GUESS from <$filename> was: <" . $thisGroup . ">\n";
+    $thisGroup =~ s/[-._:]*//i; # Delete everything after the first hyphen/dot/underscore/other spacer character. We assume whatever was at the BEGINNING was the group name.
     ($thisGroup ne '') or print STDERR "[WARNING] We could not auto-guess the group name for filename '$filename'. Normally, we assume the grouop is whatever appears BEFORE the first period/hyphen/underscore, and the rest is a replicate number or other ignore-able ID. As a result, colors might not be auto-set by groups!\n";
     if (!exists($groupsColHash{$thisGroup})) { # Haven't seen this group yet. Assign a color index to this group!
 	my $numGroupsSeenBeforeThis = scalar(keys(%groupsColHash));
@@ -212,7 +213,7 @@ for my $originalInputFilename (@INPUT_FILES) {
 
     my $bamPrefixWithoutFileExtension = $bamFilename; ## Don't just get the basename: get the WHOLE PATH that led up to this file. basename($bamFilename);
     $bamPrefixWithoutFileExtension =~ s/\.bam$//i;
-    $bamPrefixWithoutFileExtension =~ s/[\/:;,]/_/g; ## slashes and ':;,' characters go to underscores
+    $bamPrefixWithoutFileExtension =~ s/[^-\w.]/_/g; ## Characters will become underscores if they are not one of these: '.' '-' '_' or 'word' (\w) (alphanumeric)
 
     my $browserTrackDescriptionFile = "Browser.Track.Descriptions.${bamPrefixWithoutFileExtension}.txt";
     my $sortBamFilePrefix           = "Browser.sort.${bamPrefixWithoutFileExtension}";
@@ -307,7 +308,7 @@ for my $originalInputFilename (@INPUT_FILES) {
 	    }
 	}
     } else {
-	print qq{[Skipping] the generation of a bigWig file, because "--nowig" was specified on the command line.\n};
+	datePrint(qq{[Skipping] the generation of a bigWig file, because "--nowig" was specified on the command line.\n});
     }
 
     open FILE, ">>", $browserTrackDescriptionFile or die $!; ## APPEND TO THE FILE!!!
