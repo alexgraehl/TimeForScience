@@ -175,5 +175,5 @@ OPTIONS are:
 
 -h HEADERS: Set the number of header lines to HEADERS (default is 0).
 
-
+-r : REVERSE
 
