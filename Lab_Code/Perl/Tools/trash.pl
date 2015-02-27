@@ -221,26 +221,29 @@ foreach my $darg (@ARGV) {
     }
 
 
-    my $mvOK;
+    my $mvOK; # Was the move operation OK (successful)?
+    my $isBackgroundMove = 0;
 
     if ($moveIsOnSameFilesystem) {
-	$mvOK = File::Copy::move($delPath, $moveTo);
+	$mvOK = File::Copy::move($delPath, $moveTo); # Just MOVE the file, nothing fancy.
     } else {
-	# Move operation CROSSES FILESYSTEMS, which means it will be SLOW
+	# Move operation CROSSES FILESYSTEMS, which means it will be SLOW...
+	# ...so what we do is that we run a shell background task to "mv file1 trash/ &" (with the '&').
+	# This will fail if the user closes the terminal while the deletion is still in progress (which will interrupt the deletion)
+	# but is otherwise robust and allows "trash.pl" to exit while the job continues.
+	# The file is named old_filename.DELETION_IN_PROGRESS until the delete operation succeeds, at which point it is removed.
 	my $delTEMP = $delPath . ".DELETION_IN_PROGRESS";
-	(not -e $delTEMP)                    or fatalExit($delPath, "Weirdly, the $delTEMP temp file already exists... exiting.");
-	File::Copy::move($delPath, $delTEMP) or fatalExit($delPath, "The command 'move' failed when moving from '$delPath' to '$delTEMP'.");
-	$mvOK = (0 == system(qq{/bin/mv "$delTEMP" "$moveTo" &})); # move in the ******BACKGROUND********
-	#my $pid = fork;
-	#return if $pid;     # in the parent process
-	#print "Running child 'delete' process\n";
-	#select undef, undef, undef, 5;
-	#print "Done with child 'delete' process\n";
-	#exit;  # end child process
+	(not -e $delTEMP)                    or fatalExit($delPath, "the $delTEMP temp file already exists... this may be a result of a failed 'rm' operation earlier. Try using the system '/bin/rm FILENAME' to delete the file instead.");
+	File::Copy::move($delPath, $delTEMP) or fatalExit($delPath, "The command 'move' failed when moving from '$delPath' to '$delTEMP'. Try using the system '/bin/rm FILENAME' to delete the file instead.");
+	system(qq{/bin/mv "$delTEMP" "$moveTo" &}); # move in the ******BACKGROUND********. Note that we CANNOT get the exit code from this, because the job runs in the background (it doesn't finish here)
+	$mvOK = 1; # We have to just assume it worked, since we can't actually tell if it succeeded (since the move happens in the background, and might finish an hour from now)
+	$isBackgroundMove = 1;
     }
 
     if ($mvOK) {
-	printInfo(($isSymlink ? qq{Trashing the symlink } : qq{}) .  qq{$delPath -> $moveTo});
+	my $prefix = $isSymlink        ? qq{Trashing the symlink } : qq{};
+	my $suffix = $isBackgroundMove ? qq{ (moving file to a different filesystem)} : q{};
+	printInfo(qq{${prefix}${darg} -> ${moveTo}${suffix}});
     } else {
 	printComplaintAboutFile($delPath, "Probably you do not have the permissions required to move this file: $!.", "red");
 	next;
