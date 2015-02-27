@@ -71,7 +71,14 @@ if($@) {
 }
 
 sub trimWhitespace($) { my $str = shift; $str =~ s/^\s+//; $str =~ s/\s+$//; return $str; }
-sub getFilesystemIDForPath($) { my $path = shift; return ((stat("${path}"))[0]); } # "stat" is a perl built-in. Returns a number!
+sub getFilesystemIDForPath($) {
+    my $path = shift;
+    if (-l $path) { # File is symlink
+	return ((lstat($path))[0]); # lstat is for SYMLINKS
+    } else {
+	return ((stat($path))[0]);  # "stat" is a perl built-in. Returns a number! Doesn't work on broken symlinks.
+    }
+}
 
 
 my $MAX_DUPE_FILENAMES = 1000; # <-- number of duplicate-named files allowed in a directory before we just give up
@@ -88,8 +95,9 @@ my $tab = " " x length("$pn: "); # "tab" is just the number of spaces in the pro
 
 sub printComplaintAboutFile($$$) {
     my ($aboutWhat, $why, $color) = @_;
+    chomp($why);
     if ($outputIsColorTerminal) { print STDOUT color($color); }
-    print ("$pn: Not deleting \"$aboutWhat\": " . $why . "\n");
+    print STDOUT ("$pn: Not deleting \"$aboutWhat\": " . $why . "\n");
     if ($outputIsColorTerminal) { print STDOUT color("reset"); }
 }
 
@@ -100,7 +108,7 @@ sub printInfo($) {
     my ($info) = @_;
     chomp($info);
     if ($outputIsColorTerminal) { print STDOUT color("green"); }
-    print ("$pn: $info\n");
+    print STDOUT ("$pn: $info\n");
     if ($outputIsColorTerminal) { print STDOUT color("reset"); }
 }
 
@@ -143,30 +151,31 @@ foreach my $itemToCheck (@ARGV) {
 }
 
 my $numItemsDeleted = 0;
-foreach my $deleteMe (@ARGV) {
-    $deleteMe = trimWhitespace($deleteMe);
-    if (($deleteMe =~ m|/+$|) and (not -l $deleteMe) and (not -d $deleteMe)) {
-	fatalExit($deleteMe, "ends in a trailing slash, but was not a symlink or a directory!");
+foreach my $darg (@ARGV) {
+    $darg = trimWhitespace($darg); # darg is the argument to delete
+    if (($darg =~ m|/+$|) and (not -l $darg) and (not -d $darg)) {
+	fatalExit($darg, "ends in a trailing slash, but was not a symlink or a directory!");
 	next;
     }
-    $deleteMe =~ s|/+$||; # Remove any extraneous trailing slash(es) on any item to delete. Solves the problem of us deleting directories by following a symlink! Important; otherwise "rm SYMLINK/" removes the real directory instead of the symlink!
+    $darg =~ s|/+$||; # Remove any extraneous trailing slash(es) on any item to delete. Solves the problem of us deleting directories by following a symlink! Important; otherwise "rm SYMLINK/" removes the real directory instead of the symlink!
+    my $isSymlink = (-l $darg);
 
-    if ($deleteMe =~ m/^-/ && (!(-l $deleteMe)) && (!(-e $deleteMe))) { # If the argument starts with a hyphen AND it isn't a file or symlink, it's probably a mistaken attempt at a command line argument.
-	complainAboutFile($deleteMe, "it was not a filename, and it appears to have been intended as a command line switch, which $pn does not make any use of.");
+    if ($darg =~ m/^-/ && !$isSymlink && !(-e $darg)) { # If the argument starts with a hyphen AND it isn't a file or symlink, it's probably a mistaken attempt at a command line argument.
+	complainAboutFile($darg, "it was not a filename, and it appears to have been intended as a command line switch, which $pn does not make any use of.");
 	next;
     }
     
-    if ((not (-l $deleteMe)) and (not (-e $deleteMe))) {
-	complainAboutFile($deleteMe, "it did either not exist (and is not a symlink) or could not be read. Check that this file actually exists.");
+    if (!$isSymlink and !(-e $darg)) {
+	complainAboutFile($darg, "it did either not exist (and is not a symlink) or could not be read. Check that this file actually exists.");
 	next;
     }
 	
-    if (not (-f $deleteMe || -d $deleteMe || -l $deleteMe)) { # The thing to delete has to be either a file (-f), a directory (-d), or a symlink (-l).
-	complainAboutFile($deleteMe, "it was not a file, directory, or symlink. You can use /bin/rm to remove it if you really want to.");
+    if (not (-f $darg or -d $darg or $isSymlink)) { # The thing to delete has to be either a file (-f), a directory (-d), or a symlink (-l).
+	complainAboutFile($darg, "it was not a file, directory, or symlink. You can use /bin/rm to remove it if you really want to.");
 	next;
     }
 
-    my $delPath = (-l $deleteMe) ? $deleteMe : abs_path($deleteMe);   # <-- If it's a symlink (-l), then DO NOT FOLLOW the symlink to the real file---just delete the symlink! Otherwise get the abs_path
+    my $delPath = $isSymlink ? $darg : abs_path($darg);   # <-- If it's a symlink (-l), then DO NOT FOLLOW the symlink to the real file---just delete the symlink! Otherwise get the abs_path
     my $basename = File::Basename::basename($delPath);
     my $dirname  = File::Basename::dirname($delPath);
 
@@ -176,11 +185,12 @@ foreach my $deleteMe (@ARGV) {
     #print "Specific file/folder: " . $basename . "\n";
     #print "Directory that it is in: " . $dirname . "\n";
     #print "\n";
-
-    my $fsys = getFilesystemIDForPath($deleteMe);
+    
+    my $fsys = getFilesystemIDForPath($darg);
+    defined($fsys) or fatalExit($delPath, "$fsys was not defined, probably this is some issue with it being a file type we didn't anticipate. Maybe it's a symlink and my code for handling symlinks is bad.\n");
     my $moveIsOnSameFilesystem = ($fsys == $TRASH_ROOT_FILESYSTEM_ID); # Is our 'mv' operation actually COPYING the file? (To a different /tmp filesystem?)
 
-    ((-l $delPath) or ((-e $delPath) and (-r $delPath)))    or fatalExit($delPath, "it was not possible to get the full path to this file, as it appears not to exist (or possibly is unreadable). For non-symlinks, we REQUIRE that the file exists and is readable if we are going to try to throw it away.");
+    ($isSymlink or ((-e $delPath) and (-r $delPath))) or fatalExit($delPath, "it was not possible to get the full path to this file, as it appears not to exist (or possibly is unreadable). For non-symlinks, we REQUIRE that the file exists and is readable if we are going to try to throw it away.");
 
     #                vvvv This list below is of the SAFE characters. \w is alphanumeric "word" characters.
     ($delPath =~ m/^[-\/\\\w .,;:\!\@\#\&\(\)\{\}\[\]=]+$/) or fatalExit($delPath, "it had certain 'unsafe' characters that we did not know how to handle. That might be bad news, so we are just going to abort. Try using the real version of 'rm' in /bin/rm in this case.\n");
@@ -210,6 +220,7 @@ foreach my $deleteMe (@ARGV) {
 	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
     }
 
+
     my $mvOK;
 
     if ($moveIsOnSameFilesystem) {
@@ -229,9 +240,9 @@ foreach my $deleteMe (@ARGV) {
     }
 
     if ($mvOK) {
-	printInfo( ((-l $deleteMe) ? qq{Trashing the symlink } : qq{}) .  qq{$deleteMe -> $moveTo});
+	printInfo(($isSymlink ? qq{Trashing the symlink } : qq{}) .  qq{$delPath -> $moveTo});
     } else {
-	printComplaintAboutFile($deleteMe, "Probably you do not have the permissions required to move this file: $!.", "red");
+	printComplaintAboutFile($delPath, "Probably you do not have the permissions required to move this file: $!.", "red");
 	next;
     }
     $numItemsDeleted++;
