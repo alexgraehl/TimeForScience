@@ -70,20 +70,20 @@ BRACKET_OPEN='{'
 PAREN_OPEN='('
 NL="\$'\\n'" # newline!
 alias cheat="echo \
-\">>> Mac: check code signing: codesign -vvv /Applications/iTunes.app \" ${NL}\
-\">>> Mac: delete time machine backups: tmutil delete /Volumes/DISK/Backups.backupdb/COMPNAME/ \" ${NL}\
-\">>> Mac: see what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
-\">>> Mac: Check specific file io / activity: fs_usage <programname> \" ${NL}\
-\">>> Mac: Significant disk io:   sudo fs_usage -w | grep -v '0\\.0'  \" ${NL}\
-\">>> Filesystem: show what files are being read/written: sudo fs_usage \" ${NL}\
 \">>> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
 \">>> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
+\">>> Mac: what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
+\">>> Mac disk: specific file I/O: fs_usage <programname> \" ${NL}\
+\">>> Mac disk: filesystem I/O:    fs_usage -w | grep -v '0\\.0'  \" ${NL}\
 \">>> Mac: show weird file flags: ls -l -@ \" ${NL}\
+\">>> Mac Time Machine: exclude / check: tmutil isexcluded / tmutil addexclusion (-p) PATH \" ${NL}\
+\">>> Mac Time Machine: delete backups: tmutil delete /Volumes/DISK/Backups.backupdb/COMPNAME/ \" ${NL}\
 \">>> Mac: recursively clear worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
 \">>> Mac: delete impossible-to-delete files find FILE -flags schg -exec chflags noschg {} \\; \" ${NL}\
 \">>> Mac: show library: chflags nohidden ~/Library/ \" ${NL}\
 \">>> Mac: batch change modification time: find . -print0 | xargs -0 SetFile -d '12/31/2012 12:00:00 PM' \" ${NL}\
 \">>> Mac: No quarantine warn  : defaults write com.apple.LaunchServices LSQuarantine -bool NO \" ${NL}\
+\">>> Mac: check code signing: codesign -vvv /Applications/iTunes.app \" ${NL}\
 \">>> Mac: No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
 \">>> Mac: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
 \">>> Mac: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
@@ -97,7 +97,7 @@ alias cheat="echo \
 \" \" ${NL}\
 \">>> BASH script header (3 lines): #!/bin/bash -u   set -e   set -o pipefail \" ${NL}\
 \">>> BASH: Literal tab: \$'\\t' (example: join -t \$'\\t' to join on tabs) or \\\$(echo -en '\\t') . In MAKE: printf '\\t' \" ${NL}\
-\">>> sh: Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
+\">>> SH  : Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
 \">>> PYTHON debug a crashing program: python -m pdb YOURPROG --yourargs . 'c' continues execution. \" ${NL}\
 \" \" ${NL}\
 \">>> R: Save copy as pdf: dev.copy2pdf() \" ${NL}\
@@ -177,13 +177,14 @@ alias cheat="echo \
 \">>> BASH: Expand tabs / tab width: something | expand -t 32 \" ${NL}\
 \">>> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ${NL}\
 \">>> XARGS/FIND: find . -name SOMEFILE -print0 | xargs -0 -I {} sh -c \\\"echo {}; thing {} | piped here | wc -l\\\"  \" ${NL}\
-\">>> GNU FIND delete-a-file option: find . -name SOMEFILE -delete \" ${NL}\
-\">>> REGEXP Perl multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \\\$ work \" ${NL}\
+\">>> GNU FIND and DELETE a file (dangerous): find . -name SOMEFILE -delete \" ${NL}\
 \">>> UNIX/Perl fast sort with ONE header line: cat FILE | perl -e 'print scalar (<>); print sort <>' > OUTFILE \" ${NL}\
+\">>> Perl: REGEXP multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \\\$ work \" ${NL}\
 \">>> Perl/web: Chrome web form non-breaking space (ASCII 160) is [\\xA0] (or 'use feature qw(unicode_strings);') \" ${NL}\
 \">>> Perl:  CPAN invocation: perl -MCPAN -e shell \" ${NL}\
 \">>> Perl: CPAN upgrade-all: perl -MCPAN -e \\\"upgrade /(.\\*)/\\\" \" ${NL}\
-\">>> REGEXP EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
+\">>> Perl: Backreferences/does something show up twice on a line: perl -n -e 'print ((\\\$_ =~ /\b(Something\d+)\s.\g1/) ? qq{match: \\\$1\\n} : qq{Nope\\n});' \" ${NL}\
+\">>> EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
 \">>> EMACS: install new packages: list-packages \" ${NL}\
 \">>> EMACS: show variable: describe-variable \" ${NL}\
 \" \" ${NL}\
@@ -191,16 +192,18 @@ alias cheat="echo \
 \">>> RNASEQ BAM --> SAM:  samtools view -h  in.bam > out.sam \" ${NL}\
 \">>> RNASEQ sorting and setting the 'sorted' flag:  java -Xmx2g  -jar SortSam.jar INPUT=in.sam SORT_ORDER=coordinate OUTPUT=out_sorted.sam \" ${NL}\
 \">>> RNASEQ View BAM header: samtools view -H  in.bam \" ${NL}\
-\">>> Merge BAM files in subdirectories: for f in * ; do samtools merge \\\${f}_merged.bam \\\$f/*.bam; done \" ${NL}\
+\">>> RNASEQ Merge BAM files in subdirectories: for f in * ; do samtools merge \\\${f}_merged.bam \\\$f/*.bam; done \" ${NL}\
 \">>> RNASEQ SAM flags / remove non-primary alignments: samtools view -b -F 0x100 in.bam > primary.bam \" ${NL}\
 \">>> RNASEQ count primary (100) mapped (4) reads: samtools view -c -F 0x104 in.bam > COUNT.txt\" ${NL}\
 \">>> RNASEQ Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ${NL}\
-\">>> DNA Reverse-complement:  perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
+\">>> RNASEQ TOPHAT/rename TEST: for f in *; do echo \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
+\">>> RNASEQ TOPHAT/rename RUN : for f in *; do   mv \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
+\">>> RNASEQ:: Truncate a fastq file to length 19 without using fastx-trimmer: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
+\">>> DNA reverse-complement: perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
 \">>> APACHE error log: sudo less -S /var/log/apache2/error.log \" ${NL}\
 \">>> Mac OS X Dictionary: /usr/share/dict/words \" ${NL}\
 \">>> Mac OS X Image type convert: mkdir -p PNGS_TO_JPEG; sips -s format jpeg *.png --out PNGS_TO_JPEG \" ${NL}\
 \">>> COPROC: coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ${NL}\
-\">>> AWK / FASTQ: Truncate a fastq file to length 19: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
 \">>> LINES: RANDOM subset (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'print if (rand() < 0.5);' theFile.txt \" ${NL}\
 \">>> LINES: REPEATABLE RANDOM subset: perl -e 'srand(123456); while(<>){ print if (rand() < 0.5);}' theFile.txt \" ${NL}\
 \">>> LINES: Range from N to M, inclusive (starts at 1):  sed -n N,Mp INPUTFILE  or  for a HUGE file: sed -n '(N+1)q;N,Mp' <-- quit on line (N+1) \" ${NL}\
@@ -208,10 +211,6 @@ alias cheat="echo \
 \">>> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">>> LINES Count characters on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
 \">>> GREP Count occurrences of a match per line: cat FILE | grep -o -n SEARCHTERM | cut -d : -f 1 | uniq -c \" ${NL}\
-\">>> TOPHAT/rename TEST: for f in *; do echo \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
-\">>> TOPHAT/rename RUN : for f in *; do   mv \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
-\">>> TORQUE/QSTAT: Delete / kill all your qsub/queue jobs: qselect -u \\\$USER | xargs qdel \" ${NL}\
-\">>> Perl: Backreferences/does something show up twice on a line: perl -n -e 'print ((\\\$_ =~ /\b(Something\d+)\s.\g1/) ? qq{match: \\\$1\\n} : qq{Nope\\n});' \" ${NL}\
 "
 
 # Shell navigation / commands
