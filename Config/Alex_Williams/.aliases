@@ -355,7 +355,7 @@ function hglog {
 
 function sciencecom {
     if [[ -d "$1" ]] ; then
-	git --git-dir "$1" commit -m "Commit by ${USER}" && git --git-dir "$1" push origin master
+	git --git-dir "$1" commit -a -m "Commit by ${USER}" && git --git-dir "$1" push origin master
     else
 	echo "No $1 repository exists on this machine."
 	return 1;
@@ -364,7 +364,7 @@ function sciencecom {
 
 function scienceup {
     if [[ -d "$1" ]] ; then
-	git --git-dir "$1" commit -m "Commit by ${USER}" && git --git-dir "$1" pull
+	git --git-dir "$1" commit -a -m "Commit by ${USER}" && git --git-dir "$1" pull
     else
 	echo "No $1 repository exists on this machine."
 	return 1;
