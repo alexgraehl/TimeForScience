@@ -355,7 +355,7 @@ function hglog {
 
 function sciencecom {
     if [[ -d "$1" ]] ; then
-	hg commit --user ${USER} --cwd "$1" -m "Commit by ${USER}" ; hg push --cwd "$1" ; echo "[Done] commiting and pushing $1 repository" ;
+	git --git-dir "$1" commit && git --git-dir "$1" push origin master
     else
 	echo "No $1 repository exists on this machine."
 	return 1;
@@ -364,6 +364,26 @@ function sciencecom {
 
 function scienceup {
     if [[ -d "$1" ]] ; then
+	git --git-dir "$1" commit && git --git-dir "$1" pull
+    else
+	echo "No $1 repository exists on this machine."
+	return 1;
+    fi
+}
+
+
+function scihg_com {
+    if [[ -d "$1" ]] ; then
+	hg commit --user ${USER} --cwd "$1" -m "Commit by ${USER}" ; hg push --cwd "$1" ; echo "[Done] commiting and pushing $1 repository" ;
+    else
+	echo "No $1 repository exists on this machine."
+	return 1;
+    fi
+}
+
+function scihg_up {
+    if [[ -d "$1" ]] ; then
+        hg commit --user ${USER} --cwd "$1" -m "Commit of local changes by ${USER} before pull." ;
 	hg --cwd "$1" pull ; hg --cwd "$1" update ; echo "[Done] pulling and updating $1 repository"
     else
 	echo "No $1 repository exists on this machine."
@@ -371,7 +391,8 @@ function scienceup {
     fi
 }
 
-alias science="echo 'Time for science:' ; scienceup ${TIME_FOR_SCIENCE_DIR} ; sciencecom ${TIME_FOR_SCIENCE_DIR} ; echo ''; echo 'Work directory:' ; scienceup ${BINF_CORE_WORK_DIR} ; sciencecom ${BINF_CORE_WORK_DIR}"
+
+alias science="echo 'TimeForSceince (GitHub):' ; scienceup ${TIME_FOR_SCIENCE_DIR}/.git ; sciencecom ${TIME_FOR_SCIENCE_DIR}/.git ; echo ''; echo 'Work directory:' ; scihg_up ${BINF_CORE_WORK_DIR} ; scihg_com ${BINF_CORE_WORK_DIR}"
 
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
 
