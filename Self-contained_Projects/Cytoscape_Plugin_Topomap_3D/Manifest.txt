@@ -1,4 +1,0 @@
-Main-Class: Topomap3D
-Class-Path: jars/newdawnhud.jar
-
-

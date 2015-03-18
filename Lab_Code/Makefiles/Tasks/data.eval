@@ -1,3 +1,0 @@
-> $(EVAL_NAME)
-TEMPLATE  = $(TEMPLATE)
-$(ATTRIB) = $(VALUE)
