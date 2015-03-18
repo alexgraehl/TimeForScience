@@ -355,7 +355,10 @@ function hglog {
 
 function sciencecom {
     if [[ -d "$1" ]] ; then
-	git --git-dir "$1" commit && git --git-dir "$1" push origin master
+	echo "Committing GIT changes locally."
+	git --git-dir "$1" commit -a -m "Committing changes from ${USER}"
+	echo "Pushing GIT changes to remote master."
+	git --git-dir "$1" push origin master ;
     else
 	echo "No $1 repository exists on this machine."
 	return 1;
@@ -364,7 +367,10 @@ function sciencecom {
 
 function scienceup {
     if [[ -d "$1" ]] ; then
-	git --git-dir "$1" commit && git --git-dir "$1" pull
+	echo "Committing any local GIT changes before syncing with remote master."
+	git --git-dir "$1" commit -a -m "Committing any local changes from ${USER} before sync with remote server."
+	echo "Pulling GIT changes from remote master."
+	git --git-dir "$1" pull ;
     else
 	echo "No $1 repository exists on this machine."
 	return 1;
