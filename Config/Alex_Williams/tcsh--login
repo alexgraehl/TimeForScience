@@ -1,0 +1,405 @@
+# -*-Sh-*-  <-- Tells emacs what syntax highlighting to use
+
+# Note: .login is run by csh AFTER this.
+
+# Commands in the .cshrc file are executed after /etc/csh.cshrc and before those
+# in the .login file. This file is read each time you directly or indirectly
+# start a shell process. This file is used by both tcsh and csh. See the man
+# page for tcsh for a list of the many options that the shell supports.
+#
+# This file is specifically *NOT* used by the bash, sh, or ksh shells.
+#
+# tcsh reads files in the following order:
+#    /etc/csh.cshrc	(system file, for all shells)
+#    /etc/csh.login	(system file, for login shells only)
+#    ~/.cshrc		(user file, for all shells)
+#    ~/.login		(user file, for login shells only)
+
+if(! $?UNAME) then
+	setenv UNAME `uname`
+	setenv OS `uname`
+endif
+
+# Clear out some of the environment variables to begin with.
+# This must happen BEFORE we load stuartlab-init.csh
+setenv LD_LIBRARY_PATH
+setenv PERL5LIB
+setenv R_LIBS
+
+set path = ( `/usr/local/bin/setpaths` . )
+
+source /projects/sysbio/etc/stuartlab-init.csh
+# Above: load the lab-wide settings
+
+setenv MYSRC     ${HOME}/cvs-local
+setenv MYPERLDIR ${MYSRC}/perl
+
+setenv GENIEDIR  $MYSRC/genie_release
+setenv GENIEROOT ${GENIEDIR}
+
+setenv sy ${SYSBIODIR} # Just a handy alias to sysbio.
+setenv SY ${sy}
+setenv Sy ${sy}
+
+#setenv LD_LIBRARY_PATH "${GENIEDIR}/Lib/${MACHTYPE}:${XERCESCROOT}/Lib"
+
+# Note: Things that come FIRST have priority!
+set mypath=( \
+	$HOME/bin \
+	$MYPERLDIR/Tools $MYPERLDIR/Map $MYPERLDIR/Db $MYPERLDIR/web $MYSRC/cvaske/perl \
+	$MYSRC/alexgw \
+	$MYSRC/cvaske/R/Commands      \
+	$SYSBIODIR/users/cvaske/sw/genie/Programs/x86_64-redhat-linux-gnu\
+	/projects/sysbio/apps/$MACHTYPE/bin \
+	/usr/local/bin /bin /usr/bin        \
+	)
+# Above: the cvaske / genie thing is so that I can run map_learn and pearson
+
+#	     /projects/sysbio/apps/x86_64/R-project-2.6.1/bin \
+
+
+## Everything here makes the "TimeForScience" mercurial directory
+## take precedence over the basic CVS stuff.
+
+if(! $?path) then ## Set the path if it wasn't already defined
+    set path=""
+endif
+
+set path=($mypath $path)
+
+setenv TIME_FOR_SCIENCE_DIR $HOME/TimeForScience
+
+set path=($TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools \
+    $TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific \
+    $TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools \
+    $TIME_FOR_SCIENCE_DIR/Lab_Code/Shell \
+    $TIME_FOR_SCIENCE_DIR/Lab_Code/R \
+    $path)
+
+
+#setenv MANPATH `/usr/local/bin/setpaths -man`
+setenv LOCKPRG ls  # prevents super-annoying terminal locking with screen (maybe?)
+
+# Some Standard Environment Variables
+setenv OPENWINHOME /usr/openwin
+setenv PAGER less
+setenv PRINTER psbprint
+setenv NNTPSERVER news.ucsc.edu
+setenv EDITOR emacs
+
+umask 002   # umask: 111 111 101   (default is 077, which is 111 000 000)
+# don't let guests write!
+
+# Do the following on interactive shells only
+#if(! $?prompt) exit # exit if non-interactive
+
+setenv TERM xterm-256color # Set the TERM to xterm to enable emacs features
+# setenv TERM xterm-color
+
+# Some Common Aliases
+
+# xsub is Charlie's thing for setting the display properly. It requires some support during login to work properly.
+alias xsub 'setenv DISPLAY `cat ~/.current_display`; echo $DISPLAY'
+
+# Shell navigation / commands
+alias ls '/bin/ls --color=auto -F'
+alias l  '/bin/ls --color=auto -F'
+alias ll '/bin/ls -F -lAh --color=yes \!*' # <-- note: color = yes means that it outputs in color EVEN when redirected to emacs/less/whatever. Less can handle this, but the emacs shell sometimes freaks out unless you have color stuff set.
+alias xl '/bin/ls --color=none'
+alias lsf '/bin/ls -F --color=auto | egrep -v "/"'  # lsf means "ls... files only (not directories)
+alias lsd '/bin/ls -d --color=auto */'    # lsd means "ls... directories only (don't show files/symlinks/etc)
+alias h 'history'
+alias p   'pwd'
+alias b   'cd ..'
+alias ..  'cd ..'
+alias res 'source ~/.login'   # "rs" = "ReSource" (reload the cshrc source
+alias cp  'cp -d -i'
+alias mv  'mv -i'
+alias rrm '/bin/rm' # <-- "real" rm
+alias rm  'trash.pl'
+alias checktrash 'mkdir -p /tmp/alexgw/Trash/ && echo "Contents of /tmp/alexgw/Trash:" && ls /tmp/alexgw/Trash/'
+alias emptytrash 'mkdir -p /tmp/alexgw/Trash/ && /bin/rm -rf /tmp/alexgw/Trash/ && echo "Emptied the trash directory (/tmp/alexgw/Trash)" ;'
+alias kpk 'exit'
+
+# Utility commands
+alias wcl   "wc -l \!*"
+alias sortt 'sort -t "	" '   # <-- sort with tab as delimiter
+alias sortg 'sort -t "	" -g '  # <-- sort NUMBERS, with tab as delimiter
+alias t     'transpose.pl'
+alias tattle "echo -n '\033[45m\033[33m'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl --ht=75 --trunc=60 | tail -n +2 ; echo -n '\033[0m'" # who is using up all the CPU on this machine...
+
+
+# Things related to "LESS"
+setenv LESSOPEN LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
+
+# Old:  '|/usr/bin/lesspipe.sh %s'
+
+alias magicless 'env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_advanced.sh %s" /usr/bin/less -S -f'
+# It's less, but it "magically" handles gzipped files and automatically runs ".tab" files through sheet.pl
+# Note that this only magically happens if the files are passed in on the command line--otherwise you have
+# to use "sf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
+# sheet.pl unless you say "cat something | ssf"
+
+# Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
+alias sn '/usr/bin/less -S --LINE-NUMBERS --status-column --ignore-case -R -f'
+
+# "s" uses "magicless" to run files through sheet.pl
+alias s  "magicless --LINE-NUMBERS --status-column --ignore-case -R \!*"
+
+# Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
+alias sf "/usr/bin/less \!* | sheet.pl | s"
+alias s1 "/usr/bin/less \!* | sheet.pl --trunc=15 | s"
+alias s2 "/usr/bin/less \!* | sheet.pl --trunc=35 | s"
+
+alias ltab 'python `which sheet.py`'
+alias v    'ltab'   # ltab is defined as sheet.py in the stuartlab init file
+
+
+
+
+alias startline 'echo "\033[41m\033[34m" "=================================================================" "\033[0m"'
+alias endline 'echo "\033[42m\033[34m" "=================================================================" "\033[0m"'
+
+
+# GNU Make-related: *make* *gnu make* *makefile*
+alias MAKE_WITH_PARAMS '/usr/bin/make --warn-undefined-variables --print-directory \!*'
+alias make  'startline ; MAKE_WITH_PARAMS \!* ; endline'
+alias m      'make'
+alias mcm     'MAKE_WITH_PARAMS clean && MAKE_WITH_PARAMS \!*'
+alias pmake 'premake.pl -Z --warn-undefined-variables --print-directory \!*'
+alias remake '/bin/rm -f \!\!:1 && MAKE_WITH_PARAMS \!\!:1'
+alias re remake   # re: remake a file (rm it, then make it)
+alias rel 're \!\!:1 && s \!\!:1'  # rel: "re look" -- remakes a file, then looks at it with "vv"
+alias rell 're \!\!:1 && ltab \!\!:1'  # rel: "re look" -- remakes a file, then looks at it with "vv"
+alias rep 're \!\!:1 && ltab \!\!:1'   # remake a file, load it in "p"
+# show_unsafe_chars: Shows any characters that might mess up
+# a makefile. Good for checking for safety in source data
+# files. The worst things for a makefile are colons (:) and
+# commas (,), and any type of quotation mark (" or ' or `).
+alias show_unsafe_chars  "egrep '[^-_a-zA-Z0-9]'"
+
+# Aliases related to GREP
+alias grep  'grep  --color=auto'
+alias egrep 'egrep --color=auto'
+alias fgrep 'fgrep --color=auto'
+
+# Aliases related to CVS
+alias commit 'cvs ci -m "CVS Commit by Alex Williams"'
+alias gitcom "git commit -a -m 'Changes committed by alexgw' ; git push"
+alias hgcom  "hg commit -m 'Changes committed by alexgw' ; hg push"
+alias hgup   "hg pull && hg update"
+alias sciencecom 'hg commit --cwd ${TIME_FOR_SCIENCE_DIR} -m "Changes committed by alexgw" && hg push --cwd ${TIME_FOR_SCIENCE_DIR}'
+alias scienceup  'hg --cwd ${TIME_FOR_SCIENCE_DIR} pull && hg --cwd ${TIME_FOR_SCIENCE_DIR} update'
+
+# EMACS
+alias e     'emacs -nw'
+alias retag 'cd ~/cvs-local ; etags `find -iname "*.pl"` `find -iname "*.R"` `find -iname "*.mak"` `find -iname "Makefile"`; cd -;'
+
+#alias r 'rake --trace --verbose'
+
+# cgrep: recursively look for something in any file that ends with .t.. or .l
+alias cgrep 'find . -regex ".*/SCCS" -prune -o -name "*.[tl]*" -type f -exec grep \!\!* {} /dev/null \;'
+
+alias pdf ggv
+
+
+#    alias vnc '~/bin/java -jar ~/bin/jTightvnc/classes/VncViewer.jar HOST 169.233.39.10 PORT 9500 &'
+#alias em /projects/sysbio/apps/${MACHTYPE}/bin/emacs
+
+#alias calc "perl -e 'print (\!*) ; print qq{\n};'" # CLI calculator. Example: calc 100/4
+
+#alias gowhich 'which \!* | perl -p -e "s/\/.*\$/b/g"' # | perl -p -e "s/\/[^\/]*$$//"'
+#/cse/grads/alexgw/cvs-local/perl/Tools/template.pl
+
+# \!\!:1 appears to be the first argument. \!\!:2 is the second, and so on
+
+# di = directory
+# fi = file
+# ln = symbolic link
+# pi = fifo file
+# so = socket file
+# bd = block (buffered) special file
+# cd = character (unbuffered) special file
+# or = symbolic link pointing to a non-existent file (orphan)
+# mi = non-existent file pointed to by a symbolic link (visible when you type ls -l)
+# ex = file which is executable (ie. has 'x' set in permissions).
+
+# 0   = default colour
+# 1   = bold
+# 4   = underlined
+# 5   = flashing text
+# 7   = reverse field
+# 31  = red
+# 32  = green
+# 33  = orange
+# 34  = blue
+# 35  = purple
+# 36  = cyan
+# 37  = grey
+# 40  = black background  # 41  = red background  # 42  = green background  # 43  = orange background  # 44  = blue background
+# 45  = purple background # 46  = cyan background # 47  = grey background
+# 90  = dark grey
+# 91  = light red
+# 92  = light green
+# 93  = yellow
+# 94  = light blue
+# 95  = light purple
+# 96  = turquoise
+# 100 = dark grey background
+# 101 = light red background
+# 102 = light green background
+# 103 = yellow background
+# 104 = light blue background
+# 105 = light purple background
+# 106 = turquoise background
+
+# These can even be combined, so that a parameter like:
+# di=5;31;42
+# in your LS_COLORS variable would make directories appear in flashing red text with a green background!
+
+# http://linux-sxs.org/housekeeping/lscolors.html
+
+# Color LS settings. Note that you can set up certain filenames (like *README) to be highlighted differently
+setenv LS_COLORS 'no=0:fi=0:di=1;40;33:ln=36:pi=40;33:so=1;35:do=1;35:bd=40;33;1:cd=40;33;1:or=36;41:ex=0;31'
+setenv LS_COLORS "$LS_COLORS":':*INSTALL=4;35:*install=4;35:*README=4;35:*eadme=4;35:*html=4;35:*akefile.common=4;35:*akefile=4;35:*.mak=4;35'
+setenv LS_COLORS "$LS_COLORS":'*#=32;44:*~=32;44'
+
+#:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.gz=01;31:*.bz2=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.avi=01;35:*.fli=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.ogg=01;35:*.mp3=01;35:*.wav=01;35:'
+
+#setenv GREP_COLOR auto
+
+# dircolors
+
+
+
+# automatically resume a screen!
+if (! $?STY ) then
+#    exec screen -RR  <-- if you use this one, I have no idea how you get OUT of screen and back to a normal shell
+    screen -D -RR
+endif
+
+if($?prompt && $HOST =~ 'jive') then
+    echo "Note: <jive> is wonky and loads the .cshrc file instead of the .login. (or at least it used to??)"
+endif
+
+mesg n # disable people writing to my terminal!
+
+echo -n "\033[44m\033[33m" # Set colors: 40m-47m are for background, 30m-37m are for foreground
+echo "@@ Loading from <.login>... remember that you can run SCREEN (-wipe)!"
+
+screen -list | grep -v 'Socket'
+
+if($?REMOTEHOST && $?DISPLAY) then
+    echo "@@ Connected from $REMOTEHOST to local display $DISPLAY"
+endif
+echo "@@ Shell is $SHELL with $TERM"
+echo "@@ $HOSTNAME is running $OS on $MACHTYPE"
+tattle
+echo -n "\033[0m" # Clear colors: restore colors back to clear
+
+
+# Deal with Multi-vendor UNIX
+switch ($UNAME)
+ case OSF1
+  alias df df -k
+ breaksw
+ case IRIX
+ case IRIX64
+  alias df df -k
+  alias du du -k
+   breaksw
+ case HP-UX
+  # Problem with xterms require this
+  setenv LINES
+ breaksw
+endsw
+
+# Terminal Settings
+stty intr ^c
+stty erase ^H
+stty kill ^U
+stty susp ^Z
+
+# turn off needless delays for special characters
+stty cr0 nl0 -tabs ff0 bs0
+
+# set up common output settings
+stty ixany -istrip
+
+bindkey -r ^Q
+
+bindkey -b M-i up-history
+bindkey -b M-k down-history
+bindkey -b M-j backward-char
+bindkey -b M-l forward-char
+
+bindkey -b M-I up-history
+bindkey -b M-K down-history
+bindkey -b M-J backward-word
+bindkey -b M-L forward-word
+
+
+#http://wwwcip.informatik.uni-erlangen.de/old/tree/tcsh/Special_shell_variables.html#histdup
+
+# Some Common Shell Settings
+set filec
+set history=32767  # Set the history length
+set notify
+set prompt="%B%U{%?} %W/%D %T %m [%h]%u%b "
+
+set wordchars='~#' # A list of non-alphanumeric characters to be considered part of a word by the forward-word, backward-word etc. editor commands. If unset, `*?_-.[]~=' is used.
+
+set watch = (15 any any) # A list of user/terminal pairs to watch for logins and logouts. If either the user is `any' all terminals are watched for the given user and vice versa. Setting watch to `(any any)' watches all users and terminals.
+
+set autologout=0 # Don't auto logout! (Like on waterdance, in particular)
+#set complete=enhance  # If set to `enhance', completion 1) ignores case and 2) considers periods, hyphens and underscores (`.', `-' and `_') to be word separators and hyphens and underscores to be equivalent.
+set histdup=prev   # Don't put two duplicate commands in a row into the history
+set printexitvalue   # Print a command's return value
+unset visiblebell # No screen flashes
+set nobeep      # Don't beep on ambiguous file completion
+set noclobber	# Don't overwrite existing file with redirects
+set rmstar	# show a WARNING prompt before executing rm *
+set ignoreeof  # disable ctrl-d from logging out
+set autolist # If set, possibilities are listed after an ambiguous completion. If set to `ambiguous', possibilities are listed only when no new characters are added by completion.
+set color
+set colorcat
+
+set fignore=(\~ .o \#)   # fignore: suffixes to ignore for file completion
+
+
+alias mac2unix "tr '\r' '\n'"
+alias dos2unix "tr -d '\r'"
+
+
+
+
+# Make command completion (TAB key) cycle through all possible choices
+# (The default is to simply display a list of all choices when more than one
+# match is available.)
+#bindkey "^I" complete-word-fwd
+
+# Make command history (arrow keys) use history search operations
+# (The default is to simply display the next item in the history list.)
+#bindkey -k down history-search-forward
+#bindkey -k up history-search-backward
+
+# Turn on implicit cd operation
+#set implicitcd
+
+#if ( $TERM == "screen") then
+#    set prompt  = "jive !> %{\033k%c\033\\%}"
+#    set prompt = "%{\033[34m%}%B %m:%/%#%b "
+#endif
+
+# Add "tabs" to screen
+# NOTE: if you change these and try to see what effect it has,
+# you will have to LOG OUT AND LOG IN, because $TERM will be set to xterm
+# below (and so it won't be screen anymore, except at the VERY FIRST invocation)
+# Or I guess you could "source ~/.cshrc"
+#if ( $TERM == "screen") then
+#    alias precmd 'echo -n "\033]0;${USER}@${HOSTNAME}:${PWD}\007\033k$PWD\033\\"'
+#    alias cd 'cd \!*; echo -n "^[]0;${USER}@${HOSTNAME}: ${PWD}^Gcsh% "'
+#endif
+
+# How to add to CVS:
+# find . -type d -print | grep -v CVS | grep -i -v backup | xargs cvs add ; find . -type f -print | egrep -i '(Make|.mak)' | grep -i -v backup | grep -v '^#' | grep -v '.tmp' | grep -v CVS | xargs cvs add
