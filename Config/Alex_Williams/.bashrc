@@ -254,7 +254,9 @@ bind "\M-i:previous-history"
 bind "\M-I:previous-history"
 bind "\M-k:next-history"
 bind "\M-K:next-history"
-bind "\C-s:history-search-forward"
+
+#bind "\C-r:history-search-backward"
+bind "\C-s:history-search-forward" # This doesn't seem to work for some reason
 
 # Save the local ethernet "en0" MAC address into the variable LOCAL_EN0_MAC. Note the zero.
 # Allows per-machine settinsg.
