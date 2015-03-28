@@ -1,0 +1,79 @@
+# -*-Sh-*-  <-- Tells emacs what syntax highlighting to use
+
+# Note: tmux is another "screen-like" program I could probably be using
+
+# http://gentoo-wiki.com/TIP_Using_screen
+
+# The following lines allow SCREEN to run in 256 colors
+# http://www.frexx.de/xterm-256-notes/    # terminfo and termcap for 256 color terminal
+# allow bold colors - necessary for some reason
+
+#term screen-256color
+#term xterm-color
+term xterm-256color
+defutf8 on
+defflow off
+vbell off
+
+# autodetach on
+startup_message off
+
+attrcolor b ".I" ## <-- allow bold colors. Apparently necessary for screen to work with 256 colors.
+
+# . AB = background, AF=foreground
+termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm' # <-- Tell screen how to set colors (for 256 color terminal)
+defbce "on"  # erase background with current bg color (useful for 256 color terminals)
+
+shell -$SHELL
+
+### ============ Make a "tab bar" at the bottom ===========
+hardstatus alwayslastline
+# The way this works:
+# For the "tab bar":
+# The first %{= gW} is the tabs BEFORE the active tab, the second is for the active tab, and the last is for the tabs AFTER the active one
+hardstatus string ' %{kW}%-Lw%{wk}%n %t%{kW}%+Lw' ## {kW} = black WHITE
+# old status:  hardstatus string ' %{bW}%-Lw%{rW}%50>%n%f* %t%{bW}%+Lw'
+
+bind x  # Remove the "screen lock" key command
+bind ^x  # Remove the "screen lock" key command
+
+bind ' ' windowlist -b  # Shows a window list
+bind ^b windowlist -b  # shows a window list (like emacs's buffers)
+
+bind o focus down    # Switch tabs (also: ctrl-a TAB)
+bind ^o focus down   # Switch tabs (also: ctrl-a TAB)
+bind ^s split   # makes two mini-screens stacked on top of each other
+bind ^d remove  # deletes the current mini-screen (doesn't kill the shell, though, so no information is ever lost)
+
+bind ^w copy
+bind ^y paste
+bind ^r source "${HOME}/.screenrc"  # reload the screenrc!
+
+#caption always "%n(%t) : %C"
+#caption always "%{= kc}%H (system load: %l)%-21=%{= .m}%D %d.%m.%Y %0c"
+#caption always "%{= kc}%H (system load: %l)%-21=%{= .m}%D %d.%m.%Y %0c"
+#caption always "%3n %t%? @%u%?%? [%h]%?%=%c"
+# %H : host   %t : name of this screen  %n: screen number  %l: system load
+# First item: BGColors:  b c y r g m (k = black)
+# Second item: foreground color
+# Capitals seem to indcate bold or something (B C Y R G M... etc)
+# Example: to make it white text on magenta background: %{= mW}
+caption always "%{kw}Screen %n : %t"
+
+## Scrollback buffer 100K lines
+defscrollback 100000
+
+#shell tcsh
+
+# Set the "escape" character to ctrl-o instead of the default, which is ctrl-a. Now it won't fight with "Ctrl-A='go to beginning of line!'"
+escape ^Oo
+
+
+# Line below: Somehow termcapinfo was supposed to fix the scrollback buffer? Unclear.
+# termcapinfo xterm ti@:te@
+
+# status line with hostname, centered tabs and redmarked active windows:
+#hardstatus string '%{= kG}[ %{G}%H %{g}][%= %{= kw}%?%-Lw%?%{r}(%{W}%n*%f%t%?(%u)%?%{r})%{w}%?%+Lw%?%?%= %{g}][%{B} %d/%m %{W}%c %{g}]'
+
+# A variation of the above, which also shows the load average:
+# hardstatus string '%{gk}[ %{G}%H %{g}][%= %{wk}%?%-Lw%?%{=b kR}(%{W}%n*%f %t%?(%u)%?%{=b kR})%{= kw}%?%+Lw%?%?%= %{g}][%{Y}%l%{g}]%{=b C}[ %m/%d %c ]%{W}'
