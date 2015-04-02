@@ -10,6 +10,7 @@ use strict;  use warnings;  use diagnostics;
 use List::Util qw/max min/;
 use Getopt::Long;
 use File::Basename;
+use File::Spec::Functions qw(catfile);
 
 sub printUsageAndQuit() {
     print STDOUT <DATA>;
@@ -53,7 +54,7 @@ sub guessColorFromFilename($) {
 		    , "100,100,150"); # dark blue-gray
     my $thisGroup = cleanedUpFilename($filename);
     #print "GROUP GUESS from <$filename> was: <" . $thisGroup . ">\n";
-    $thisGroup =~ s/[-._:]*//i; # Delete everything after the first hyphen/dot/underscore/other spacer character. We assume whatever was at the BEGINNING was the group name.
+    $thisGroup =~ s/[-.:].*//i; # Delete everything after (and including) the first hyphen/dot/other common delimiter character. Does NOT use '_' as a delimitere! We assume whatever was at the BEGINNING was the group name. Fails if something is named "del.plus" and "del.minus" or something like that.
     ($thisGroup ne '') or print STDERR "[WARNING] We could not auto-guess the group name for filename '$filename'. Normally, we assume the grouop is whatever appears BEFORE the first period/hyphen/underscore, and the rest is a replicate number or other ignore-able ID. As a result, colors might not be auto-set by groups!\n";
     if (!exists($groupsColHash{$thisGroup})) { # Haven't seen this group yet. Assign a color index to this group!
 	my $numGroupsSeenBeforeThis = scalar(keys(%groupsColHash));
@@ -63,11 +64,11 @@ sub guessColorFromFilename($) {
     return($thisColor);
 }
 
-sub browserTrackString($$) {
+sub browserTrackString($$$) {
     ## Takes "bigWig" or "bam" as its first argument
     ## and a filename as its second argument.
     ## Output: a NEW string that is what the genome browser track description would look like for this file.
-    my ($type, $filename) = @_; ## input arguments: type must be bigWig or bam
+    my ($type, $filename, $urlBase) = @_; ## input arguments: type must be bigWig or bam
     my $parenthetical = ""; ## <-- a user-visible additional comment that goes at the end of the track name
     my $options       = "";
     if ($type eq "bigWig") {
@@ -83,7 +84,10 @@ sub browserTrackString($$) {
     } else {
 	die "[ERROR] Sorry, we only know how to write BIGWIG and BAM files. You specified '$type'. This is a problem!\n";
     }
-    my $url = "https://gb.ucsf.edu/bio/browser/YOURLOCATION/${filename}";
+
+    # If the url was defined, then we use that as the directory URL. Otherwise, we use a placeholder URL with 'YOURLOCATION'
+    my $url = (defined($urlBase)) ? catfile($urlBase, $filename)  :  "https://gb.ucsf.edu/bio/browser/YOURLOCATION/${filename}";
+
     my $clean = cleanedUpFilename($filename);
     my $cleanWithoutScale = $clean; $cleanWithoutScale =~ s/[-. _]scaled[-. _]by[-. _].*//;
     my $cleanWithSpaces   = $clean; $cleanWithSpaces   =~ s/[-. _]scaled[-. _]by[-. _]/ scaled by /;
@@ -96,13 +100,14 @@ my $makeWig = 1; ## By default, generate a bigwig track too. Specify "nowig" to 
 my $shouldSort = 1; ## By default, assume the input SAM/BAM file will still require sorting.
 my $shouldScale = 1; ## By default, scale the wiggle tracks to a common height. If we SHOULD scale, then we divide all the values by the (number of reads in the BIGGEST file / number of reads in THIS file)
 my $shouldKeepTempFiles = 0;
-
+my $directoryUrl = undef; ## If you don't specify it, we put a PLACEHOLDER url. Otherwise, we use this exact URL base (and then append the filename after)
 # ==============================================================================
 GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
-	   , "wig!" => \$makeWig ## specify "--nowig" to avoid making a wiggle track
-	   , "sort!" => \$shouldSort ## "--nosort" avoids the slow sorting step
-	   , "scale!" => \$shouldScale ## "--noscale" doesn't scale the output wiggle files. BAM files are never scaled. Default: DO scale
+	   , "wig!"      => \$makeWig      ## specify "--nowig" to avoid making a wiggle track
+	   , "sort!"     => \$shouldSort   ## "--nosort" avoids the slow sorting step.
+	   , "scale!"    => \$shouldScale  ## "--noscale" doesn't scale the output wiggle files. BAM files are never scaled. Default: DO scale
 	   , "keeptemp!" => \$shouldKeepTempFiles
+	   , "url"       => \$directoryUrl
     ) or printUsageAndQuit();
 
 if (scalar(@ARGV) == 0) { die "ARGUMENT ERROR: This script requires ONE OR MORE SAM/BAM filenames as arguments!\nIt cannot read from STDIN---sorry!\nExample: convert_SAM_or_BAM_for_Genome_Browser.pl  mySamFile.sam\n[Quitting now.]\n"; }
@@ -313,8 +318,8 @@ for my $originalInputFilename (@INPUT_FILES) {
 
     open FILE, ">>", $browserTrackDescriptionFile or die $!; ## APPEND TO THE FILE!!!
     print FILE "\n";
-    if ($makeWig) { print FILE browserTrackString("bigWig", ${bigWigOutFile}); }
-    print FILE browserTrackString("bam", ${sortBamFullFilename});
+    if ($makeWig) { print FILE browserTrackString("bigWig", ${bigWigOutFile}, $directoryUrl); }
+    print FILE browserTrackString("bam", ${sortBamFullFilename}, $directoryUrl);
     print FILE "\n";
     close(FILE);
 
@@ -386,7 +391,9 @@ OPTIONS:
             This way you can compare wiggle tracks between files with different
             sequencing depth.
 
-   --nosort: Assume the input file is ALREADY sorted. Speeds things up.
+   --nosort: Assume the input file is ALREADY sorted. Speeds things up immensely.
+             If your bam files are ALREADY coordinate sorted (like for Tophat output),
+             then you DEFINITELY want to specify --nosort to avoid redundant sorting.
 
    --nowig: Add this to NOT generate a wiggle track.
             Generating a wiggle track is SLOW.
@@ -395,10 +402,24 @@ OPTIONS:
 
    --keeptemp: Keeps the temp files (bedgraph files) instead of deleting them.
 
+   --url   : (Optional) The base directory URL for the files that will be served.
+                        The trailing slash will be added if it is omitted.
+             Example:  --url=https://my.server.here/guy/browser/project9482/
+                       (Creates tracks that will indicate that files are
+                                                 in the 'project9842' directory)
+             If omitted, the following placeholder is used: 
+                        https://gb.ucsf.edu/bio/browser/YOURLOCATION/
+
 EXAMPLES:
 
 convert_SAM_or_BAM_for_Genome_Browser.pl alignment.bam
+
+convert_SAM_or_BAM_for_Genome_Browser.pl --nosort  *.bam
+
 convert_SAM_or_BAM_for_Genome_Browser.pl --nowig  alignment.bam
+
+convert_SAM_or_BAM_for_Genome_Browser.pl --noscale  --url=https://myserver.com/browser/  *.bam
+
 
 Files that are generated from the input YOURFILE.sam:
  1. Browser.sort.YOURFILE.bam (sorted version of the BAM/SAM file) (track type=bam)
