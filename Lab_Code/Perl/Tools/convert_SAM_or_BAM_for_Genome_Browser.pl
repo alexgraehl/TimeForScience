@@ -64,6 +64,10 @@ sub guessColorFromFilename($) {
     return($thisColor);
 }
 
+sub removeTrailingSlash($) { # Removes a trailing slash from a path
+    my ($s) = @_; $s =~ s/\/$//;
+    return($s);
+}
 sub browserTrackString($$$) {
     ## Takes "bigWig" or "bam" as its first argument
     ## and a filename as its second argument.
@@ -86,7 +90,8 @@ sub browserTrackString($$$) {
     }
 
     # If the url was defined, then we use that as the directory URL. Otherwise, we use a placeholder URL with 'YOURLOCATION'
-    my $url = (defined($urlBase)) ? catfile($urlBase, $filename)  :  "https://gb.ucsf.edu/bio/browser/YOURLOCATION/${filename}";
+    # Do ***NOT*** use "catfile" here, because it messes up http:// (turns it into 'http:/' with just one slash)
+    my $url = (defined($urlBase)) ? removeTrailingSlash($urlBase) . "/" . $filename  :  "https://gb.ucsf.edu/bio/browser/YOURLOCATION/${filename}";
 
     my $clean = cleanedUpFilename($filename);
     my $cleanWithoutScale = $clean; $cleanWithoutScale =~ s/[-. _]scaled[-. _]by[-. _].*//;
