@@ -107,7 +107,7 @@ GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
 	   , "sort!"     => \$shouldSort   ## "--nosort" avoids the slow sorting step.
 	   , "scale!"    => \$shouldScale  ## "--noscale" doesn't scale the output wiggle files. BAM files are never scaled. Default: DO scale
 	   , "keeptemp!" => \$shouldKeepTempFiles
-	   , "url"       => \$directoryUrl
+	   , "url=s"     => \$directoryUrl
     ) or printUsageAndQuit();
 
 if (scalar(@ARGV) == 0) { die "ARGUMENT ERROR: This script requires ONE OR MORE SAM/BAM filenames as arguments!\nIt cannot read from STDIN---sorry!\nExample: convert_SAM_or_BAM_for_Genome_Browser.pl  mySamFile.sam\n[Quitting now.]\n"; }
