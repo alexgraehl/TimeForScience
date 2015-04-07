@@ -81,6 +81,7 @@ sub browserTrackString($$$) {
 	$options .= qq{ } . qq{alwaysZero="on"};
 	$options .= qq{ } . qq{visibility="full"}; ## bigwig tracks are FULL (shown) by default
 	$options .= qq{ } . qq{color="$colorByGroup"};
+	$options .= qq{ } . qq{maxHeightPixels="128:32:8"}; # 32 pixel high wiggle tracks by default. Maximum = 128, minimum = 8. 16 is probably the minimum "reasonable" size for most tracks.
     } elsif ($type eq "bam") {
 	$parenthetical = qq{ (reads)};
 	$options .= qq{ } . qq{visibility="dense"};  ## bam tracks are DENSE (almost totally hidden) by default
