@@ -119,6 +119,12 @@ sub readIntoHash($$$$$) {
     my $theFileHandle = openSmartAndGetFilehandle($filename);
     foreach my $line ( <$theFileHandle> ) {
 	$lineNum++;
+
+	if ($line =~ /\r/) {
+	    verboseWarnPrint("WARNING: The file ($filename) appears to have either PC-STYLE line endings or MAC STYLE line endings ( with an '\\r' character) (as seen on line $lineNum), which will almost certainly mess things up! Auto-removing this malevolent character from the line.");
+	    $line =~ s/(\r\n|\r)/\n/; # Turn PC-style \r\n, or Mac-style just-plain-\r into UNIX \n
+	}
+
 	chomp($line);
 	#if(/\S/) { ## if there's some content that's non-spaces-only
 	my @sp1 = split($theDelim, $line, $SPLIT_WITH_TRAILING_DELIMS);
@@ -212,17 +218,20 @@ foreach my $line (<$primaryFH>) {
     }
     $prevLineCount1 = scalar(@sp1);
 
+    if ((($keyCol1-1) >= scalar(@sp1))) {
+	# we're going to SKIP the line entirely if there was no key AT ALL (not even something blank!) at this location
+	verboseWarnPrint("Warning: skipping line $lineNumPrimary---there was no key column on that line. (Key column: $keyCol1, Columns on line: " . scalar(@sp1) . ")");
+	next; # <-- skip to next iteration of loop!ll
+    }
+    
     my $thisKey = $sp1[ ($keyCol1-1) ]; # index from ZERO here, that's why we subtract 1 from the key column
     if ($thisKey =~ /\s/) {
 	verboseWarnPrint("Warning: key \"$thisKey\" on line $lineNumPrimary of file 1 ($file1) had whitespace in it. This is possibly unintentional--beware!");
     }
-    
     if (!defined($thisKey)) {
-	# we're going to SKIP the line entirely if there was no key AT ALL (not even something blank!) at this location
-	verboseWarnPrint("Warning: skipping line $lineNumPrimary---there was no key column on that line. (Key column: $keyCol1, Columns on line: " . scalar(@sp1) . ")");
-	next; # <-- skip to next iteration of loop!
+	verboseWarnPrint("Warning: key at column number $keyCol1 (counting from 1) on line $lineNumPrimary of file 1 ($file1) was UNDEFINED. This is possibly a programming error in join.pl!");
     }
-
+    
     my @sp2; # matching split-up line
     if ($shouldIgnoreCase) {
 	my $keyInOrigCase = $originalCaseHash{uc($thisKey)}; # mutate the key so that it's in the SAME CASE as it was in the key we added
