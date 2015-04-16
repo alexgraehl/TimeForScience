@@ -1,0 +1,17 @@
+# See the docs here: http://git-scm.com/docs/gitignore
+
+.hg
+.hg/hgrc
+hgrc
+
+.DS_Store
+
+*.swp
+*~.nib
+
+*.pbxuser
+*.perspective
+*.perspectivev3
+*.pyc
+
+Lab_Code/StamTools

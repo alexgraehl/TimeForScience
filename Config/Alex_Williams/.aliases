@@ -13,6 +13,8 @@ else
     echo "Note: no .aliases-server-config was found. SSH commands and tmux coloring may fail. You may want to MANUALLY copy this file over from another machine. Copy the other machine's ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/aliases-server-config to this local machine's ~/.aliases-server-config ."
 fi
 
+# Github update
+
 echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
 
 ## Searches both the R source and the current directory (and any subdirectories!)
