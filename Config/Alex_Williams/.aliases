@@ -13,7 +13,11 @@ else
     echo "Note: no .aliases-server-config was found. SSH commands and tmux coloring may fail. You may want to MANUALLY copy this file over from another machine. Copy the other machine's ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/aliases-server-config to this local machine's ~/.aliases-server-config ."
 fi
 
+# git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@..."
+
 echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
+#echo $GIT_COMMITTER_EMAIL
+# echo $GIT_AUTHOR_EMAIL # not important if you set the other thing
 
 ## Searches both the R source and the current directory (and any subdirectories!)
 ## Note that it only looks for files with a ".R" ending!!!!!!!
