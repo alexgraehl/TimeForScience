@@ -13,7 +13,7 @@ else
     echo "Note: no .aliases-server-config was found. SSH commands and tmux coloring may fail. You may want to MANUALLY copy this file over from another machine. Copy the other machine's ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/aliases-server-config to this local machine's ~/.aliases-server-config ."
 fi
 
-# git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@..."
+# git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@users.noreply.github.com"
 
 echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
 #echo $GIT_COMMITTER_EMAIL
