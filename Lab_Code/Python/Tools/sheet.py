@@ -15,7 +15,6 @@ Example usage: "sheet.py -i ~/T" (tab-delimted file)
 # Docs on how to use curses: http://www.amk.ca/python/howto/curses/curses.html
 
 import sys
-
 import curses # <-- docs at: http://docs.python.org/library/curses.html
 import curses.ascii   # <-- docs at http://docs.python.org/library/curses.ascii.html
 import curses.textpad
@@ -774,6 +773,7 @@ class AGW_Table:
         global GlobalCurrentFilename
         try:
             ## Read lines from a file into our data structure
+            # probably should use xreadlines!
             lines = GlobalCurrentFile.readlines(kNUM_BYTES_TO_READ_AT_A_TIME) # <-- note that we only read a small number of lines every time the user interacts with the file!
             if (lines):
                 for line in lines:
