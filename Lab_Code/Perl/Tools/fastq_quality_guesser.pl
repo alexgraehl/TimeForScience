@@ -3,7 +3,7 @@
 # This script detects what quality format a FASTQ file is
 # It can operate on .fastq, .fq, .gzip, .bz2 files
 
-# Example usage: fastq_what_quality.pl myFile.fq myfile2.fq.bz2 another_file.fastq.gz
+# Example usage: fastq_quality_guesser.pl myFile.fq myfile2.fq.bz2 another_file.fastq.gz
 
 use POSIX      qw(ceil floor);
 use List::Util qw(max min);
@@ -12,7 +12,7 @@ use List::Util qw(max min);
 use Getopt::Long;
 use strict;  use warnings;  use diagnostics;
 
-
+# See the long description of quality scores at: http://en.wikipedia.org/wiki/FASTQ_format
 my $S_SANGER_MIN       = 33; #  33 == '!'
 my $S_SANGER_MAX       = 73; #  73 == 'I'
 
@@ -32,8 +32,8 @@ my $M_IONTORRENT_MIN = 36; # '$'
 my $M_IONTORRENT_MAX = 71; # 'G'
 
 my $NUM_QUAL_LINES_BEFORE_MAKING_A_GUESS = 100; # Default: check this many lines before making a guess
-my $OUT_DELIM = "\t";
-my $SHOULD_REPORT_ALTERNATIVES = 0;
+my $OUT_DELIM                            = "\t";
+my $SHOULD_REPORT_ALTERNATIVES           = 0;
 
 my $numInvalidFiles = 0; # To start with, there are no invalid files... yet.
 
@@ -166,7 +166,7 @@ sub main() { # Main program
 	close(FILE); # Done reading the file, now we need to report back...
 	if ($numPossibleScoreTypes < 1) {
 	    print STDERR "\n------------------------------------------\n";
-	    print STDERR "WARNING: fastq_what_quality_score.pl is skipping the file <$fname>...\n";
+	    print STDERR "WARNING: fastq_quality_guesser.pl is skipping the file <$fname>...\n";
 	    print STDERR "<$fname>: ALL score types were disqualified by the time we got to line $lineNum in the file.\n";
 	    print STDERR "<$fname>: Perhaps the file is malformed, or there is a problem in the code for 'fastq_which_quality_score.pl' OR possibly this is a new score type we've never seen before!\n";
 	    print STDERR "<$fname>: The lowest  value was <$lowestValue>, which is character '$lowestChar'.\n";
@@ -251,14 +251,14 @@ OPTIONS:
  
 EXAMPLES:
 
-fastq_what_quality_score.pl  -d "|"  file1.fq  file2.fq.gz  file3.fq.bz2
+fastq_quality_guesser.pl  -d "|"  file1.fq  file2.fq.gz  file3.fq.bz2
   Reports the quality of the THREE files specified, one per line. Pipe-delimited ("|").
 
-fastq_what_quality_score.pl  --report-alternatives  file1.fq  file2.fq.bz2
+fastq_quality_guesser.pl  --report-alternatives  file1.fq  file2.fq.bz2
   Reports quality scores PLUS alternate score possibilities in case there are any.
   Note that --report-alternatives is usually NOT A USEFUL OPTION!
 
-fastq_what_quality_score.pl --help
+fastq_quality_guesser.pl --help
   Displays this help
 
 Score descriptions from Wikipedia:
@@ -290,6 +290,6 @@ None so far.
 
 KNOWN ISSUES:
 
-  Does not support piping in via STDIN (i.e., you CANNOT do 'cat file.fq | fastq_what_quality_score.pl -')
+  Does not support piping in via STDIN (i.e., you CANNOT do 'cat file.fq | fastq_quality_guesser.pl -')
 
 --------------
