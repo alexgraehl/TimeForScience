@@ -13,20 +13,23 @@ use Getopt::Long;
 use strict;  use warnings;  use diagnostics;
 
 # See the long description of quality scores at: http://en.wikipedia.org/wiki/FASTQ_format
+
 my $S_SANGER_MIN       = 33; #  33 == '!'
+my $S_SANGER_ALT_MIN   = 35; #  35 == '#' # Somtimes the lowest value is a '#' instead of a '!'... not sure why.
 my $S_SANGER_MAX       = 73; #  73 == 'I'
 
 my $X_SOLEXA_MIN       = 59;  #  59 == ';'
 my $X_SOLEXA_MAX       = 105; #104; # 104 == 'h' (possibly sometimes 'i' ?)
 
-my $I_ILLUMINA_1_3_MIN = 64;  #  64 == '@'
+my $I_ILLUMINA_1_3_MIN = 64;  #  64 == '@' ('at' sign)
 my $I_ILLUMINA_1_3_MAX = 105; #104; # 104 == 'h' (possibly sometimes 'i' ?)
 
-my $J_ILLUMINA_1_5_MIN = 66;  #  66 == '@'
+my $J_ILLUMINA_1_5_MIN = 66;  #  66 == 'B' (letter B)
 my $J_ILLUMINA_1_5_MAX = 105; #104; # 104 == 'h' (possibly sometimes 'i' ?)
 
-my $L_ILLUMINA_1_8_MIN = 2;  #  2 == '#'
-my $L_ILLUMINA_1_8_MAX = 74; # 74 == 'J'
+my $L_ILLUMINA_1_8_MIN     = 33; #  33 == '!'
+my $L_ILLUMINA_1_8_ALT_MIN = 35;  # 35 == '#'  # Somtimes the lowest value is a '#' instead of a '!'... not sure why.
+my $L_ILLUMINA_1_8_MAX     = 74; # 74 == 'J'
 
 my $M_IONTORRENT_MIN = 36; # '$'
 my $M_IONTORRENT_MAX = 71; # 'G'
@@ -60,6 +63,7 @@ sub numPossibleQualScoresRemaining($) { # takes a hash as input
 	($value == 0 or $value == 1) or die "What, this hash can only contain 1 and 0, anything else is a programming error!";
 	$sum += $value;
     }
+    #print "Returning value of $sum...\n\n";
     return ($sum);
 }
 
@@ -96,12 +100,12 @@ sub main() { # Main program
     ($numUnprocessedArgs >= 1) or quitWithUsageError("Error in arguments! You must send AT LEAST ONE fastq (or bzip / gzip compressed!) file to this program!\n");
     ($NUM_QUAL_LINES_BEFORE_MAKING_A_GUESS >= 1) or quitWithUsageError("You can't set --lines (-n) to a value less than 1.\n");
 
-    my %outputAnnotation = (       "S sanger"         => join($OUT_DELIM, ("QUALITY=SANGER",       "SCALE=Phred+33",  "OFFSET=33",      "TOPHAT_PARAM=(nothing, phred33 is default)",   "RANGE=[0,40]",            "LETTERS=['!','I']") )
-				   , "X solexa"       => join($OUT_DELIM, ("QUALITY=SOLEXA",       "SCALE=Solexa+64", "OFFSET=64",      "TOPHAT_PARAM=--solexa-quals",                  "RANGE=[-5,40] or [0,45]", "LETTERS=[';','h']") )
-				   , "I illumina 1.3" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.3", "SCALE=Phred+64",  "OFFSET=64",      "TOPHAT_PARAM=--solexa1.3-quals",               "RANGE=[0,40]",            "LETTERS=['\@','h']") )
-				   , "J illumina 1.5" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.5", "SCALE=Phred+64",  "OFFSET=64",      "TOPHAT_PARAM=--solexa1.3-quals",               "RANGE=[3,40]",            "LETTERS=['B','h']") )
-				   , "L illumina 1.8" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.8", "SCALE=Phred+33",  "OFFSET=33",      "TOPHAT_PARAM=(nothing, phred33 is default)",   "RANGE=[0,41]",            "LETTERS=['!','J']") )
-				   , "M iontorrent"   => join($OUT_DELIM, ("QUALITY=IONTORRENT"  , "SCALE=Phred???",  "OFFSET=36?",     "TOPHAT_PARAM=(Probably phred)",                "RANGE=[36,71]",           "LETTERS=['\$','G']") )
+    my %outputAnnotation = (       "S sanger"         => join($OUT_DELIM, ("QUALITY=SANGER",       "SCALE=Phred+33",  "OFFSET=33",      "TOPHAT_PARAM=(nothing, phred33 is default)",   "RANGE=[0,40]",            "LETTERS=[! or #,I]") )
+				   , "X solexa"       => join($OUT_DELIM, ("QUALITY=SOLEXA",       "SCALE=Solexa+64", "OFFSET=64",      "TOPHAT_PARAM=--solexa-quals",                  "RANGE=[-5,40] or [0,45]", "LETTERS=[;,h]") )
+				   , "I illumina 1.3" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.3", "SCALE=Phred+64",  "OFFSET=64",      "TOPHAT_PARAM=--solexa1.3-quals",               "RANGE=[0,40]",            "LETTERS=[\@,h]") )
+				   , "J illumina 1.5" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.5", "SCALE=Phred+64",  "OFFSET=64",      "TOPHAT_PARAM=--solexa1.3-quals",               "RANGE=[3,40]",            "LETTERS=[B,h]") )
+				   , "L illumina 1.8" => join($OUT_DELIM, ("QUALITY=ILLUMINA_1.8", "SCALE=Phred+33",  "OFFSET=33",      "TOPHAT_PARAM=(nothing, phred33 is default)",   "RANGE=[0,41]",            "LETTERS=[! or #,J]") )
+				   , "M iontorrent"   => join($OUT_DELIM, ("QUALITY=IONTORRENT"  , "SCALE=Phred???",  "OFFSET=36?",     "TOPHAT_PARAM=(Probably phred)",                "RANGE=[36,71]",           "LETTERS=[\$,G]") )
 				   , "INVALID"        => join($OUT_DELIM, ("QUALITY=INVALID",       "SCALE=INVALID",  "OFFSET=INVALID", "TOPHAT_PARAM=INVALID",                         "RANGE=INVALID",           "LETTERS=INVALID") )
 	); # <-- to initialize the hash properly, these MUST be parens and not braces!!!
 
@@ -134,6 +138,11 @@ sub main() { # Main program
 	    if (0 != $lineNum % 4) { # Every 4th line (i.e. remainder 3 when modulo-divided by 4) is a quality score line! 
 		next; # <-- This is NOT a qual score line! There are four lines in each FASTQ record, but only the last item in each group is the quality score.
 	    }
+
+	    if ($line =~ m/^\s+$/) {
+		next; # Skip any blank lines! Sometimes seen at the end of the file.
+	    }
+	    
 	    # Ok, this is a quality score line!
 	    chomp($line);
 	    #print STDERR "Debugging: " . $line . "\n";
@@ -160,6 +169,7 @@ sub main() { # Main program
 		if ($lowestValue < $L_ILLUMINA_1_8_MIN || $highestValue > $L_ILLUMINA_1_8_MAX) { $canBe{"L illumina 1.8"} = 0; } # can't be Illumina 1.8+ anymore...
 		if ($lowestValue < $M_IONTORRENT_MIN   || $highestValue > $M_IONTORRENT_MAX) {   $canBe{"M iontorrent"} = 0; } # can't be Illumina 1.8+ anymore...
 	    }
+	    #print $line . "...\n";
 	    $numPossibleScoreTypes = numPossibleQualScoresRemaining(\%canBe);
 	    $numQualScoreLinesRead++; # Every FOUR lines is a qual score: this should be one! Note that this is separate from "$lineNum", which counts ALL lines (even non-quality score lines)
 	}
@@ -182,17 +192,31 @@ sub main() { # Main program
 	} else {
 	    # Ok, but although there are actually MULTIPLE possibilities for this score, it is most likely to be a specific one...
 	    # ===================== HANDLE THE GUESSING, when there are multiple options ===================
-	    my %guessHash = %canBe;
-	    foreach my $key (keys(%guessHash)) {
+	    my %guessHash = (); #%canBe;
+	    foreach my $key (keys(%canBe)) {
 		$guessHash{$key} = 0; # Set all the hash VALUES to zero (the keys stay the same)
 	    }
-	    if (isProbably($lowestValue, $highestValue, $S_SANGER_MIN, $S_SANGER_MAX)) {             $guessHash{"S sanger"} = 1; }
+	    if (isProbably($lowestValue, $highestValue, $S_SANGER_MIN, $S_SANGER_MAX) # <-- Note that we will allow both '!' and '#' as options for the min score.
+		or isProbably($lowestValue, $highestValue, $S_SANGER_ALT_MIN, $S_SANGER_MAX)) {      $guessHash{"S sanger"} = 1; }
+	    
 	    if (isProbably($lowestValue, $highestValue, $X_SOLEXA_MIN, $X_SOLEXA_MAX)) {             $guessHash{"X solexa"} = 1; }
 	    if (isProbably($lowestValue, $highestValue, $I_ILLUMINA_1_3_MIN, $I_ILLUMINA_1_3_MAX)) { $guessHash{"I illumina 1.3"} = 1; }
 	    if (isProbably($lowestValue, $highestValue, $J_ILLUMINA_1_5_MIN, $J_ILLUMINA_1_5_MAX)) { $guessHash{"J illumina 1.5"} = 1; }
-	    if (isProbably($lowestValue, $highestValue, $L_ILLUMINA_1_8_MIN, $L_ILLUMINA_1_8_MAX)) { $guessHash{"L illumina 1.8"} = 1; }
+
+	    if (isProbably($lowestValue, $highestValue, $L_ILLUMINA_1_8_MIN, $L_ILLUMINA_1_8_MAX)  # <-- Note that we will allow both '!' and '#' as options for the min score.
+		or isProbably($lowestValue, $highestValue, $L_ILLUMINA_1_8_ALT_MIN, $L_ILLUMINA_1_8_MAX)) { $guessHash{"L illumina 1.8"} = 1; }
+
 	    if (isProbably($lowestValue, $highestValue, $M_IONTORRENT_MIN, $M_IONTORRENT_MAX))     { $guessHash{"M iontorrent"} = 1; }
 
+	    #print ("Can be...\n");
+	    if ($guessHash{"S sanger"} and $guessHash{"L illumina 1.8"}) { # The sanger and illumina 1.8 only differ by one quality base--sanger tops out at 'I', while illumina tops out at J.
+		#print ("Did this trigger\n");
+		#print ("Highest was $highestChar .. $highestValue \n");
+		if ($highestChar eq 'I') { $guessHash{"L illumina 1.8"} = 0; } # If it can be both, but we only saw (at most) an I, then we will call it a SANGER sequence.
+		if ($highestChar eq 'J') { $guessHash{"S sanger"}       = 0; } # If it can be both, but we only saw (at most) an I, then we will call it an ILLUMINA 1.8 sequence.
+		# If it can be both, but we only saw (at most) a J, then we will call it an ILLUMINA sequence.
+	    }
+	    
 	    my $numBestGuesses = numPossibleQualScoresRemaining(\%guessHash);
 	    if ($numBestGuesses != 1) {
 		my $noGuessMessage = "NO_GUESS: Bad news, we could NOT make a best quality score guess for <$fname>! We had a total of $numPossibleScoreTypes possible scores to guess from, and $numBestGuesses guesses. The lowest character was '$lowestChar' ($lowestValue), the highest was '$highestChar' ($highestValue)";
@@ -207,6 +231,7 @@ sub main() { # Main program
 	    # ===================== DONE HANDLING THE GUESSING, when there are multiple options ===================
 	    if ($SHOULD_REPORT_ALTERNATIVES) {
 		while (my ($key, $value) = each(%canBe)) {
+		    next if ($numBestGuesses > 0 and $key eq "INVALID"); # If there are ANY valid guesses at all, then DO NOT also print "INVALID" as a possible guess.
 		    ($value == 1) && print STDOUT ("ALTERNATIVE_OPTION_FOR_" . getStringWithFilename($fname, \%outputAnnotation, $key, $lowestChar, $highestChar)) . "\n";
 		}
 	    }
