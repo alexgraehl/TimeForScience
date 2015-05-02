@@ -240,6 +240,8 @@
 ;;(load (expand-file-name "~/.emacs.d/cperl-mode.el.6.2")) ; <-- note: compiled version!
 ;;(autoload 'cperl-mode "cperl-mode" "Fancier mode Perl highlighting." t)
 
+(fset 'perl-mode 'cperl-mode) ;; user cperl mode instead of perl mode. Cperl mode is MUCH BETTER and isn't all dumb with tabs!
+
 ;; (condition-case nil
 ;;     (progn
 ;;       (require 'highlight-symbol)
