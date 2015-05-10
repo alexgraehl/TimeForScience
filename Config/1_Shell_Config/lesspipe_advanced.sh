@@ -58,13 +58,7 @@ lesspipe() {
 	    else
 		$DECOMPRESSOR -- "$1"
 	    fi ;; ## <-- Done with the "multi-part archive" part
-
-	
-
-	
-
-  # Alex:
-  # CHANGED from default lesspipe: Now we load any files ending in
+  # Alex: CHANGED from default lesspipe: Now we load any files ending in
   # .tab or .matrix (including gzipped files) and run them through
   # "sheet.pl", which will format them as a quasi-spreadsheet with
   # columns aligned.   .csv files could be added in a similar fashion
@@ -74,10 +68,10 @@ lesspipe() {
 	*.tab.gz|*.matrix.gz) gunzip -c "$1" | sheet.pl --notify --color="always" ;;
 	*.tab|*.matrix) sheet.pl --notify --color="always" "$1" ;; # Maybe should use sheet.py instead?
 	
-	*.bam) if [ -x "`which samtools`"]; then  # Color code the bases A, C, G, and T (and N)
-		  echo -e '##################\n# Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format #\n##################' ; samtools view -h "$1" | basecolor ## Use Samtools to view a BAM ("binary sam") RNA-seq file
-	      else  ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
-		  echo -e "ERROR: LESSPIPE_ADVANCED CANNOT VIEW THIS FILE, BECAUSE 'samtools' IS NOT INSTALLED or CANNOT BE FOUND.\nPlease install samtools (or make sure it is on your path and can be executed) and try again!"
+	*.bam) if [[ -x "`which samtools`" ]]; then  # Color code the bases A, C, G, and T (and N)
+		   echo -e '##################\n# Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format #\n##################' ; samtools view -h "$1" | basecolor ## Use Samtools to view a BAM ("binary sam") RNA-seq file
+	       else  ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
+		   echo -e "ERROR: LESSPIPE_ADVANCED CANNOT VIEW THIS FILE, BECAUSE 'samtools' IS NOT INSTALLED or CANNOT BE FOUND.\nPlease install samtools (or make sure it is on your path and can be executed) and try again!"
 	       fi ;;
 	###########	*.bam) echo '######\n### Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format ###\n######' ; samtools view -h "$1" | sed 's/A/'"$(printf '\033[1mA\033[0m')"'/g' ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
 	*.sam|*.sam.gz|*.sam.bz2|*.fasta|*.fasta.gz|*.fasta.bz2|*.fastq|*.fastq.gz|*.fastq.bz2|*.fa|*.fa.gz|*.fa.bz2|*.fq|*.fq.gz|*.fq.bz2) smartdecompress "$1" | basecolor ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
