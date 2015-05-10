@@ -78,7 +78,7 @@ sub isProbably($$$$) {
 
 sub getStringWithFilename($$$$$) {
     my ($theFilename, $theHashRef, $theKey, $theLowChar, $theHighChar) = @_;
-    return ("FILE=" . $theFilename . ${OUT_DELIM} . (exists($$theHashRef{$theKey}) ? $$theHashRef{$theKey} : $$theHashRef{"INVALID"}) . ${OUT_DELIM} . "LOWEST=${theLowChar}" . ${OUT_DELIM} . "HIGHEST=${theHighChar}");
+    return ("FILE=" . $theFilename . ${OUT_DELIM} . (exists($$theHashRef{$theKey}) ? $$theHashRef{$theKey} : $$theHashRef{"INVALID"}) . ${OUT_DELIM} . "LOWEST_SEEN=${theLowChar}" . ${OUT_DELIM} . "HIGHEST_SEEN=${theHighChar}");
 }
 
 
