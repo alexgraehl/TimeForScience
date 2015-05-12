@@ -321,7 +321,7 @@
  scroll-step               1 ; Scroll only this many lines when we hit the bottom
  scroll-conservatively     1
  show-trailing-whitespace  t
- tab-width                 8 ;; <-- tab indent width!
+ tab-width                 4 ;; <-- tab indent width!
  indent-tabs-mode          t ;; <-- except for python
  default-fill-column       80 ;; <-- when you "meta-q" to fit text, what line widths are used for wrapping?
  transient-mark-mode       t ;; show when we mark text for copying/selection, BUT also makes the selection disappear after one use. (if unset, we can use ctrl-space ctrl-space)
@@ -365,12 +365,14 @@
  ;; - http://users.tkk.fi/~rsaikkon/conf/dot.emacs
  )
 
+(defvaralias 'c-basic-offset 'tab-width)     ;; Note that this is an alias to tab-width now!
+(defvaralias 'cperl-indent-level 'tab-width) ;; Note that this is an alias to tab-width now!
+
 (setq vc-handled-backends nil) ;; <-- don't load the incredibly slow "vc-hg" mercurial module
 
 ;; More about backups
 (setq auto-save-mode t)
 (setq backup-directory-alist '(("." . "~/.emacs-backups")))
-
 
 (fset 'yes-or-no-p 'y-or-n-p) ; <-- Treats y/n as shortcuts for yes/no
 
@@ -497,7 +499,6 @@ current line."
 ;;(global-unset-key "\C-v")
 ;;(global-unset-key "\M-v") ;; now it's meta-u and meta-o
 
-
 (global-unset-key [(control x) (m)])
 
 (global-unset-key [insert])	  ; Disable the "insert" key
@@ -561,8 +562,6 @@ current line."
 ;; Tab-related commands
 ;;(global-set-key "\t" 'indent-region)
 ;;(global-set-key [(shift \t)] '(insert (format "%c" "\t")))
-
-
 (global-set-key (kbd "M-.") 'dabbrev-expand)
 (global-set-key (kbd "M-SPC") 'self-insert-command) ;; Causes meta-space to also make a space!
 
@@ -577,16 +576,14 @@ current line."
 				 (progn (hs-hide-all) (message "Hide all folds")))
 			       (setq agw-show-all (not agw-show-all))))
 
-
-
-(global-unset-key (kbd "M-g"))
-(global-set-key (kbd "M-G") '(lambda () "Mercurial commit from directly within emacs" 
-			       (interactive) 
-			       (shell-command
-				(concat 
-				 "hg commit "
-				 " --user " "'" (getenv "USER") "'"
-				 " --message \"Commit from within emacs\""))))
+;;(global-unset-key (kbd "M-g"))
+;;(global-set-key (kbd "M-G") '(lambda () "Mercurial commit from directly within emacs" 
+;;			       (interactive) 
+;;			       (shell-command
+;;				(concat 
+;;				 "hg commit "
+;;				 " --user " "'" (getenv "USER") "'"
+;;				 " --message \"Commit from within emacs\""))))
 
 ;;(global-set-key (kbd "M-G") '(lambda () "Git commit" (interactive) (shell-command "git commit -a -m \"Commit from within emacs\"")))
 
@@ -606,7 +603,14 @@ current line."
 ;;(global-set-key "\M-O" 'end-of-buffer) ; <-- for some reason, this causes the arrow keys to stop working
 (global-set-key "\C-t" 'toggle-truncate-lines)
 (global-set-key "\C-o" 'find-file)
-(global-set-key "\C-j" 'goto-line)
+
+(global-unset-key "\C-j")
+(global-set-key "\C-j" 'goto-line) ;; ctrl-j
+(add-hook 'cperl-mode-hook
+	  (lambda ()
+	    (local-unset-key "\C-j")
+	    (local-set-key "\C-j" 'goto-line)))
+
 (global-set-key "\M-r" 'query-replace) ; less annoying than meta-shift-5
 (global-set-key [(control meta r)] 'query-replace-regexp) ; less annoying than meta-shift-5
 (global-set-key "\C-s" 'isearch-forward)
