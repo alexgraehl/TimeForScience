@@ -193,6 +193,7 @@ alias cheat="echo \
 \">>> UNIX: Rsync transfer files: rsync --dry-run -thravz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
 \">>> UNIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
 \">>> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
+\">>> UNIX/TORQUE: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
 \">>> UNIX / INSTALL: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
 \">>> UNIX / INSTALL: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
 \">>> UNIX / INSTALL: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
