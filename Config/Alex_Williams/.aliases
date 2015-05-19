@@ -312,10 +312,7 @@ function sudoshowoff {
     for var in "$@"; do echo "sudoshowoff: Using sudo chmod -R to allow ANY USER to browse \"$var\""; sudo chmod -R a+r "$var" ; sudo find "$var" -type d -type d -exec sudo chmod a+x \{\} \; ; done
 }
 
-alias google="gcutil --project blast-meta ssh test-micro-instance"
-
 ## Mac-specific commands:
-
 SETFILE_LOCATION=/Applications/Xcode*/Contents/Developer/Tools/SetFile
 alias invisible='chflags -h hidden'  #alias invisible='chflags hidden' #$SETFILE_LOCATION -P -a V' ## Mac-only: Make a file/folder invisible to the Finder
 alias visible='chflags -h nohidden' #alias visible='chflags nohidden' #$SETFILE_LOCATION -P -a v' ## Mac-only: opposite of "invisible"
