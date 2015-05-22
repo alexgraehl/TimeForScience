@@ -49,10 +49,19 @@ echo -e "${a_echo_color}>>> BASH: Loading .bashrc...${a_end_color}" ## <-- comes
 bind 'set mark-directories on'
 bind 'set mark-symlinked-directories on'
 
-
 # ============================= PATH STUFF ============================
 export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
-export TIME_FOR_SCIENCE_DIR=$HOME/TimeForScience ## Location of the TIME FOR SCIENCE directory. This is mostly Alex's code.
+
+if [[ "$USER" == "alexgw" ]]; then
+    export TIME_FOR_SCIENCE_DIR="$HOME/TimeForScience" ## Location of the TIME FOR SCIENCE directory. This is mostly Alex's code.
+else
+    export TIME_FOR_SCIENCE_DIR="/home/alexgw/TimeForScience"
+    if [[ -d ${TIME_FOR_SCIENCE_DIR} ]]; then
+	true # Don't do anything; it was found, which is fine
+    else
+	export TIME_FOR_SCIENCE_DIR="COULD_NOT_FIND_TIME_FOR_SCIENCE_DIRECTORY_ON_FILESYSTEM"
+    fi
+fi
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/ ## <-- Used by Josh Stuart's scripts. Mostly these are enhanced perl versions of UNIX scripts, like "cut.pl" and "join.pl".
 
 
