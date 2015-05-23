@@ -71,7 +71,7 @@ export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin ## <-- clear out 
 # Medium priority: specific installs of tools
 export PATH=/usr/local/bin:/work/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 # Highest priority: things in the HOME directory or TimeForScience or /bioinformatics/bin
-export PATH="${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:/bioinformatics/bin:/data/tools/bin:/db/home/Common/bin:${PATH}"
+export PATH="${HOME}/bin:${HOME}/.linuxbrew/bin:/data/${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:/bioinformatics/bin:/data/tools/bin:/db/home/Common/bin:${PATH}"
 export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:$LD_LIBRARY_PATH"
 
 #export PERL5LIB=/usr/local/lib/perl5/site_perl/5.12.1/  # note: sometimes it's in /usr/lib instead of /usr/local!!
