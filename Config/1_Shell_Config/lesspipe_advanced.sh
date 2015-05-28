@@ -74,7 +74,7 @@ lesspipe() {
 		   echo -e "ERROR: LESSPIPE_ADVANCED CANNOT VIEW THIS FILE, BECAUSE 'samtools' IS NOT INSTALLED or CANNOT BE FOUND.\nPlease install samtools (or make sure it is on your path and can be executed) and try again!"
 	       fi ;;
 	###########	*.bam) echo '######\n### Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format ###\n######' ; samtools view -h "$1" | sed 's/A/'"$(printf '\033[1mA\033[0m')"'/g' ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
-	*.sam|*.sam.gz|*.sam.bz2|*.dna.txt|*.rna.txt|*.fasta|*.fasta.gz|*.fasta.bz2|*.fastq|*.fastq.gz|*.fastq.bz2|*.fa|*.fa.gz|*.fa.bz2|*.fq|*.fq.gz|*.fq.bz2) smartdecompress "$1" | basecolor ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
+	*.sam|*.sam.gz|*.sam.bz2|*.dna.txt|*.rna.txt|*.dna.txt.gz|*.rna.txt.gz|*.seq.gz|*.seq.txt|*.seq.txt.gz|*.seq|*.fasta|*.fasta.gz|*.fasta.bz2|*.fastq|*.fastq.gz|*.fastq.bz2|*.fa|*.fa.gz|*.fa.bz2|*.fq|*.fq.gz|*.fq.bz2) smartdecompress "$1" | basecolor ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
 	*.tar) tar tvvf "$1" ;;
 	*.tgz|*.tar.gz|*.tar.[zZ]) tar tzvvf "$1" ;;
 	*.tar.bz2|*.tbz2) bzip2 -dc "$1" | tar tvvf - ;;
