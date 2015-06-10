@@ -701,6 +701,10 @@ defaults write -g NSBrowserColumnAnimationSpeedMultiplier -float 0
 # DON'T sleep when you push the power button! (Not sure if this works in 10.10+)
 defaults write com.apple.loginwindow PowerButtonSleepsSystem -bool no
 
+# Set the hostname to something
+BETTER_NAME=mac
+scutil --set HostName $BETTER_NAME
+
 # ===============================================================
 
 ###############################################################################
