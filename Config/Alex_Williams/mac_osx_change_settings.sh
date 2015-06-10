@@ -25,7 +25,7 @@ while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
 sudo nvram SystemAudioVolume=" "
 
 # Disable transparency in the menu bar and elsewhere on Yosemite
-defaults write com.apple.universalaccess reduceTransparency -bool true
+#defaults write com.apple.universalaccess reduceTransparency -bool true
 
 # Menu bar: hide the Time Machine, Volume, User, and Bluetooth icons
 #for domain in ~/Library/Preferences/ByHost/com.apple.systemuiserver.*; do
@@ -54,8 +54,8 @@ defaults write NSGlobalDomain AppleShowScrollBars -string "Always"
 # Possible values: `WhenScrolling`, `Automatic` and `Always`
 
 # Disable smooth scrolling
-# (Uncomment if you’re on an older Mac that messes up the animation)
-#defaults write NSGlobalDomain NSScrollAnimationEnabled -bool false
+# (Makes space bar in Chrome jump page-by-page. Critical feature)
+defaults write NSGlobalDomain NSScrollAnimationEnabled -bool false # THIS IS CRITICAL! AGW / Alex
 
 # Increase window resize speed for Cocoa applications
 defaults write NSGlobalDomain NSWindowResizeTime -float 0.001
@@ -140,11 +140,11 @@ defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
 #sudo pmset -a hibernatemode 0
 
 # Remove the sleep image file to save disk space
-#sudo rm /Private/var/vm/sleepimage
+#sudo rm /private/var/vm/sleepimage
 # Create a zero-byte file instead…
-#sudo touch /Private/var/vm/sleepimage
+#sudo touch /private/var/vm/sleepimage
 # …and make sure it can’t be rewritten
-#sudo chflags uchg /Private/var/vm/sleepimage
+#sudo chflags uchg /private/var/vm/sleepimage
 
 # Disable the sudden motion sensor as it’s not useful for SSDs
 #sudo pmset -a sms 0
@@ -675,6 +675,10 @@ defaults write com.google.Chrome.canary AppleEnableSwipeNavigateWithScrolls -boo
 defaults write com.google.Chrome DisablePrintPreview -bool true
 defaults write com.google.Chrome.canary DisablePrintPreview -bool true
 
+# Expand the print dialog by default
+defaults write com.google.Chrome PMPrintingExpandedStateForPrint2 -bool true
+defaults write com.google.Chrome.canary PMPrintingExpandedStateForPrint2 -bool true
+
 # ===============================================================
 ## Extra stuff that Alex found online
 
@@ -699,14 +703,14 @@ defaults write com.apple.loginwindow PowerButtonSleepsSystem -bool no
 
 # ===============================================================
 
-
 ###############################################################################
 # Kill affected applications                                                  #
 ###############################################################################
 
 for app in "Activity Monitor" "Address Book" "Calendar" "Contacts" "cfprefsd" \
-	"Dock" "Finder" "Mail" "Messages" "Safari" "SizeUp" "SystemUIServer" \
-	"Terminal" "Transmission" "Twitter" "iCal"; do
+			      "Dock" "Finder" "Mail" "Messages" "Safari" "SizeUp" "SystemUIServer" \
+			      "Google Chrome" "Google Chrome Canary" \
+			      "Terminal" "Transmission" "Twitter" "iCal"; do
 	killall "${app}" > /dev/null 2>&1
 done
 echo "Done. Note that some of these changes require a logout/restart to take effect."

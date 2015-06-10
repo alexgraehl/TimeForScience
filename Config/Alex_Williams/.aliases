@@ -607,6 +607,19 @@ function qkiri { # kill all own jobs
     qselect -u $USER | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats;
 }
 
+function qsass { # kill all jobs that match this grep... works for usernames, jobs, etc. Be careful!
+    # Example:  qsass    yourname             # Hopefully yourname is not a subset of someone ELSE's name!
+    # or:       qsass    test_job_number_     # Uses GREP, so watch out for invalid regexps!
+    if [[ ${#1} < 4 ]]; then
+	echo "ERR: Your argument to qsass ($1) was not long enough---it needs to be at least 4 characters, or else we don't believe it's a valid input! Be careful! Even PARTIAL MATCHES will trigger the job deletion. So don't delete 'bad_job' if you don't also want to delete 'not_a_bad_job'."
+	return 1;
+    fi;
+    for j in $(qstat -a | grep "$1" | cut -d '.' -f 1); do
+	echo "qdel-ing this thing that matched '$1': $j...";
+	qdel $j ;
+    done
+}
+
 function checkbackup {
     # checks the MOST RECENT file in /it/backup/log, and gives you the last 10 lines from that file
     echo ""
