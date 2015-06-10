@@ -25,5 +25,8 @@ cat $PRECOLOR \
     | perl -p -e  's/(.*\bRUNNING\b.*)/\033[32m\t$1\t\033[0m/g' \
     | perl -p -e  's/(.*\bON HOLD\b.*)/\033[35m\t$1\t\033[0m/g' \
     | perl -p -e  's/(.*Not Running.*)/\033[33m\t$1\t\033[0m/g' \
+    | perl -p -e            "s/($USER)/\033[7;49;93m\$1\033[0m/g" \
     | column -s $'\t' -t
+
+# Note: the last perl line above (with "s/($USER)/......" is to COLOR the CURRENT USERNAME if it's found, so you can easily see your jobs.
 
