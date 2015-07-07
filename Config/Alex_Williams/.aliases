@@ -432,7 +432,7 @@ function scihg_up {
 }
 
 
-alias science="echo 'TimeForSceince (GitHub):' ; scienceup ${TIME_FOR_SCIENCE_DIR} ; sciencecom ${TIME_FOR_SCIENCE_DIR} ; echo ''; echo 'Work directory:' ; scihg_up ${BINF_CORE_WORK_DIR} ; scihg_com ${BINF_CORE_WORK_DIR}"
+alias science="echo 'TimeForScience (GitHub):' ; scienceup ${TIME_FOR_SCIENCE_DIR} ; sciencecom ${TIME_FOR_SCIENCE_DIR} ; echo ''; echo 'Work directory:' ; scihg_up ${BINF_CORE_WORK_DIR} ; scihg_com ${BINF_CORE_WORK_DIR}"
 
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
 
