@@ -103,6 +103,7 @@ sub browserTrackString($$$) {
 
 
 my $makeWig = 1; ## By default, generate a bigwig track too. Specify "nowig" to avoid this.
+my $makeBam = 1; ## By default, assume we ARE outputting the bam files. But if you want to keep file size smaller, specify "nobam" to only keep the bam files TEMPORARILY and delete them after the wiggle tracks are made.
 my $shouldSort = 1; ## By default, assume the input SAM/BAM file will still require sorting.
 my $shouldScale = 1; ## By default, scale the wiggle tracks to a common height. If we SHOULD scale, then we divide all the values by the (number of reads in the BIGGEST file / number of reads in THIS file)
 my $shouldKeepTempFiles = 0;
@@ -110,6 +111,7 @@ my $directoryUrl = undef; ## If you don't specify it, we put a PLACEHOLDER url. 
 # ==============================================================================
 GetOptions("help|?|man"        => sub { printUsageAndQuit(); }
 	   , "wig!"      => \$makeWig      ## specify "--nowig" to avoid making a wiggle track
+	   , "bam!"      => \$makeBam      ## specify "--nobam" to avoid KEEPING the bam files, although we always make them temporarily
 	   , "sort!"     => \$shouldSort   ## "--nosort" avoids the slow sorting step.
 	   , "scale!"    => \$shouldScale  ## "--noscale" doesn't scale the output wiggle files. BAM files are never scaled. Default: DO scale
 	   , "keeptemp!" => \$shouldKeepTempFiles
@@ -122,6 +124,7 @@ my @INPUT_FILES = @ARGV;
 chomp(@INPUT_FILES);
 # ==============================================================================
 
+($makeWig or $makeBam) or die "You can't specify <--nowig> and ALSO <--nobam> at the same time (that would cause this script to do nothing).";
 my $random_number = rand();
 my $chrLenTempFile = "Browser.tmp.TEMPORARY.chrlen_" . rand() . "-" . time() . "_convert_SAM_or_BAM_for_Genome_Browser.tmp";
 
@@ -325,7 +328,14 @@ for my $originalInputFilename (@INPUT_FILES) {
     open FILE, ">>", $browserTrackDescriptionFile or die $!; ## APPEND TO THE FILE!!!
     print FILE "\n";
     if ($makeWig) { print FILE browserTrackString("bigWig", ${bigWigOutFile}, $directoryUrl); }
-    print FILE browserTrackString("bam", ${sortBamFullFilename}, $directoryUrl);
+    if ($makeBam) { print FILE browserTrackString("bam", ${sortBamFullFilename}, $directoryUrl); }
+    if (not $makeBam) {
+	    print STDERR "Since 'makeBam' was specified, we are now deleting the temporary BAM and BAI files\n";
+            print STDERR "             named <$sortBamFullFilename> and <$bamIndexOutfile>.\n";
+	    print STDERR "             (We only want to retain the wiggle tracks.)\n";
+	    unlink $sortBamFullFilename or warn "WARNING: unable to delete the file <$sortBamFullFilename>.\n";
+	    unlink $bamIndexOutfile     or warn "WARNING: unable to delete the bam index <$bamIndexOutfile>.\n";
+    }
     print FILE "\n";
     close(FILE);
 
@@ -406,6 +416,10 @@ OPTIONS:
             Also, if you specify --nowig, then you no longer need to specify
             a "fai" fasta index file.
 
+   --nobam: If you only want the smaller wiggle tracks, this will delete the intermediate bam files.
+            Generally not recommended, unless you need to save space on your server that hosts browser
+            tracks.
+  
    --keeptemp: Keeps the temp files (bedgraph files) instead of deleting them.
 
    --url   : (Optional) The base directory URL for the files that will be served.
@@ -423,9 +437,13 @@ convert_SAM_or_BAM_for_Genome_Browser.pl alignment.bam
 convert_SAM_or_BAM_for_Genome_Browser.pl --nosort  *.bam
 
 convert_SAM_or_BAM_for_Genome_Browser.pl --nowig  alignment.bam
-
+  * Only generate browser-suitable BAM files, not wiggle tracks.
+  
 convert_SAM_or_BAM_for_Genome_Browser.pl --noscale  --url=https://myserver.com/browser/  *.bam
-
+  * Do not re-adjust the scale for each wiggle track.
+  
+convert_SAM_or_BAM_for_Genome_Browser.pl --nobam  alignment.bam
+  * Generates wiggle tracks, then deletes the (temporary) intermediate BAM files.
 
 Files that are generated from the input YOURFILE.sam:
  1. Browser.sort.YOURFILE.bam (sorted version of the BAM/SAM file) (track type=bam)
