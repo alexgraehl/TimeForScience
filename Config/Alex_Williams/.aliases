@@ -604,7 +604,7 @@ function unmini {
 #function qin { # qstat with colors for job status, automatic piping into "less" --- this is now the "qselect.sh" script
 
 function qkiri { # kill all own jobs
-    qselect -u $USER | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats;
+    qselect -u $USER | xargs qdel -p ; echo "[Cancelled jobs]"; sleep 1; qstats;
 }
 
 function qsass { # kill all jobs that match this grep... works for usernames, jobs, etc. Be careful!
