@@ -24,105 +24,85 @@ sub printUsage() {
 
 # ==1==
 sub main() { # Main program
-
 	my ($delim) = "\t";
 	my ($dittoChar) = "\"";
 	my ($separateItemsWithNewline) = 0; # <-- should we put newlines between ditto-marked different items?
 	my ($fieldInput) = undef; # Which columns (fields) should we operate on? (format string)
 	my ($undo) = 0; # Should we UNDO the ditto-marking? Note that this is a "best guess" and is not always possible if the ditto mark is sometimes also a real data value.
-    GetOptions("help|?|man" => sub { printUsage(); }
-			   , "d|delim=s" => \$delim
-			   , "f=s"       => \$fieldInput
-			   , "sep!"      => \$separateItemsWithNewline
-			   , "m|mark=s"  => \$dittoChar   # actually could be a whole string, not just a char
-			   , "undo"      => sub { $undo = 1; }
-	       ) or printUsage();
-
-	# --sep is currently not implemented!
-
+	GetOptions("help|?|man" => sub { printUsage(); }
+		   , "d|delim=s" => \$delim
+		   , "f=s"       => \$fieldInput
+		   #, "sep!"      => \$separateItemsWithNewline  # --sep is currently not implemented!
+		   , "m|mark=s"  => \$dittoChar   # actually could be a whole string, not just a char
+		   , "undo"      => sub { $undo = 1; }
+		  ) or printUsage();
 	#print STDERR "Unprocessed by Getopt::Long\n" if $ARGV[0];
-	#foreach (@ARGV) {
-	#	print STDERR "$_\n";
-	#}
-
+	#foreach (@ARGV) { print STDERR "$_\n"; }
 	my $lineNum = 0;
 	my @prevRow = undef;
 	my $prev_cols = 0;
 	my @cols; # which columns to operate on
 	my %colHash = (); # which columns to operate on
 	while (my $line = <>) {
-	  chomp($line);
-
-	  my @thisRow = split(/$delim/, $line);
-	  
-	  # Figure out which columns to operate on (or just do all of them)
-	  if(defined($fieldInput)) {
-		my $num_cols = scalar(@thisRow);
-		if($num_cols != $prev_cols) {
-		  # If there is a different number of columns on this line, then
-		  # re-parse the ranges! (to handle -1 properly, and things like that)
-		  @cols = parseRanges($fieldInput, $num_cols, -1); ## <-- this is a function in libfile.pl
-		  foreach my $i (@cols) {
-			$colHash{$i} = 1; # sets up the hash
-		  }
-		}
-		$prev_cols = $num_cols;
-	  }
-
-
-	  if ($lineNum == 0) {
-		# Never operate on the very first line in a file.
-		# It cannot be a "dittoed" item, because there was nothing before it.
-		print STDOUT $line;
-
-	  } else {
-		my $numDittoedItemsThisLine = 0;
-
-		my $colIndex = 0;
-		foreach my $elem (@thisRow) {
-		  if ($colIndex > 0) {
-			print STDOUT $delim;
-		  }
-
-		  my $elemAbove = $prevRow[$colIndex];
-
-		  if ($undo) { # <-- we are UNDOING the ditto operation
-			if ($elem eq $dittoChar) {
-			  # Restore this item to its pre-dittoed state.
-			  $elem = $elemAbove;
+		chomp($line);
+		my @thisRow = split(/$delim/, $line);
+		# Figure out which columns to operate on (or just do all of them)
+		if(defined($fieldInput)) {
+			my $num_cols = scalar(@thisRow);
+			if($num_cols != $prev_cols) {
+				# If there is a different number of columns on this line, then
+				# re-parse the ranges! (to handle -1 properly, and things like that)
+				@cols = parseRanges($fieldInput, $num_cols, -1); ## <-- this is a function in libfile.pl
+				foreach my $i (@cols) {
+					$colHash{$i} = 1; # sets up the hash
+				}
 			}
-		  }
-
-		  if (!$undo
-			  && defined($elemAbove)
-			  && ($elem eq $elemAbove)
-			  && (!defined($fieldInput) ||
-				  (exists($colHash{$colIndex}) && $colHash{$colIndex}))
-			 ) {
-			print STDOUT $dittoChar;
-		  } else {
-			print STDOUT $elem;
-		  }
-		  $colIndex++;
+			$prev_cols = $num_cols;
 		}
-	  } # <-- end of "for each element on this row..."
+		if ($lineNum == 0) { # Never operate on the very first line in a file. It cannot be a "dittoed" item, because there was nothing before it.
+			print STDOUT $line;
+		} else {
+			my $numDittoedItemsThisLine = 0;
+			my $colIndex = 0;
+			foreach my $elem (@thisRow) {
+				if ($colIndex > 0) {
+					print STDOUT $delim;
+				}
+				my $elemAbove = $prevRow[$colIndex];
+				if ($undo) { # <-- we are UNDOING the ditto operation
+					if ($elem eq $dittoChar) { # Restore this item to its pre-dittoed state.
+						$elem = $elemAbove;
+					}
+				}
 
-	  # For every line, we do these things no matter what...
-	  print STDOUT "\n";
-	  @prevRow = @thisRow; # Remember this row...
-	  $lineNum++;
+				if (!$undo
+				    && defined($elemAbove)
+				    && ($elem eq $elemAbove)
+				    && (!defined($fieldInput) ||
+					(exists($colHash{$colIndex}) && $colHash{$colIndex}))
+				   ) {
+					print STDOUT $dittoChar;
+				} else {
+					print STDOUT $elem;
+				}
+				$colIndex++;
+			}
+		} # <-- end of "for each element on this row..."
+		
+		# For every line, we do these things no matter what...
+		print STDOUT "\n";
+		@prevRow = @thisRow; # Remember this row...
+		$lineNum++;
 	} # <-- end of "for each line..."
-
+	
 } # end main()
-
 
 main();
 
-
 END {
-  # Runs after everything else.
-  # Makes sure that the terminal text is back to its normal color.
-  resetColor();
+	# Runs after everything else.
+	# Makes sure that the terminal text is back to its normal color.
+	resetColor();
 }
 
 exit(0);
@@ -130,7 +110,7 @@ exit(0);
 
 __DATA__
 
-ditto_mark.pl [OPTIONS] < STDIN
+ditto_mark.pl -m "DITTOMARK" [OPTIONS]  FILENAME (or STDIN)
 
 Alex Williams, 2008
 
@@ -154,20 +134,17 @@ CAVEATS:
 
 OPTIONS:
 
--d DELIM or --delim=DELIM  (default: tab)
-  Sets the column delimiter.
-
 -m or --mark=STRING (default: double quote mark)
   Sets the ditto mark that indicates that a field is the
-  same as the one above. The default is the same as -m '"' .
-  The ditto can be multiple characters, like
-  -m "--DUPLICATE--"  .
+  same as the one above. The default is a double quote (-m '"')
+  The ditto can be a string, like: -m "--DUPLICATE--"
 
+-d DELIM or --delim=DELIM  (default: tab)
+  Sets the column / field delimiter. Default is tab.
 
 -f RANGES: specify columns to ditto-ize. Default: ALL columns operated on.
            RANGES are comma-separated lists of single columns or a range of columns
            for example:
-
                 -f  1-3,5-6,2
             or
                 -f  5-6,2,1-3   <-- does the same thing
@@ -180,7 +157,6 @@ OPTIONS:
            are given.
 
            Should work with negatives (counts from the end of the list instead).
-
 
 --undo
    Does the opposite of normal execution, restoring a file to its pre-dittoed state.
