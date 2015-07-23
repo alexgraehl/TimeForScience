@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#@COMMENT@ sort.pl is a modified version of UNIX sort that can handle a header line. It just passes things through to 'sort' otherwise. Frequency-of-use rating: 9/10.
+#@COMMENT@ sort_unix.pl is a modified version of UNIX sort that can handle a header line. It just passes things through to 'sort' otherwise. Frequency-of-use rating: 9/10.
 
 #use List::Util 'shuffle';
 #@shuffled = shuffle(@list);
