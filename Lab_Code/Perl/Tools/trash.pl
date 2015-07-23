@@ -1,19 +1,11 @@
 #!/usr/bin/perl -w
 
+#@COMMENT@ trash.pl is a "safer rm" that moves files to a trash directory in /tmp/ instead of immediately removing them. trash.pl will mangle names, so it's not necessarily going to be easy to restore things. But it is probably better than instantly deleting them. May fill up your /tmp partition if you delete extremely large files. Any slashes in a filename will be replaced with __PATH__, which means that restoring any directory structure will be exceedingly annoying. So be careful! Frequency-of-use rating: 1/10
 
-# trash.pl is meant to be a "safer rm," which moves things to a trash can
-# instead of immediately removing them. trash.pl will mangle names, so it's
-# not necessarily going to be easy to restore things.
-
-# Any slashes will be replaced with __PATH__, which means that restoring
-# any directory structure will be exceedingly annoying. So be careful!
-
-#
 # Use and abuse as much as you want.
 # Put it in /usr/bin/ or $HOME/bin/
-# Original by Daniel Cote
-#
-# Modified by Alex Williams
+# Original code by Daniel Cote
+# Modified by Alex Williams, 2015
 #
 # Most recent version of this file available at
 # http://www.novajo.ca/trash.html
