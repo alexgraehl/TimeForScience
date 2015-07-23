@@ -1,10 +1,8 @@
 #!/usr/bin/perl
 
-## This script converts a BAM or SAM file into the required parts for the genome browser.
-
 ## by Alex Williams, Feb. 2011
 
-## Convert SAM or BAM to Genome Browser format
+#@COMMENT@ convert_SAM_or_BAM_for_Genome_Browser.pl converts any number of input BAM/SAM files into tracks for the UC Santa Cruz Genome Browser. It attempts to auto-detect suitable colors for the tracks by looking for similar filenames. Frequency-of-use rating: 1/10.
 
 use strict;  use warnings;  use diagnostics;
 use List::Util qw/max min/;
@@ -12,10 +10,7 @@ use Getopt::Long;
 use File::Basename;
 use File::Spec::Functions qw(catfile);
 
-sub printUsageAndQuit() {
-    print STDOUT <DATA>;
-    exit(0);
-}
+sub printUsageAndQuit() { print STDOUT <DATA>; exit(0); }
 
 sub datePrint($) {
     my $d = `date`;
@@ -34,7 +29,7 @@ my %groupsColHash = (); # Key = group name. Value = color string.
 
 sub guessColorFromFilename($) {
     my ($filename) = @_;
-    # Hopefully guesses a reasonable color based on the filename(s). Tries to cluster samples into groups that are the same color.
+    # Hopefully guesses a reasonable color based on the filename(s). Tries to cluster files from the same experimental group (assuming they start with the same characters) into groups that are the same color.
     my @colors = (  "255,0,0" # red
 		    , "0,0,255" # blue
 		    , "0,128,0" # green
@@ -468,6 +463,6 @@ This script will probably take about 15 minutes to run on a single 5 GB input SA
 
 Generating the bigWig file is SLOW. You can prevent this by specifying --nowig.
 
-This script generates a single 5 kilobyte chromosome length temp file in /tmp/, which it deletes
-upon successful script completion.
+This script generates a single 5 kilobyte chromosome length temp file in /tmp/,
+which it deletes upon successful script completion.
 

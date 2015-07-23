@@ -1,11 +1,8 @@
 #!/usr/bin/perl
 
-## By Alex Williams, 2010.
+#@COMMENT@ rand_lines.pl randomly choose a certain number of lines from a file. It can also pull out multi-line records (for example, fasta files, where each logical item is actually TWO rows that must remain together). Works really well for files with < 1,000,000 lines. Becomes slow on very large files. Frequency-of-use rating: 3/10.
 
-## Named the same as a previous script from UCSC, but shares *none* of the same code.
-
-# Randomly choose a certain number of lines from a file.
-# Supports multi-line records, as long as they are always the SAME line.
+## By Alex Williams, 2010. Shares the same name as a previous script from UCSC, but shares *none* of the same code.
 
 use strict;
 use Getopt::Long;

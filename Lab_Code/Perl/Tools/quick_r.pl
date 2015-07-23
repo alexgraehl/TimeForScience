@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# histogram R plot
+# A somewhat bizarre command for running R commands.
 # by Alex Williams
 # March 2008
 

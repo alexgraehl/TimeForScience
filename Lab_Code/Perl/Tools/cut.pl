@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#@COMMENT@ cut.pl is a version of "cut" that allows you to output the results in an arbitrary order (UNIX 'cut' always outputs them in the original order; cut -f2,1 and -f1,2 are identical). For example, cut.pl -f 2,1,3- would switch columns 2 and 1, and leave columns 3 and beyond in the same order.
+#@COMMENT@ cut.pl is a version of "cut" that allows you to output the results in an arbitrary order (UNIX 'cut' always outputs them in the original order; cut -f2,1 and -f1,2 are identical). For example, cut.pl -f 2,1,3- would switch columns 2 and 1, and leave columns 3 and beyond in the same order. Frequency-of-use rating: 10/10.
 
 use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
 

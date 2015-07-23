@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+# Straightforward method for performing enrichment analysis. Similar in concept to GO Elite.
+
 ##############################################################################
 ##############################################################################
 ##
@@ -7,31 +9,17 @@
 ##
 ##############################################################################
 ##############################################################################
-##
 ## Written by Josh Stuart in the lab of Stuart Kim, Stanford University.
-##
-##  Email address: jstuart@stanford.edu
-##          Phone: (650) 725-7612
-##
-##       Web site: http://www.smi.stanford.edu/people/stuart
-##
-##############################################################################
-##############################################################################
-##
+## Email address: jstuart@stanford.edu
 ## Written: 00/00/02
 ## Updated: 00/00/02
-##
 ##############################################################################
 ##############################################################################
 
-use lib "$ENV{MYPERLDIR}/lib";
-use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries";
-require "libfile.pl";
-require "libset.pl";
-
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libset.pl";
 use strict;
 use warnings;
-
 use Getopt::Long;
 
 # Flush output to STDOUT immediately.
@@ -39,7 +27,6 @@ $| = 1;
 
 my $defaultLogEpsilon = -0.01;
 my $defaultOutputDelimiter = ','; # <-- note! this is unusual, typically our programs use tab for output, but sets_overlap.pl uses commas!
-
 
 my @flags   = (
 	         [     '-q', 'scalar',      0,     1]

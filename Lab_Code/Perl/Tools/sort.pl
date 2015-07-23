@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+#@COMMENT@ sort.pl is a modified version of UNIX sort. You may want to just use 'sort' or 'sort_unix.pl' however. Frequency-of-use rating: 4/10.
+
 ##############################################################################
 ##############################################################################
 ##

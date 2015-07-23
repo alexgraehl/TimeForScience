@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+#@COMMENT@ sheet.pl pre-processes input data into reasonable column-delimited files that you can then view in less -S. You may also enjoy "sheet.py" which is also an interactive viewer. Example usage: less MYFILE_TO_LOOK_AT  | sheet.pl | less -S  . Similar to unix 'column' command. Frequency-of-use rating: 10/10.
+
 # By Alex Williams, November 2007.
 # This is a program that will let you view tab-delimted files in a reasonable fashion.
 # See the info at the bottom of file for usage examples!

@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 
+#@COMMENT@ select_best_item.pl picks the best N items with a given key (in a user-specified column). Frequency-of-use rating: 2/10.
+
 # This program selects the "best" N items with a given key.
 # See the DATA below for examples.
 # Basically the idea is that you often have a whole lot of
