@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
 
-# New version of Join.pl by Alex Williams. (This isn't related to the previous UCSC code at all... and probably produces different results! Note that both versions produce different results from UNIX join, even on properly sorted input!)
+#@COMMENT@ join.pl is a modified version of UNIX join. It can handle un-sorted input and deal with case-insensitive joins. It behaves in a manner that is more similar to what you would expect from a database join. If you want to join multiple files at once, see "join_multi.pl". Frequency-of-use rating: 10/10.
+
+# New version of join.pl by Alex Williams. (This isn't related to the previous UCSC code at all... and probably produces different results! Note that both versions will occasionally produce different results from UNIX join, even on properly sorted input!) UNIX join maybe does the cartesian product sometimes? Anyway, it's probably not what you want.
 
 use strict; use warnings; use Getopt::Long;
 use Term::ANSIColor;

@@ -1,12 +1,13 @@
 #!/usr/bin/perl -w
 
-#use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstats.pl";
-use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
-use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstring.pl";
+#@COMMENT@ ditto_mark.pl can visually indicate two adjacent rows with duplicated fields. It can operate on either ALL data in a row or only on certain elements. Requires SORTED input--the rows have to be adjancent in order to be marked as duplicates. Very useful for finding duplicate DNA sequences in a file--as an example, run the following command: cat file.dna.txt | sort | ditto_mark.pl -m "DUPLICATED" > output.txt  . ditto_mark.pl also has the ability to undo the ditto_mark operation, but you should probably not rely on this. Frequency-of-use rating: 7/10.
+
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl"; # has the "parseRanges" command used below.
+##use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstring.pl"; # <-- has the printing-in-color-related stuff
 
 use POSIX qw(ceil floor); # import the ceil(ing) and floor functions for handling fractions/integers
 use List::Util qw(max min); # import the max and min functions
-use Term::ANSIColor;
+#use Term::ANSIColor;
 
 use strict;
 use warnings;
@@ -99,11 +100,10 @@ sub main() { # Main program
 
 main();
 
-END {
-	# Runs after everything else.
-	# Makes sure that the terminal text is back to its normal color.
-	resetColor();
-}
+#END {
+	# Runs after everything else. # Makes sure that the terminal text is back to its normal color. Not needed since ditto_mark doesn't use color!
+	#resetColor();
+#}
 
 exit(0);
 # ====

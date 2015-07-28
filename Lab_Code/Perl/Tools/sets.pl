@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+#@COMMENT@ sets.pl handles various input lists / edge lists / sets and allows you to reformat them. Can turn edge lists to matrixes. Probably encompasses the functionality of 'expand.pl' and 'flatten.pl' and 'matrix_from_edges.pl'. Frequency-of-use rating: 6/10.
+
 ##############################################################################
 ##############################################################################
 ##
@@ -7,25 +9,10 @@
 ##
 ##############################################################################
 ##############################################################################
-##
 ## Written by Josh Stuart in the lab of Stuart Kim, Stanford University.
-##
-##  Email address: jstuart@stanford.edu
-##          Phone: (650) 725-7612
-##
-## Postal address: Department of Developmental Biology
-##                 Beckman Center Room B314
-##                 279 Campus Dr.
-##                 Stanford, CA 94305
-##
-##       Web site: http://www.smi.stanford.edu/people/stuart
-##
-##############################################################################
-##############################################################################
-##
+## Email address: jstuart@stanford.edu
 ## Written: 00/00/02
 ## Updated: 00/00/02
-##
 ##############################################################################
 ##############################################################################
 
@@ -37,8 +24,7 @@ require "libset.pl";
 use strict;
 use warnings;
 
-# Flush output to STDOUT immediately.
-$| = 1;
+$| = 1; # Flush output to STDOUT immediately.
 
 my @flags   = (
                   [    '-q', 'scalar',     0,     1]
@@ -119,29 +105,21 @@ for(my $i = 0; $i < @extra; $i++) {
 }
 
 # Write out the sets.
-if(defined($sets))
-{
+if(defined($sets)) {
    my $num_sets = &setSize($sets);
    $verbose and print STDERR "Done reading in sets ($num_sets read).\n";
 
-   if($out_type eq 'v')
-   {
+   if($out_type eq 'v') {
       $verbose and print STDERR "Printing out sets to a set-major list.\n";
       &setsPrintLists($sets, \*STDOUT, $delim, 0, $val_delim);
-   }
-   elsif($out_type eq 'V')
-   {
+   } elsif($out_type eq 'V') {
       $verbose and print STDERR "Printing out sets to a member-major list.\n";
       &setsPrintLists($sets, \*STDOUT, $delim, 1, $val_delim);
-   }
-   elsif($out_type eq 'p')
-   {
+   } elsif($out_type eq 'p') {
       $verbose and print STDERR "Printing out sets to a list of pairs.\n";
       # &setsPrint($sets, \*STDOUT, $delim, 0, $val_delim);
       &setsPrintPairs($sets, \*STDOUT, $delim, 0, $val_delim);
-   }
-   elsif($out_type eq 'P')
-   {
+   } elsif($out_type eq 'P') {
       $verbose and print STDERR "Printing out sets to a list of pairs.\n";
       # &setsPrint($sets, \*STDOUT, $delim, 1, $val_delim);
       &setsPrintPairs($sets, \*STDOUT, $delim, 1, $val_delim);
@@ -248,6 +226,4 @@ How to format a "list" file for viewing with a microarray viewer:
 
     or use the program
       matrix2pairs.pl
-
-
 

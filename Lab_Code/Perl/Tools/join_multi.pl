@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+#@COMMENT@ join_multi.pl allows you to merge multiple files in different orders into one big matrix file. For example, if you have per-gene counts for 10 experiments, but sometimes an experiment has a different set of genes, you would run join_multi.pl EXP1.txt EXP2.txt ... EXPN.txt > out.matrix.txt
+
 use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
 use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "liblist.pl";
 use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstd.pl";

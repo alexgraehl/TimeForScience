@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+#@COMMENT@ flatten.pl 'flattens' a list of 'key' items in the first column and 'value' items in subsequent columns into a two-column edge list. Example: A B C D would turn into four lines: A B, A C, and A D. The opposite of flatten.pl is "expand.pl". Frequency-of-use rating: 8/10.
+#@COMMENT@
+
 use strict;
 
 my @files;

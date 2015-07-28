@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+#@COMMENT@ expand.pl turns a two-column list into a first-item-major row. It is confusingly named, but it "expands" the list of edges (A-B, A-C, A-D...) into a larger row (A-B,C,D). The opposite of expand.pl is "flatten.pl". Frequency-of-use rating: 8/10.
+
 ##############################################################################
 ##############################################################################
 ##

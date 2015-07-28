@@ -1,24 +1,17 @@
 #!/usr/bin/perl
 
+#@COMMENT@ matrix_from_edge_list.pl can turn a 2- or 3-column file into a matrix. The matrix will either be an adjacency matrix (2 column input) or will have the values of each edge (3 column input). Frequency-of-use rating: 5/10.
+
 ##############################################################################
 ##############################################################################
 ##
-## edges2matrix.pl
+## matrix_from_edge_list.pl or edges2matrix.pl
 ##
 ##############################################################################
 ##############################################################################
 ##
 ## Written by Josh Stuart in the lab of Stuart Kim, Stanford University.
-##
 ##  Email address: jstuart@stanford.edu
-##          Phone: (650) 725-7612
-##
-## Postal address: Department of Developmental Biology
-##                 Beckman Center Room B314
-##                 279 Campus Dr.
-##                 Stanford, CA 94305
-##
-##       Web site: http://www.smi.stanford.edu/people/stuart
 ##
 ##############################################################################
 ##############################################################################
@@ -107,12 +100,12 @@ while(my $line = <$filep>) {
     my $item2 = "";
     my $value = "";
 
-    if (defined($numItemsSeenBefore) && ($numItemsSeenBefore != $numItems)) { print STDERR "[WARNING]: matrixFromEdges.pl: on line $lineNum of <$file>, we only detected a total of $numItems delimited items, whereas we had earlier seen $numItemsSeenBefore items! This may be a serious error.\n"; }
+    if (defined($numItemsSeenBefore) && ($numItemsSeenBefore != $numItems)) { print STDERR "[WARNING]: matrix_from_edge_list.pl: on line $lineNum of <$file>, we only detected a total of $numItems delimited items, whereas we had earlier seen $numItemsSeenBefore items! This may be a serious error.\n"; }
 
-    if ($key_col1 > $numItems) { print STDERR "[WARNING]: matrixFromEdges.pl: on line $lineNum of <$file>. Num items on line: $numItems, but we were looking for a first key at position $key_col1 (counting from 1, not zero, but which is still out of bounds)!\n";
+    if ($key_col1 > $numItems) { print STDERR "[WARNING]: matrix_from_edge_list.pl: on line $lineNum of <$file>. Num items on line: $numItems, but we were looking for a first key at position $key_col1 (counting from 1, not zero, but which is still out of bounds)!\n";
     } else { $item1 = $lar[$key_col1 - 1]; }
 
-    if ($key_col2 > $numItems) { print STDERR "[WARNING]: matrixFromEdges.pl: on line $lineNum of <$file>. Num items on line: $numItems, but we were looking for a second key at index $key_col2! (counting from 1, not zero, but which is still out of bounds)!\n";
+    if ($key_col2 > $numItems) { print STDERR "[WARNING]: matrix_from_edge_list.pl: on line $lineNum of <$file>. Num items on line: $numItems, but we were looking for a second key at index $key_col2! (counting from 1, not zero, but which is still out of bounds)!\n";
     } else { $item2 = $lar[$key_col2 - 1 ]; }
 
     if ($should_output_binary_options) {
@@ -125,7 +118,7 @@ while(my $line = <$filep>) {
     #print STDERR "Value was $value...\n";
     #print STDERR "Value col was $val_col and num items was $numItems...\n";
 
-    #if (exists($seen{$item1}{$item2})) { print STDERR "[WARNING]: matrixFromEdges.pl: on line $lineNum of <$file>, we saw a duplicate key/value pair ($item1 and $item2) that we had also seen earlier!\n"; }
+    #if (exists($seen{$item1}{$item2})) { print STDERR "[WARNING]: matrix_from_edge_list.pl: on line $lineNum of <$file>, we saw a duplicate key/value pair ($item1 and $item2) that we had also seen earlier!\n"; }
 
     $seen{$item1}{$item2} = $value;
     $keySet1{$item1} = 1; $keySet2{$item2} = 1;
@@ -212,12 +205,12 @@ VALUE options (default is -v 3):
 
 USAGE EXAMPLES:
 
-matrixFromEdges.pl --missing NA  INPUTFILE.txt
+matrix_from_edge_list.pl --missing NA  INPUTFILE.txt
   * Output column 3 values (if present) based on keys in columns 1 and 2. Output "NA" for non-present cases.
 
-matrixFromEdges.pl --missing NONE  -k1 2  -k2 3  -v 4 INPUTFILE.txt
+matrix_from_edge_list.pl --missing NONE  -k1 2  -k2 3  -v 4 INPUTFILE.txt
   * Output column 4 values based on keys in columns 2 and 3.
 
-matrixFromEdges.pl --missing NONE  -k1 1  -k2 2  -b   INPUTFILE.txt
+matrix_from_edge_list.pl --missing NONE  -k1 1  -k2 2  -b   INPUTFILE.txt
   * Output binary "1 / 0" values based on keys in columns 1 and 2.
 
