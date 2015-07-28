@@ -193,7 +193,7 @@ alias cheat="echo \
 \">>> UNIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
 \">>> UNIX: Check Linux version: cat /etc/*-release \" ${NL}\
 \">>> UNIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
-\">>> UNIX: Rsync transfer files: rsync --dry-run -thravz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
+\">>> UNIX: Rsync transfer files: rsync --dry-run -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
 \">>> UNIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
 \">>> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
 \">>> UNIX/TORQUE: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
