@@ -574,9 +574,22 @@ function mini {
 	echo "[Done]" ;
     fi
 }
-## Extracts a "mini"-fied archive.
-function unmini {
-    ionice -c3 tar --bzip2 --keep-old-files -xvf $1
+
+## Extracts any number of compressed files. Usage: 'unmini a.bz2 b.tar.gz c.tar.bz2 ... etc...'
+function unmin {
+    for an in "$@"; do # Loop through all the input arguments
+	echo " * Decompressing \"$an\"..."
+	case "$an" in 
+	    *.tar.gz)  EX_CMD="tar --keep-old-files --ungzip -xv -f " ;; 
+	    *.tar.bz2) EX_CMD="tar --keep-old-files --bzip2  -xv -f " ;; 
+	    *.tar)     EX_CMD="tar --keep-old-files          -xv  -f " ;; 
+	    *.gz)      EX_CMD="gzip  --decompress " ;; 
+	    *.bz2)     EX_CMD="bzip2 --decompress " ;;
+	    *.zip)     echo "ZIP commands are a disaster and are not supported yet. Sorry."; return ;;
+	    *) echo "Failed to detect type of archive <$an>... aborting." ; return ;;
+	esac
+	ionice -c3 $EX_CMD "$an" # <-- actually decompress the file
+    done
 }
 
 # function singlea {
