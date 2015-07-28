@@ -578,12 +578,13 @@ function mini {
 
 ## Extracts any number of compressed files. Usage: 'unmini a.bz2 b.tar.gz c.tar.bz2 ... etc...'
 function unmin {
+    TARPARAM=" -p --atime-preserve=system --same-owner --keep-old-files -x -v "
     for an in "$@"; do # Loop through all the input arguments
 	echo " * Decompressing \"$an\"..."
 	case "$an" in 
-	    *.tar.gz)  EX_CMD="tar --keep-old-files --ungzip -xv -f " ;; 
-	    *.tar.bz2) EX_CMD="tar --keep-old-files --bzip2  -xv -f " ;; 
-	    *.tar)     EX_CMD="tar --keep-old-files          -xv  -f " ;; 
+	    *.tar.gz)  EX_CMD="tar $TARPARAM --ungzip -f " ;; 
+	    *.tar.bz2) EX_CMD="tar $TARPARAM  --bzip2 -f " ;; 
+	    *.tar)     EX_CMD="tar $TARPARAM          -f " ;; 
 	    *.gz)      EX_CMD="gzip  --decompress " ;; 
 	    *.bz2)     EX_CMD="bzip2 --decompress " ;;
 	    *.zip)     echo "ZIP commands are a disaster and are not supported yet. Sorry."; return ;;
