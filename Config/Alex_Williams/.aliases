@@ -578,7 +578,7 @@ function mini {
 
 ## Extracts any number of compressed files. Usage: 'unmini a.bz2 b.tar.gz c.tar.bz2 ... etc...'
 function unmin {
-    TARPARAM=" -p --atime-preserve=system --same-owner --keep-old-files -x -v "
+    TARPARAM=" -p --atime-preserve=system --keep-old-files -x -v "      # "--same-owner" <-- This option causes a lot of trouble if you try it between machines, so don't!
     for an in "$@"; do # Loop through all the input arguments
 	echo " * Decompressing \"$an\"..."
 	case "$an" in 
