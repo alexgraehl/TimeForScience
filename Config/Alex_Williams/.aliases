@@ -571,14 +571,14 @@ function mini {
 	if [[ "$#" -gt 1 ]] ; then echo "Adding a total of $# files to the archive." ; fi
 	for var in "$@"; do echo " * Archiving $var --> ${theCompressedBasename}.tar.bz2" ; done
 	echo "[TAR] command running now..." ;
-	${AGW_IONICE} tar --bzip2 -cvf "${theCompressedBasename}.tar.bz2" $@ ;
+	${AGW_IONICE} tar --preserve-permissions --atime-preserve --bzip2 -c -v -f "${theCompressedBasename}.tar.bz2" $@ ;
 	echo "[Done]" ;
     fi
 }
 
 ## Extracts any number of compressed files. Usage: 'unmini a.bz2 b.tar.gz c.tar.bz2 ... etc...'
 function unmin {
-    TARPARAM=" -p --atime-preserve=system --keep-old-files -x -v "      # "--same-owner" <-- This option causes a lot of trouble if you try it between machines, so don't!
+    TARPARAM=" --preserve-permissions --atime-preserve --keep-old-files -x -v "      # "--same-owner" <-- This option causes a lot of trouble if you try it between machines, so don't!
     for an in "$@"; do # Loop through all the input arguments
 	echo " * Decompressing \"$an\"..."
 	case "$an" in 
