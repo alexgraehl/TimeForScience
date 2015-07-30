@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#@COMMENT@ sort_unix.pl can handle COMPRESSED (gzip/bzip2) files and can accept header line(s). It uses the fast UNIX sort internally. Frequency-of-use rating: 9/10.
+#@COMMENT@ sort.pl can handle COMPRESSED (gzip/bzip2) files and can accept header line(s). It uses the fast UNIX sort internally. Frequency-of-use rating: 9/10.
 
 # This is basically just a wrapper to GNU "sort" that adds the option of having a header line.
 # It takes ONE filename (the very last argument) and any number of arguments to pass along to UNIX sort.
@@ -52,8 +52,8 @@ sub main() { # Main program
 	}
 
 	if ($numValidFilesWeFound >= 2) {
-		print color("yellow");  print "WARNING: It looks like you passed more than one file to sort_unix.pl, which is NOT supported! You should double check this...\n";  print color("reset");
-		#($numUnprocessedArgs == 1) or quitWithUsageError("ERROR: You apparently passed in MORE THAN ONE filename to sort_unix.pl! Just pass in one!");
+		print color("yellow");  print "WARNING: It looks like you passed more than one file to sort.pl, which is NOT supported! You should double check this...\n";  print color("reset");
+		#($numUnprocessedArgs == 1) or quitWithUsageError("ERROR: You apparently passed in MORE THAN ONE filename to sort.pl! Just pass in one!");
 	}
 
 	my $sortArgsString; # additional arguments to sort! Note that we still only take one filename
@@ -93,11 +93,10 @@ sub main() { # Main program
 	elsif ($filename =~ /[.](zip)$/i)           { $catter = "unzip -p"; } # Un-regular-zip a file and send it to STDOUT with "-p": which is DIFFERENT from -c (-c is NOT what you want here). See 'man unzip'
 	else                                        { $catter = "cat"; }  # Default: just read a file normally
 
-	print STDERR "catter is $catter\n";
 	if ($numHeaderLines > 0) {
 		my $nHeaderPlus1 = $numHeaderLines+1;
 		system(qq{$catter "$filename" | head -n$numHeaderLines > "$HEADER_FILENAME"});
-		system(qq{$catter "$filename" | tail -n +$nHeaderPlus1 | $sortCommand | cat $HEADER_FILENAME - });  # <-- this generates (to STDOUT) the final output that the user sees
+		system(qq{$catter "$filename" | tail -n +$nHeaderPlus1 | $sortCommand | cat "$HEADER_FILENAME" - });  # <-- this generates (to STDOUT) the final output that the user sees
 		unlink($HEADER_FILENAME); # delete the temp files
 		unlink($STDIN_FILENAME); # delete the temp files
 	} else {
@@ -127,7 +126,7 @@ exit(0);
 
 __DATA__
 
-sort_unix.pl  [OPTIONS] [OPTIONS_TO_GNU_SORT]   FILENAME
+sort.pl  [OPTIONS] [OPTIONS_TO_GNU_SORT]   FILENAME
   * Can handle compressed files (bz2 / gzip)
   * Can handle header lines.
   * [OPTIONS]: Options for this program (see below)
@@ -163,11 +162,11 @@ OPTIONS:
 
 EXAMPLES:
 
-sort_unix.pl somefile
+sort.pl somefile
 
-cat somefile.gz | sort_unix.pl -d 'Z' --rev
+cat somefile.gz | sort.pl -d 'Z' --rev
 
-cat somefile.bz2 | tail -n 10 | sort_unix.pl --rev
+cat somefile.bz2 | tail -n 10 | sort.pl --rev
 
 sort_uniq.pl -h 1 myfile.gz > out_with_header_still_at_top.txt
 
