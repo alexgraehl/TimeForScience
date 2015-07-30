@@ -106,8 +106,8 @@ __DATA__
 
 syntax: cut.pl [OPTIONS] TAB_FILE
 
-TAB_FILE is any tab-delim_inited file.  Can also be passed into standard
-   input.
+TAB_FILE is any tab-delim_inited file.  Can also be passed STDIN.
+Handles compressed gzip files transparently.
 
 OPTIONS are:
 
