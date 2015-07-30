@@ -1,15 +1,9 @@
-use strict;
+# Don't actually include this, it's kind of a terrible idea to have a dependency for almost no functionality here.
 
 use Term::ANSIColor;
 
-sub printUsage() {
-  print STDOUT <DATA>;
-}
-
-sub printUsageAndQuit() {
-    printUsage();
-    exit(1);
-}
+sub printUsage() { print STDOUT <DATA>; }
+sub printUsageAndQuit() {    printUsage();    exit(0); } # exit with an 'ok' code (zero)
 
 sub quitWithUsageError($) {
   print color("red");

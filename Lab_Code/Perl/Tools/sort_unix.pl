@@ -1,95 +1,114 @@
 #!/usr/bin/perl
 
-#@COMMENT@ sort_unix.pl is a modified version of UNIX sort that can handle a header line. It just passes things through to 'sort' otherwise. Frequency-of-use rating: 9/10.
-
-#use List::Util 'shuffle';
-#@shuffled = shuffle(@list);
-# Check out: perldoc -q array
+#@COMMENT@ sort_unix.pl can handle COMPRESSED (gzip/bzip2) files and can accept header line(s). It uses the fast UNIX sort internally. Frequency-of-use rating: 9/10.
 
 # This is basically just a wrapper to GNU "sort" that adds the option of having a header line.
-# It does have one limitation: it can only sort ONE file while dealing with the header properly (whereas GNU sort cats all the command line arguments together).
+# It takes ONE filename (the very last argument) and any number of arguments to pass along to UNIX sort.
+#use POSIX      qw(ceil floor); #use List::Util qw(max min); #use File::Basename;
 
-use POSIX      qw(ceil floor);
-use List::Util qw(max min);
+use File::Temp;
 use Term::ANSIColor;
-use File::Basename;
 use Getopt::Long;
-use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libsystem.pl";
-use strict;
-use warnings;
-use diagnostics;
+use strict; use warnings; use diagnostics;
+
+sub printUsage() {  print STDOUT <DATA>; }
+sub printUsageAndQuit() {  printUsage();  exit(0); } # Exit with an "OK" code
+sub quitWithUsageError($) {
+	print color("red");  print "Error: " . $_[0];  print color("reset");
+	print "\n";
+	printUsage();
+	print color("red");  print "Error: " . $_[0];  print color("reset");
+	print "\n";
+	exit(1); # Exit with ERROR code
+}
+
+sub agw_make_temp() { my ($temp_filehandle, $temp_filename) = File::Temp::tempfile(DIR=>"./", SUFFIX=>".sort.tmp"); return($temp_filename); }
 
 sub main();
-
 
 # ==1==
 sub main() { # Main program
 	my $delim = "\t";
 	my $numHeaderLines = 0;
-	
 	$Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
-
 	GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 		   , "header|h=s" => \$numHeaderLines
 		   , "d=s" => \$delim
-	       ) or printUsageAndQuit();
-
-	if (1 == 0) {
-	  quitWithUsageError("1 == 0? Something is wrong!");
-	}
+		  ) or printUsageAndQuit();
+	#quitWithUsageError("1 == 0? Something is wrong!");
 
 	my $numUnprocessedArgs = scalar(@ARGV);
 	if ($numUnprocessedArgs == 0) {
-	    #quitWithUsageError("Error in arguments! You must send exactly one filename to this program. Note that currently you CANNOT pipe data to it through <STDIN>. That should be fixed.\n");
+		# I guess we're reading from STDIN.
+		#quitWithUsageError("Error in arguments! You must send exactly one filename to this program. Note that currently you CANNOT pipe data to it through <STDIN>. That should be fixed.\n");
 	}
 
-	my $remainingArgsString;
-	my $theFileName;
+	my $numValidFilesWeFound = 0;
+	foreach my $arg (@ARGV) { # Go through the unprocessed args and look for an erroneous header argument
+		if (-f $numValidFilesWeFound) { $numValidFilesWeFound++; }
+		if ($arg =~ m/^[-]h\d+$/) {
+			quitWithUsageError("Hey, you shouldn't use the syntax -h1 or -h2, use -h 1 or -h=1! This isn't 'head' or 'tail', where that kind of weird thing is allowed! And if you want to use the '-h' option in sort, it doesn't take any arguments!");
+		}
+	}
 
-	my $HEADER_FILENAME   = "sortAGW_TEMP_HEADER_FOR_SORTING_DELETE_THIS.tmp";
-	my $REMAINDER_FILENAME = "sortAGW_TEMP_SORTED_WITHOUT_HEADER.tmp";
-	my $STDIN_FILENAME     = "sortAGW_TEMP_STDIN_FILENAME.tmp";
+	if ($numValidFilesWeFound >= 2) {
+		print color("yellow");  print "WARNING: It looks like you passed more than one file to sort_unix.pl, which is NOT supported! You should double check this...\n";  print color("reset");
+		#($numUnprocessedArgs == 1) or quitWithUsageError("ERROR: You apparently passed in MORE THAN ONE filename to sort_unix.pl! Just pass in one!");
+	}
 
-	$theFileName = $ARGV[-1];
+	my $sortArgsString; # additional arguments to sort! Note that we still only take one filename
 
-	if (!defined($theFileName) or (not -f $theFileName) ) {
-	    $theFileName = $STDIN_FILENAME;
-	    $remainingArgsString = join(" ", @ARGV);
-	    open (OUT, "> ${STDIN_FILENAME}");
-	    while (<STDIN>) {
-		print OUT $_;
-	    }
-	    close(OUT);
+	my $STDIN_FILENAME = agw_make_temp();
 
+	# Oh huh, we're reading from STDIN! We'll have to output a TEMP file, because we're going to be using the first line of this file twice.
+	my $filename = (scalar(@ARGV) > 0) ? $ARGV[-1] : undef; # Last argument is the file. Previous ones could be arguments to 'sort'
+	if (!defined($filename) or (not -f $filename)) {
+		# Looks like the user did NOT actually pass in a file after all.
+		# They must have passed in some more arguments to sort, I gues...
+		$filename = $STDIN_FILENAME;
+		$sortArgsString = join(" ", @ARGV);
+		#if ($numHeaderLines > 0) {
+		# I guess we need to have a temp file if we have header lines AND are reading from STDIN
+		open (OUT, "> ${STDIN_FILENAME}"); # We are reading from stdin...
+		while (<STDIN>) { print OUT $_; }
+		close(OUT);
+		#}
 	} else {
-	    $remainingArgsString = join(" ", @ARGV[0..($#ARGV-1)] );
+		$sortArgsString = join(" ", @ARGV[0..($#ARGV-1)] ); # the remaining arguments on the command line!
 	}
 
-	#die $theFileName;
-	#die $remainingArgsString;
-
+	my $HEADER_FILENAME = agw_make_temp();
+	
 	print STDERR color("yellow");
 	print STDERR "STDERR: Sorting begins here: ===============================\n";
 	print STDERR color("reset");
 
-	my $sortCommand = "sort -t \'$delim\' $remainingArgsString";
+	my $sortCommand = "sort -t \'$delim\' $sortArgsString";
+
+	# =============== TRANSPARENTLY READ A GZIP / BZIP2 / ZIP / UNCOMPRESSED FILE =======
+	my $catter; # <-- the thing that does the 'cat' command
+	#if (!defined($filename) or $filename eq $STDIN_FILENAME) { $catter = ''; }
+	if    ($filename =~ /[.](gz|gzip|z)$/i)     { $catter = "gzip --decompress --stdout"; }     # Un-gzip a file and send it to STDOUT.
+	elsif ($filename =~ /[.](bz2|bzip2)$/i)     { $catter = "bzip2 --dcompress --stdout"; }    # Un-bz2 a file and send it to STDOUT
+	elsif ($filename =~ /[.](zip)$/i)           { $catter = "unzip -p"; } # Un-regular-zip a file and send it to STDOUT with "-p": which is DIFFERENT from -c (-c is NOT what you want here). See 'man unzip'
+	else                                        { $catter = "cat"; }  # Default: just read a file normally
+
+	print STDERR "catter is $catter\n";
 	if ($numHeaderLines > 0) {
-	    system("cat $theFileName | head -n $numHeaderLines > $HEADER_FILENAME");
-	    system("cat $theFileName | tail -n +" . ($numHeaderLines+1) . " | $sortCommand > $REMAINDER_FILENAME");
-	    system("cat $HEADER_FILENAME $REMAINDER_FILENAME"); # <-- this is the final output that the user sees
-	    unlink($HEADER_FILENAME); # delete the temp files
-	    unlink($REMAINDER_FILENAME); # delete the temp files
-	    unlink($STDIN_FILENAME); # delete the temp files
+		my $nHeaderPlus1 = $numHeaderLines+1;
+		system(qq{$catter "$filename" | head -n$numHeaderLines > "$HEADER_FILENAME"});
+		system(qq{$catter "$filename" | tail -n +$nHeaderPlus1 | $sortCommand | cat $HEADER_FILENAME - });  # <-- this generates (to STDOUT) the final output that the user sees
+		unlink($HEADER_FILENAME); # delete the temp files
+		unlink($STDIN_FILENAME); # delete the temp files
 	} else {
-	    system("cat $theFileName | $sortCommand");
+		system(qq{$catter "$filename" | $sortCommand});
 	}
-	
 	print STDERR color("green");
 	print STDERR "STDERR: Sorting ends here: ===============================\n";
 	my $headerStr = "";
 	if ($numHeaderLines == 1) { $headerStr = "(with one header line) "; }
 	if ($numHeaderLines > 1) { $headerStr = "(with $numHeaderLines header lines) "; }
-	print STDERR "STDERR: Finished sorting \"$theFileName\" " . $headerStr . "! Sort command was: $sortCommand\n";
+	print STDERR "STDERR: Finished sorting \"$filename\" " . $headerStr . "! Sort command was: $sortCommand\n";
 	print STDERR color("reset");
 } # end main()
 
@@ -109,14 +128,15 @@ exit(0);
 __DATA__
 
 sort_unix.pl  [OPTIONS] [OPTIONS_TO_GNU_SORT]   FILENAME
+  * Can handle compressed files (bz2 / gzip)
+  * Can handle header lines.
+  * [OPTIONS]: Options for this program (see below)
+  * [OPTIONS_TO_GNU_SORT]: Options that are honored by the default unix "sort". "man sort" to see what they are.
+  * FILENAME must come *last*.
+  
+  * Multiple filenames are not necessarily correctly supported.
 
- * [OPTIONS]: Options for this program (see below)
- * [OPTIONS_TO_GNU_SORT]: Options that are honored by the default unix "sort". "man sort" to see what they are.
- * FILENAME must come *last*.
- * Multiple filenames are not necessarily correctly supported.
-
-by Alex Williams, 2009
-
+by Alex Williams, 2009-2015
 
 This is basically just a wrapper to GNU "sort" that adds the option of having a header line.
 
@@ -145,10 +165,11 @@ EXAMPLES:
 
 sort_unix.pl somefile
 
-cat somefile | sort_unix.pl -d 'Z' --rev
+cat somefile.gz | sort_unix.pl -d 'Z' --rev
 
-cat somefile | tail -n 10 | sort_unix.pl --rev
+cat somefile.bz2 | tail -n 10 | sort_unix.pl --rev
 
+sort_uniq.pl -h 1 myfile.gz > out_with_header_still_at_top.txt
 
 KNOWN BUGS:
 
