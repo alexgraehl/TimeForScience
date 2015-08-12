@@ -52,8 +52,12 @@ bind 'set mark-symlinked-directories on'
 # ============================= PATH STUFF ============================
 export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
 
-if [[ "$USER" == "alexgw" ]]; then
-    export TIME_FOR_SCIENCE_DIR="$HOME/TimeForScience" ## Location of the TIME FOR SCIENCE directory. This is mostly Alex's code.
+if [[ -d "$HOME/TimeForScience" ]]; then
+    ## If this is in the home directory, then set it no matter what.
+    export TIME_FOR_SCIENCE_DIR="$HOME/TimeForScience"
+elif [[ "$USER" == "alexgw" ]]; then
+    ## Location of the TIME FOR SCIENCE directory. This is mostly Alex's code.
+    export TIME_FOR_SCIENCE_DIR="$HOME/TimeForScience"
 else
     export TIME_FOR_SCIENCE_DIR="/home/alexgw/TimeForScience"
     if [[ -d ${TIME_FOR_SCIENCE_DIR} ]]; then
