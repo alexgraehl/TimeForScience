@@ -93,6 +93,8 @@ defaults write com.apple.LaunchServices LSQuarantine -bool false
 # Disable automatic termination of inactive apps
 defaults write NSGlobalDomain NSDisableAutomaticTermination -bool true
 
+# Just for Preview.app: defaults write com.apple.Preview NSDisableAutomaticTermination -bool TRUE && killall -HUP Finder
+
 # Disable the crash reporter
 #defaults write com.apple.CrashReporter DialogType -string "none"
 
