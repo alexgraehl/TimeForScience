@@ -369,6 +369,10 @@ function remake { ## Lets you type "remake" to remove a file and then use GNU ma
     trash.pl "$@" ;  make --warn-undefined-variables --print-directory "$@"
 }
 
+function rel { ## Remake and then view;
+    trash.pl "$@" ;  make --warn-undefined-variables --print-directory "$@" ; s "$@"
+}
+
 # Aliases related to COLOR GREP
 alias grepi='grep   -i' # <-- runs fast if "LANG=C" is the specified language
 alias grepc='grep   --color=always --with-filename --line-number'
