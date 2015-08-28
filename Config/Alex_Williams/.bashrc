@@ -15,12 +15,18 @@
 if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
 
 # If we're in TMUX, then change the screen type to "screen-256color" and export the TERM
-[[ -n "$TMUX" ]] && [[ color_prompt==1 ]] && export TERM=screen-256color
+
+export xterm=xterm-256color
+
 case "$TERM" in
     xterm-color|xterm-256color|screen-256color)	color_prompt=1 ;;
     *)	                        ;;
 esac
 if [[ "$OSTYPE" == darwin* ]] ; then isMac=1 ; fi
+[[ -n "$TMUX" ]] && [[ color_prompt==1 ]] && export TERM=screen-256color
+
+
+
 
 COMPYNAME="$HOSTNAME" # <-- we will have to modify this if it's my home machine / some machine where $HOSTNAME doesn't work
 
