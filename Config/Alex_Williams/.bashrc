@@ -99,7 +99,7 @@ else
     export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
 fi
 
-export PATH="${PATH}:$BINF_CORE_WORK_DIR/Common/Code/Python" # Tim's singular /work Python script lives in here
+export PATH="${PATH}:$BINF_CORE_WORK_DIR/Common/Code/Python:$BINF_CORE_WORK_DIR/Common/Code/alexgw"
 
 export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"
 
