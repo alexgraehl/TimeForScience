@@ -202,7 +202,6 @@ if [[ -z $debian_chroot ]] && [[ -r /etc/debian_chroot ]]; then
     debian_chroot=$(cat /etc/debian_chroot)
 fi
 
-
 #PS1="[\D{%e}=\t \h:\W]$ "
 PS1="[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
 
@@ -226,7 +225,6 @@ else
 fi
 
 # enable color support of ls
-
 [[ -x /usr/bin/dircolors ]] && eval "`dircolors -b`"
 
 # Enable programmable completion features. May already be enabled in
@@ -235,16 +233,18 @@ if [[ -f /etc/bash_completion ]]; then
     . /etc/bash_completion
 fi
 
-
 ## ===============================================
 ## ====== LS COLORS ==============================
 ## COMMAND LINE COLOR / LS COLOR
 export CLICOLOR='Yes'
 export LS_OPTIONS='--color=auto'
+
 ## LS_COLORS *with* an underscore is for Ubuntu
 export LS_COLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=43;31;03:ex=01;31' 
-## LSCOLORS *without* an underscore is for Mac OS X
+
+## LSCOLORS *without* an underscore is for Mac OS X.
 export LSCOLORS=FxgxCxDxBxegedabagacad
+
 #if [[ -n "$isMac" ]] ; then
 #    AGW_LS_COLOR_OPTION=" -G "  ## -G means "color" on the mac...
 #else
@@ -254,12 +254,14 @@ export LSCOLORS=FxgxCxDxBxegedabagacad
 ## ===============================================
 
 export HOSTNAME  ## <-- Required in order for tmux / env to see HOSTNAME as a variable!
-export CVS_RSH=ssh
-export CVSEDITOR="emacs -nw"
+export    CVS_RSH=ssh
+export  CVSEDITOR="emacs -nw"
 export SVN_EDITOR="emacs -nw"
-export EDITOR="emacs -nw"
+export     EDITOR="emacs -nw"
 
-export LANG=C    # Set the LANG to C. Speeds some tools up, but means UTF-8 stuff won't work properly anymore. OH WELL!!
+export LANG=C    # Set the LANG to C. Speeds some command line tools up, but *BREAKS* some UTF-8 stuff!
+
+export CXX=/usr/bin/g++ # The location of the c++ compiler. NOT "cpp"--that is the C preprocessor.
 
 # Keybindings: Add IJKL navigation to supplement/replace the arrow keys
 bind "\M-J:backward-word"
