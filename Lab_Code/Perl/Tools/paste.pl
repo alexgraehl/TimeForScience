@@ -141,17 +141,18 @@ OPTIONS:
 
 -q: Quiet mode (default is verbose)
 
-
--di: Set the input delimiter
-
+-di: Set the input delimiter. I am not sure why there even IS
+  a "delim_in" since it does not seem like it should matter.
+  Paste.pl normally should not care about input delimters... I think.
 
 -do: Set the output delimiter. Default is tab.
      Set this to '' in order to output nothing at
      all between the pasted value and the next item.
 
--nd: NO delimiter: output delimiter is set to '' so
-       as to have no tabs separating items. Same as -d ''.
-
 -d: Set the delimiter for both input AND output simultaneously.
     Same as:   -di SOMETHING  -do SOMETHING
+
+-nd: NO delimiter: input & output delims are both set to ''
+     so as to have no tabs separating items. Same as -d ''.
+
 
