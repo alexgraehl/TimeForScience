@@ -121,12 +121,10 @@ sub readIntoHash($$$$$) {
     my $theFileHandle = openSmartAndGetFilehandle($filename);
     foreach my $line ( <$theFileHandle> ) {
 	$lineNum++;
-
-	if ($line =~ /\r/) {
-	    verboseWarnPrint("WARNING: The file ($filename) appears to have either PC-STYLE line endings or MAC STYLE line endings ( with an '\\r' character) (as seen on line $lineNum), which will almost certainly mess things up! Auto-removing this malevolent character from the line.");
+	if ($line =~ m/\r/) {
+	    verboseWarnPrint("WARNING: The file <$filename> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNum)!\n         We are automatically REMOVING this malevolent character from the line.");
 	    $line =~ s/(\r\n|\r)/\n/; # Turn PC-style \r\n, or Mac-style just-plain-\r into UNIX \n
 	}
-
 	chomp($line);
 	#if(/\S/) { ## if there's some content that's non-spaces-only
 	my @sp1 = split($theDelim, $line, $SPLIT_WITH_TRAILING_DELIMS);
@@ -203,14 +201,16 @@ my $prevLineCount2  = undef;
 my $numWeirdLengths = 0;
 foreach my $line (<$primaryFH>) {
     $lineNumPrimary++; # Start it at ONE during the first iteration of the loop! (Was initialized to zero before!)
+    if ($line =~ m/\r/) {
+	    verboseWarnPrint("WARNING: The file <$file1> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNumPrimary).\n         We are automatically REMOVING this malevolent character from the line.");
+	    $line =~ s/(\r\n|\r)/\n/; # Turn PC-style \r\n, or Mac-style just-plain-\r into UNIX \n
+    }
     chomp($line); # Chomp each line of line endings no matter what. Even the header line!
-
     if ($lineNumPrimary <= $numHeaderLines) { # This is still a HEADER line, also: lineNumPrimary starts at 1, so this should be '<=' and not '<' to work properly!
 	verboseWarnPrint("Note: directly printing $lineNumPrimary of $numHeaderLines header line(s) from file 1 (\"$file1\")...");
 	print STDOUT $line . "\n"; # Print the input line, making sure to use a '\n' as the ending.
 	next; # <-- skip to next iteration of loop!
     }
-
     #if(/\S/) { ## if there's some content that's non-spaces-only
     my @sp1 = split($delim1, $line, $SPLIT_WITH_TRAILING_DELIMS); # split-up line
     if (defined($prevLineCount1) and $prevLineCount1 != scalar(@sp1)) {
