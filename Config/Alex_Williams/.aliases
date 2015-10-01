@@ -192,8 +192,6 @@ alias cheat="echo \
 \">>> UNIX: list ONLY dot files, no .. or up a directory: ls -l .??* \" ${NL}\
 \">>> UNIX: set up symlinks from Mercurial/TimeForScience: ln -sfn ~/TimeForScience/Config/Alex_Williams/.??* ~/ \" ${NL}\
 \">>> UNIX: symlink executables: for f in \\\$(find PATH -maxdepth 1 -perm -111 -type f); do ln -s \\\$f ./; done \" ${NL}\
-\">>> UNIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
-\">>> UNIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
 \">>> UNIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
 \">>> UNIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
 \">>> UNIX: IO nice for a user \\\$THEUSER: SSS=\\\$(ps -fu \\\$THEUSER | perl -pe 's/[ ]+/\t/g' | cut -f 2 | tail -n +2); for pid in \\\$SSS ; do echo 'PID' \\\$pid; sudo ionice -c3 -p \\\$pid ; sudo renice +10 -p \\\$pid; done\" ${NL}\
@@ -204,9 +202,11 @@ alias cheat="echo \
 \">>> UNIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
 \">>> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
 \">>> UNIX/TORQUE: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
-\">>> UNIX / INSTALL: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
-\">>> UNIX / INSTALL: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
-\">>> UNIX / INSTALL: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
+\">>> UNIX / DPKG / APT-GET: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
+\">>> UNIX / DPKG / APT-GET: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
+\">>> UNIX / APTITUTDE: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
+\">>> UNIX / APT-GET: upgrade only packages matching pattern: apt-get install --only-upgrade \"r-cran*\" \" ${NL}\
+\">>> UNIX / APT-GET: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
 \">>> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub \" ${NL}\
 \"                        to server ~/.ssh/authorized_keys \" ${NL}\
 \">>> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ${NL}\
