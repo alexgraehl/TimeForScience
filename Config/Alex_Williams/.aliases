@@ -165,6 +165,7 @@ alias cheat="echo \
 \">>> R: read from clipboard: y=data.matrix(read.delim(pipe(\\\"pbpaste\\\"))); \" ${NL}\
 \" \" ${NL}\
 \">>> GZIP: verify files: for f in **/*.gz; do gunzip --test -v \\\$f ; done; \" ${NL}\
+\">>> Text: wrap lines at 80 chars, preserving/ignoring word boundaries: fold -w 80 -s text.txt (omit -s to cut words) \" ${NL}\
 \">>> Shell/bash: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
 \">>> Shell/bash: Pipe stderr (and stdout too): CMD 2>&1 | less -S \" ${NL}\
 \">>> Shell/bash: Modify variable: newV=\\\$(sed -e's/a/1/; s/b/2/; s/c/3/' <<< \\\$oldV) \" ${NL}\
