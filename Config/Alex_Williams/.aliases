@@ -103,6 +103,7 @@ BRACKET_OPEN='{'
 PAREN_OPEN='('
 NL="\$'\\n'" # newline!
 alias cheat="echo \
+\">>> Echo emoji to terminal: example: a snake is echo $'\xF0\x9F\x90\x8D' (See http://apps.timwhitlock.info/emoji/tables/unicode) \" ${NL}\
 \">>> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
 \">>> Unzip files into SUBDIRECTORIES always: ls *.zip|awk -F'.zip' '{print \\\"unzip \\\"\\\$0\\\" -d \\\"\\\$1}'|sh  \" ${NL}\
 \">>> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
@@ -629,6 +630,9 @@ function unmin {
 # }
 
 #function qin { # qstat with colors for job status, automatic piping into "less" --- this is now the "qselect.sh" script
+
+alias snake="echo  $'\xF0\x9F\x90\x8D'"  # See http://apps.timwhitlock.info/emoji/tables/unicode
+alias cake="echo   $'\xF0\x9F\x8D\xB0'"  # See http://apps.timwhitlock.info/emoji/tables/unicode
 
 function qkiri { # kill all own jobs
     qselect -u $USER | xargs qdel -p ; echo "[Cancelled jobs]"; sleep 1; qstats;
