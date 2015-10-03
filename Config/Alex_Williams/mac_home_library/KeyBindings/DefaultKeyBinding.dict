@@ -1,5 +1,4 @@
 {
-	"my_comment" = "Move or <<<symlink>>> (either works) this file into ~/Library/KeyBindings/DefaultKeyBinding.dict  -- ^ = control, ~ = option, @ = command. Details at: http://osxnotes.net/keybindings.html";
 	"^~@k" = (insertText:, "🐍");
 	"^~@i" = (insertText:, "🍰");
 }
