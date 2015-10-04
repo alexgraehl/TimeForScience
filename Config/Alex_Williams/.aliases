@@ -634,8 +634,10 @@ function unmin {
 alias snake="echo  $'\xF0\x9F\x90\x8D'"  # See http://apps.timwhitlock.info/emoji/tables/unicode
 alias cake="echo   $'\xF0\x9F\x8D\xB0'"  # See http://apps.timwhitlock.info/emoji/tables/unicode
 
-function qkiri { # kill all own jobs
-    qselect -u $USER | xargs qdel -p ; echo "[Cancelled jobs]"; sleep 1; qstats;
+function qkiri { # kill all your OWN jobs
+    echo ">> If qkiri fails, try running this command: qselect -u YOURNAME | sudo xargs qdel -p"
+    echo "   Note: that command requires 'sudo'"
+    qselect -u $USER | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats;
 }
 
 function qsass { # kill all jobs that match this grep... works for usernames, jobs, etc. Be careful!
