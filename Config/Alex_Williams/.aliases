@@ -666,3 +666,21 @@ function checkbackup {
     if [[ $RESULT -ne 0 ]] ; then echo -e "***\n**\n*\n******************** WARNING --- last backup date was on $LAST_BACKUP_DATE ************\n*\n**\n***";
     else echo -e "\nOK: The last backup ($LAST_BACKUP_DATE) was made within the last 2 days.\n"; fi
 }
+
+
+function workarchive { # usage: cd /work/projects  then: "workarchive myproj-1234-rna-mouse"  --> will move things to bag_of_holding/work_archive/
+    D=${1%/}
+    DARCH=${D}_ARCHIVE
+    TARGET=/bag_of_holding/work_archive/${D}
+    echo "We would like to move the directory (without a slash) \"${D}\" to the final target \"${TARGET}\"... sound ok to you? Select a NUMERIC option below (1 or 2)"
+    select yn in "Yes" "No"; do
+	case $yn in
+	    Yes)     sudo mv ./${D} ./${DARCH}
+		      ln -s ${TARGET} ./${D}
+		      sudo mv ./${DARCH}  ${TARGET}
+		      break;;
+	    No) break;;
+	esac
+    done
+}
+
