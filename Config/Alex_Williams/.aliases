@@ -14,8 +14,22 @@ else
 fi
 
 if [[ "$USER" == "alexgw" ]]; then
-    echo "Fixing my git status on various accounts..."
-    git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@users.noreply.github.com" 
+    #echo "Fixing my git status on various accounts..."
+    #git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@users.noreply.github.com"
+
+    ## =====================================================================================================================
+    ## ====== SAFER 'rm' COMMANDS --only applies to the user alexgw, unless you change the line above!  ====================
+    ## Below: aliases the command "rm" to actually run the script "trash.pl," which moves files to a trash directory in /tmp.
+    ## They can be recovered by just copying them back.
+    ## Use the "checktrash" command to find the trash directory if you forget where it is.
+    #alias rm='/home/${USER}/trash.pl'
+    
+    ## Below: the command to list the top-level contents of the trash directory. You may have to look through the files here if you want to recover something you just accidentally deleted. Beware, files don't last long in /tmp\!
+    alias checktrash='mkdir -p /tmp/${USER}/Trash/ && echo "Contents of /tmp/${USER}/Trash:" && ls /tmp/${USER}/Trash/'
+    alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv /tmp/${USER}/Trash/ && echo "Emptied the trash directory (/tmp/${USER}/Trash)" ;'
+    ## ====== SAFER 'rm' COMMANDS ====================
+    ## ===============================================================
+    alias rm='trash.pl' ## <-- Note that the "real" rm can still always be invoked by '/bin/rm'
 fi
 
 # git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@users.noreply.github.com"
@@ -204,6 +218,7 @@ alias cheat="echo \
 \">>> UNIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
 \">>> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
 \">>> QSTAT/QSUB/QUEUE/TORQUE: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
+\">>> QSTAT/QSUB/QUEUE/TORQUE: restart torque: sudo service pbs_server restart ;sudo service pbs_sched restart ; sudo service pbs_mom restart \" ${NL}\
 \">>> QSTAT/QSUB/QUEUE/TORQUE: info on the queue: qstat -Qf or qstat -B more details \" ${NL}\
 \">>> UNIX / DPKG / APT-GET: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
 \">>> UNIX / DPKG / APT-GET: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
@@ -303,18 +318,6 @@ stopvpn() {
     osascript -e 'tell application "Junos Pulse" to quit'
 }
 
-## ===============================================================
-## ====== SAFER 'rm' COMMANDS ====================
-## Below: aliases the command "rm" to actually run the script "trash.pl," which moves files to a trash directory in /tmp.
-## They can be recovered by just copying them back.
-## Use the "checktrash" command to find the trash directory if you forget where it is.
-#alias rm='/home/${USER}/trash.pl'
-alias rm='trash.pl' ## <-- Note that the "real" rm can still always be invoked by '/bin/rm'
-## Below: the command to list the top-level contents of the trash directory. You may have to look through the files here if you want to recover something you just accidentally deleted. Beware, files don't last long in /tmp\!
-alias checktrash='mkdir -p /tmp/${USER}/Trash/ && echo "Contents of /tmp/${USER}/Trash:" && ls /tmp/${USER}/Trash/'
-alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv /tmp/${USER}/Trash/ && echo "Emptied the trash directory (/tmp/${USER}/Trash)" ;'
-## ====== SAFER 'rm' COMMANDS ====================
-## ===============================================================
 
 ## "showoff" makes it so that everyone can a+rx any directories and a+r any files.
 ## Note that we don't want to make it so everyone can execute *files* necessarily, just folders
