@@ -217,6 +217,7 @@ alias cheat="echo \
 \">>> UNIX: Rsync transfer files: rsync --dry-run -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
 \">>> UNIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
 \">>> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
+\">>> UNIX/TOP/USAGE/HTOP: CPU usage by user: top -b -n 1 -u \\\$USER | awk 'NR>7 { sum += \\\$9; } END { print sum; }' \" ${NL}\
 \">>> QSTAT/QSUB/QUEUE/TORQUE: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
 \">>> QSTAT/QSUB/QUEUE/TORQUE: restart torque: sudo service pbs_server restart ;sudo service pbs_sched restart ; sudo service pbs_mom restart \" ${NL}\
 \">>> QSTAT/QSUB/QUEUE/TORQUE: info on the queue: qstat -Qf or qstat -B more details \" ${NL}\
