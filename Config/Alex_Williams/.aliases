@@ -645,14 +645,19 @@ function qkiri { # kill all your OWN jobs
     qselect -u $USER | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats;
 }
 
+function qstatlong { # show qstat with LONG (full) job names:
+    qstat -f | egrep -i '(Job Id|Job_Name|Job_Owner|job_state|list.walltime)' | perl -pe 's/(.*Job_Owner.*)@.*/\1/i' | perl -pe 's/.*=\s//' | perl -pe 's/\n/\t/g' | perl -pe 's/(Job Id:\s|$)/\n/ig' | grep -v '^$'
+}
+
 function qsass { # kill all jobs that match this grep... works for usernames, jobs, etc. Be careful!
     # Example:  qsass    yourname             # Hopefully yourname is not a subset of someone ELSE's name!
     # or:       qsass    test_job_number_     # Uses GREP, so watch out for invalid regexps!
-    if [[ ${#1} < 4 ]]; then
-	echo "ERR: Your argument to qsass ($1) was not long enough---it needs to be at least 4 characters, or else we don't believe it's a valid input! Be careful! Even PARTIAL MATCHES will trigger the job deletion. So don't delete 'bad_job' if you don't also want to delete 'not_a_bad_job'."
+    if [[ ${#1} -lt 4 ]]; then
+	echo "ERR: Your argument to qsass ($1) was not long enough (it is only length ${#1})---it needs to be at least 4 characters, or else we don't believe it's a valid input! Be careful! Even PARTIAL MATCHES will trigger the job deletion. So don't delete 'bad_job' if you don't also want to delete 'not_a_bad_job'."
 	return 1;
     fi;
-    for j in $(qstat -a | grep "$1" | cut -d '.' -f 1); do
+    echo "Ok, trying to use qdel to delete jobs that match '$1'...";
+    for j in $(qstatlong | grep "$1" | cut -d '.' -f 1); do
 	echo "qdel-ing this thing that matched '$1': $j...";
 	qdel $j ;
     done
