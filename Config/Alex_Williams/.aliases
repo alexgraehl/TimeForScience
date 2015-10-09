@@ -689,3 +689,13 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
     done
 }
 
+
+function accuse {
+    USERS_WITH_JOBS=$(ps aux | tail -n +2 | cut -d ' ' -f 1 | uniq | sort -u | tr '\n' ' ')
+    echo -e "Let's see who is using the CPU...";
+    echo -e "Going to check these users:\n${USERS_WITH_JOBS}";
+    for u in $USERS_WITH_JOBS; do \
+	top -b -n 1 -u "${u}" | awk "NR>7 { sum += \$9; } END { print \"${u}\t\", sum, \"%\"; }"; \
+    done ;
+    
+}
