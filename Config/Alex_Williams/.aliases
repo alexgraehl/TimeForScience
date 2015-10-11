@@ -188,6 +188,7 @@ alias cheat="echo \
 \">>> Shell/bash: Rename files to include parent directory in filename for f in \\\`ls DIRS*/file.whatever\\\`; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).\\\$(basename \\\$f).whatever ; done \" ${NL}\
 \">>> Shell/bash: Rename files to have unique names: for f in **/*fastqc.html; do /bin/cp \\\$f DESTINATION_DIR/\\\$(md5sum \\\$f | cut -d ' ' -f 1).\\\$(basename \\\$f); done \" ${NL}\
 \" \" ${NL}\
+\">>> HEX HEXDUMP: View individual bytes of a file in hex form: hexdump -C FILENAME \" ${NL}\
 \">>> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
 \">>> HG: Mercurial: restore accidentally-locally-deleted file from repo: hg revert FILENAME \" ${NL}\
 \">>> HG: Mercurial: revert to previous version: hg revert FILENAME -r-2 (or -r-3 for two versions ago, etc) \" ${NL}\
@@ -645,14 +646,21 @@ function qkiri { # kill all your OWN jobs
     qselect -u $USER | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats;
 }
 
+# grep 'pattern' can also be replaced with: perl -nle "print if m{PATTERN}" # <-- beware of '$1' versus "$1" issues!
+
+function qstatlong { # show qstat with LONG (full) job names:
+    qstat -f | egrep -i '(Job Id|Job_Name|Job_Owner|job_state|list.walltime)' | perl -pe 's/(.*Job_Owner.*)@.*/\1/i' | perl -pe 's/.*=\s//' | perl -pe 's/\n/\t/g' | perl -pe 's/(Job Id:\s|$)/\n/ig' | grep -v '^$'
+}
+
 function qsass { # kill all jobs that match this grep... works for usernames, jobs, etc. Be careful!
-    # Example:  qsass    yourname             # Hopefully yourname is not a subset of someone ELSE's name!
-    # or:       qsass    test_job_number_     # Uses GREP, so watch out for invalid regexps!
-    if [[ ${#1} < 4 ]]; then
-	echo "ERR: Your argument to qsass ($1) was not long enough---it needs to be at least 4 characters, or else we don't believe it's a valid input! Be careful! Even PARTIAL MATCHES will trigger the job deletion. So don't delete 'bad_job' if you don't also want to delete 'not_a_bad_job'."
+    # Example usage:  qsass    yourname             # Hopefully yourname is not a subset of someone ELSE's name!
+    # or:             qsass    test_job_number_     # Uses GREP, so watch out for invalid regexps!
+    if [[ ${#1} -lt 4 ]]; then
+	echo "ERR: Your argument to qsass ($1) was not long enough (it is only length ${#1})---it needs to be at least 4 characters, or else we don't believe it's a valid input! Be careful! Even PARTIAL MATCHES will trigger the job deletion. So don't delete 'bad_job' if you don't also want to delete 'not_a_bad_job'."
 	return 1;
     fi;
-    for j in $(qstat -a | grep "$1" | cut -d '.' -f 1); do
+    echo "Ok, trying to use qdel to delete jobs that match '$1'...";
+    for j in $(qstatlong | perl -nle "print if m{$1}" | cut -d '.' -f 1); do
 	echo "qdel-ing this thing that matched '$1': $j...";
 	qdel $j ;
     done
@@ -680,12 +688,20 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
     echo "We would like to move the directory (without a slash) \"${D}\" to the final target \"${TARGET}\"... sound ok to you? Select a NUMERIC option below (1 or 2)"
     select yn in "Yes" "No"; do
 	case $yn in
-	    Yes)     sudo mv ./${D} ./${DARCH}
-		      ln -s ${TARGET} ./${D}
-		      sudo mv ./${DARCH}  ${TARGET}
-		      break;;
+	    Yes) sudo mv ./${D} ./${DARCH}
+		 ln -s ${TARGET} ./${D}
+		 sudo mv ./${DARCH}  ${TARGET}
+		 break;;
 	    No) break;;
 	esac
     done
 }
 
+function accuse { # See who is using the CPU. Usage: "accuse"
+    USERS_WITH_JOBS=$(ps aux | tail -n +2 | cut -d ' ' -f 1 | uniq | sort -u | tr '\n' ' ')
+    echo -e "Let's see who is using the CPU...";
+    echo -e "Going to check these users:\n${USERS_WITH_JOBS}";
+    for u in $USERS_WITH_JOBS; do \
+	top -b -n 1 -u "${u}" | awk "NR>7 { sum += \$9; } END { print \"${u}\t\", sum, \"%\"; }"; \
+    done ;    
+}
