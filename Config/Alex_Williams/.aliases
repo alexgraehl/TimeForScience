@@ -224,7 +224,7 @@ alias cheat="echo \
 \">>> UNIX / DPKG / APT-GET: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
 \">>> UNIX / DPKG / APT-GET: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
 \">>> UNIX / APTITUTDE: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
-\">>> UNIX / APT-GET: upgrade only EXISTING packages matching wildcard pattern: apt-get install --only-upgrade \"r-cran*\" \" ${NL}\
+\">>> UNIX / APT-GET: upgrade only EXISTING packages matching wildcard pattern: apt-get install --only-upgrade 'r-cran*' \" ${NL}\
 \">>> UNIX / APT-GET: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
 \">>> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub \" ${NL}\
 \"                        to server ~/.ssh/authorized_keys \" ${NL}\
