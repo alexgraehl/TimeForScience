@@ -697,17 +697,19 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
     done
 }
 
-function accuse { # See who is using the CPU. Usage: "accuse"
+function accuse { # See who is using the CPU. Usage: just "accuse" with no arguments
     USERS_WITH_JOBS=$(ps aux | tail -n +2 | cut -d ' ' -f 1 | uniq | sort -u | tr '\n' ' ')
-    echo -e "Let's see who is using the CPU...";
-    echo -e "Going to check these users:\n${USERS_WITH_JOBS}";
-    TOPTEMP=$(mktemp)
-    TEMP2=$(mktemp)
+    echo -e ">> Let's see who is using the CPU..."              >&2 # print to stderr
+    echo -e ">> Going to check these users: ${USERS_WITH_JOBS}" >&2 # print to stderr
+    TOPTEMP=$(mktemp) # Make a temp file
+    TEMP2=$(mktemp)   # Make another temp file
+    D=$(date '+%F %H:%M:%S')
     top -b -n 1 | tail -n +7 > ${TOPTEMP} ;
-    echo "made ${TOPTEMP}"
-    echo "USERNAME PERCENT_CPU" > ${TEMP2}
+    echo -e "USERNAME\t%CPU\tBARGRAPH\t# Date = \"${D}\"" > ${TEMP2}
+    NCPU=$(nproc)
     for u in $USERS_WITH_JOBS; do \
-	cat $TOPTEMP | perl -nle "print if m/\s${u}\s/i" | awk " { sum += \$9; } END { print \"${u}\t\", sum; }" >> ${TEMP2}; \
+	cat $TOPTEMP | perl -e "my \$user = ${u}; my \$tot = 0; while(<>){ chomp; my @a=split(/\s+/); if (\$a[2] =~ m/${u}/i) {\$tot += \$a[9];}; } my \$stars = '|' . 'x' x (1+int((\$tot+50)/${NCPU})); print qq{\$user\t\$tot\t\$stars\n};"  >> ${TEMP2}; \
     done ;
-    cat ${TEMP2} | column -t
+    cat ${TEMP2} | column -t -s $'\t'
+    /bin/rm ${TOPTEMP} ${TEMP2}
 }
