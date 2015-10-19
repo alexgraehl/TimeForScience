@@ -209,10 +209,7 @@ alias cheat="echo \
 \">>> UNIX: list ONLY dot files, no .. or up a directory: ls -l .??* \" ${NL}\
 \">>> UNIX: set up symlinks from Mercurial/TimeForScience: ln -sfn ~/TimeForScience/Config/Alex_Williams/.??* ~/ \" ${NL}\
 \">>> UNIX: symlink executables: for f in \\\$(find PATH -maxdepth 1 -perm -111 -type f); do ln -s \\\$f ./; done \" ${NL}\
-<<<<<<< HEAD
 \">>> UNIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
-=======
->>>>>>> 1b903be61cc249e5f58eec0d66375a16e7178429
 \">>> UNIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
 \">>> UNIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
 \">>> UNIX: IO nice for a user \\\$THEUSER: SSS=\\\$(ps -fu \\\$THEUSER | perl -pe 's/[ ]+/\t/g' | cut -f 2 | tail -n +2); for pid in \\\$SSS ; do echo 'PID' \\\$pid; sudo ionice -c3 -p \\\$pid ; sudo renice +10 -p \\\$pid; done\" ${NL}\
@@ -721,6 +718,5 @@ function accuse { # See who is using the CPU. Usage: just "accuse" with no argum
 function giant { # find giant files
     echo "Calculating all sizes first, then sorting them in ascending order..." >&2 # print to stderr
     DIRS="$@"
-    GB=1024*1024 # 1 GB
-    sudo du -sc $DIRS | perl -nle "@a = split(/\s+/); if (\$a[0]>$GB){print int(\$a[0]/1024/1024).qq{G}.qq{\t}.\$a[1];} else { };" | sort -k1,1g
+    sudo du -sc $DIRS | perl -nle 'print if not m/\btotal\b/' | perl -nle "@a = split(/\s+/); if (\$a[0]>0){print ((\$a[0]/1024.0/1024.0).qq{\t}.\$a[1]);} else { };" | sort -k1,1g | perl -e "my \$t = 0; while(<>) { my @a=split; \$t += \$a[0]; print join(qq{\t}, int(\$t/1024.0).qq{T}, int(\$a[0]).qq{G}, \$a[1]).qq{\n} }"
 }
