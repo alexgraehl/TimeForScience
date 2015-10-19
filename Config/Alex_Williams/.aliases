@@ -720,3 +720,10 @@ function giant { # find giant files
     DIRS="$@"
     sudo du -sc $DIRS | perl -nle 'print if not m/\btotal\b/' | perl -nle "@a = split(/\s+/); if (\$a[0]>0){print ((\$a[0]/1024.0/1024.0).qq{\t}.\$a[1]);} else { };" | sort -k1,1g | perl -e "my \$t = 0; while(<>) { my @a=split; \$t += \$a[0]; print join(qq{\t}, int(\$t/1024.0).qq{T}, int(\$a[0]).qq{G}, \$a[1]).qq{\n} }"
 }
+
+function wholog {
+    echo "About to show who logs in and how big their home directories are..." >&2 # print to stderr
+    TMP=$(mktemp)
+    for f in $(cat /etc/passwd | cut -d ':' -f 1); do echo "Checking $f..." >&2 ; sudo lastlog -u $f; done | grep -v '^Username' | perl -pe 's/\s+/\t/' > $TMP
+    sudo du -sch /home/* | perl -pe 's/\/home\///' | join.pl -o "NO_HOMEDIR" -1 1 -2 2 $TMP - | column -t -s $'\t'
+}
