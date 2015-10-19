@@ -1,0 +1,5 @@
+{
+	"^~@k" = (insertText:, "🐍");
+	"^~@i" = (insertText:, "🍰");
+}
+

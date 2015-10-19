@@ -14,8 +14,22 @@ else
 fi
 
 if [[ "$USER" == "alexgw" ]]; then
-    echo "Fixing my git status on various accounts..."
-    git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@users.noreply.github.com" 
+    #echo "Fixing my git status on various accounts..."
+    #git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@users.noreply.github.com"
+
+    ## =====================================================================================================================
+    ## ====== SAFER 'rm' COMMANDS --only applies to the user alexgw, unless you change the line above!  ====================
+    ## Below: aliases the command "rm" to actually run the script "trash.pl," which moves files to a trash directory in /tmp.
+    ## They can be recovered by just copying them back.
+    ## Use the "checktrash" command to find the trash directory if you forget where it is.
+    #alias rm='/home/${USER}/trash.pl'
+    
+    ## Below: the command to list the top-level contents of the trash directory. You may have to look through the files here if you want to recover something you just accidentally deleted. Beware, files don't last long in /tmp\!
+    alias checktrash='mkdir -p /tmp/${USER}/Trash/ && echo "Contents of /tmp/${USER}/Trash:" && ls /tmp/${USER}/Trash/'
+    alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv /tmp/${USER}/Trash/ && echo "Emptied the trash directory (/tmp/${USER}/Trash)" ;'
+    ## ====== SAFER 'rm' COMMANDS ====================
+    ## ===============================================================
+    alias rm='trash.pl' ## <-- Note that the "real" rm can still always be invoked by '/bin/rm'
 fi
 
 # git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@users.noreply.github.com"
@@ -103,6 +117,7 @@ BRACKET_OPEN='{'
 PAREN_OPEN='('
 NL="\$'\\n'" # newline!
 alias cheat="echo \
+\">>> Echo emoji to terminal: example: a snake is echo $'\xF0\x9F\x90\x8D' (See http://apps.timwhitlock.info/emoji/tables/unicode) \" ${NL}\
 \">>> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
 \">>> Unzip files into SUBDIRECTORIES always: ls *.zip|awk -F'.zip' '{print \\\"unzip \\\"\\\$0\\\" -d \\\"\\\$1}'|sh  \" ${NL}\
 \">>> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
@@ -165,6 +180,7 @@ alias cheat="echo \
 \">>> R: read from clipboard: y=data.matrix(read.delim(pipe(\\\"pbpaste\\\"))); \" ${NL}\
 \" \" ${NL}\
 \">>> GZIP: verify files: for f in **/*.gz; do gunzip --test -v \\\$f ; done; \" ${NL}\
+\">>> Text: wrap lines at 80 chars, preserving/ignoring word boundaries: fold -w 80 -s text.txt (omit -s to cut words) \" ${NL}\
 \">>> Shell/bash: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
 \">>> Shell/bash: Pipe stderr (and stdout too): CMD 2>&1 | less -S \" ${NL}\
 \">>> Shell/bash: Modify variable: newV=\\\$(sed -e's/a/1/; s/b/2/; s/c/3/' <<< \\\$oldV) \" ${NL}\
@@ -172,6 +188,7 @@ alias cheat="echo \
 \">>> Shell/bash: Rename files to include parent directory in filename for f in \\\`ls DIRS*/file.whatever\\\`; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).\\\$(basename \\\$f).whatever ; done \" ${NL}\
 \">>> Shell/bash: Rename files to have unique names: for f in **/*fastqc.html; do /bin/cp \\\$f DESTINATION_DIR/\\\$(md5sum \\\$f | cut -d ' ' -f 1).\\\$(basename \\\$f); done \" ${NL}\
 \" \" ${NL}\
+\">>> HEX HEXDUMP: View individual bytes of a file in hex form: hexdump -C FILENAME \" ${NL}\
 \">>> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
 \">>> HG: Mercurial: restore accidentally-locally-deleted file from repo: hg revert FILENAME \" ${NL}\
 \">>> HG: Mercurial: revert to previous version: hg revert FILENAME -r-2 (or -r-3 for two versions ago, etc) \" ${NL}\
@@ -192,7 +209,10 @@ alias cheat="echo \
 \">>> UNIX: list ONLY dot files, no .. or up a directory: ls -l .??* \" ${NL}\
 \">>> UNIX: set up symlinks from Mercurial/TimeForScience: ln -sfn ~/TimeForScience/Config/Alex_Williams/.??* ~/ \" ${NL}\
 \">>> UNIX: symlink executables: for f in \\\$(find PATH -maxdepth 1 -perm -111 -type f); do ln -s \\\$f ./; done \" ${NL}\
+<<<<<<< HEAD
 \">>> UNIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
+=======
+>>>>>>> 1b903be61cc249e5f58eec0d66375a16e7178429
 \">>> UNIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
 \">>> UNIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
 \">>> UNIX: IO nice for a user \\\$THEUSER: SSS=\\\$(ps -fu \\\$THEUSER | perl -pe 's/[ ]+/\t/g' | cut -f 2 | tail -n +2); for pid in \\\$SSS ; do echo 'PID' \\\$pid; sudo ionice -c3 -p \\\$pid ; sudo renice +10 -p \\\$pid; done\" ${NL}\
@@ -202,10 +222,15 @@ alias cheat="echo \
 \">>> UNIX: Rsync transfer files: rsync --dry-run -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
 \">>> UNIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
 \">>> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
-\">>> UNIX/TORQUE: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
-\">>> UNIX / INSTALL: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
-\">>> UNIX / INSTALL: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
-\">>> UNIX / INSTALL: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
+\">>> UNIX/TOP/USAGE/HTOP: CPU usage by user: top -b -n 1 -u \\\$USER | awk 'NR>7 { sum += \\\$9; } END { print sum; }' \" ${NL}\
+\">>> QSTAT/QSUB/QUEUE/TORQUE: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
+\">>> QSTAT/QSUB/QUEUE/TORQUE: restart torque: sudo service pbs_server restart ;sudo service pbs_sched restart ; sudo service pbs_mom restart \" ${NL}\
+\">>> QSTAT/QSUB/QUEUE/TORQUE: info on the queue: qstat -Qf or qstat -B more details \" ${NL}\
+\">>> UNIX / DPKG / APT-GET: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
+\">>> UNIX / DPKG / APT-GET: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
+\">>> UNIX / APTITUTDE: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
+\">>> UNIX / APT-GET: upgrade only EXISTING packages matching wildcard pattern: apt-get install --only-upgrade 'r-cran*' \" ${NL}\
+\">>> UNIX / APT-GET: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
 \">>> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub \" ${NL}\
 \"                        to server ~/.ssh/authorized_keys \" ${NL}\
 \">>> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ${NL}\
@@ -299,18 +324,6 @@ stopvpn() {
     osascript -e 'tell application "Junos Pulse" to quit'
 }
 
-## ===============================================================
-## ====== SAFER 'rm' COMMANDS ====================
-## Below: aliases the command "rm" to actually run the script "trash.pl," which moves files to a trash directory in /tmp.
-## They can be recovered by just copying them back.
-## Use the "checktrash" command to find the trash directory if you forget where it is.
-#alias rm='/home/${USER}/trash.pl'
-alias rm='trash.pl' ## <-- Note that the "real" rm can still always be invoked by '/bin/rm'
-## Below: the command to list the top-level contents of the trash directory. You may have to look through the files here if you want to recover something you just accidentally deleted. Beware, files don't last long in /tmp\!
-alias checktrash='mkdir -p /tmp/${USER}/Trash/ && echo "Contents of /tmp/${USER}/Trash:" && ls /tmp/${USER}/Trash/'
-alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv /tmp/${USER}/Trash/ && echo "Emptied the trash directory (/tmp/${USER}/Trash)" ;'
-## ====== SAFER 'rm' COMMANDS ====================
-## ===============================================================
 
 ## "showoff" makes it so that everyone can a+rx any directories and a+r any files.
 ## Note that we don't want to make it so everyone can execute *files* necessarily, just folders
@@ -628,18 +641,30 @@ function unmin {
 
 #function qin { # qstat with colors for job status, automatic piping into "less" --- this is now the "qselect.sh" script
 
-function qkiri { # kill all own jobs
-    qselect -u $USER | xargs qdel -p ; echo "[Cancelled jobs]"; sleep 1; qstats;
+alias snake="echo  $'\xF0\x9F\x90\x8D'"  # See http://apps.timwhitlock.info/emoji/tables/unicode
+alias cake="echo   $'\xF0\x9F\x8D\xB0'"  # See http://apps.timwhitlock.info/emoji/tables/unicode
+
+function qkiri { # kill all your OWN jobs
+    echo ">> If qkiri fails, try running this command: qselect -u YOURNAME | sudo xargs qdel -p"
+    echo "   Note: that command requires 'sudo'"
+    qselect -u $USER | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats;
+}
+
+# grep 'pattern' can also be replaced with: perl -nle "print if m{PATTERN}" # <-- beware of '$1' versus "$1" issues!
+
+function qstatlong { # show qstat with LONG (full) job names:
+    qstat -f | egrep -i '(Job Id|Job_Name|Job_Owner|job_state|list.walltime)' | perl -pe 's/(.*Job_Owner.*)@.*/\1/i' | perl -pe 's/.*=\s//' | perl -pe 's/\n/\t/g' | perl -pe 's/(Job Id:\s|$)/\n/ig' | grep -v '^$'
 }
 
 function qsass { # kill all jobs that match this grep... works for usernames, jobs, etc. Be careful!
-    # Example:  qsass    yourname             # Hopefully yourname is not a subset of someone ELSE's name!
-    # or:       qsass    test_job_number_     # Uses GREP, so watch out for invalid regexps!
-    if [[ ${#1} < 4 ]]; then
-	echo "ERR: Your argument to qsass ($1) was not long enough---it needs to be at least 4 characters, or else we don't believe it's a valid input! Be careful! Even PARTIAL MATCHES will trigger the job deletion. So don't delete 'bad_job' if you don't also want to delete 'not_a_bad_job'."
+    # Example usage:  qsass    yourname             # Hopefully yourname is not a subset of someone ELSE's name!
+    # or:             qsass    test_job_number_     # Uses GREP, so watch out for invalid regexps!
+    if [[ ${#1} -lt 4 ]]; then
+	echo "ERR: Your argument to qsass ($1) was not long enough (it is only length ${#1})---it needs to be at least 4 characters, or else we don't believe it's a valid input! Be careful! Even PARTIAL MATCHES will trigger the job deletion. So don't delete 'bad_job' if you don't also want to delete 'not_a_bad_job'."
 	return 1;
     fi;
-    for j in $(qstat -a | grep "$1" | cut -d '.' -f 1); do
+    echo "Ok, trying to use qdel to delete jobs that match '$1'...";
+    for j in $(qstatlong | perl -nle "print if m{$1}" | cut -d '.' -f 1); do
 	echo "qdel-ing this thing that matched '$1': $j...";
 	qdel $j ;
     done
@@ -657,4 +682,38 @@ function checkbackup {
     [[ ("$LAST_BACKUP_DATE" == "$TODAY") || ("$LAST_BACKUP_DATE" == "$YESTERDAY") ]]; RESULT=$?
     if [[ $RESULT -ne 0 ]] ; then echo -e "***\n**\n*\n******************** WARNING --- last backup date was on $LAST_BACKUP_DATE ************\n*\n**\n***";
     else echo -e "\nOK: The last backup ($LAST_BACKUP_DATE) was made within the last 2 days.\n"; fi
+}
+
+
+function workarchive { # usage: cd /work/projects  then: "workarchive myproj-1234-rna-mouse"  --> will move things to bag_of_holding/work_archive/
+    D=${1%/}
+    DARCH=${D}_ARCHIVE
+    TARGET=/bag_of_holding/work_archive/${D}
+    echo "We would like to move the directory (without a slash) \"${D}\" to the final target \"${TARGET}\"... sound ok to you? Select a NUMERIC option below (1 or 2)"
+    select yn in "Yes" "No"; do
+	case $yn in
+	    Yes) sudo mv ./${D} ./${DARCH}
+		 ln -s ${TARGET} ./${D}
+		 sudo mv ./${DARCH}  ${TARGET}
+		 break;;
+	    No) break;;
+	esac
+    done
+}
+
+function accuse { # See who is using the CPU. Usage: just "accuse" with no arguments
+    USERS_WITH_JOBS=$(ps aux | tail -n +2 | cut -d ' ' -f 1 | uniq | sort -u | tr '\n' ' ')
+    echo -e ">> Let's see who is using the CPU..."              >&2 # print to stderr
+    echo -e ">> Going to check these users: ${USERS_WITH_JOBS}" >&2 # print to stderr
+    TOPTEMP=$(mktemp) # Make a temp file
+    TEMP2=$(mktemp)   # Make another temp file
+    D=$(date '+%F %H:%M:%S')
+    top -b -n 1 | tail -n +7 > ${TOPTEMP} ;
+    echo -e "USERNAME\t%CPU\tBARGRAPH\t# Date = \"${D}\"" > ${TEMP2}
+    NCPU=$(nproc)
+    for u in $USERS_WITH_JOBS; do \
+	cat $TOPTEMP | perl -e "my \$user = ${u}; my \$tot = 0; while(<>){ chomp; my @a=split(/\s+/); if (\$a[2] =~ m/${u}/i) {\$tot += \$a[9];}; } my \$stars = '|' . 'x' x (1+int((\$tot+50)/${NCPU})); print qq{\$user\t\$tot\t\$stars\n};"  >> ${TEMP2}; \
+    done ;
+    cat ${TEMP2} | column -t -s $'\t'
+    /bin/rm ${TOPTEMP} ${TEMP2}
 }

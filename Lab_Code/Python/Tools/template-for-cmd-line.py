@@ -1,20 +1,16 @@
 #!/usr/bin/python
 
 '''
-Note: we use the 'optparse' module to parse command line arguments, becuase the superior 'argparse' requires Python 2.7 (which is not present in older distributions, like Ubuntu 10.x) http://docs.python.org/release/2.5.2/lib/module-optparse.html
-
+Note: we use the 'optparse' module to parse command line arguments, becuase the 'argparse' requires Python 2.7 (which is not present in older distributions, like Ubuntu 10.x) http://docs.python.org/release/2.5.2/lib/module-optparse.html
 A python program.
 '''
 
 import sys
 import optparse
-
 import pdb; #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
-
 import textwrap
 #import time # we just want "sleep"
 #import os.path
-
 
 globalOptions = None
 globalArgs    = None
@@ -71,13 +67,7 @@ if __name__ == "__main__":
             print("Writing every 1000th line...")
             pass
         pass
-    
-
-
     fff.close()
-
-
-
     pass
 
 
