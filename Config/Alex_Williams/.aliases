@@ -717,3 +717,10 @@ function accuse { # See who is using the CPU. Usage: just "accuse" with no argum
     cat ${TEMP2} | column -t -s $'\t'
     /bin/rm ${TOPTEMP} ${TEMP2}
 }
+
+function giant { # find giant files
+    echo "Calculating all sizes first, then sorting them in ascending order..." >&2 # print to stderr
+    DIRS="$@"
+    GB=1024*1024 # 1 GB
+    sudo du -sc $DIRS | perl -nle "@a = split(/\s+/); if (\$a[0]>$GB){print int(\$a[0]/1024/1024).qq{G}.qq{\t}.\$a[1];} else { };" | sort -k1,1g
+}
