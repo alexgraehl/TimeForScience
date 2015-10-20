@@ -202,6 +202,7 @@ alias cheat="echo \
 \">>>           ...or if you will later paste/join those: for f in SPLIT*.diff; do echo \\\$f | cat - \\\$f | table-no-ragged.py - > NEW_\\\$f; done \" ${NL}\
 \">>> UNIX: convert RELATIVE symlinks to ABSOLUTE PATHS: for fff in *; do FULL=\\\$(readlink -f \\\$fff); ln -sf \\\$FULL \\\$fff ; done \" ${NL}\
 \">>> UNIX: delete ORPHANED symlinks: find /path/to/search -xtype l -delete ; \" ${NL}\
+\">>> UNIX: total file size for files with a certain extension (Here, jpg): find . -type f -iname '*.jpg' -print0 | du -ch --files0-from=- \" ${NL}\
 \">>> UNIX: list files w/modified time MORE THAN one week ago: find . -mtime +7 \" ${NL}\
 \">>> UNIX: list files w/modified time LESS THAN one week ago: find . -mtime -7 \" ${NL}\
 \">>> UNIX: list files w/modified time two days ago: find . -mtime 2 \" ${NL}\
@@ -209,6 +210,7 @@ alias cheat="echo \
 \">>> UNIX: list ONLY dot files, no .. or up a directory: ls -l .??* \" ${NL}\
 \">>> UNIX: set up symlinks from Mercurial/TimeForScience: ln -sfn ~/TimeForScience/Config/Alex_Williams/.??* ~/ \" ${NL}\
 \">>> UNIX: symlink executables: for f in \\\$(find PATH -maxdepth 1 -perm -111 -type f); do ln -s \\\$f ./; done \" ${NL}\
+\">>> UNIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
 \">>> UNIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
 \">>> UNIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
 \">>> UNIX: IO nice for a user \\\$THEUSER: SSS=\\\$(ps -fu \\\$THEUSER | perl -pe 's/[ ]+/\t/g' | cut -f 2 | tail -n +2); for pid in \\\$SSS ; do echo 'PID' \\\$pid; sudo ionice -c3 -p \\\$pid ; sudo renice +10 -p \\\$pid; done\" ${NL}\
@@ -592,7 +594,7 @@ function mini {
 }
 
 ## Extracts any number of compressed files. Usage: 'unmini a.bz2 b.tar.gz c.tar.bz2 ... etc...'
-function unmin {
+function unmini {
     [[ -n `which ionice` ]] && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
     if [[ $(tar --version) =~ .*bsdtar.* ]]; then TARPARAM=" -x -v "      # BSD tar
     else TARPARAM=" --preserve-permissions --atime-preserve --keep-old-files -x -v "   # GNU tar
@@ -712,4 +714,17 @@ function accuse { # See who is using the CPU. Usage: just "accuse" with no argum
     done ;
     cat ${TEMP2} | column -t -s $'\t'
     /bin/rm ${TOPTEMP} ${TEMP2}
+}
+
+function giant { # find giant files
+    echo "Calculating all sizes first, then sorting them in ascending order..." >&2 # print to stderr
+    DIRS="$@"
+    sudo du -sc $DIRS | perl -nle 'print if not m/\btotal\b/' | perl -nle "@a = split(/\s+/); if (\$a[0]>0){print ((\$a[0]/1024.0/1024.0).qq{\t}.\$a[1]);} else { };" | sort -k1,1g | perl -e "my \$t = 0; while(<>) { my @a=split; \$t += \$a[0]; print join(qq{\t}, int(\$t/1024.0).qq{T}, int(\$a[0]).qq{G}, \$a[1]).qq{\n} }"
+}
+
+function wholog {
+    echo "About to show who logs in and how big their home directories are..." >&2 # print to stderr
+    TMP=$(mktemp)
+    for f in $(cat /etc/passwd | cut -d ':' -f 1); do echo "Checking $f..." >&2 ; sudo lastlog -u $f; done | grep -v '^Username' | perl -pe 's/\s+/\t/' > $TMP
+    sudo du -sch /home/* | perl -pe 's/\/home\///' | join.pl -o "NO_HOMEDIR" -1 1 -2 2 $TMP - | column -t -s $'\t'
 }

@@ -68,7 +68,7 @@ lesspipe() {
 	*.tab.gz|*.matrix.gz) gunzip -c "$1" | sheet.pl --notify --color="always" ;;
 	*.tab|*.matrix) sheet.pl --notify --color="always" "$1" ;; # Maybe should use sheet.py instead?
 	
-	*.bam) if [[ -x "`which samtools`" ]]; then  # Color code the bases A, C, G, and T (and N)
+	*.bam|*.cram) if [[ -x "`which samtools`" ]]; then  # Color code the bases A, C, G, and T (and N)
 		   echo -e '##################\n# Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format #\n##################' ; samtools view -h "$1" | basecolor ## Use Samtools to view a BAM ("binary sam") RNA-seq file
 	       else  ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
 		   echo -e "ERROR: LESSPIPE_ADVANCED CANNOT VIEW THIS FILE, BECAUSE 'samtools' IS NOT INSTALLED or CANNOT BE FOUND.\nPlease install samtools (or make sure it is on your path and can be executed) and try again!"
