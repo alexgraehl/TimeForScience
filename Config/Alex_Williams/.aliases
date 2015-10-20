@@ -202,6 +202,7 @@ alias cheat="echo \
 \">>>           ...or if you will later paste/join those: for f in SPLIT*.diff; do echo \\\$f | cat - \\\$f | table-no-ragged.py - > NEW_\\\$f; done \" ${NL}\
 \">>> UNIX: convert RELATIVE symlinks to ABSOLUTE PATHS: for fff in *; do FULL=\\\$(readlink -f \\\$fff); ln -sf \\\$FULL \\\$fff ; done \" ${NL}\
 \">>> UNIX: delete ORPHANED symlinks: find /path/to/search -xtype l -delete ; \" ${NL}\
+\">>> UNIX: total file size for files with a certain extension (Here, jpg): find . -type f -iname '*.jpg' -print0 | du -ch --files0-from=- \" ${NL}\
 \">>> UNIX: list files w/modified time MORE THAN one week ago: find . -mtime +7 \" ${NL}\
 \">>> UNIX: list files w/modified time LESS THAN one week ago: find . -mtime -7 \" ${NL}\
 \">>> UNIX: list files w/modified time two days ago: find . -mtime 2 \" ${NL}\
@@ -593,7 +594,7 @@ function mini {
 }
 
 ## Extracts any number of compressed files. Usage: 'unmini a.bz2 b.tar.gz c.tar.bz2 ... etc...'
-function unmin {
+function unmini {
     [[ -n `which ionice` ]] && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
     if [[ $(tar --version) =~ .*bsdtar.* ]]; then TARPARAM=" -x -v "      # BSD tar
     else TARPARAM=" --preserve-permissions --atime-preserve --keep-old-files -x -v "   # GNU tar
