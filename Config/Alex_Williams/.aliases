@@ -117,167 +117,167 @@ BRACKET_OPEN='{'
 PAREN_OPEN='('
 NL="\$'\\n'" # newline!
 alias cheat="echo \
-\">>> Echo emoji to terminal: example: a snake is echo $'\xF0\x9F\x90\x8D' (See http://apps.timwhitlock.info/emoji/tables/unicode) \" ${NL}\
-\">>> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
-\">>> Unzip files into SUBDIRECTORIES always: ls *.zip|awk -F'.zip' '{print \\\"unzip \\\"\\\$0\\\" -d \\\"\\\$1}'|sh  \" ${NL}\
-\">>> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
-\">>> Mac: what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
-\">>> Mac disk: specific file I/O: fs_usage <programname> \" ${NL}\
-\">>> Mac disk: filesystem I/O:    fs_usage -w | grep -v '0\\.0'  \" ${NL}\
-\">>> Mac: show weird file flags: ls -l -@ \" ${NL}\
-\">>> Mac Time Machine: exclude / check: tmutil isexcluded / tmutil addexclusion (-p) PATH \" ${NL}\
-\">>> Mac Time Machine: delete backups: tmutil delete /Volumes/DISK/Backups.backupdb/COMPNAME/ \" ${NL}\
-\">>> Mac: recursively clear worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
-\">>> Mac: delete impossible-to-delete files find FILE -flags schg -exec chflags noschg {} \\; \" ${NL}\
-\">>> Mac: show library: chflags nohidden ~/Library/ \" ${NL}\
-\">>> Mac: batch change modification time: find . -print0 | xargs -0 SetFile -d '12/31/2012 12:00:00 PM' \" ${NL}\
-\">>> Mac: No quarantine warn  : defaults write com.apple.LaunchServices LSQuarantine -bool NO \" ${NL}\
-\">>> Mac: check code signing: codesign -vvv /Applications/iTunes.app \" ${NL}\
-\">>> Mac: No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
-\">>> Mac: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
-\">>> Mac: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
-\">>> Image SIPS: PNG -> JPEG: mkdir outjpegs; sips -s format jpeg *.png --out outjpegs \" ${NL}\
-\">>> Imagemagick convert recursive: find ./ -name \\\"*.jp*\\\" -print0 | xargs -0 -I{} convert -resize 1024x768 -quality 85 {} {}  # or resize 50%\" ${NL}\
-\">>> Imagemagick convert PDF -> PNG w/antialias and downsample: convert -verbose -density 144 in.pdf +antialias out.png  Note that argument order is very important and may not be correct here. It is also very slow..\" ${NL}\
-\">>> MP3: Convert ogg->mp3 for name in *.ogg; do ffmpeg -i \\\"\\\$name\\\" -ab 256k -map_metadata 0:s:0 \\\"Converted_\\\${name/.ogg/.mp3}\\\"; done; \" ${NL}\
+\">> Echo emoji to terminal: example: a snake is echo $'\xF0\x9F\x90\x8D' (See http://apps.timwhitlock.info/emoji/tables/unicode) \" ${NL}\
+\">> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
+\">> Unzip files into SUBDIRECTORIES always: ls *.zip|awk -F'.zip' '{print \\\"unzip \\\"\\\$0\\\" -d \\\"\\\$1}'|sh  \" ${NL}\
+\">> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
+\">> Mac: what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
+\">> Mac disk: specific file I/O: fs_usage <programname> \" ${NL}\
+\">> Mac disk: filesystem I/O:    fs_usage -w | grep -v '0\\.0'  \" ${NL}\
+\">> Mac: show weird file flags: ls -l -@ \" ${NL}\
+\">> Mac Time Machine: exclude / check: tmutil isexcluded / tmutil addexclusion (-p) PATH \" ${NL}\
+\">> Mac Time Machine: delete backups: tmutil delete /Volumes/DISK/Backups.backupdb/COMPNAME/ \" ${NL}\
+\">> Mac: recursively clear worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
+\">> Mac: delete impossible-to-delete files find FILE -flags schg -exec chflags noschg {} \\; \" ${NL}\
+\">> Mac: show library: chflags nohidden ~/Library/ \" ${NL}\
+\">> Mac: batch change modification time: find . -print0 | xargs -0 SetFile -d '12/31/2012 12:00:00 PM' \" ${NL}\
+\">> Mac: No quarantine warn  : defaults write com.apple.LaunchServices LSQuarantine -bool NO \" ${NL}\
+\">> Mac: check code signing: codesign -vvv /Applications/iTunes.app \" ${NL}\
+\">> Mac: No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
+\">> Mac: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
+\">> Mac: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
+\">> Image SIPS: PNG -> JPEG: mkdir outjpegs; sips -s format jpeg *.png --out outjpegs \" ${NL}\
+\">> Imagemagick convert recursive: find ./ -name \\\"*.jp*\\\" -print0 | xargs -0 -I{} convert -resize 1024x768 -quality 85 {} {}  # or resize 50%\" ${NL}\
+\">> Imagemagick convert PDF -> PNG w/antialias and downsample: convert -verbose -density 144 in.pdf +antialias out.png  Note that argument order is very important and may not be correct here. It is also very slow..\" ${NL}\
+\">> MP3: Convert ogg->mp3 for name in *.ogg; do ffmpeg -i \\\"\\\$name\\\" -ab 256k -map_metadata 0:s:0 \\\"Converted_\\\${name/.ogg/.mp3}\\\"; done; \" ${NL}\
 \" \" ${NL}\
-\">>> Check directories for differences (by modification time): ionice -c3 rsync --dry-run --delete -vr /dirA /dirB \" ${NL}\
-\">>> Find all .R files in a directory:   find ./ -name \\\"*.R\\\" -exec ls \'{}\' \\\; \" ${NL}\
-\">>> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
+\">> Check directories for differences (by modification time): ionice -c3 rsync --dry-run --delete -vr /dirA /dirB \" ${NL}\
+\">> Find all .R files in a directory:   find ./ -name \\\"*.R\\\" -exec ls \'{}\' \\\; \" ${NL}\
+\">> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
 \" \" ${NL}\
-\">>> BASH script header (3 lines): #!/bin/bash -u   set -e   set -o pipefail \" ${NL}\
-\">>> BASH: Literal tab: \$'\\t' (example: join -t \$'\\t' to join on tabs) or \\\$(echo -en '\\t') . In MAKE: printf '\\t' \" ${NL}\
-\">>> SH  : Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
-\">>> PYTHON debug a crashing program: python -m pdb YOURPROG --yourargs . 'c' continues execution, 's' steps. \" ${NL}\
-\">>> PYTHON debug a crashing program: Put this in the code verbatim to properly enter the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
+\">> BASH script header (3 lines): #!/bin/bash -u   set -e   set -o pipefail \" ${NL}\
+\">> BASH: Literal tab: \$'\\t' (example: join -t \$'\\t' to join on tabs) or \\\$(echo -en '\\t') . In MAKE: printf '\\t' \" ${NL}\
+\">> SH  : Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
+\">> PYTHON debug a crashing program: python -m pdb YOURPROG --yourargs . 'c' continues execution, 's' steps. \" ${NL}\
+\">> PYTHON debug a crashing program: Put this in the code verbatim to properly enter the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
 \" \" ${NL}\
-\">>> R: Save copy as pdf: dev.copy2pdf() \" ${NL}\
-\">>> R: Aggregate rows / average rows with same name (mean): mAGG <- t(sapply(by(MAT,rownames(MAT),colMeans),identity)) \" ${NL}\
-\">>> R: Read bzip/gz file:  x <- read.table(bzfile(\\\"name.bz2\\\") or gzfile(...) \" ${NL}\
-\">>> R: Read from stdin:    x <- read.table(pipe(\\\"cat something name.bz2 | bunzip2\\\") \" ${NL}\
-\">>> R: Install package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
-\">>> R: Install package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
-\">>> R: sessionInfo(): show packages. ls('package:something') shows details. '.libPaths()' shows lib dirs. \" ${NL}\
-\">>> R: traceback() - to properly debug. Also: options(error=recover()) \" ${NL}\
-\">>> R: t.test failing? Use tryCatch: tryCatch(something, error=function() { return('NA'); }); \" ${NL}\
-\">>> R: Need to un-list things? Use unlist! \" ${NL}\
-\">>> R: Perpendicular axis labels: las=2 (1=horiz, 3=vertical) \" ${NL}\
-\">>> R: draw beyond graph region: par(xpd=T/F/NA) \" ${NL}\
-\">>> R: square plot: par(pty='s') \" ${NL}\
-\">>> R: figure out attributes of a variable: attr(x, 'theAttribute'); Works even when names()/attributes() does not! \" ${NL}\
-\">>> R: inspect object: str(...) \" ${NL}\
-\">>> R: totally blank plot: plot(c(0,1),c(0,1),ann=F,bty='n',type='n',xaxt='n',yaxt='n') \" ${NL}\
-\">>> R: cut things into bins, like a histogram: cut(...) \" ${NL}\
-\">>> R: factor -> Integers: unclass(...) \" ${NL}\
-\">>> R: Perpendicular axis: par(las=2) (1 = horiz, 3 = vertical) \" ${NL}\
-\">>> R: Draw BEYOND the axes / plot region: par(xpd=...) \" ${NL}\
-\">>> R: Show package contents: ls('package:some_package_name_here') \" ${NL}\
-\">>> R: Show versions of installed packages: sessionInfo(...) \" ${NL}\
-\">>> R: Collapse a list down to a basic vector: unlist(...) \" ${NL}\
-\">>> R: Resize terminal width / columns: options(width=Sys.getenv(\\\"COLUMNS\\\")) \" ${NL}\
-\">>> R: make libraries usable by non-root users: sudo chmod -R a+r /usr/local/lib/R ; sudo find /usr/local/lib/R -type d | sudo xargs chmod a+x \" ${NL}\
-\">>> R: update all installed packages: update.packages(ask=FALSE, checkBuilt=TRUE) \" ${NL}\
-\">>> R: read from clipboard: y=data.matrix(read.delim(pipe(\\\"pbpaste\\\"))); \" ${NL}\
+\">> R: Save copy as pdf: dev.copy2pdf() \" ${NL}\
+\">> R: Aggregate rows / average rows with same name (mean): mAGG <- t(sapply(by(MAT,rownames(MAT),colMeans),identity)) \" ${NL}\
+\">> R: Read bzip/gz file:  x <- read.table(bzfile(\\\"name.bz2\\\") or gzfile(...) \" ${NL}\
+\">> R: Read from stdin:    x <- read.table(pipe(\\\"cat something name.bz2 | bunzip2\\\") \" ${NL}\
+\">> R: Install package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
+\">> R: Install package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
+\">> R: sessionInfo(): show packages. ls('package:something') shows details. '.libPaths()' shows lib dirs. \" ${NL}\
+\">> R: traceback() - to properly debug. Also: options(error=recover()) \" ${NL}\
+\">> R: t.test failing? Use tryCatch: tryCatch(something, error=function() { return('NA'); }); \" ${NL}\
+\">> R: Need to un-list things? Use unlist! \" ${NL}\
+\">> R: Perpendicular axis labels: las=2 (1=horiz, 3=vertical) \" ${NL}\
+\">> R: draw beyond graph region: par(xpd=T/F/NA) \" ${NL}\
+\">> R: square plot: par(pty='s') \" ${NL}\
+\">> R: figure out attributes of a variable: attr(x, 'theAttribute'); Works even when names()/attributes() does not! \" ${NL}\
+\">> R: inspect object: str(...) \" ${NL}\
+\">> R: totally blank plot: plot(c(0,1),c(0,1),ann=F,bty='n',type='n',xaxt='n',yaxt='n') \" ${NL}\
+\">> R: cut things into bins, like a histogram: cut(...) \" ${NL}\
+\">> R: factor -> Integers: unclass(...) \" ${NL}\
+\">> R: Perpendicular axis: par(las=2) (1 = horiz, 3 = vertical) \" ${NL}\
+\">> R: Draw BEYOND the axes / plot region: par(xpd=...) \" ${NL}\
+\">> R: Show package contents: ls('package:some_package_name_here') \" ${NL}\
+\">> R: Show versions of installed packages: sessionInfo(...) \" ${NL}\
+\">> R: Collapse a list down to a basic vector: unlist(...) \" ${NL}\
+\">> R: Resize terminal width / columns: options(width=Sys.getenv(\\\"COLUMNS\\\")) \" ${NL}\
+\">> R: make libraries usable by non-root users: sudo chmod -R a+r /usr/local/lib/R ; sudo find /usr/local/lib/R -type d | sudo xargs chmod a+x \" ${NL}\
+\">> R: update all installed packages: update.packages(ask=FALSE, checkBuilt=TRUE) \" ${NL}\
+\">> R: read from clipboard: y=data.matrix(read.delim(pipe(\\\"pbpaste\\\"))); \" ${NL}\
 \" \" ${NL}\
-\">>> GZIP: verify files: for f in **/*.gz; do gunzip --test -v \\\$f ; done; \" ${NL}\
-\">>> Text: wrap lines at 80 chars, preserving/ignoring word boundaries: fold -w 80 -s text.txt (omit -s to cut words) \" ${NL}\
-\">>> Shell/bash: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
-\">>> Shell/bash: Pipe stderr (and stdout too): CMD 2>&1 | less -S \" ${NL}\
-\">>> Shell/bash: Modify variable: newV=\\\$(sed -e's/a/1/; s/b/2/; s/c/3/' <<< \\\$oldV) \" ${NL}\
-\">>> Shell/bash: Script run with ionice:  ionice -c3 -p\\\$\\\$ (top line of a /bin/sh script) \" ${NL}\
-\">>> Shell/bash: Rename files to include parent directory in filename for f in \\\`ls DIRS*/file.whatever\\\`; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).\\\$(basename \\\$f).whatever ; done \" ${NL}\
-\">>> Shell/bash: Rename files to have unique names: for f in **/*fastqc.html; do /bin/cp \\\$f DESTINATION_DIR/\\\$(md5sum \\\$f | cut -d ' ' -f 1).\\\$(basename \\\$f); done \" ${NL}\
+\">> GZIP: verify files: for f in **/*.gz; do gunzip --test -v \\\$f ; done; \" ${NL}\
+\">> Text: wrap lines at 80 chars, preserving/ignoring word boundaries: fold -w 80 -s text.txt (omit -s to cut words) \" ${NL}\
+\">> Shell/bash: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
+\">> Shell/bash: Pipe stderr (and stdout too): CMD 2>&1 | less -S \" ${NL}\
+\">> Shell/bash: Modify variable: newV=\\\$(sed -e's/a/1/; s/b/2/; s/c/3/' <<< \\\$oldV) \" ${NL}\
+\">> Shell/bash: Script run with ionice:  ionice -c3 -p\\\$\\\$ (top line of a /bin/sh script) \" ${NL}\
+\">> Shell/bash: Rename files to include parent directory in filename for f in \\\`ls DIRS*/file.whatever\\\`; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).\\\$(basename \\\$f).whatever ; done \" ${NL}\
+\">> Shell/bash: Rename files to have unique names: for f in **/*fastqc.html; do /bin/cp \\\$f DESTINATION_DIR/\\\$(md5sum \\\$f | cut -d ' ' -f 1).\\\$(basename \\\$f); done \" ${NL}\
 \" \" ${NL}\
-\">>> HEX HEXDUMP: View individual bytes of a file in hex form: hexdump -C FILENAME \" ${NL}\
-\">>> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
-\">>> HG: Mercurial: restore accidentally-locally-deleted file from repo: hg revert FILENAME \" ${NL}\
-\">>> HG: Mercurial: revert to previous version: hg revert FILENAME -r-2 (or -r-3 for two versions ago, etc) \" ${NL}\
-\">>> HG: Mercurial: show diff from last version: hg diff -c -1 (or -2, -3, etc.) \" ${NL}\
-\">>> HG: Mercurial: <push creates new remote heads> is fixed by doing hg pull first! \" ${NL}\
-\">>> GIT discard ALL local changes: git reset --hard origin/master \" ${NL}\
-\">>> GIT fix an HTTP repo to SSH: just type: git remote set-url origin git@github.com:RepoNameHere/ProjName.git \" ${NL}\
-\">>> TERM: Get terminal width/height: tput cols  or  tput lines \" ${NL}\
-\">>> BACKUPS: Check for changed files of a certain name: grep -E '>f.' /it/backup/log/*.log | grep YOURNAME \" ${NL}\
-\">>> UNIX / FILE: Add filename to top of (copy of) files. for f in FILES*; do echo \\\$f | cat - $f > NEW_\\\$f ; done \" ${NL}\
-\">>>           ...or if you will later paste/join those: for f in SPLIT*.diff; do echo \\\$f | cat - \\\$f | table-no-ragged.py - > NEW_\\\$f; done \" ${NL}\
-\">>> UNIX: convert RELATIVE symlinks to ABSOLUTE PATHS: for fff in *; do FULL=\\\$(readlink -f \\\$fff); ln -sf \\\$FULL \\\$fff ; done \" ${NL}\
-\">>> UNIX: delete ORPHANED symlinks: find /path/to/search -xtype l -delete ; \" ${NL}\
-\">>> UNIX: total file size for files with a certain extension (Here, jpg): find . -type f -iname '*.jpg' -print0 | du -ch --files0-from=- \" ${NL}\
-\">>> UNIX: list files w/modified time MORE THAN one week ago: find . -mtime +7 \" ${NL}\
-\">>> UNIX: list files w/modified time LESS THAN one week ago: find . -mtime -7 \" ${NL}\
-\">>> UNIX: list files w/modified time two days ago: find . -mtime 2 \" ${NL}\
-\">>> UNIX: list files w/modified time between 6 and 9 minutes ago: find . -mmin +5 -mmin -10 \" ${NL}\
-\">>> UNIX: list ONLY dot files, no .. or up a directory: ls -l .??* \" ${NL}\
-\">>> UNIX: set up symlinks from Mercurial/TimeForScience: ln -sfn ~/TimeForScience/Config/Alex_Williams/.??* ~/ \" ${NL}\
-\">>> UNIX: symlink executables: for f in \\\$(find PATH -maxdepth 1 -perm -111 -type f); do ln -s \\\$f ./; done \" ${NL}\
-\">>> UNIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
-\">>> UNIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
-\">>> UNIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
-\">>> UNIX: IO nice for a user \\\$THEUSER: SSS=\\\$(ps -fu \\\$THEUSER | perl -pe 's/[ ]+/\t/g' | cut -f 2 | tail -n +2); for pid in \\\$SSS ; do echo 'PID' \\\$pid; sudo ionice -c3 -p \\\$pid ; sudo renice +10 -p \\\$pid; done\" ${NL}\
-\">>> UNIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
-\">>> UNIX: Check Linux version: cat /etc/*-release \" ${NL}\
-\">>> UNIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
-\">>> UNIX: Rsync transfer files: rsync --dry-run -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
-\">>> UNIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
-\">>> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
-\">>> UNIX/TOP/USAGE/HTOP: CPU usage by user: top -b -n 1 -u \\\$USER | awk 'NR>7 { sum += \\\$9; } END { print sum; }' \" ${NL}\
-\">>> QSTAT/QSUB/QUEUE/TORQUE: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
-\">>> QSTAT/QSUB/QUEUE/TORQUE: restart torque: sudo service pbs_server restart ;sudo service pbs_sched restart ; sudo service pbs_mom restart \" ${NL}\
-\">>> QSTAT/QSUB/QUEUE/TORQUE: info on the queue: qstat -Qf or qstat -B more details \" ${NL}\
-\">>> UNIX / DPKG / APT-GET: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
-\">>> UNIX / DPKG / APT-GET: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
-\">>> UNIX / APTITUTDE: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
-\">>> UNIX / APT-GET: upgrade only EXISTING packages matching wildcard pattern: apt-get install --only-upgrade 'r-cran*' \" ${NL}\
-\">>> UNIX / APT-GET: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
-\">>> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub \" ${NL}\
+\">> HEX HEXDUMP: View individual bytes of a file in hex form: hexdump -C FILENAME \" ${NL}\
+\">> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
+\">> HG: Mercurial: restore accidentally-locally-deleted file from repo: hg revert FILENAME \" ${NL}\
+\">> HG: Mercurial: revert to previous version: hg revert FILENAME -r-2 (or -r-3 for two versions ago, etc) \" ${NL}\
+\">> HG: Mercurial: show diff from last version: hg diff -c -1 (or -2, -3, etc.) \" ${NL}\
+\">> HG: Mercurial: <push creates new remote heads> is fixed by doing hg pull first! \" ${NL}\
+\">> GIT discard ALL local changes: git reset --hard origin/master \" ${NL}\
+\">> GIT fix an HTTP repo to SSH: just type: git remote set-url origin git@github.com:RepoNameHere/ProjName.git \" ${NL}\
+\">> TERM: Get terminal width/height: tput cols  or  tput lines \" ${NL}\
+\">> BACKUPS: Check for changed files of a certain name: grep -E '>f.' /it/backup/log/*.log | grep YOURNAME \" ${NL}\
+\">> UNIX / FILE: Add filename to top of (copy of) files. for f in FILES*; do echo \\\$f | cat - $f > NEW_\\\$f ; done \" ${NL}\
+\">>           ...or if you will later paste/join those: for f in SPLIT*.diff; do echo \\\$f | cat - \\\$f | table-no-ragged.py - > NEW_\\\$f; done \" ${NL}\
+\">> UNIX: convert RELATIVE symlinks to ABSOLUTE PATHS: for fff in *; do FULL=\\\$(readlink -f \\\$fff); ln -sf \\\$FULL \\\$fff ; done \" ${NL}\
+\">> UNIX: delete ORPHANED symlinks: find /path/to/search -xtype l -delete ; \" ${NL}\
+\">> UNIX: total file size for files with a certain extension (Here, jpg): find . -type f -iname '*.jpg' -print0 | du -ch --files0-from=- \" ${NL}\
+\">> UNIX: list files w/modified time MORE THAN one week ago: find . -mtime +7 \" ${NL}\
+\">> UNIX: list files w/modified time LESS THAN one week ago: find . -mtime -7 \" ${NL}\
+\">> UNIX: list files w/modified time two days ago: find . -mtime 2 \" ${NL}\
+\">> UNIX: list files w/modified time between 6 and 9 minutes ago: find . -mmin +5 -mmin -10 \" ${NL}\
+\">> UNIX: list ONLY dot files, no .. or up a directory: ls -l .??* \" ${NL}\
+\">> UNIX: set up symlinks from Mercurial/TimeForScience: ln -sfn ~/TimeForScience/Config/Alex_Williams/.??* ~/ \" ${NL}\
+\">> UNIX: symlink executables: for f in \\\$(find PATH -maxdepth 1 -perm -111 -type f); do ln -s \\\$f ./; done \" ${NL}\
+\">> UNIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
+\">> UNIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
+\">> UNIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
+\">> UNIX: IO nice for a user \\\$THEUSER: SSS=\\\$(ps -fu \\\$THEUSER | perl -pe 's/[ ]+/\t/g' | cut -f 2 | tail -n +2); for pid in \\\$SSS ; do echo 'PID' \\\$pid; sudo ionice -c3 -p \\\$pid ; sudo renice +10 -p \\\$pid; done\" ${NL}\
+\">> UNIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
+\">> UNIX: Check Linux version: cat /etc/*-release \" ${NL}\
+\">> UNIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
+\">> UNIX: Rsync transfer files: rsync --dry-run -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
+\">> UNIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
+\">> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
+\">> UNIX/TOP/USAGE/HTOP: CPU usage by user: top -b -n 1 -u \\\$USER | awk 'NR>7 { sum += \\\$9; } END { print sum; }' \" ${NL}\
+\">> QSTAT/QSUB/QUEUE/TORQUE: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
+\">> QSTAT/QSUB/QUEUE/TORQUE: restart torque: sudo service pbs_server restart ;sudo service pbs_sched restart ; sudo service pbs_mom restart \" ${NL}\
+\">> QSTAT/QSUB/QUEUE/TORQUE: info on the queue: qstat -Qf or qstat -B more details \" ${NL}\
+\">> UNIX / DPKG / APT-GET: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
+\">> UNIX / DPKG / APT-GET: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
+\">> UNIX / APTITUTDE: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
+\">> UNIX / APT-GET: upgrade only EXISTING packages matching wildcard pattern: apt-get install --only-upgrade 'r-cran*' \" ${NL}\
+\">> UNIX / APT-GET: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
+\">> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub \" ${NL}\
 \"                        to server ~/.ssh/authorized_keys \" ${NL}\
-\">>> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ${NL}\
+\">> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ${NL}\
 \" \" ${NL}\
-\">>> ZIP: Zip a folder: zip -r ARCHIVENAME FOLDER \" ${NL}\
-\">>> BASH: Foreach/rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
-\">>> BASH: redirect STDERR & STDOUT both to console and to a file: THECMD 2>&1 | tee --append LOGFILE\" ${NL}\
-\">>> BASH: See a function definition: type FUNCTIONNAME \" ${NL}\
-\">>> BASH: Change tab width in bash:  setterm -regtabs 16 (16 = huge!) \" ${NL}\
-\">>> BASH: Expand tabs / tab width: something | expand -t 32 \" ${NL}\
-\">>> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ${NL}\
-\">>> XARGS/FIND: find . -name SOMEFILE -print0 | xargs -0 -I {} sh -c \\\"echo {}; thing {} | piped here | wc -l\\\"  \" ${NL}\
-\">>> GNU FIND and DELETE a file (dangerous): find . -name SOMEFILE -delete \" ${NL}\
-\">>> UNIX/Perl fast sort with ONE header line: cat FILE | perl -e 'print scalar (<>); print sort <>' > OUTFILE \" ${NL}\
-\">>> Perl: REGEXP multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \\\$ work \" ${NL}\
-\">>> Perl/web: Chrome web form non-breaking space (ASCII 160) is [\\xA0] (or 'use feature qw(unicode_strings);') \" ${NL}\
-\">>> Perl:  CPAN invocation: perl -MCPAN -e shell \" ${NL}\
-\">>> Perl: CPAN upgrade-all: perl -MCPAN -e \\\"upgrade /(.\\*)/\\\" \" ${NL}\
-\">>> Perl: Backreferences/does something show up twice on a line: perl -n -e 'print ((\\\$_ =~ /\b(Something\d+)\s.\g1/) ? qq{match: \\\$1\\n} : qq{Nope\\n});' \" ${NL}\
-\">>> EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
-\">>> EMACS: install new packages: list-packages \" ${NL}\
-\">>> EMACS: show variable: describe-variable \" ${NL}\
+\">> ZIP: Zip a folder: zip -r ARCHIVENAME FOLDER \" ${NL}\
+\">> BASH: Foreach/rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
+\">> BASH: redirect STDERR & STDOUT both to console and to a file: THECMD 2>&1 | tee --append LOGFILE\" ${NL}\
+\">> BASH: See a function definition: type FUNCTIONNAME \" ${NL}\
+\">> BASH: Change tab width in bash:  setterm -regtabs 16 (16 = huge!) \" ${NL}\
+\">> BASH: Expand tabs / tab width: something | expand -t 32 \" ${NL}\
+\">> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ${NL}\
+\">> XARGS/FIND: find . -name SOMEFILE -print0 | xargs -0 -I {} sh -c \\\"echo {}; thing {} | piped here | wc -l\\\"  \" ${NL}\
+\">> GNU FIND and DELETE a file (dangerous): find . -name SOMEFILE -delete \" ${NL}\
+\">> UNIX/Perl fast sort with ONE header line: cat FILE | perl -e 'print scalar (<>); print sort <>' > OUTFILE \" ${NL}\
+\">> Perl: REGEXP multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \\\$ work \" ${NL}\
+\">> Perl/web: Chrome web form non-breaking space (ASCII 160) is [\\xA0] (or 'use feature qw(unicode_strings);') \" ${NL}\
+\">> Perl:  CPAN invocation: perl -MCPAN -e shell \" ${NL}\
+\">> Perl: CPAN upgrade-all: perl -MCPAN -e \\\"upgrade /(.\\*)/\\\" \" ${NL}\
+\">> Perl: Backreferences/does something show up twice on a line: perl -n -e 'print ((\\\$_ =~ /\b(Something\d+)\s.\g1/) ? qq{match: \\\$1\\n} : qq{Nope\\n});' \" ${NL}\
+\">> EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
+\">> EMACS: install new packages: list-packages \" ${NL}\
+\">> EMACS: show variable: describe-variable \" ${NL}\
 \" \" ${NL}\
-\">>> RNASEQ SAM --> BAM:  samtools view -bS in.sam > out.bam \" ${NL}\
-\">>> RNASEQ BAM --> SAM:  samtools view -h  in.bam > out.sam \" ${NL}\
-\">>> RNASEQ sorting and setting the 'sorted' flag:  java -Xmx2g  -jar SortSam.jar INPUT=in.sam SORT_ORDER=coordinate OUTPUT=out_sorted.sam \" ${NL}\
-\">>> RNASEQ View BAM header: samtools view -H  in.bam \" ${NL}\
-\">>> RNASEQ Merge BAM files in subdirectories: for f in * ; do samtools merge \\\${f}_merged.bam \\\$f/*.bam; done \" ${NL}\
-\">>> RNASEQ SAM flags / remove non-primary alignments: samtools view -b -F 0x100 in.bam > primary.bam \" ${NL}\
-\">>> RNASEQ count primary (100) mapped (4) reads: samtools view -c -F 0x104 in.bam > COUNT.txt\" ${NL}\
-\">>> RNASEQ Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ${NL}\
-\">>> RNASEQ TOPHAT/rename TEST: for f in *; do echo \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
-\">>> RNASEQ TOPHAT/rename RUN : for f in *; do   mv \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
-\">>> RNASEQ:: Truncate a fastq file to length 19 without using fastx-trimmer: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
-\">>> DNA reverse-complement: perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
-\">>> APACHE error log: sudo less -S /var/log/apache2/error.log \" ${NL}\
-\">>> Mac OS X Dictionary: /usr/share/dict/words \" ${NL}\
-\">>> Mac OS X why isn't the screensaver working: pmset -g (see 'sleep' in there), then pmset -g assertions \" ${NL}\
-\">>> Mac OS X Image type convert: mkdir -p PNGS_TO_JPEG; sips -s format jpeg *.png --out PNGS_TO_JPEG \" ${NL}\
-\">>> COPROC: coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ${NL}\
-\">>> LINES: RANDOM subset (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'print if (rand() < 0.5);' theFile.txt \" ${NL}\
-\">>> LINES: REPEATABLE RANDOM subset: perl -e 'srand(123456); while(<>){ print if (rand() < 0.5);}' theFile.txt \" ${NL}\
-\">>> LINES: Semi-random FASTA records (2 lines at a time): perl -e 'my \\\$total=0; my \\\$MAX=3; srand(); while(<>){ if (rand()<0.01) { print \\\$_; my \\\$nextLine=<>; print \\\$nextLine; \\\$total++; exit(0) if (\\\$total>=\\\$MAX); } }' \" ${NL} \
-\">>> LINES: Range from N to M, inclusive (starts at 1):  sed -n N,Mp INPUTFILE  or  for a HUGE file: sed -n '(N+1)q;N,Mp' <-- quit on line (N+1) \" ${NL}\
-\">>> LINES: Every Xth, starting with line Y (starts at 1, not 0): awk 'NR%X==Y' FILE \" ${NL}\
-\">>> LINES/AWK: Count num columns in file: awk -F '\t' '{print NF}' \" ${NL}\
-\">>> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
-\">>> LINES Count chars on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
-\">>> GREP Count occurrences of a match per line: cat FILE | grep -o -n SEARCHTERM | cut -d : -f 1 | uniq -c \" ${NL}\
+\">> RNASEQ SAM --> BAM:  samtools view -bS in.sam > out.bam \" ${NL}\
+\">> RNASEQ BAM --> SAM:  samtools view -h  in.bam > out.sam \" ${NL}\
+\">> RNASEQ sorting and setting the 'sorted' flag:  java -Xmx2g  -jar SortSam.jar INPUT=in.sam SORT_ORDER=coordinate OUTPUT=out_sorted.sam \" ${NL}\
+\">> RNASEQ View BAM header: samtools view -H  in.bam \" ${NL}\
+\">> RNASEQ Merge BAM files in subdirectories: for f in * ; do samtools merge \\\${f}_merged.bam \\\$f/*.bam; done \" ${NL}\
+\">> RNASEQ SAM flags / remove non-primary alignments: samtools view -b -F 0x100 in.bam > primary.bam \" ${NL}\
+\">> RNASEQ count primary (100) mapped (4) reads: samtools view -c -F 0x104 in.bam > COUNT.txt\" ${NL}\
+\">> RNASEQ Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ${NL}\
+\">> RNASEQ TOPHAT/rename TEST: for f in *; do echo \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
+\">> RNASEQ TOPHAT/rename RUN : for f in *; do   mv \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
+\">> RNASEQ:: Truncate a fastq file to length 19 without using fastx-trimmer: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
+\">> DNA reverse-complement: perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
+\">> APACHE error log: sudo less -S /var/log/apache2/error.log \" ${NL}\
+\">> Mac OS X Dictionary: /usr/share/dict/words \" ${NL}\
+\">> Mac OS X why isn't the screensaver working: pmset -g (see 'sleep' in there), then pmset -g assertions \" ${NL}\
+\">> Mac OS X Image type convert: mkdir -p PNGS_TO_JPEG; sips -s format jpeg *.png --out PNGS_TO_JPEG \" ${NL}\
+\">> COPROC: coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ${NL}\
+\">> LINES: RANDOM subset (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'print if (rand() < 0.5);' theFile.txt \" ${NL}\
+\">> LINES: REPEATABLE RANDOM subset: perl -e 'srand(123456); while(<>){ print if (rand() < 0.5);}' theFile.txt \" ${NL}\
+\">> LINES: Semi-random FASTA records (2 lines at a time): perl -e 'my \\\$total=0; my \\\$MAX=3; srand(); while(<>){ if (rand()<0.01) { print \\\$_; my \\\$nextLine=<>; print \\\$nextLine; \\\$total++; exit(0) if (\\\$total>=\\\$MAX); } }' \" ${NL} \
+\">> LINES: Range from N to M, inclusive (starts at 1):  sed -n N,Mp INPUTFILE  or  for a HUGE file: sed -n '(N+1)q;N,Mp' <-- quit on line (N+1) \" ${NL}\
+\">> LINES: Every Xth, starting with line Y (starts at 1, not 0): awk 'NR%X==Y' FILE \" ${NL}\
+\">> LINES/AWK: Count num columns in file: awk -F '\t' '{print NF}' \" ${NL}\
+\">> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
+\">> LINES Count chars on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
+\">> GREP Count occurrences of a match per line: cat FILE | grep -o -n SEARCHTERM | cut -d : -f 1 | uniq -c \" ${NL}\
 "
 
 # Shell navigation / commands
