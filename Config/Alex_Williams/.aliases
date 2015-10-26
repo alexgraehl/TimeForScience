@@ -194,6 +194,7 @@ alias cheat="echo \
 \">> HG: Mercurial: revert to previous version: hg revert FILENAME -r-2 (or -r-3 for two versions ago, etc) \" ${NL}\
 \">> HG: Mercurial: show diff from last version: hg diff -c -1 (or -2, -3, etc.) \" ${NL}\
 \">> HG: Mercurial: <push creates new remote heads> is fixed by doing hg pull first! \" ${NL}\
+\">> GIT only get the last 1 revision (faster): git clone --depth=1 https://your-site-here/something.git \" ${NL}\
 \">> GIT discard ALL local changes: git reset --hard origin/master \" ${NL}\
 \">> GIT fix an HTTP repo to SSH: just type: git remote set-url origin git@github.com:RepoNameHere/ProjName.git \" ${NL}\
 \">> TERM: Get terminal width/height: tput cols  or  tput lines \" ${NL}\
@@ -219,6 +220,7 @@ alias cheat="echo \
 \">> UNIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
 \">> UNIX: Rsync transfer files: rsync --dry-run -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
 \">> UNIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
+\">> UNIX/WGET/TRICKLE: Rate limit any command to 500kbps (-d = down, -u = up): sudo trickle -d 500 -u 500 ncftp 'your_ftp_site_here' \" ${NL}\
 \">> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
 \">> UNIX/TOP/USAGE/HTOP: CPU usage by user: top -b -n 1 -u \\\$USER | awk 'NR>7 { sum += \\\$9; } END { print sum; }' \" ${NL}\
 \">> QSTAT/QSUB/QUEUE/TORQUE: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
@@ -226,6 +228,7 @@ alias cheat="echo \
 \">> QSTAT/QSUB/QUEUE/TORQUE: info on the queue: qstat -Qf or qstat -B more details \" ${NL}\
 \">> UNIX / DPKG / APT-GET: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
 \">> UNIX / DPKG / APT-GET: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
+\">> UNIX / YUM / RPM install: (this NEVER works, but): rpm -Uvh your.rpm . Does NOT handle dependencies.\" ${NL}\
 \">> UNIX / APTITUTDE: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
 \">> UNIX / APT-GET: upgrade only EXISTING packages matching wildcard pattern: apt-get install --only-upgrade 'r-cran*' \" ${NL}\
 \">> UNIX / APT-GET: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
