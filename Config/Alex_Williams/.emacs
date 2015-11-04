@@ -221,20 +221,22 @@
 
 (if (system-type-is-darwin)
     (progn
-      (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
-      (setq load-path (cons "/usr/local/share/emacs/site-lisp/ess" load-path))
+      ;;(setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
+      ;;(setq load-path (cons "/usr/local/share/emacs/site-lisp/ess" load-path))
+      (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
+      (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/ess/")
       (add-to-list 'load-path "/Users/alexgw/bin/ESS/lisp/")
-      ;(setq should-load-ess t) ; damn, it broke again
+      (setq should-load-ess t) ;(setq should-load-ess t) ; damn, it broke again
       ))
 
 (if (system-type-is-gnu)
     (progn
-      (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
-      (setq load-path (cons "/usr/local/share/emacs/site-lisp/ess" load-path))
-      (setq load-path (cons "/usr/share/emacs/site-lisp/ess" load-path))
-      (setq load-path (cons "/usr/share/emacs/site-lisp" load-path))
+      (add-to-list 'load-path "/usr/local/share/emacs/site-lisp")
+      (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/ess")
+      (add-to-list 'load-path "/usr/share/emacs/site-lisp/ess")
+      (add-to-list 'load-path "/usr/share/emacs/site-lisp")
       (setq should-load-ess t)
-      (require 'show-wspace nil t)			; Show whitespace!
+      (require 'show-wspace nil t) ; show whitespace! (?)
       ))
 
 ;;(autoload 'ruby-mode "ruby-mode" "Major mode for editing ruby scripts." t)
@@ -804,7 +806,7 @@ current line."
 
 ;; Keyword highlight options: t (OVERRIDE) /  prepend (prioritize) / append / keep (keep existing coloring, if any)
 
-(if should-load-ess (message "[AGW]: Loading ESS (Emacs Speaks Statistics)") (message "[AGW]: NOT loading ESS (Emacs Speaks Statistics)"))
+
 
 ;; ##########################################################################
 ;; ESS (Emacs Speaks Statistics == "R-project" R.app r-project.org R stuff)
@@ -814,6 +816,7 @@ current line."
 ;; NB: loading the ess-module slows down emacs' load time a lot, even if ESS is compiled.
 ;; ##########################################################################
 ;;(load "ess-site")
+(if should-load-ess (message "[AGW]: Loading ESS (Emacs Speaks Statistics)") (message "[AGW]: NOT loading ESS (Emacs Speaks Statistics)"))
 (if should-load-ess ;; emacs speaks statistics
     (progn
       (require 'ess-site) ;; nil t)
