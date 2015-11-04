@@ -223,6 +223,7 @@
     (progn
       (setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
       (setq load-path (cons "/usr/local/share/emacs/site-lisp/ess" load-path))
+      (add-to-list 'load-path "/Users/alexgw/bin/ESS/lisp/")
       ;(setq should-load-ess t) ; damn, it broke again
       ))
 
@@ -812,7 +813,8 @@ current line."
 ;; Parameters to load that will make it not complain/warn: 'nomessage 'noerror
 ;; NB: loading the ess-module slows down emacs' load time a lot, even if ESS is compiled.
 ;; ##########################################################################
-(if should-load-ess
+;;(load "ess-site")
+(if should-load-ess ;; emacs speaks statistics
     (progn
       (require 'ess-site) ;; nil t)
       (message "Setting R syntax stuff...")
@@ -1007,7 +1009,7 @@ current line."
     (setq should-load-ess t)
     (reload-config)
     ))
-(global-set-key [(control meta j)] 'loadr) ; less annoying than meta-shift-5
+(global-set-key [(control meta j)] 'loadr) ; less annoying than meta-shift-5 <-- load ESS automagically with CTRL-OPTION-J
 
 (defun buffer-exists (bufname)   (not (eq nil (get-buffer bufname))))
 
