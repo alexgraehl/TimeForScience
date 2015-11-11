@@ -669,7 +669,7 @@ function qsass { # kill all jobs that match this grep... works for usernames, jo
     echo "Ok, trying to use qdel to delete jobs that match '$1'...";
     for j in $(qstatlong | perl -nle "print if m{$1}" | cut -d '.' -f 1); do
 	echo "qdel-ing this thing that matched '$1': $j...";
-	qdel $j ;
+	sudo `which qdel` $j ;
     done
 }
 
