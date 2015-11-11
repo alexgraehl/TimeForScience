@@ -4,7 +4,10 @@
 
 # New version of join.pl by Alex Williams. (This isn't related to the previous UCSC code at all... and probably produces different results! Note that both versions will occasionally produce different results from UNIX join, even on properly sorted input!) UNIX join maybe does the cartesian product sometimes? Anyway, it's probably not what you want.
 
+# Nov 10, 2015: handles Mac '\r'-only input files better. Previously had a bug and output additional "no match" entries no matter what.
+
 use strict; use warnings; use Getopt::Long;
+use File::Slurp; # <-- for reading an entire file into memory
 use Term::ANSIColor;
 $| = 1;  # Flush output to STDOUT immediately.
 
@@ -98,6 +101,7 @@ if (defined($stringWhenNoMatch)) { # replace any "\t" with actual tabs! No idea 
 
 ## ================ DONE SANITY-CHECKING A BUNCH OF VARIABLES ==================
 
+sub closeSmartFilehandle($) { my($handle)=@_; if ($handle ne *STDIN) { close $handle; } }# Don't close STDIN, but close anything else!
 sub openSmartAndGetFilehandle($) {
     # returns a FILEHANDLE. Can be standard in, if the 'filename' was specified as '-'
     # Transparently handles ".gz" and ".bz2" files.
@@ -105,7 +109,7 @@ sub openSmartAndGetFilehandle($) {
     my ($filename) = @_;
     if ($filename eq '-') { return(*STDIN); } # <-- RETURN!!!
     my $reader;
-    if    ($filename =~ /[.]gz$/)  { $reader = "zcat $filename |"; }     # Un-gzip a file and send it to STDOUT.
+    if    ($filename =~ /[.]gz$/)  { $reader = "gzip --stdout $filename |"; }     # Un-gzip a file and send it to STDOUT.
     elsif ($filename =~ /[.]bz2$/) { $reader = "bzcat $filename |"; }    # Un-bz2 a file and send it to STDOUT
     elsif ($filename =~ /[.]zip$/) { $reader = "unzip -p $filename |"; } # Un-regular-zip a file and send it to STDOUT with "-p": which is DIFFERENT from -c (-c is NOT what you want here). See 'man unzip'
     else                           { $reader = "$filename"; }  # Default: just read a file normally
@@ -114,41 +118,60 @@ sub openSmartAndGetFilehandle($) {
     return $fh;
 }
 
+sub smartSlurpFileIntoString($) {
+	my ($filename) = @_;
+	my $fh = openSmartAndGetFilehandle($filename);
+	my $s = (*STDIN eq $fh) # Ternary switch... see below for options
+	  ?   do { local $/; <STDIN> } # if it IS stdin, then read it...
+	  :   File::Slurp::read_file($fh); # This is a way to handle '\r' files, which Perl CANNOT loop over normally!
+	closeSmartFilehandle($fh);
+	return $s;
+}
+	
+
 sub readIntoHash($$$$$) {
-    my ($filename, $theDelim, $keyIndexCountingFromOne, $masterHashRef, $origCaseHashRef) = @_;
-    my $numDupeKeys = 0;
-    my $lineNum = 1;
-    my $theFileHandle = openSmartAndGetFilehandle($filename);
-    foreach my $line ( <$theFileHandle> ) {
-	$lineNum++;
-	if ($line =~ m/\r/) {
-	    verboseWarnPrint("WARNING: The file <$filename> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNum)!\n         We are automatically REMOVING this malevolent character from the line.");
-	    $line =~ s/(\r\n|\r)/\n/; # Turn PC-style \r\n, or Mac-style just-plain-\r into UNIX \n
+	my ($filename, $theDelim, $keyIndexCountingFromOne, $masterHashRef, $origCaseHashRef) = @_;
+	my $numDupeKeys = 0;
+	my $lineNum = 1;
+	my $fileStr = smartSlurpFileIntoString($filename); # Yeah, load it all into one file. This is so we can handle the annoying mac-style '\r' files. Should probably have handled this with a unix pre-processing... oh well.
+	($fileStr =~ m/\r/) and verboseWarnPrint("WARNING: The file <$filename> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNum)!\n         We are automatically REMOVING this malevolent character from the line, but be aware of this!");
+	my @lines = split(/(?:\r\n|\r|\n)/, $fileStr); # Split over any kind of line ending: \n, \r, or \r\n (Windows).
+	# NOTE: beware of using a CAPTURING () instead of non-capturing (?: ) --- warning regarding 'split': "If the PATTERN contains capturing groups, then for each separator, an additional field is produced for each substring captured by a group"
+	#foreach my $line ( @lines ) { #<$theFileHandle> ) {
+	#	print STDERR $line . "\n";
+	#}
+	#print STDERR " it was this long: " . scalar(@lines) . "\n";
+	#die" yep";
+	
+	foreach my $line ( @lines ) { #<$theFileHandle> ) {
+		$lineNum++;
+		print STDERR ("Found a line... line number $lineNum\n");
+		($line !~ m/\r/) or die "ERROR: Exiting! We found a '\\r' character on a line, but there should not be any backslash-r carraige return (CR) characters in the file at this point. We do not know how to handle this in file <$filename> on line $lineNum...!\n";
+		chomp($line);
+		#if(/\S/) { ## if there's some content that's non-spaces-only
+		my @sp1 = split($theDelim, $line, $SPLIT_WITH_TRAILING_DELIMS);
+		my $theKey = $sp1[ ($keyIndexCountingFromOne - 1) ]; # index from ZERO here!
+		if ($theKey =~ /\s/) {
+			verboseWarnPrint("Warning: the key \"$theKey\" on line $lineNum of file 2 ($filename) had whitespace in it. This MAY be unintentional--beware!");
+		}
+		if (defined($masterHashRef->{$theKey})) {
+			($numDupeKeys < $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: the key <$theKey> appeared more than once in <$filename> (on line $lineNum). We are only keeping the FIRST instance of this key.");
+			($numDupeKeys == $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any future duplicate key warnings.");
+			$numDupeKeys++;
+		} else {
+				# Found a UNIQUE new key! ($isDebugging) && print STDERR "Added a line for the key <$theKey>.\n";
+			if ((0 == length($theKey)) and !$allowEmptyKey) {
+				verboseWarnPrint("Warning: skipping an empty key on line <$lineNum>!");
+			} else {
+				# Key was valid, OR we are allowing empty keys!
+				if (defined($origCaseHashRef)) {
+					$origCaseHashRef->{uc($theKey)} = $theKey;
+				} # maps from the UPPER-CASE version of this key (KEY) back to the one we ACTUALLY put in the hash (VALUE)
+				@{$masterHashRef->{$theKey}} = @sp1; # whole SPLIT UP line, even the key, goes into the hash!!!. # masterHashRef is a hash of ARRAYS: each line is ALREADY SPLIT UP by its delimiter
+			}
+		}
 	}
-	chomp($line);
-	#if(/\S/) { ## if there's some content that's non-spaces-only
-	my @sp1 = split($theDelim, $line, $SPLIT_WITH_TRAILING_DELIMS);
-	my $theKey = $sp1[ ($keyIndexCountingFromOne - 1) ]; # index from ZERO here!
-	if ($theKey =~ /\s/) {
-	    verboseWarnPrint("Warning: the key \"$theKey\" on line $lineNum of file 2 ($filename) had whitespace in it. This MAY be unintentional--beware!");
-	}
-	if (defined($masterHashRef->{$theKey})) {
-	    ($numDupeKeys < $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: the key <$theKey> appeared more than once in <$filename> (on line $lineNum). We are only keeping the FIRST instance of this key.");
-	    ($numDupeKeys == $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any future duplicate key warnings.");
-	    $numDupeKeys++;
-	} else {
-	    # Found a UNIQUE new key! ($isDebugging) && print STDERR "Added a line for the key <$theKey>.\n";
-	    if ((0 == length($theKey)) and !$allowEmptyKey) {
-		verboseWarnPrint("Warning: skipping an empty key on line <$lineNum>!");
-	    } else {
-		# Key was valid, OR we are allowing empty keys!
-		if (defined($origCaseHashRef)) { $origCaseHashRef->{uc($theKey)} = $theKey; } # maps from the UPPER-CASE version of this key (KEY) back to the one we ACTUALLY put in the hash (VALUE)
-		@{$masterHashRef->{$theKey}} = @sp1; # whole SPLIT UP line, even the key, goes into the hash!!!. # masterHashRef is a hash of ARRAYS: each line is ALREADY SPLIT UP by its delimiter
-	    }
-	}
-    }
-    ($numDupeKeys > 0) and verboseWarnPrint("Warning: $numDupeKeys duplicate keys were skipped in <$filename>.");
-    if ($filename ne '-') { close($theFileHandle); } # close the file we opened in 'openSmartAndGetFilehandle' . This may not actually be necessary
+	($numDupeKeys > 0) and verboseWarnPrint("Warning: $numDupeKeys duplicate keys were skipped in <$filename>.");
 }
 
 #my %hash1 = readIntoHash($file1  , $delim1, $keyCol1);
@@ -203,7 +226,7 @@ foreach my $line (<$primaryFH>) {
     $lineNumPrimary++; # Start it at ONE during the first iteration of the loop! (Was initialized to zero before!)
     if ($line =~ m/\r/) {
 	    verboseWarnPrint("WARNING: The file <$file1> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNumPrimary).\n         We are automatically REMOVING this malevolent character from the line.");
-	    $line =~ s/(\r\n|\r)/\n/; # Turn PC-style \r\n, or Mac-style just-plain-\r into UNIX \n
+	    $line =~ s/\r\n?/\n/g; # Turn PC-style \r\n, or Mac-style just-plain-\r into UNIX \n
     }
     chomp($line); # Chomp each line of line endings no matter what. Even the header line!
     if ($lineNumPrimary <= $numHeaderLines) { # This is still a HEADER line, also: lineNumPrimary starts at 1, so this should be '<=' and not '<' to work properly!
