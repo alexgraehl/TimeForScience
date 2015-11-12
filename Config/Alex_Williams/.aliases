@@ -204,6 +204,8 @@ alias cheat="echo \
 \">> UNIX / FILE: Add filename to top of (copy of) files. for f in FILES*; do echo \\\$f | cat - $f > NEW_\\\$f ; done \" ${NL}\
 \">>           ...or if you will later paste/join those: for f in SPLIT*.diff; do echo \\\$f | cat - \\\$f | table-no-ragged.py - > NEW_\\\$f; done \" ${NL}\
 \">> UNIX: convert RELATIVE symlinks to ABSOLUTE PATHS: for fff in *; do FULL=\\\$(readlink -f \\\$fff); ln -sf \\\$FULL \\\$fff ; done \" ${NL}\
+\">> UNIX: double-dereference symlinks, showing their final targets: find -L . -type f -exec readlink -f {} \\\; \" ${NL}\
+\">> UNIX: double-dereference symlinks, showing their final targets: for f in * ; do echo -e \\\$f\\\"\\t\\\"\\\$(readlink -f \\\$f); done   \" ${NL}\
 \">> UNIX: delete ORPHANED symlinks: find /path/to/search -xtype l -delete ; \" ${NL}\
 \">> UNIX: total file size for files with a certain extension (Here, jpg): find . -type f -iname '*.jpg' -print0 | du -ch --files0-from=- \" ${NL}\
 \">> UNIX: list files w/modified time MORE THAN one week ago: find . -mtime +7 \" ${NL}\
