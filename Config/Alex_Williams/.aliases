@@ -668,10 +668,20 @@ function qsass { # kill all jobs that match this grep... works for usernames, jo
 	echo "ERR: Your argument to qsass ($1) was not long enough (it is only length ${#1})---it needs to be at least 4 characters, or else we don't believe it's a valid input! Be careful! Even PARTIAL MATCHES will trigger the job deletion. So don't delete 'bad_job' if you don't also want to delete 'not_a_bad_job'."
 	return 1;
     fi;
-    echo "Ok, trying to use qdel to delete jobs that match '$1'...";
-    for j in $(qstatlong | perl -nle "print if m{$1}" | cut -d '.' -f 1); do
-	echo "qdel-ing this thing that matched '$1': $j...";
-	sudo `which qdel` $j ;
+    echo "Trying to use qdel to delete jobs that match '$1'...";
+    IFS=$'\n' # <-- split a bash string on NEWLINES and not spaces!
+    DELETE_US=()
+    for jobtext in $(qstatlong | perl -nle "print if m{$1}"); do
+	jobid=$(echo "$jobtext" | cut -d '.' -f 1)
+	echo "Found a job ID to delete that matched '$1': $jobid (\"$jobtext\")";
+	DELETE_US+=("$jobid")
+    done
+    echo "If you really want to DELETE those jobs, input a '2'."
+    select yn in "Wrong! Keep these jobs!" "Delete these jobs from the queue!"; do
+	case $yn in
+	    Delete*) for j in "${DELETE_US[@]}"; do echo "Deleting job ID $j..."; sudo `which qdel` $jobid ; done; break;;
+	    Wrong*)  echo "Cancelled!"; break;;
+	esac
     done
 }
 
