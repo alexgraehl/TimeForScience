@@ -189,7 +189,7 @@ alias cheat="echo \
 \">> Shell/bash: Rename files to include parent directory in filename for f in \\\`ls DIRS*/file.whatever\\\`; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).\\\$(basename \\\$f).whatever ; done \" ${NL}\
 \">> Shell/bash: Rename files to have unique names: for f in **/*fastqc.html; do /bin/cp \\\$f DESTINATION_DIR/\\\$(md5sum \\\$f | cut -d ' ' -f 1).\\\$(basename \\\$f); done \" ${NL}\
 \" \" ${NL}\
-\">> MD5 verify: md5sum -c md5.txt. Checksum must be 1st col, then 2 spaces, then filename. If checksum is 2nd: cat md5.txt | awk '{print \\\$2\\\"  \\\"\\\$1}' | md5sum -c \" ${NL}\
+\">> MD5 verify: md5sum -c md5*.txt. Checksum must be 1st col, then 2 spaces, then filename. If checksum is 2nd: cat md5*.txt | awk '{print \\\$2\\\"  \\\"\\\$1}' | md5sum -c \" ${NL}\
 \">> HEX HEXDUMP: View individual bytes of a file in hex form: hexdump -C FILENAME \" ${NL}\
 \">> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
 \">> HG: Mercurial: restore accidentally-locally-deleted file from repo: hg revert FILENAME \" ${NL}\
