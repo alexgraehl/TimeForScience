@@ -294,10 +294,10 @@ alias cheat="echo \
 [[ "$color_prompt" && "$isMac" ]] && AGW_LS_OPT=' -F -G -@ ' ## Mac: Color option is -G. Also, on a Mac, show the extended attributes (-@)
 [[ "$color_prompt" && (-z "$isMac") ]] && AGW_LS_OPT=' --indicator-style=slash --color=auto ' ## Ubuntu: color is --color=auto
 
-alias ls='/bin/ls ${AGW_LS_OPT}'
+alias ls="/bin/ls ${AGW_LS_OPT} "
 alias l='ls'
 
-alias ll='/bin/ls -l -h -A -F ${AGW_LS_OPT} '
+alias ll="/bin/ls -l -h -A -F ${AGW_LS_OPT} "
 alias lo='ll -r -t' # Depends on "ll" already being defined above. List by TIME so that NEWEST files are at the bottom
 
 alias c='cd'
