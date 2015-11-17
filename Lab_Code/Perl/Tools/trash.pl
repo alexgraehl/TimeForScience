@@ -65,13 +65,9 @@ if($@) {
 sub trimWhitespace($) { my $str = shift; $str =~ s/^\s+//; $str =~ s/\s+$//; return $str; }
 sub getFilesystemIDForPath($) {
     my $path = shift;
-    if (-l $path) { # File is symlink
-	return ((lstat($path))[0]); # lstat is for SYMLINKS
-    } else {
-	return ((stat($path))[0]);  # "stat" is a perl built-in. Returns a number! Doesn't work on broken symlinks.
-    }
+    if (-l $path) { return ((lstat($path))[0]); } # lstat is for SYMLINKS
+    else {          return ((stat($path))[0]);  } # "stat" is a perl built-in. Returns a number! Doesn't work on broken symlinks.
 }
-
 
 my $MAX_DUPE_FILENAMES = 1000; # <-- number of duplicate-named files allowed in a directory before we just give up
 
@@ -79,11 +75,9 @@ my $USER = getlogin() || ((getpwuid($<))[0]) || undef; # Note the fallbacks---ge
 (defined($USER) && (length($USER)>0)) or die qq{We could not get your current logged-in username! We need it to make the trash directory in /tmp!\n};
 ($USER =~ m/^[-_.\w]+$/)              or die qq{The username (\"$USER\") contains DANGEROUS characters in it that would not be suitable for making a directory! (Examples: spaces, or a star, or a plus, or a quotation mark, or a slash, or a backslash, etc etc! We cannot reliably create a trash directory without it being dangerous!!! Quitting.\n};
 
-my $TRASH_ROOT = qq{/tmp/$USER/Trash};
+my $TRASH_ROOT = qq{/tmp/$USER/Trash}; # <---------- HARD COED
 
 my $tab = " " x length("$pn: "); # "tab" is just the number of spaces in the program name
-
-
 
 sub printComplaintAboutFile($$$) {
     my ($aboutWhat, $why, $color) = @_;
@@ -108,7 +102,6 @@ sub printInfo($) {
 
 (scalar(@ARGV) > 0) or die "$pn needs at least one argument--the file(s) to delete. It works in a similar fashion to *rm*.\nUsage: $pn file1 file2 file3 ...\n\n";
 
-
 print STDOUT (qq{-} x 80) . "\n";
 
 if (not (-d ${TRASH_ROOT})) {
@@ -122,21 +115,19 @@ my $TRASH_ROOT_FILESYSTEM_ID = getFilesystemIDForPath($TRASH_ROOT); # The actual
 foreach my $itemToCheck (@ARGV) {
     ## Go through and CHECK first to see what files are super duper unsafe for deletion, and quit if we find any.
     $itemToCheck = trimWhitespace($itemToCheck);
-
     my $HOME = $ENV{"HOME"};
     if ($itemToCheck =~ /^[\/]*$HOME[.\/]*$/) {
 	fatalExit($itemToCheck, "you cannot remove the home directory! You can use /bin/rm to attempt to remove it if you really must.")
     }
-
-    if (($itemToCheck =~ /^[.\/]*Applications[.\/]+Utilities[.\/]*$/)
-	or ($itemToCheck =~ /^[.\/]*(System|Developer).*/)  ## protect *any* subdirectory of these
-	or ($itemToCheck =~ /^[.\/]*$HOME[.\/]+System.*/) ## protect *any* subdirectory of these
-	or ($itemToCheck =~ /^[.\/]*$HOME[.\/]+(Desktop|Library|Documents)[.\/]*$/) ## protect only the ROOT level of these
-	or ($itemToCheck =~ /^[.\/]*(Applications|sbin|bin|boot|dev|etc|lib|mnt|opt|sys|usr|var)[.\/]*$/) ## protect only the ROOT level of these
+    if (($itemToCheck =~ /^[.\/]*Applications[.\/]+Utilities[.\/]*$/i)
+	or ($itemToCheck =~ /^[.\/]*(System|Developer).*/i)  ## protect *any* subdirectory of these
+	or ($itemToCheck =~ /^[.\/]*$HOME[.\/]+System.*/i) ## protect *any* subdirectory of these
+	or ($itemToCheck =~ /^[.\/]*$HOME[.\/]+(Desktop|Library|Documents)[.\/]*$/i)
+	or ($itemToCheck =~ /^[.\/]*(Applications|sbin|bin|boot|dev|etc|lib|mnt|opt|sys|usr|var)[.\/]*$/i)
+	or ($itemToCheck =~ /^[-]*(fr|rf|r|f)$/i) ## assume that r / f in either combination, with our without the hyphen(s) is a mistake since trash.pl doesn't take -rf operators.
 	) {
-	fatalExit($itemToCheck, "removing this system file is unsafe! $pn will not peform this operation! You can use /bin/rm if you REALLY want to remove it. Quitting.");
-    }
-    
+	fatalExit($itemToCheck, "removing this file seems potentially unsafe! $pn will not peform this operation! You can use /bin/rm if you REALLY want to remove it. Quitting.");
+    }    
     if (($itemToCheck =~ /^[.\/\\]+$/)) { ## any combination of just dots or slashes/backslashes, and nothing else
 	fatalExit($itemToCheck, "removing a file that is the current directory or is directly above the current directory is not something that $pn thinks is safe! $pn will not peform this operation! You can use /bin/rm if you REALLY want to remove it. Quitting.");
     }
