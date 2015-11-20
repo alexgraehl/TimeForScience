@@ -7,7 +7,11 @@
 # Nov 10, 2015: handles Mac '\r'-only input files better. Previously had a bug and output additional "no match" entries no matter what.
 
 use strict; use warnings; use Getopt::Long;
-use File::Slurp; # <-- for reading an entire file into memory
+#use File::Slurp; # <-- for reading an entire file into memory.
+# If the system doesn't have slurp, then:
+#  sudo perl -MCPAN -e shell
+#  install File::Slurp
+
 use Term::ANSIColor;
 $| = 1;  # Flush output to STDOUT immediately.
 
@@ -21,6 +25,9 @@ sub printUsageAndContinue() {    print STDOUT <DATA>; }
 sub debugPrint($) {   ($isDebugging) and print STDERR $_[0]; }
 sub verboseWarnPrint($) {
     if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "yellow on_blue"); }
+}
+sub verboseUpdatePrint($) {
+    if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "black on_green"); }
 }
 my $keyCol1 = 1; # indexed from ONE rather than 0!
 my $keyCol2 = 1; # indexed from ONE rather than 0!
@@ -133,9 +140,10 @@ sub readIntoHash($$$$$) {
 	my ($filename, $theDelim, $keyIndexCountingFromOne, $masterHashRef, $origCaseHashRef) = @_;
 	my $numDupeKeys = 0;
 	my $lineNum = 1;
-	my $fileStr = smartSlurpFileIntoString($filename); # Yeah, load it all into one file. This is so we can handle the annoying mac-style '\r' files. Should probably have handled this with a unix pre-processing... oh well.
-	($fileStr =~ m/\r/) and verboseWarnPrint("WARNING: The file <$filename> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNum)!\n         We are automatically REMOVING this malevolent character from the line, but be aware of this!");
-	my @lines = split(/(?:\r\n|\r|\n)/, $fileStr); # Split over any kind of line ending: \n, \r, or \r\n (Windows).
+	#my $fileStr = smartSlurpFileIntoString($filename); # Yeah, load it all into one file. This is so we can handle the annoying mac-style '\r' files. Should probably have handled this with a unix pre-processing... oh well.
+	#($fileStr =~ m/\r/) and verboseWarnPrint("WARNING: The file <$filename> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNum)!\n         We are automatically REMOVING this malevolent character from the line, but be aware of this!");
+	#my @lines = split(/(?:\r\n|\r|\n)/, $fileStr); # Split over any kind of line ending: \n, \r, or \r\n (Windows).
+
 	# NOTE: beware of using a CAPTURING () instead of non-capturing (?: ) --- warning regarding 'split': "If the PATTERN contains capturing groups, then for each separator, an additional field is produced for each substring captured by a group"
 	#foreach my $line ( @lines ) { #<$theFileHandle> ) {
 	#	print STDERR $line . "\n";
@@ -143,9 +151,11 @@ sub readIntoHash($$$$$) {
 	#print STDERR " it was this long: " . scalar(@lines) . "\n";
 	#die" yep";
 	
-	foreach my $line ( @lines ) { #<$theFileHandle> ) {
+	#foreach my $line ( @lines ) { #<$theFileHandle> ) {
+	my $theFileHandle = openSmartAndGetFilehandle($filename);
+	foreach my $line ( <$theFileHandle> ) {
 		$lineNum++;
-		print STDERR ("Found a line... line number $lineNum\n");
+		#print STDERR ("Found a line... line number $lineNum\n");
 		($line !~ m/\r/) or die "ERROR: Exiting! We found a '\\r' character on a line, but there should not be any backslash-r carraige return (CR) characters in the file at this point. We do not know how to handle this in file <$filename> on line $lineNum...!\n";
 		chomp($line);
 		#if(/\S/) { ## if there's some content that's non-spaces-only
@@ -159,7 +169,7 @@ sub readIntoHash($$$$$) {
 			($numDupeKeys == $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any future duplicate key warnings.");
 			$numDupeKeys++;
 		} else {
-				# Found a UNIQUE new key! ($isDebugging) && print STDERR "Added a line for the key <$theKey>.\n";
+			# Found a UNIQUE new key! ($isDebugging) && print STDERR "Added a line for the key <$theKey>.\n";
 			if ((0 == length($theKey)) and !$allowEmptyKey) {
 				verboseWarnPrint("Warning: skipping an empty key on line <$lineNum>!");
 			} else {
@@ -223,86 +233,87 @@ my $prevLineCount1  = undef;
 my $prevLineCount2  = undef;
 my $numWeirdLengths = 0;
 foreach my $line (<$primaryFH>) {
-    $lineNumPrimary++; # Start it at ONE during the first iteration of the loop! (Was initialized to zero before!)
-    if ($line =~ m/\r/) {
-	    verboseWarnPrint("WARNING: The file <$file1> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNumPrimary).\n         We are automatically REMOVING this malevolent character from the line.");
-	    $line =~ s/\r\n?/\n/g; # Turn PC-style \r\n, or Mac-style just-plain-\r into UNIX \n
-    }
-    chomp($line); # Chomp each line of line endings no matter what. Even the header line!
-    if ($lineNumPrimary <= $numHeaderLines) { # This is still a HEADER line, also: lineNumPrimary starts at 1, so this should be '<=' and not '<' to work properly!
-	verboseWarnPrint("Note: directly printing $lineNumPrimary of $numHeaderLines header line(s) from file 1 (\"$file1\")...");
-	print STDOUT $line . "\n"; # Print the input line, making sure to use a '\n' as the ending.
-	next; # <-- skip to next iteration of loop!
-    }
-    #if(/\S/) { ## if there's some content that's non-spaces-only
-    my @sp1 = split($delim1, $line, $SPLIT_WITH_TRAILING_DELIMS); # split-up line
-    if (defined($prevLineCount1) and $prevLineCount1 != scalar(@sp1)) {
-	($numWeirdLengths < $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 1 ($file1) is not constant. Line $lineNumPrimary had this many elements: " . scalar(@sp1) . " (previous line had $prevLineCount1)");
-	($numWeirdLengths == $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any further non-constant elements-per-line warnings.");
-	$numWeirdLengths++;
-    }
-    $prevLineCount1 = scalar(@sp1);
+	if ($lineNumPrimary % 2500 == 0) { verboseUpdatePrint("Line $lineNumPrimary..."); };
+	$lineNumPrimary++; # Start it at ONE during the first iteration of the loop! (Was initialized to zero before!)
+	if ($line =~ m/\r/) {
+		verboseWarnPrint("WARNING: The file <$file1> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNumPrimary).\n         We are automatically REMOVING this malevolent character from the line.");
+		$line =~ s/\r\n?/\n/g; # Turn PC-style \r\n, or Mac-style just-plain-\r into UNIX \n
+	}
+	chomp($line); # Chomp each line of line endings no matter what. Even the header line!
+	if ($lineNumPrimary <= $numHeaderLines) { # This is still a HEADER line, also: lineNumPrimary starts at 1, so this should be '<=' and not '<' to work properly!
+		verboseWarnPrint("Note: directly printing $lineNumPrimary of $numHeaderLines header line(s) from file 1 (\"$file1\")...");
+		print STDOUT $line . "\n"; # Print the input line, making sure to use a '\n' as the ending.
+		next;			   # <-- skip to next iteration of loop!
+	}
+	#if(/\S/) { ## if there's some content that's non-spaces-only
+	my @sp1 = split($delim1, $line, $SPLIT_WITH_TRAILING_DELIMS); # split-up line
+	if (defined($prevLineCount1) and $prevLineCount1 != scalar(@sp1)) {
+		($numWeirdLengths < $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 1 ($file1) is not constant. Line $lineNumPrimary had this many elements: " . scalar(@sp1) . " (previous line had $prevLineCount1)");
+		($numWeirdLengths == $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any further non-constant elements-per-line warnings.");
+		$numWeirdLengths++;
+	}
+	$prevLineCount1 = scalar(@sp1);
 
-    if ((($keyCol1-1) >= scalar(@sp1))) {
-	# we're going to SKIP the line entirely if there was no key AT ALL (not even something blank!) at this location
-	verboseWarnPrint("Warning: skipping line $lineNumPrimary---there was no key column on that line. (Key column: $keyCol1, Columns on line: " . scalar(@sp1) . ")");
-	next; # <-- skip to next iteration of loop!ll
-    }
+	if ((($keyCol1-1) >= scalar(@sp1))) {
+		# we're going to SKIP the line entirely if there was no key AT ALL (not even something blank!) at this location
+		verboseWarnPrint("Warning: skipping line $lineNumPrimary---there was no key column on that line. (Key column: $keyCol1, Columns on line: " . scalar(@sp1) . ")");
+		next;		# <-- skip to next iteration of loop!ll
+	}
     
-    my $thisKey = $sp1[ ($keyCol1-1) ]; # index from ZERO here, that's why we subtract 1 from the key column
-    if ($thisKey =~ /\s/) {
-	verboseWarnPrint("Warning: key \"$thisKey\" on line $lineNumPrimary of file 1 ($file1) had whitespace in it. This is possibly unintentional--beware!");
-    }
-    if (!defined($thisKey)) {
-	verboseWarnPrint("Warning: key at column number $keyCol1 (counting from 1) on line $lineNumPrimary of file 1 ($file1) was UNDEFINED. This is possibly a programming error in join.pl!");
-    }
+	my $thisKey = $sp1[ ($keyCol1-1) ]; # index from ZERO here, that's why we subtract 1 from the key column
+	if ($thisKey =~ /\s/) {
+		verboseWarnPrint("Warning: key \"$thisKey\" on line $lineNumPrimary of file 1 ($file1) had whitespace in it. This is possibly unintentional--beware!");
+	}
+	if (!defined($thisKey)) {
+		verboseWarnPrint("Warning: key at column number $keyCol1 (counting from 1) on line $lineNumPrimary of file 1 ($file1) was UNDEFINED. This is possibly a programming error in join.pl!");
+	}
     
-    my @sp2; # matching split-up line
-    if ($shouldIgnoreCase) {
-	my $keyInOrigCase = $originalCaseHash{uc($thisKey)}; # mutate the key so that it's in the SAME CASE as it was in the key we added
-	#print "Found key \"$keyInOrigCase\" from upper-case " . uc($thisKey) . "...\n";
-	if (defined($hash2{$thisKey})) {
-	    @sp2 = @{$hash2{$thisKey}}; # () <-- empty list/array is the result of "didn't find anything"
+	my @sp2;		# matching split-up line
+	if ($shouldIgnoreCase) {
+		my $keyInOrigCase = $originalCaseHash{uc($thisKey)}; # mutate the key so that it's in the SAME CASE as it was in the key we added
+		#print "Found key \"$keyInOrigCase\" from upper-case " . uc($thisKey) . "...\n";
+		if (defined($hash2{$thisKey})) {
+			@sp2 = @{$hash2{$thisKey}}; # () <-- empty list/array is the result of "didn't find anything"
+		} else {
+			@sp2 = (defined($keyInOrigCase) and defined($hash2{$keyInOrigCase})) ? @{$hash2{$keyInOrigCase}} : (); # () <-- empty list/array is the result of "didn't find anything"
+		}
 	} else {
-	    @sp2 = (defined($keyInOrigCase) and defined($hash2{$keyInOrigCase})) ? @{$hash2{$keyInOrigCase}} : (); # () <-- empty list/array is the result of "didn't find anything"
+		@sp2 = (defined($hash2{$thisKey})) ? @{$hash2{$thisKey}} : (); # () <-- empty list/array is the result of "didn't find anything"
 	}
-    } else {
-	@sp2 = (defined($hash2{$thisKey})) ? @{$hash2{$thisKey}} : (); # () <-- empty list/array is the result of "didn't find anything"
-    }
     
-    if (@sp2) {
-	# Got a match for the key in question!
-	if (defined($prevLineCount2) and $prevLineCount2 != scalar(@sp2)) {
-	    ($numWeirdLengths < $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 2 ($file2) is not constant. Got a line with this many elements: " . scalar(@sp2) . " (previous line had $prevLineCount2)");
-	    ($numWeirdLengths == $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any further non-constant elements-per-line warnings.");
-	    $numWeirdLengths++;
-	}
-	$prevLineCount2 = scalar(@sp2);
+	if (@sp2) {
+		# Got a match for the key in question!
+		if (defined($prevLineCount2) and $prevLineCount2 != scalar(@sp2)) {
+			($numWeirdLengths < $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 2 ($file2) is not constant. Got a line with this many elements: " . scalar(@sp2) . " (previous line had $prevLineCount2)");
+			($numWeirdLengths == $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any further non-constant elements-per-line warnings.");
+			$numWeirdLengths++;
+		}
+		$prevLineCount2 = scalar(@sp2);
 	
-	if ($shouldNegate) { 
-	    # Since we are NEGATING this, don't print the match when it's found (only when it isn't...)
+		if ($shouldNegate) { 
+			# Since we are NEGATING this, don't print the match when it's found (only when it isn't...)
+		} else {
+			# Great, the OTHER file had a valid entry for this key as well! So print it... UNLESS we are negating.
+			print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $shouldKeepKeyInOriginalPosition) . "\n";
+		}
 	} else {
-	    # Great, the OTHER file had a valid entry for this key as well! So print it... UNLESS we are negating.
-	    print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $shouldKeepKeyInOriginalPosition) . "\n";
+		# Ok, there was NO MATCH for this key!
+		debugPrint("WARNING: Hash2 didn't have the key $thisKey\n");
+		if ($shouldNegate) {
+			# We didn't find a match for this key, but because we are NEGATING the output, we'll print this line anyway
+			print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $shouldKeepKeyInOriginalPosition) . "\n";
+		} else {
+			if (defined($stringWhenNoMatch)) {
+				# We print the line ANYWAY, because the user specified an outer join, with the "-o SOMETHING" option.
+				my $suffixWhenNoMatch = (length($stringWhenNoMatch)>0) ? "${outputDelim}${stringWhenNoMatch}" : "$stringWhenNoMatch"; # handle zero-length -ob SPECIALLY
+				print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $shouldKeepKeyInOriginalPosition) . $suffixWhenNoMatch . "\n";
+				#print STDOUT join($outputDelim, $thisKey, arrayOfNonKeyElements(@sp1, $keyCol1)) . $suffixWhenNoMatch . "\n";
+			} else {
+				# Omit the line entirely, since there was no match in the secondary file.
+			}
+		}
 	}
-    } else {
-	# Ok, there was NO MATCH for this key!
-	debugPrint("WARNING: Hash2 didn't have the key $thisKey\n");
-	if ($shouldNegate) {
-	    # We didn't find a match for this key, but because we are NEGATING the output, we'll print this line anyway
-	    print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $shouldKeepKeyInOriginalPosition) . "\n";
-	} else {
-	    if (defined($stringWhenNoMatch)) {
-		# We print the line ANYWAY, because the user specified an outer join, with the "-o SOMETHING" option.
-		my $suffixWhenNoMatch = (length($stringWhenNoMatch)>0) ? "${outputDelim}${stringWhenNoMatch}" : "$stringWhenNoMatch"; # handle zero-length -ob SPECIALLY
-		print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $shouldKeepKeyInOriginalPosition) . $suffixWhenNoMatch . "\n";
-		#print STDOUT join($outputDelim, $thisKey, arrayOfNonKeyElements(@sp1, $keyCol1)) . $suffixWhenNoMatch . "\n";
-	    } else {
-		# Omit the line entirely, since there was no match in the secondary file.
-	    }
-	}
-    }
-    #print "$line\n";
+	#print "$line\n";
 }
 if ($file1 ne '-') { close($primaryFH); } # close the file we opened in 'openSmartAndGetFilehandle'
 
