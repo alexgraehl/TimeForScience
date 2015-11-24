@@ -1,34 +1,8 @@
 #!/usr/bin/perl
 
-##############################################################################
-##############################################################################
-##
-## aggregate.pl
-##
-##############################################################################
-##############################################################################
-##
-## Written by Josh Stuart in the lab of Stuart Kim, Stanford University.
-##
-##  Email address: jstuart@stanford.edu
-##          Phone: (650) 725-7612
-##
-## Postal address: Department of Developmental Biology
-##                 Beckman Center Room B314
-##                 279 Campus Dr.
-##                 Stanford, CA 94305
-##
-##       Web site: http://www.smi.stanford.edu/people/stuart
-##
-##############################################################################
-##############################################################################
-##
-## Written: 00/00/02
-## Updated: 00/00/02
-##
-##############################################################################
-##############################################################################
+#@COMMENT@ aggregate.pl combines (mean/median) multiple numbers together in lines with the same key. Frequency-of-use rating: 4/10.
 
+## Originally written in 2002 by Josh Stuart in the lab of Stuart Kim, Stanford University.
 ## Support for MEDIAN calculation added by Alex Williams, 2007
 
 use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
@@ -50,12 +24,7 @@ my @flags   = (
               );
 
 my %args = %{&parseArgs(\@ARGV, \@flags)};
-
-if(exists($args{'--help'}))
-{
-   print STDOUT <DATA>;
-   exit(0);
-}
+if (exists($args{'--help'})) { print STDOUT <DATA>; exit(0); }
 
 my $emptyVal = $args{'--emptyval'};
 my $runTest  = $args{'--test'}; # <-- this doesn't do anything right now. Theoretically it should run a test to make sure the values actually work for a few known cases (sanity check for this program)
@@ -69,7 +38,6 @@ my $file     = $args{'--file'};
 
 my $sprintf_ctrl = '%.' . $sigs . 'f';
 
-
 if ($function ne 'mean' && $function ne 'median') {
 	die "ERROR in aggregate.pl: You must specify a function ( -f  FUNCTION_NAME ). The supported functions are mean and median.\n";
 }
@@ -82,13 +50,12 @@ for(my $i = 0; $i < scalar(@{$rows}) and $i < $headers; $i++) {
    print $$ids[$i], $delim, join($delim, @{$$data[$i]}), "\n";
 }
 
-for(my $i = $headers; $i < scalar(@{$rows}); $i++)
-{
+for(my $i = $headers; $i < scalar(@{$rows}); $i++) {
    my $id = $$ids[$i];
-
    my $useMedian = ($function eq 'median');
    my $useMean   = ($function eq 'mean');
-
+   if ($useMean && $useMedian) { die "Error in arguments to aggregate.pl: You cannot specify both *mean* AND *median* at the same time! (We would be overwriting the storage variable!) You will have to run the program twice, once with each option.\n"; }
+   
    my @sum;
    my @count;
    my @medianCalcArray; # this is actually just a list of all the items in the column for each key
@@ -98,12 +65,9 @@ for(my $i = $headers; $i < scalar(@{$rows}); $i++)
       $sum[$j] = 0;
       $count[$j] = 0;
    }
-
    #my @r = @{$$rows[$i]};
-
    for(my $k = 0; $k < scalar(@{$$rows[$i]}); $k++) {
 	   my $row = $$rows[$i][$k];
-	   
 	   #print "Row is $row\n";
 	   for(my $j = 0; $j < $max_cols; $j++) {
 		   my $thisEntry = $$data[$row][$j];
@@ -124,27 +88,20 @@ for(my $i = $headers; $i < scalar(@{$rows}); $i++)
 		   }
 	   }
    }
-
-   my @agg;
+   my @agg = (${emptyVal}) x $max_cols;
    for(my $j = 0; $j < $max_cols; $j++) {
-      $agg[$j] = ${emptyVal};
-      if($useMean) {
-         $agg[$j] = ($count[$j] > 0) ? sprintf($sprintf_ctrl, ($sum[$j] / $count[$j])) : ${emptyVal};
-      }
-	  if($useMedian) {
-		  # Only calculate the median if we actually specifically want it... otherwise it slows us down
-		  if (defined($medianCalcArray[$j]) && (scalar(@{$medianCalcArray[$j]}) > 0) ) {
-			  $agg[$j] = vec_median(\@{$medianCalcArray[$j]}); # <-- vec_median is in libstats.pl
-		  }
-	  }
-	  if ($useMean && $useMedian) { die "Error in arguments to aggregate.pl: You cannot specify both *mean* AND *median* at the same time! (We would be overwriting the storage variable!) You will have to run the program twice, once with each option.\n"; }
+	   if ($useMean) {
+		   $agg[$j] = ($count[$j] > 0) ? sprintf($sprintf_ctrl, ($sum[$j] / $count[$j])) : ${emptyVal};
+	   } elsif ($useMedian) {
+		   # Only calculate the median if we actually specifically want it... otherwise it slows us down
+		   if (defined($medianCalcArray[$j]) && (scalar(@{$medianCalcArray[$j]}) > 0) ) {
+			   $agg[$j] = vec_median(\@{$medianCalcArray[$j]}); # <-- vec_median is in libstats.pl
+		   }
+	   }
    }
-
    print STDOUT $id, (($max_cols > 0) ? ($delim . join($delim, @agg)) : ""), "\n";
 }
-
 exit(0);
-
 
 __DATA__
 syntax: aggregate.pl [OPTIONS]
@@ -168,10 +125,8 @@ OPTIONS are:
 
 -f FUNCTION: Set the aggregation function to FUNCTION (default is mean). The
              possible values are:
-
-                 mean: The mean of the values (default)  (-f mean)
-
-                 median: The median of the values.  (-f median)
+             mean: The mean of the values (default)  (-f mean)
+             median: The median of the values.  (-f median)
 
 --emptyval VALUE: Sets the "empty"/"no data" values to VALUE. (default is NaN)
              If an output value has no input data, then this will be the output.
