@@ -16,7 +16,6 @@ use Term::ANSIColor;
 $| = 1;  # Flush output to STDOUT immediately.
 
 my $isDebugging = 0;
-
 my $verbose = 1; # use 'q' (quiet) to suppress this
 
 sub quitWithUsageError($) { print($_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
@@ -125,17 +124,16 @@ sub openSmartAndGetFilehandle($) {
     return $fh;
 }
 
-sub smartSlurpFileIntoString($) {
-	my ($filename) = @_;
-	my $fh = openSmartAndGetFilehandle($filename);
-	my $s = (*STDIN eq $fh) # Ternary switch... see below for options
-	  ?   do { local $/; <STDIN> } # if it IS stdin, then read it...
-	  :   File::Slurp::read_file($fh); # This is a way to handle '\r' files, which Perl CANNOT loop over normally!
-	closeSmartFilehandle($fh);
-	return $s;
-}
+#sub smartSlurpFileIntoString($) {
+#	my ($filename) = @_;
+#	my $fh = openSmartAndGetFilehandle($filename);
+#	my $s = (*STDIN eq $fh) # Ternary switch... see below for options
+#	  ?   do { local $/; <STDIN> } # if it IS stdin, then read it...
+#	  :   File::Slurp::read_file($fh); # This is a way to handle '\r' files, which Perl CANNOT loop over normally!
+#	closeSmartFilehandle($fh);
+#	return $s;
+#}
 	
-
 sub readIntoHash($$$$$) {
 	my ($filename, $theDelim, $keyIndexCountingFromOne, $masterHashRef, $origCaseHashRef) = @_;
 	my $numDupeKeys = 0;
@@ -156,7 +154,7 @@ sub readIntoHash($$$$$) {
 	foreach my $line ( <$theFileHandle> ) {
 		$lineNum++;
 		#print STDERR ("Found a line... line number $lineNum\n");
-		($line !~ m/\r/) or die "ERROR: Exiting! We found a '\\r' character on a line, but there should not be any backslash-r carraige return (CR) characters in the file at this point. We do not know how to handle this in file <$filename> on line $lineNum...!\n";
+		($line !~ m/\r/) or die "ERROR: Exiting! We found a '\\r' character on a line, but there should not be any backslash-r carraige return (CR) characters in the file at this point. We CANNOT properly handle this in file <$filename> on line $lineNum...!\n";
 		chomp($line);
 		#if(/\S/) { ## if there's some content that's non-spaces-only
 		my @sp1 = split($theDelim, $line, $SPLIT_WITH_TRAILING_DELIMS);
@@ -236,8 +234,8 @@ foreach my $line (<$primaryFH>) {
 	if ($lineNumPrimary % 2500 == 0) { verboseUpdatePrint("Line $lineNumPrimary..."); };
 	$lineNumPrimary++; # Start it at ONE during the first iteration of the loop! (Was initialized to zero before!)
 	if ($line =~ m/\r/) {
-		verboseWarnPrint("WARNING: The file <$file1> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNumPrimary).\n         We are automatically REMOVING this malevolent character from the line.");
-		$line =~ s/\r\n?/\n/g; # Turn PC-style \r\n, or Mac-style just-plain-\r into UNIX \n
+		($line !~ m/\r/) or die "ERROR: Exiting! The file <$file1> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNumPrimary).\n         We cannot handle this character automatically at this point in time, and are QUITTING.";
+	#$line =~ s/\r\n?/\n/g; # Actually it TOTALLY FAILS on mac line endings! You cannot loop over them. Should work on PC line endings though. Turn PC-style \r\n, or Mac-style just-plain-\r into UNIX \n
 	}
 	chomp($line); # Chomp each line of line endings no matter what. Even the header line!
 	if ($lineNumPrimary <= $numHeaderLines) { # This is still a HEADER line, also: lineNumPrimary starts at 1, so this should be '<=' and not '<' to work properly!
