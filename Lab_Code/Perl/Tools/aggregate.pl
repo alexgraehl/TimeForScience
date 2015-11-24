@@ -203,7 +203,7 @@ Experiment_Alpha   2.0   NaN   3.0   77
 Expr_Beta          20    5     NaN   NaN
 
 Note that the "77" case (the last item in the first row) is the corect mean,
-because the other Experiment_Alpha items for that column do not have any data ta
+because the other Experiment_Alpha items for that column do not have any data at
 all. Even though there are 3 rows labeled "Experiment_Alpha", only one of them
 has data for the last column (column 4), so 77 is the mean. The output is always
 a matrix (although it could be a single-column matrix). Empty values are padded
