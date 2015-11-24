@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+
 
 #@COMMENT@ join_multi.pl allows you to merge multiple files in different orders into one big matrix file. For example, if you have per-gene counts for 10 experiments, but sometimes an experiment has a different set of genes, you would run join_multi.pl EXP1.txt EXP2.txt ... EXPN.txt > out.matrix.txt
 
@@ -9,112 +9,92 @@ use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl
 
 use strict;
 use warnings;
+use strict; use warnings; use Getopt::Long;
+
+use List::MoreUtils;
+  
+sub quitWithUsageError($) { print($_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
+sub printUsageAndQuit() { printUsageAndContinue(); exit(1); }
+sub printUsageAndContinue() {    print STDOUT <DATA>; }
+sub debugPrint($) {   ($isDebugging) and print STDERR $_[0]; }
+
+sub closeSmartFilehandle($) { my($handle)=@_; if ($handle ne *STDIN) { close $handle; } }# Don't close STDIN, but close anything else!
+sub openSmartAndGetFilehandle($) {
+    # returns a FILEHANDLE. Can be standard in, if the 'filename' was specified as '-'
+    # Transparently handles ".gz" and ".bz2" files.
+    # This is the MARCH 6, 2013 version of this function.
+    my ($filename) = @_;
+    if ($filename eq '-') { return(*STDIN); } # <-- RETURN!!!
+    my $reader;
+    if    ($filename =~ /[.]gz$/)  { $reader = "gzip --stdout $filename |"; }     # Un-gzip a file and send it to STDOUT.
+    elsif ($filename =~ /[.]bz2$/) { $reader = "bzcat $filename |"; }    # Un-bz2 a file and send it to STDOUT
+    elsif ($filename =~ /[.]zip$/) { $reader = "unzip -p $filename |"; } # Un-regular-zip a file and send it to STDOUT with "-p": which is DIFFERENT from -c (-c is NOT what you want here). See 'man unzip'
+    else                           { $reader = "$filename"; }  # Default: just read a file normally
+    my $fh;
+    open($fh, "$reader") or die("Couldn't read from <$filename>: $!");
+    return $fh;
+}
 
 # Flush output to STDOUT immediately.
 $| = 1;
 
-my @flags   = (
-                  [     '-q', 'scalar',     0,     1]
-                , [     '-f', 'scalar',     1, undef]
-                , [     '-d', 'scalar',  "\t", undef]
-                , [     '-l', 'scalar', undef, undef]
-                , [     '-m', 'scalar',     1, undef]
-                , [     '-b', 'scalar',    '', undef]
-                , ['-fnames', 'scalar', undef, undef]
-                , ['--file',   'list',    [], undef]
-              );
+my $addFilenamesToHeader = 0;
+my $headers = 1; # default: 1 header line
 
-my %args = %{&parseArgs(\@ARGV, \@flags, 1)};
+$Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
+GetOptions("help|?|man" => sub { printUsageAndQuit(); }
+	   , "q" => sub { $verbose = 0; }
+#	   , "k=i" => \$key_col
+	   , "d=s" => \$delim
+	   , "o=s"  => \$blank
+	   , "m=i"  => \$min
+	   , "h=i"  => \$headers
+	   , "fnames!"  => \$addFilenamesToHeader
+	   #, "i|ignore-case!" => \$shouldIgnoreCase
+#	   , "debug!" => \$isDebugging
+    ) or printUsageAndQuit();
 
-if (exists($args{'-k'})) { die "-k is not an option--you probably mean '-f'."; }
-
-if(exists($args{'--help'})) {
-   print STDOUT <DATA>;
-   exit(0);
-}
-
-my $verbose        = not($args{'-q'});
-my $arg_cols       = $args{'-f'};
-my $delim          = $args{'-d'};
-my $list           = $args{'-l'};
-my $min            = $args{'-m'};
-my $blank          = $args{'-b'};
-my $fnames_delim   = $args{'-fnames'};
-my @files          = @{$args{'--file'}};
-my @extra          = @{$args{'--extra'}};
-
+my $key_col        = 1 #$args{'-f'};
 my $blank_placeholder = '___@@@_BLANK_VALUE_@@@___';
 
-my @global_cols;
+my $numUnprocessedArgs = scalar(@ARGV);
+($numUnprocessedArgs == 2) or quitWithUsageError("[Error] in arguments! You must send at least TWO filenames to join_multi.pl , or else there is nothing to join in the first place.");
 
-if(defined($arg_cols))
-{
-   my @col_list = split(',', $arg_cols);
+my @files = @ARGV; # ok, these are files
+my $num_files = scalar(@files);
 
-   foreach my $col (@col_list)
-   {
-      push(@global_cols, $col - 1);
-   }
-}
-
-if(defined($list)) {
-   my $file_list = &openFile($list); ## not sure what this "list" really is. It's a scalar, anyway. openFile is defined in libfile.
-   while(<$file_list>) {
-      chomp;
-      push(@files, $_);
-   }
-   close($file_list);
-}
-
-(scalar(@files) >= 2) or die("You must supply 2 or more files to 'join_multi'!");
-
-my @cols = @{&parseColsFromArgs(\@extra)};
+my @all_headers = ();
 
 # The number of files the key appears in:
 my %count;
-
-# Keep track of the keys_in_order keys are found in.
-my @keys_in_order;
-
-my $num_files = scalar(@files);
-
-my @max_tuple;
-
-for(my $j = 0; $j < $num_files; $j++) {
-   $verbose and print STDERR "(", $j+1, "/$num_files). ", "Collecting every key from file '$files[$j]'...";
-
-   my $file     = &openFile($files[$j]);
-   my $key_cols = defined($cols[$j]) ? $cols[$j] : \@global_cols;
-   my @sorted_key_cols = sort { $a <=> $b; } @{$key_cols};
-   my %file_keys;
-   my @file_keys;
-
-   while(<$file>) {
-      my @tuple = split($delim);
-
-      chomp($tuple[$#tuple]);
-
-      my $key = &extractKey(\@tuple, $key_cols, \@sorted_key_cols);
-
-      if(not(exists($file_keys{$key}))) {
-         $file_keys{$key} = 1;
-         push(@file_keys, $key);
-      }
-      if(not(defined($max_tuple[$j])) or $max_tuple[$j] < scalar(@tuple)) {
-         $max_tuple[$j] = scalar(@tuple);
-      }
-   }
-   close($file);
-
-   foreach my $key (@file_keys) {
-      if (!exists($count{$key})) {
-         $count{$key} = 1;
-         push(@keys_in_order, $key);
-      } else {
-         $count{$key}++;
-      }
-   }
-   $verbose and print STDERR " done.\n";
+for (my $j = 0; $j < scalar(@files); $j++) {
+	$verbose and print STDERR "(", $j+1, "/" . scalar(@files) . "). ", "Collecting every key from file '$files[$j]'...";
+	my $file = openSmartAndGetFilehandle($files[$j]);
+	my $lineNum = 0;
+	while (my $line = <$file>) {
+		$lineNum++;
+		my @tuple = split($delim, $line);
+		chomp($tuple[$#tuple]);
+		my @key_cols = (0);
+		my @value_cols;
+		for (my $i = 0; i < scalar(@tuple); i++) {
+			my $is_a_key_column = List::MoreUtils(any($_ == $i), @key_cols);
+			if (not $is_a_key_column) {
+				push @value_cols, $i;
+				push @all_headers, 
+			}
+		}
+	}
+	closeSmartFilehandle($file);
+	foreach my $key (@file_keys) {
+		if (!exists($count{$key})) {
+			$count{$key} = 1;
+			push(@keys_in_order, $key);
+		} else {
+			$count{$key}++;
+		}
+	}
+	$verbose and print STDERR " done.\n";
 }
 
 my $num_keys_total = scalar(keys(%count));
@@ -134,8 +114,10 @@ $verbose and print STDERR "$num_keys_kept keys present in $min or more files kep
 
 my @blanks;
 
-for(my $j = 0; $j < $num_files; $j++) {
-   $verbose and print STDERR "(", $j+1, "/$num_files). ",
+#my @headers = ();
+
+for(my $j = 0; $j < scalar(@files); $j++) {
+   $verbose and print STDERR "(", $j+1, "/" . scalar(@files) . "). ",
                              "Collecting data from file '$files[$j]'...";
    my $file = &openFile($files[$j]); # OPEN THE FILE HERE
    my %keys_not_seen = %count;
@@ -151,10 +133,6 @@ for(my $j = 0; $j < $num_files; $j++) {
       my $last = scalar(@{$tuple}) - 1;
       chomp($$tuple[$last]);
       my $key = &extractKey($tuple, $key_cols, \@sorted_key_cols);
-      if(defined($fnames_delim) and $line_no == 1) {
-	  die "This is broken, listPrepend doesn't exist for some reason.";
-	  #&listPrepend($tuple, $files[$j] . $fnames_delim);
-      }
       if(exists($row{$key})) {
          if(exists($keys_not_seen{$key})) {
             my $i = $row{$key};
@@ -179,7 +157,7 @@ $verbose and print STDERR "Printing out the combined data...\n";
 for(my $i = 0; $i < $num_keys_kept; $i++) {
    my $key = defined($data[$i][0]) ? $data[$i][0] : $blank_placeholder;
    my $printable = $key;
-   for(my $j = 1; $j <= $num_files; $j++) {
+   for(my $j = 1; $j <= scalar(@files); $j++) {
       my $val_list = defined($data[$i][$j]) ? $data[$i][$j] : $blanks[$j-1];
       my $values   = join($delim, @{$val_list});
       $printable .= $delim . $values;
@@ -259,37 +237,30 @@ Experiment6         6.6
 
 CAVEATS:
 
+BUG REPORT: IT DOES NOT HANDLE HEADERS PROPERLY!!!!!!!! The second file has a header that just
+  goes down somewhere randomly in the file, instead of at the top.
+
 join_multi.pl has weird behavior when you use a totally empty file.
 It will usually add two tabs between fields instead of one. To fix this,
 echo '' >> PREVIOUSLY_EMPTY_FILE before you join_multi.pl it.
-
-
-If you want FILENAMES to be put in the header, try '-fnames "\t" '
 
 OPTIONS are:
 
 -q: Quiet mode (default is verbose)
 
--f COL: Set the key column to COL (default is 1).
+-k COL: The key column MUST be column 1 right now, so this does not work.
+        Otherwise, it would set the key column to COL (default is 1).
 
 -d DELIM: Set the field delimiter to DELIM (default is tab).
-
--l LIST:  Reads the list of files from the file LIST
 
 -m MIN: Set the minimum number of files that an entry has to 
         exist in to MIN.  The default is 1 which means the entry
         has to appear in at least one file.
 
--# COL: Set the key column of file # to COL.  For example -1 2
-        tells the script to read the first file's key from the
-        second column.
+-o BLANK_OUTPUT: Set the blank character to BLANK (default is empty).
+                 This is whatever gets printed when there is NO MATCH in a file.
+                 You could set it to (for example) -o "NA".
 
--b BLANK: Set the blank character to BLANK (default is empty).
-          This is whatever gets printed when there is NO MATCH in a file.
-          You could set it to (for example) -b "NA".
-
--fnames DELIM: Use the file prepended to the column field header
-               delimited by DELIM. Default does not prepend the
-               file name to the column header field names.
+--addfilenames or -a: Add filenames to the header line.
 
 
