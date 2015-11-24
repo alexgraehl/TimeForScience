@@ -52,6 +52,7 @@ my $allowEmptyKey = 0; # whether we allow a TOTALLY EMPTY value to be a key (def
 my $shouldKeepKeyInOriginalPosition = 0; # whether we should KEEP the key in whatever column it was found in, instead of moving it to the front of the line.
 
 my $numHeaderLines = 0;
+my $multiJoinType = 0;
 
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 GetOptions("help|?|man" => sub { printUsageAndQuit(); }
@@ -69,14 +70,21 @@ GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "nrk|no-reorder-key!"  => \$shouldKeepKeyInOriginalPosition
 	   , "eok|allow-empty-key!" => \$allowEmptyKey
 	   , "i|ignore-case!" => \$shouldIgnoreCase
+	   , "multi=s" => \$multiJoinType
 	   , "debug!" => \$isDebugging
     ) or printUsageAndQuit();
 
 my $numUnprocessedArgs = scalar(@ARGV);
-($numUnprocessedArgs == 2) or quitWithUsageError("[Error] in arguments! You must send exactly TWO filenames (or one filename and '-' for STDIN) to this program. Example: join.pl FILE1.txt FILE2.txt > OUTPUT.txt");
+($numUnprocessedArgs >= 2) or quitWithUsageError("[Error] in arguments! You must send at least TWO filenames (or one filename and '-' for STDIN) to this program. Example: join.pl FILE1.txt FILE2.txt > OUTPUT.txt");
 
 my $file1 = $ARGV[0]; # first unprocessed argument
 my $file2 = $ARGV[1]; # second unprocessed argument
+
+my @files = @ARGV;
+
+if ($numUnprocessedArgs >= 3) {
+	(lc($multiJoinType) =~ m/^(i|u)/) or quitWithUsageError("[ERROR]: If you want to join up three or more files, you currently have to specify '--multi' on the command line. This is because the semantics and output are DIFFERENT for multi-joining! You must specify --multi=intersect (or just '--multi=i') or --multi=union (or '--multi=u').");
+}
 
 ## ================ SET SOME DEFAULT VALUES ============================
 if (defined($delimBoth)) { # If "delimBoth" was specified, then set both of the input delimiters accordingly.
@@ -91,7 +99,7 @@ if (!defined($outputDelim)) { # Figure out what the output delimiter should be, 
 ## ================ DONE SETTING SOME DEFAULT VALUES ====================
 
 ## ================ SANITY-CHECK A BUNCH OF VARIABLES ==================
-foreach my $ff ($file1, $file2) {
+foreach my $ff (@files) {
     (($ff eq '-') or (-f $ff and -r $ff)) or die "[ERROR]: join.pl cannot join these two files, because the file '$ff' did not exist or could not be read!"; # Specified files must be either - (for stdin) or a real, valid, existing filename)
 }
 
@@ -182,9 +190,6 @@ sub readIntoHash($$$$$) {
 	($numDupeKeys > 0) and verboseWarnPrint("Warning: $numDupeKeys duplicate keys were skipped in <$filename>.");
 }
 
-#my %hash1 = readIntoHash($file1  , $delim1, $keyCol1);
-#($isDebugging) && print STDERR ("Read in this many keys: " . scalar(keys(%hash1)) . " from primary file.\n");
-
 sub arrayOfNonKeyElements(\@$) {
     # Returns everything EXCEPT the key! This is because by default, when joining, you move the key to the FRONT of the line, and then do not print it again later on the line.
     my ($inputArrayPtr, $inputKey) = @_;
@@ -218,6 +223,59 @@ sub joinedUpOutputLine($$$$$$$) {
 	}
     }
 }
+
+sub getAllKeysFromAllFiles($$@) {
+	my ($delim, $keycol, $filesPtr) = @_;
+	($keycol != 0) or die "Keycol can't be 0 -- it's indexed with ONE as the first element.";
+	my %datHash     = ();
+	my %allKeysHash  = ();
+	foreach my $filename (@$filesPtr) {
+		$datHash{$filename} = (); # new hash for this
+		print "Handling file named $filename ...\n";
+		($filename ne '-') or die "If you are multi-joining, you CANNOT read input from STDIN. Sorry.";
+		(-e $filename) or die "Cannot read input file $filename.";
+		my $fh = openSmartAndGetFilehandle($filename);
+		my $lnum = 0;
+		foreach my $line (<$fh>) {
+			$lnum++;
+			print "Handling line number $lnum ...\n";
+			chomp($line);
+			my @s = split($delim1, $line, $SPLIT_WITH_TRAILING_DELIMS); # split up the line
+			my $key;
+			my @valArr;
+			if (scalar(@s) < $keycol) {
+				$key = "";
+				@valArr = ();
+			} # totally blank line maybe? Or at least, no key.
+			else {
+				$key = $s[($keycol-1)];
+				my ($lo, $hi) = ($keycol, scalar(@valArr)-1);
+				if ($lo <= $hi) { @valArr = @s[$lo..$hi] } else { @valArr = (); }
+			}
+			print "Added this key: $filename / $key ...\n";
+			$datHash{$filename}{$key} = @valArr; # save this key with the value being the rest of the array
+			$allKeysHash{$key} = 1;
+		}
+		closeSmartFilehandle($fh);
+	}
+	
+	foreach my $k (sort(keys(%allKeysHash))) {
+		print "Key: $k\n";
+	}
+}
+# ========================== MAIN PROGRAM HERE
+
+
+
+if ($multiJoinType) {
+	# Ok, we are doing MULTI-joining. Otherwise, just the regular (full-featured) two-file joining
+	($keyCol1 == 1) or quitWithUsageError("For multi-joining, you CANNOT use any key columns except -k 1 (or -1 1). The key must be the first column.");
+	($keyCol2 == 1) or quitWithUsageError("For multi-joining, keyCol 2 is not used. Do not specify -2 = (something) on the command line!");
+	(not $shouldNegate) or quitWithUsageError("For multi-joining, negation is not supported. Remove --neg from the command line!");
+	getAllKeysFromAllFiles($delim1, $keyCol1, \@files);
+	die "Done"
+}
+
 
 my %hash2 = ();
 my %originalCaseHash = (); # Hash: key = UPPER CASE version of key, value = ORIGINAL version of key
