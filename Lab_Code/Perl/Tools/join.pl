@@ -22,37 +22,27 @@ sub quitWithUsageError($) { print($_[0] . "\n"); printUsageAndQuit(); print($_[0
 sub printUsageAndQuit() { printUsageAndContinue(); exit(1); }
 sub printUsageAndContinue() {    print STDOUT <DATA>; }
 sub debugPrint($) {   ($isDebugging) and print STDERR $_[0]; }
-sub verboseWarnPrint($) {
-    if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "yellow on_blue"); }
-}
-sub verboseUpdatePrint($) {
-    if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "black on_green"); }
-}
+sub verboseWarnPrint($) { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "yellow on_blue"); } }
+sub verboseUpdatePrint($) { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "black on_green"); } }
 my $keyCol1 = 1; # indexed from ONE rather than 0!
 my $keyCol2 = 1; # indexed from ONE rather than 0!
 
-my $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED = "\t";
+my $DEFAULT_DELIM = "\t";
 my $SPLIT_WITH_TRAILING_DELIMS = -1; # You MUST specify this constant value of -1, or else split will by default NOT split consecutive trailing delimiters! This is super important and belongs in EVERY SINGLE split call.
-
-my $MAX_DUPE_KEYS_TO_REPORT = 10;
+my $MAX_DUPE_KEYS_TO_REPORT          = 10;
 my $MAX_WEIRD_LINE_LENGTHS_TO_REPORT = 10;
 
-my $delim1 = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED; # input deilmiter for file 1
-my $delim2 = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED; # input delimiter for file 2
-my $delimBoth   = undef; # input delimiter
-my $outputDelim = undef;
-
-my $shouldNegate = 0; # whether we should NEGATE the output
-my $shouldIgnoreCase = 0; # by default, case-sensitive
-
+my $delim1            = $DEFAULT_DELIM; # input deilmiter for file 1
+my $delim2            = $DEFAULT_DELIM; # input delimiter for file 2
+my $delimBoth         = undef; # input delimiter
+my $outputDelim       = undef;
+my $shouldNegate      = 0; # whether we should NEGATE the output
+my $shouldIgnoreCase  = 0; # by default, case-sensitive
 my $stringWhenNoMatch = undef;
-
-my $allowEmptyKey = 0; # whether we allow a TOTALLY EMPTY value to be a key (default: no)
-
+my $allowEmptyKey     = 0; # whether we allow a TOTALLY EMPTY value to be a key (default: no)
 my $shouldKeepKeyInOriginalPosition = 0; # whether we should KEEP the key in whatever column it was found in, instead of moving it to the front of the line.
-
-my $numHeaderLines = 0;
-my $multiJoinType = 0;
+my $numHeaderLines    = 0;
+my $multiJoinType     = 0;
 
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 GetOptions("help|?|man" => sub { printUsageAndQuit(); }
@@ -88,13 +78,13 @@ if ($numUnprocessedArgs >= 3) {
 
 ## ================ SET SOME DEFAULT VALUES ============================
 if (defined($delimBoth)) { # If "delimBoth" was specified, then set both of the input delimiters accordingly.
-    $delim1 = $delimBoth; $delim2 = $delimBoth;
+	$delim1 = $delimBoth; $delim2 = $delimBoth;
 }
 
 if (!defined($outputDelim)) { # Figure out what the output delimiter should be, if it wasn't explicitly specified.
     if (defined($delimBoth)) { $outputDelim = $delimBoth; } # default: set the output delim to whatever the input delim was
     elsif ($delim1 eq $delim2) { $outputDelim = $delim1; } # or we can set it to the manually-specified delimiters, if they are the SAME only
-    else { $outputDelim = $DEFAULT_DELIM_IF_NOTHING_ELSE_IS_SPECIFIED; } # otherwise, set it to the default delimiter
+    else { $outputDelim = $DEFAULT_DELIM; } # otherwise, set it to the default delimiter
 }
 ## ================ DONE SETTING SOME DEFAULT VALUES ====================
 
@@ -228,9 +218,12 @@ sub getAllKeysFromAllFiles($$@) {
 	my ($delim, $keycol, $filesPtr) = @_;
 	($keycol != 0) or die "Keycol can't be 0 -- it's indexed with ONE as the first element.";
 	my %datHash     = ();
+	my %longestLinePerFileHash = ();
 	my %allKeysHash  = ();
+	my $na = "";
 	foreach my $filename (@$filesPtr) {
 		$datHash{$filename} = (); # new hash for this
+		$longestLinePerFileHash{$filename} = (); # new hash for this
 		print "Handling file named $filename ...\n";
 		($filename ne '-') or die "If you are multi-joining, you CANNOT read input from STDIN. Sorry.";
 		(-e $filename) or die "Cannot read input file $filename.";
@@ -254,13 +247,24 @@ sub getAllKeysFromAllFiles($$@) {
 			}
 			print "Added this key: $filename / $key ...\n";
 			$datHash{$filename}{$key} = @valArr; # save this key with the value being the rest of the array
+			if (scalar(@valArr) > $longestLinePerFileHash{$filename}) { $longestLinePerFileHash{$filename} = scalar(@valArr); }
 			$allKeysHash{$key} = 1;
 		}
 		closeSmartFilehandle($fh);
 	}
 	
 	foreach my $k (sort(keys(%allKeysHash))) {
-		print "Key: $k\n";
+		print "Key: $k\t";
+		foreach my $filename (@$filesPtr) {
+			print "$filename\t";
+			if (exists($allKeysHash{$filename}{$k})) {
+				# let's print it
+			} else {
+				# print placeholders
+				print $na x 
+			}
+		}
+		print "\n";
 	}
 }
 # ========================== MAIN PROGRAM HERE
