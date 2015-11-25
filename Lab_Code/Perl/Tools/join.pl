@@ -227,7 +227,7 @@ sub handleMultiJoin($$) {
 		%{$datHash{$filename}} = (); # new hash value is an ARRAY for this
 		@{$headHash{$filename}} = (()x$numHeaderLines); # it's one array element per line
 		$longestLineInFileHash{$filename} = 0; # longest line is length 0 to start...
-		print "Handling file named $filename ...\n";
+		#print STDERR "Handling file named $filename ...\n";
 		($filename ne '-') or die "If you are multi-joining, you CANNOT read input from STDIN. Sorry.";
 		(-e $filename) or die "Cannot read input file $filename.";
 		my $fh = openSmartAndGetFilehandle($filename);
@@ -249,19 +249,16 @@ sub handleMultiJoin($$) {
 				if ($lo <= $hi) { @valArr = @s[$lo..$hi] } else { @valArr = (); }
 			}
 
+			# Note: line length does NOT include the key as an element. So it can be zero!
 			if (scalar(@valArr)>$longestLineInFileHash{$filename}) { $longestLineInFileHash{$filename} = scalar(@valArr); }
 			
 			if ($lnum <= $numHeaderLines) { # This is STILL a header line
-				@{${$headHash{$filename}}[$lnum-1]} = ($includeFilenameInHeader) ? map{"${filename}${filenameHeaderDelim}$_"}@valArr : @valArr; # one line at a time
+				@{${$headHash{$filename}}[$lnum-1]} = ($includeFilenameInHeader) ? map{"${filename}${filenameHeaderDelim}$_"}@valArr : @valArr; # It is ok if @valArry has zero elements.
 			} else {
 				if ((0 == length($key)) and !$allowEmptyKey) {
 					verboseWarnPrint("Warning: skipping an empty (blank) key on line $lnum of file <$filename>!");
-				} else {
-					#print "Added this key: $filename / $key ...\n";
+				} else { #print "Added this key: $filename / $key ...\n";
 					@{$datHash{$filename}{$key}} = @valArr; # save this key with the value being the rest of the array
-					#print "Set the array: " . join("...",@s) . "\n";
-					#print "Set the array: " . join("...",@valArr) . "\n";
-					#print "Set the array: " . join("...",@{$datHash{$filename}{$key}}) . "\n";
 					$keysHash{$key} = 1;
 				}
 			}
@@ -279,17 +276,16 @@ sub handleMultiJoin($$) {
 		print(join($outputDelim, @head)."\n");
 	}
 	foreach my $k (sort(keys(%keysHash))) {
-		for (my $fi=0; $fi < scalar(@$filenameArrPtr); $fi++) {
-			my $filename = $$filenameArrPtr[$fi];
+		my @L = ($k); # output line. starts with just the key and nothing else
+		foreach my $filename (@$filenameArrPtr) {
 			if (exists($datHash{$filename}{$k})) {
 				my $numElemsToPad = $longestLineInFileHash{$filename} - scalar(@{$datHash{$filename}{$k}});
-				print join($outputDelim, ($k, @{$datHash{$filename}{$k}}, ($na)x$numElemsToPad));
+				push(@L, @{$datHash{$filename}{$k}}, ($na)x$numElemsToPad);
 			} else {
-				print join($outputDelim, ($k, ($na)x$longestLineInFileHash{$filename})); # print placeholders only
+				push(@L, ($na)x$longestLineInFileHash{$filename});
 			}
-			my $isLastFile = (($fi+1) == scalar(@$filenameArrPtr));
-			print $isLastFile ? "\n" : $outputDelim; # '\n' at the very end only
 		}
+		print join($outputDelim, @L), "\n";
 	}
 }
 # ========================== MAIN PROGRAM HERE
