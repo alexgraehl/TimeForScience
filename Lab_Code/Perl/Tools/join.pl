@@ -467,7 +467,6 @@ For multi-joining only:
 
   --multi=union:  Run a multi-file join. Different engine and behaviors from 2-files-only joining. Beware!
 
-
   
 -neg: Negate output -- print keys that are in FILE1 but not in FILE2.
         These keys are the same ones that would be left out of the join,
