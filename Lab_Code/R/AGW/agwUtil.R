@@ -1841,10 +1841,11 @@ pairsCorMatrixPlotAGW <- function(filePath, dataMatrix, labelVec=NULL, keys, mai
 ### pairs.agw
 ### ===============================================================================
 
-pairs.agw <- function(data, groups.vec=NULL, main="Pairs plot. Red points = within-group comparison. Values in lower left are Pearson's R.") { # plot pairs
+pairs.agw <- function(data, groups.vec=NULL, main="Pairs plot. Red points = within-group comparison. Values in lower left are Pearson's R.", bw=FALSE) { # plot pairs
      # "data": a (numeric) data matrix.
      # "groups.vec": a vector of the experimental groups for each COLUMN in the data matrix: example: groups.vec=c("WT","WT","DrugX","DrugY")
-
+	# bw (default: FALSE). Set to true to make the output black and white only. Useful for some publication figures.
+	
      labelVec <- colnames(data)
      if (is.null(labelVec)) { labelVec <- paste("Column_", 1:ncol(data), sep='') }
 
@@ -1861,13 +1862,23 @@ pairs.agw <- function(data, groups.vec=NULL, main="Pairs plot. Red points = with
      
      nGroups    <- nlevels(as.factor(groups.vec))
      pointAlpha <- 0.50  ## 0.50 = 50% opaque.
-     regularPointColor <- hsv(h=1, s=1, v=0, alpha=pointAlpha) ## The foreground color for points in each "bin"
-     backgroundAlpha   <- 1.0
-     allBackColors     <- rainbow(n=nGroups*(nGroups-1), s = 0.25, v = 1.0, alpha=backgroundAlpha) ## The background colors for each "bin"
-     WITHIN_GROUP_POINT_COLOR <- hsv(h=1, s=1, v=1, alpha=pointAlpha)
-     WITHIN_GROUP_BACK_COLOR   <- "white"
-     PLOT_BORDER_THICKNESS <- 1.0   ## Thickness of the border around each scatterplot
 
+     if (bw) {
+     	# Black and white only
+	regularPointColor <- hsv(h=1, s=0, v=0, alpha=pointAlpha) # black
+	backgroundAlpha <- 0.0
+        WITHIN_GROUP_BACK_COLOR   <- "#FFFFFF00" # transparent
+        WITHIN_GROUP_POINT_COLOR <- hsv(h=1, s=0, v=1, alpha=pointAlpha) # black
+     } else {
+     	# Colors please
+	regularPointColor <- hsv(h=1, s=1, v=0, alpha=pointAlpha) ## The foreground color for points in each "bin"
+	backgroundAlpha   <- 1.0
+        WITHIN_GROUP_BACK_COLOR   <- "white"
+	WITHIN_GROUP_POINT_COLOR <- hsv(h=1, s=1, v=1, alpha=pointAlpha) # red
+     }
+
+     allBackColors     <- rainbow(n=nGroups*(nGroups-1), s = 0.25, v = 1.0, alpha=backgroundAlpha) ## The background colors for each "bin"
+     PLOT_BORDER_THICKNESS <- 1.0   ## Thickness of the border around each scatterplot
      par(mar=c("bottom"=2, "left"=2, "right"=2, "top"=8))
      par(cex.axis=1.0, cex.lab=1.2, cex.main=1.0)     
      dimSize <- ncol(dataWithTwoFakeRowsForPlotting)
@@ -1881,8 +1892,13 @@ pairs.agw <- function(data, groups.vec=NULL, main="Pairs plot. Red points = with
           absR   <- abs(origR)
           MIN_CEX_FAC <- 0.4
           corCex <- cex.cor*max(MIN_CEX_FAC, absR**2, na.rm=T) ## don't let the CEX get any smaller than the MIN_CEX. Correlations closer to zero have smaller text size.
-	  if (origR < 0) { corColor = "#990000" } else { corColor = "black" } # Correlation color (negative is dark RED)
-          backgroundColor <- hsv(s=0.0,  v=1.0 - 5*(1.0 - max(0.9, absR, na.rm=T))) ## v=1.0 is white, and lower scores = a dark-ish gray. Basically it gets as dark as it's going to get around R=0.7 or thereabouts.
+	  if (bw) {
+	  	corColor <- "black"
+		backgroundColor <- "#FFFFFF00" # white, fully transparent
+	  } else {
+	  	  if (origR < 0) { corColor = "#990000" } else { corColor = "black" } # Correlation color (negative is dark RED)
+	          backgroundColor <- hsv(s=0.0,  v=1.0 - 5*(1.0 - max(0.9, absR, na.rm=T))) ## v=1.0 is white, and lower scores = a dark-ish gray. Basically it gets as dark as it's going to get around R=0.7 or thereabouts.
+          }
           rect(xleft=-1, ybottom=-1, xright=2, ytop=2, col=backgroundColor)
           text(0.5, 0.5, paste("r=", format(origR, digits=digits, nsmall=digits, scientific=FALSE), sep='')
                , cex=corCex, col=corColor) ## <-- The closer the correlation value is to zero, the smaller the text size
