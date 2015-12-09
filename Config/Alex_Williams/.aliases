@@ -711,10 +711,28 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
 		 ln -s ${TARGET} ./${D}
 		 sudo mv ./${DARCH}  ${TARGET}
 		 break;;
-	    Cancel*) break;;
+	    *) echo "Ok, not doing anything."; break;;
 	esac
     done
 }
+
+function neararchive { # usage: cd /work/projects  then: "workarchive myproj-1234-rna-mouse"  --> will move things to the nearline storage
+    D=${1%/}
+    DARCH=${D}_ARCHIVE
+    TARGET=/nearline_storage/projects/${D}
+    echo "We would like to move the directory (without a slash) \"${D}\" to the final target \"${TARGET}\"... sound ok to you? Select a NUMERIC option below:"
+    select yn in "[Cancel]" "Move those files!"; do
+	case $yn in
+	    Move*) sudo mv ./${D} ./${DARCH}
+		 ln -s ${TARGET} ./${D}
+		 sudo mv ./${DARCH}  ${TARGET}
+		 break;;
+	    *) echo "Ok, not doing anything"; break;;
+	esac
+    done
+}
+
+
 
 function accuse { # See who is using the CPU. Usage: just "accuse" with no arguments
     USERS_WITH_JOBS=$(ps aux | tail -n +2 | cut -d ' ' -f 1 | uniq | sort -u | tr '\n' ' ')
