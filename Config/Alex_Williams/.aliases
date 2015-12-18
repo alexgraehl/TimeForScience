@@ -665,6 +665,7 @@ function qstatlong { # show qstat with LONG (full) job names:
 function qsass { # kill all jobs that match this grep... works for usernames, jobs, etc. Be careful!
     # Example usage:  qsass    yourname             # Hopefully yourname is not a subset of someone ELSE's name!
     # or:             qsass    test_job_number_     # Uses GREP, so watch out for invalid regexps!
+    sudo "echo 'Initializing sudo permissions here'"
     if [[ ${#1} -lt 4 ]]; then
 	echo "ERR: Your argument to qsass ($1) was not long enough (it is only length ${#1})---it needs to be at least 4 characters, or else we don't believe it's a valid input! Be careful! Even PARTIAL MATCHES will trigger the job deletion. So don't delete 'bad_job' if you don't also want to delete 'not_a_bad_job'."
 	return 1;
