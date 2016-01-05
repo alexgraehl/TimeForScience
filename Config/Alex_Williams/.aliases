@@ -468,6 +468,8 @@ alias science="echo 'TimeForScience (GitHub):' ; scienceup ${TIME_FOR_SCIENCE_DI
 
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
 
+alias nami=' ssh ${AGW_SSH_OPTIONS} -i ~/Dropbox/metaquery-dev.pem bitnami@52.53.252.164'
+
 alias nau=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${BN_IP}'  # From the not-uploaded file /work/Common/Code/alexgw/aliases-server-config (or .aliases-server-config in the home directory!)
 alias naux='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${BN_IP}'
 alias bus=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${BC_IP}'
