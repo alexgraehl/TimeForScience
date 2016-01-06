@@ -768,4 +768,9 @@ function wholog {
     sudo du -sch /home/* | perl -pe 's/\/home\///' | join.pl -o "NO_HOMEDIR" -1 1 -2 2 $TMP - | column -t -s $'\t'
 }
 
+function qing {
+    echo "'qing' is 'qstats' but only showing NON-COMPLETED jobs..."
+    qstats | grep -v ' COMPLETE '
+}
+
 alias tab="column -t -s $'\t'"
