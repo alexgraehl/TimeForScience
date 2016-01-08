@@ -120,7 +120,7 @@ alias cheat="echo \
 \">> Echo emoji to terminal: example: a snake is echo $'\xF0\x9F\x90\x8D' (See http://apps.timwhitlock.info/emoji/tables/unicode) \" ${NL}\
 \">> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
 \">> Unzip files into SUBDIRECTORIES always: ls *.zip|awk -F'.zip' '{print \\\"unzip \\\"\\\$0\\\" -d \\\"\\\$1}'|sh  \" ${NL}\
-\">> ZIP on Mac without the dot files: zip -r -X out.zip input_directory_here \" ${NL}\
+\">> ZIP on Mac without the dot files: zip -r -X out.zip input_directory_here    -x \\\"*.DS_Store\\\" \" ${NL}\
 \">> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
 \">> Mac: what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
 \">> Mac disk: specific file I/O: fs_usage <programname> \" ${NL}\
