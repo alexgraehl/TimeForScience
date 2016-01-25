@@ -40,7 +40,8 @@ die "\"rename\" requires input arguments.\nUsage: rename [-v] [-n] [-f] perl_reg
     unless GetOptions(
 	'v|verbose' => \$verbose,
 	'n|no-act'  => \$no_act,
-	'f|force'   => \$force,
+		      'f|force'   => \$force,
+		      'help|?|h' => sub { print "Sorry no help yet. Check the source.\n"; die "Alas there is no help text.\n" }
     ) and $renameRegexp = shift;
 
 if ($no_act) { $verbose = 1; } ## always be verbose when we are using a dry-run
@@ -54,6 +55,11 @@ if (!@ARGV) {
 
 if ($verbose) { print "About to examine " . scalar(@ARGV) . " items that might be renamed if they match the pattern. . .\n"; }
 
+my $longestFilenameLen = 0;
+for my $filename (@ARGV) {
+	if (length($filename) > $longestFilenameLen) { $longestFilenameLen = length($filename); }
+}
+
 for (@ARGV) {
     my $prevFilename = $_;  ## previous filename
     eval $renameRegexp;     ## apply the renaming operation to "$_" by default --- this changes "$_" to the newly-renamed version, but does NOT rename the file on disk yet!
@@ -62,19 +68,19 @@ for (@ARGV) {
     if ($prevFilename eq $_) { next; } # same filenames -- ignore quietly
     
     if ($no_act) {
-	if ($verbose) { print "Dry run:  $prevFilename  would be renamed to  $_\n"; }
-	next;
-    }
-
-    if (-e $_ and !$force) {
-        warn "$prevFilename was not renamed: $_ already exists\n";
-	next;
-    }
-    
-    if (rename $prevFilename, $_) { ## <-- now try to actually rename the file on disk!
-        print "$prevFilename  renamed to  $_\n";
+	    my $spacesToPad = $longestFilenameLen - length($prevFilename);
+	    if ($verbose) { print "Dry run: $prevFilename " . (' ' x $spacesToPad) . "---DRY-RUN---> $_\n"; }
     } else {
-        warn "Can't rename $prevFilename $_: $!\n"; ## any error codes are stored in "$!" automatically
+	    if (-e $_ and !$force) {
+		    warn "$prevFilename was not renamed: $_ already exists\n";
+		    next;
+	    }
+    
+	    if (rename $prevFilename, $_) { ## <-- now try to actually rename the file on disk!
+		    print "$prevFilename  renamed to  $_\n";
+	    } else {
+		    warn "Can't rename $prevFilename $_: $!\n"; ## any error codes are stored in "$!" automatically
+	    }
     }
 }
 
@@ -109,6 +115,12 @@ you might say
 To translate uppercase names to lower, you'd use
 
 	rename 'y/A-Z/a-z/' *
+
+Backreference example:
+
+rename.pl -n 's/old_thing(.txt|.gz)/new_thing$1/' *.txt *.gz
+(You generally should not need to use backreferences, but if you do, here they are.)
+
 
 =head1 OPTIONS
 
