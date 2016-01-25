@@ -29,62 +29,209 @@
 # Initial revision
 #
 
-use strict;
-
+use strict;  use warnings;  use diagnostics;
+use List::Util qw(max min);
 use Getopt::Long;
-Getopt::Long::Configure('bundling');
+use Carp; # backtrace on errors. Has the "confess" function. Use this instead of "die" if you want useful information!
+
+$| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buffer terminal output! Setting this to zero can cause STDERR and STDOUT to be interleaved in weird ways.
+
+#no warnings 'numeric';
+#use Scalar::Util;
+#print Scalar::Util::looks_like_number($string), "\n";
+
+sub tryToLoadModule($) {
+	my $x = eval("require $_[0]");
+	if ((defined($@) && $@)) {
+		warn "We FAILED to load module $_[0]. Skipping this module, but continuing with the program.";
+		return 0;	# FAILURE
+	} else {
+		$_[0]->import();
+		return 1;	# SUCCESS
+	}
+}
+
+my $SHOULD_USE_COLORS = tryToLoadModule("Term::ANSIColor");
+if ($SHOULD_USE_COLORS) {
+	use Term::ANSIColor;
+}
+
+sub warnPrint($) { chomp($_[0]); warn(safeColor("[WARNING]: " . $_[0] . "", "yellow on_black")); } # regarding "warn": if the string ends with a newline it WON'T print the line number!
+
+sub safeColor($;$) {		# one required and one optional argument
+	## Returns colored text, but only if $SHOULD_USE_COLORS is set.
+	## Allows you to totally disable colored printing by just changing $SHOULD_USE_COLORS to 0 at the top of this file
+	# Colorstring is OPTIONAL, and can be something like "red on_blue" or "red" or "magenta on_green"
+	# Example usage:
+	#    *    print STDERR safeColor("This warning message is red on yellow", "red on_yellow");
+	my ($message, $color) = @_;
+	return (($SHOULD_USE_COLORS && defined($color)) ? (Term::ANSIColor::colored($message, $color) . Term::ANSIColor::color("reset")) : $message);
+}
+
+sub printColorStderr($;$) {
+	# prints color to STDERR *UNLESS* it is re-directed to a file, in which case NO COLOR IS PRINTED.
+	my ($msg, $col) = @_; # Only prints in color if STDERR is to a terminal, NOT if it is redirected to an output file!
+	if (! -t STDERR) {
+		$col = undef;
+	}			# no coloration if this isn't to a terminal
+	print STDERR safeColor($msg, $col);
+}
+
+sub printColorStdout($;$) {
+	# prints color to STDOUT *UNLESS* it is re-directed to a file, in which case NO COLOR IS PRINTED.
+	my ($msg, $col) = @_; # Only prints in color if STDOUT is to a terminal, NOT if it is redirected to an output file!
+	if (! -t STDOUT) {
+		$col = undef;
+	}			# no coloration if this isn't to a terminal
+	print STDOUT safeColor($msg, $col);
+}
+
+
+sub printOkStdout($) {
+	my ($msg) = @_;
+	printColorStdout($msg, "green"); # OR: green on_black
+}
+
+sub printNonFatalFailure($) {
+	my ($msg) = @_;
+	printColorStderr($msg, "red"); # OR: red on_black
+	warn $msg;
+}
+
+sub dryNotify(;$) {		# one optional argument
+	my ($msg) = @_;
+	$msg = (defined($msg)) ? $msg : "This was only a dry run, so we skipped executing a command.";
+	print STDERR safeColor("[DRY RUN]: $msg\n", "black on_yellow");
+}
+
+sub notify($) {			# one required argument
+	my ($msg) = @_;
+	warn safeColor("[DRY RUN]: $msg\n", "cyan on_blue");
+}
+
+sub main();
+sub quitWithUsageError($) { print($_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
+sub printUsageAndQuit() { printUsage(); exit(1); }
+
+sub printUsage() {
+	print STDOUT "\"rename\" requires input arguments.\nUsage: rename [-v] [-n] [-f] perl_regular_expression [filenames]\nExample: rename 's/TXT/new_processed_text/' *.TXT\n\n";
+	print STDOUT <DATA>;
+	exit(0);
+}
+
+
+
+
 
 my ($verbose, $no_act, $force, $renameRegexp);
 
-die "\"rename\" requires input arguments.\nUsage: rename [-v] [-n] [-f] perl_regular_expression [filenames]\nExample: rename 's/TXT/new_processed_text/' *.TXT\n\n"
-    unless GetOptions(
-	'v|verbose' => \$verbose,
-	'n|no-act'  => \$no_act,
-		      'f|force'   => \$force,
-		      'help|?|h' => sub { print "Sorry no help yet. Check the source.\n"; die "Alas there is no help text.\n" }
-    ) and $renameRegexp = shift;
+Getopt::Long::Configure('bundling');
+$Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 
-if ($no_act) { $verbose = 1; } ## always be verbose when we are using a dry-run
+GetOptions(
+	   'v|verbose' => \$verbose,
+	   'n|no-act|dry|dry-run|dryrun'  => \$no_act,
+	   'f|force'   => \$force,
+	   'help|?|h'  => sub { print "Sorry no help yet. Check the source.\n"; die "Alas there is no help text.\n" }
+	  ) or printUsageAndQuit();
+	   
+($renameRegexp = shift) or printUsageAndQuit();
+
+$verbose = ($verbose or $no_act); ## ALWAYS be verbose when we are using a dry-run
+
+#print("The input regexp was:  $renameRegexp\n");
+
+#printColorStdout("hey", "red");
+#printColorStdout("hey", "red");
+#printColorStdout("what", "red");
+#printColorStderr("stderr what", "blue on_white");
+#printColorStdout("is", "red on_blue");
+#printColorStdout("this", "red on_green");
+#printColorStderr("stderr what", "red on_white");
+#print STDERR "hellow\n";
+#print STDERR "Test color!\n";
 
 if (!@ARGV) {
-    print "reading filenames from STDIN\n" if $verbose;
-    @ARGV = <STDIN>;
-    chop(@ARGV);
+	print "reading filenames from STDIN\n" if $verbose;
+	@ARGV = <STDIN>;
+	chop(@ARGV);
 }
 
-
-if ($verbose) { print "About to examine " . scalar(@ARGV) . " items that might be renamed if they match the pattern. . .\n"; }
+if ($verbose) {
+	print "About to examine " . scalar(@ARGV) . " files/folders that might be renamed if they match the input regexp pattern of " . safeColor($renameRegexp, "white on_blue") . " . . .\n";
+}
 
 my $longestFilenameLen = 0;
 for my $filename (@ARGV) {
-	if (length($filename) > $longestFilenameLen) { $longestFilenameLen = length($filename); }
+	if (length($filename) > $longestFilenameLen) {
+		$longestFilenameLen = length($filename);
+	}
 }
 
 for (@ARGV) {
-    my $prevFilename = $_;  ## previous filename
-    eval $renameRegexp;     ## apply the renaming operation to "$_" by default --- this changes "$_" to the newly-renamed version, but does NOT rename the file on disk yet!
-    die $@ if $@; ## ?????????????? why is perl so confusing
+	my $fromName = $_;
+	#if ($f =~ /$renameRegexp/) {
+	#print "match found\n";
+	# }
+	eval $renameRegexp;
+	my $toName = $_;
 
-    if ($prevFilename eq $_) { next; } # same filenames -- ignore quietly
+	# Dubious way of figuring out which areas of the string have changed
+	#my @clef = (); # changes LEFT edge
+	#my @crig = (); # changes RIGHT edge
+	#my $minLen = min(length($fromName), length($toName));
+	#my $goodLeft = 0;
+	#my $goodRight = $maxLen;
+	#while (my $i = 0; $i < $maxLen; $i++) {
+	#	if ($fromName[$i] ne $toName[i]) {
+	#		$goodThroughLeft++;
+	#	}
+	#}
+	#if ($fromName =~ $renameRegexp) {
+	#	print "yep\n";
+	#}
+	
+	#my $evalResult = eval $toName =~ $renameRegexp;     ## apply the renaming operation to "$_" by default --- this changes "$_" to the newly-renamed version, but does NOT rename the file on disk yet!
+	die $@ if $@;		## ?????????????? why is perl so confusing
+
+	if ($fromName eq $toName) {
+		next;
+	}			# same filenames -- ignore quietly
     
-    if ($no_act) {
-	    my $spacesToPad = $longestFilenameLen - length($prevFilename);
-	    if ($verbose) { print "Dry run: $prevFilename " . (' ' x $spacesToPad) . "---DRY-RUN---> $_\n"; }
-    } else {
-	    if (-e $_ and !$force) {
-		    warn "$prevFilename was not renamed: $_ already exists\n";
-		    next;
-	    }
-    
-	    if (rename $prevFilename, $_) { ## <-- now try to actually rename the file on disk!
-		    print "$prevFilename  renamed to  $_\n";
-	    } else {
-		    warn "Can't rename $prevFilename $_: $!\n"; ## any error codes are stored in "$!" automatically
-	    }
-    }
+	if ($no_act) {
+		my $spacesToPad = $longestFilenameLen - length($fromName);
+		if ($verbose) {
+			print STDOUT safeColor("Dry run: $fromName ", "green")
+			  . (' ' x $spacesToPad)
+			  . safeColor("---DRY-RUN--->", "cyan")
+			  . " " . $toName . "\n";
+		}
+		next; # NEXT!!!!! Skip renaming...
+	}
+
+	
+	if (-e $toName and !$force) {
+		printNonFatalFailure("$fromName was not renamed: $toName already exists");
+		next; # NEXT!!!!! Skip renaming...
+	}
+
+	if (rename $fromName, $toName) { ## <-- now try to actually rename the file on disk!
+		print "$fromName  renamed to  $toName\n";
+	} else {
+		warn "Can't rename $fromName $toName: $!\n"; ## any error codes are stored in "$!" automatically
+	}
 }
 
-__END__
+
+END {
+    # Runs after everything else.
+    # Makes sure that the terminal text is back to its normal color.
+    if ($SHOULD_USE_COLORS) { print STDERR Term::ANSIColor::color("reset"); print STDOUT Term::ANSIColor::color("reset"); }
+}
+
+exit(0);
+
+__DATA__
 
 =head1 NAME
 
