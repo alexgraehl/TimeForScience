@@ -137,9 +137,15 @@ GetOptions(
 	   
 ($renameRegexp = shift) or printUsageAndQuit();
 
+$renameRegexp =~ m/^s/ or die "[rename.pl] INCORRECT USAGE: The regular expression MUST start with 's'. Example: 's/8/9/g' to change all '8's to '9's.\n";
+
 $verbose = ($verbose or $no_act); ## ALWAYS be verbose when we are using a dry-run
 
-#print("The input regexp was:  $renameRegexp\n");
+
+#$renameRegexp =~ m/^s\/(.*)\/([a-zA-Z]*)$/i;
+#my $rexMain = $1; # The main body of the regular expression. Not distinguishing the "before" and "after" parts yet.
+#my $rexPost = $2; # The letters at the end that modify the regexp. Like 'i' for case-insensitive
+#print("The input regexp was:  $renameRegexp, which is split into $rexMain and $rexPost\n");
 
 #printColorStdout("hey", "red");
 #printColorStdout("hey", "red");
@@ -170,9 +176,10 @@ for my $filename (@ARGV) {
 
 for (@ARGV) {
 	my $fromName = $_;
-	#if ($f =~ /$renameRegexp/) {
-	#print "match found\n";
-	# }
+	#print $rexMain . " is the main...\n";
+	#if ($fromName =~ m/$rexMain/) {
+	#	print "match found\n";
+	#}
 	eval $renameRegexp;
 	my $toName = $_;
 
