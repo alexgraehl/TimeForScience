@@ -434,6 +434,10 @@ defaults write com.apple.dock showhidden -bool true
 #A#defaults write com.apple.dock wvous-tl-corner -int 2
 #A#defaults write com.apple.dock wvous-tl-modifier -int 0
 # Top right screen corner → Desktop
+defaults write com.apple.dock wvous-tl-corner -int 2 # 2 = Show ALL Windows / Mission Control
+defaults write com.apple.dock wvous-tr-corner -int 3 # 3 = Show application Windows
+defaults write com.apple.dock wvous-rr-corner -int 4 # 4 = Desktop
+
 #A#defaults write com.apple.dock wvous-tr-corner -int 4
 #A#defaults write com.apple.dock wvous-tr-modifier -int 0
 # Bottom left screen corner → Start screen saver
