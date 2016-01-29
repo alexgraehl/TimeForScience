@@ -90,7 +90,13 @@ export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:$LD_LIBRARY_PATH"
 #export WNHOME=/home/sharpton/projects/s_clustering/data/WNdb-3.0.tar.gz
 ### ============== Above: Added Nov 27, 2012 for MRC metagenomics classifier project ======================
 
-#export PERLLIB=${PERL5LIB}
+### ============= For VCFtools, Jan 28, 2016:
+#brew install vcftools
+#==> Caveats  To use the Perl modules, make sure Vcf.pm, VcfStats.pm, and FaSlice.pm are included in your PERL5LIB environment variable:
+export PERL5LIB=/data/home/alexgw/.linuxbrew/lib/perl5/site_perl:${PERL5LIB}
+export PERLLIB=${PERL5LIB}
+### =============
+
 
 if [[ "$COMPYNAME" == "Slithereens" ]]; then
     export BINF_CORE_WORK_DIR="/Users/${USER}/work" # <-- set BINF_CORE work directory
