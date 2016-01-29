@@ -7,7 +7,7 @@ brew tap homebrew/science
 CKAN_KERBAL="ckan"
 
 GAMES="$CKAN_KERBAL"
-BIOINFORMATICS="fastqc tophat bowtie2 bedtools samtools"
+BIOINFORMATICS="fastqc tophat bowtie2 bedtools samtools htslib bcftools vcflib vcftools"
 
 MIN_ION="poretools"
 AMAZON="awscli"
