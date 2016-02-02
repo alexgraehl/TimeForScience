@@ -20,7 +20,7 @@ PHYLIP_TOOLS="phylip"
 # =================================
 GPG_TOOLS="Caskroom/cask/gpgtools"
 # =================================
-UTILITIES="homebrew/dupes/unzip"
+UTILITIES="homebrew/dupes/unzip htop-osx"
 # =================================
 PROGRAMMING="bash wget emacs ess git mercurial"
 # =================================
