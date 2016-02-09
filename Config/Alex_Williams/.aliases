@@ -178,6 +178,7 @@ alias cheat="echo \
 \">> R: Show versions of installed packages: sessionInfo(...) \" ${NL}\
 \">> R: Collapse a list down to a basic vector: unlist(...) \" ${NL}\
 \">> R: Resize terminal width / columns: options(width=Sys.getenv(\\\"COLUMNS\\\")) \" ${NL}\
+\">> R: write.table(DATA, file='x.txt', row.names=T, col.names=NA, sep='\t', quote=F)  \" ${NL}\
 \">> R: make libraries usable by non-root users: sudo chmod -R a+r /usr/local/lib/R ; sudo find /usr/local/lib/R -type d | sudo xargs chmod a+x \" ${NL}\
 \">> R: update all installed packages: update.packages(ask=FALSE, checkBuilt=TRUE) \" ${NL}\
 \">> R: read from clipboard: y=data.matrix(read.delim(pipe(\\\"pbpaste\\\"))); \" ${NL}\
