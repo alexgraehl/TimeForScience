@@ -10,14 +10,8 @@
 	<integer>1</integer>
 	<key>Default Bookmark Guid</key>
 	<string>9F128B9A-CAEC-4D6D-ABD4-0E99B5AD4D5D</string>
-	<key>DimOnlyText</key>
-	<false/>
-	<key>HideTab</key>
-	<true/>
 	<key>LoadPrefsFromCustomFolder</key>
 	<true/>
-	<key>NSFontPanelAttributes</key>
-	<string>1, 2</string>
 	<key>NSNavLastRootDirectory</key>
 	<string>~/TimeForScience/Config/Alex_Williams/iterm-preferences</string>
 	<key>NSNavPanelExpandedSizeForOpenMode</key>
@@ -52,30 +46,27 @@
 		<key>TB Is Shown</key>
 		<integer>1</integer>
 	</dict>
-<<<<<<< HEAD
 	<key>NSWindow Frame NSFontPanel</key>
-	<string>1060 110 1434 700 0 0 2560 1417 </string>
+	<string>1563 110 931 383 0 0 2560 1417 </string>
 	<key>NSWindow Frame Preferences</key>
-	<string>269 226 606 456 0 0 2560 1417 </string>
+	<string>269 284 606 456 0 0 2560 1417 </string>
+	<key>NSWindow Frame SUUpdateAlert</key>
+	<string>972 768 620 392 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>0 202 1276 1215 0 0 2560 1417 </string>
+	<string>385 135 1465 987 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
-	<string>328 478 1625 939 0 0 2560 1417 </string>
+	<string>4 10 1276 1407 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 2</key>
-	<string>0 10 1276 1407 0 0 2560 1417 </string>
-=======
-	<key>NSWindow Frame Preferences</key>
-	<string>269 168 606 456 0 0 1440 877 </string>
-	<key>NSWindow Frame iTerm Window 0</key>
-	<string>4 29 1305 843 0 0 1440 877 </string>
-	<key>NSWindow Frame iTerm Window 1</key>
-	<string>135 34 1305 843 0 0 1440 877 </string>
->>>>>>> f208af4b2e2f21e076bf085669ab0e8b45d388ba
+	<string>364 158 1465 987 0 0 2560 1417 </string>
+	<key>NSWindow Frame iTerm Window 3</key>
+	<string>494 50 1501 987 0 0 2560 1417 </string>
 	<key>New Bookmarks</key>
 	<array>
 		<dict>
 			<key>ASCII Anti Aliased</key>
 			<true/>
+			<key>Allow Title Reporting</key>
+			<false/>
 			<key>Ambiguous Double Width</key>
 			<false/>
 			<key>Ansi 0 Color</key>
@@ -261,7 +252,7 @@
 			<key>Columns</key>
 			<integer>160</integer>
 			<key>Command</key>
-			<string>/usr/local/bin/bash</string>
+			<string></string>
 			<key>Cursor Boost</key>
 			<real>0.0</real>
 			<key>Cursor Color</key>
@@ -287,7 +278,7 @@
 				<real>1</real>
 			</dict>
 			<key>Custom Command</key>
-			<string>Yes</string>
+			<string>No</string>
 			<key>Custom Directory</key>
 			<string>No</string>
 			<key>Default Bookmark</key>
@@ -317,14 +308,13 @@
 			<real>1</real>
 			<key>Idle Code</key>
 			<integer>0</integer>
-			<key>Initial Text</key>
-			<string></string>
 			<key>Jobs to Ignore</key>
 			<array>
 				<string>rlogin</string>
 				<string>ssh</string>
 				<string>slogin</string>
 				<string>telnet</string>
+				<string>tmux</string>
 			</array>
 			<key>Keyboard Map</key>
 			<dict>
@@ -620,7 +610,7 @@
 			<key>Non-ASCII Anti Aliased</key>
 			<true/>
 			<key>Normal Font</key>
-			<string>Menlo-Regular 14</string>
+			<string>Inconsolata 18</string>
 			<key>Option Key Sends</key>
 			<integer>2</integer>
 			<key>Prompt Before Closing 2</key>
@@ -661,6 +651,8 @@
 			</dict>
 			<key>Send Code When Idle</key>
 			<false/>
+			<key>Session Close Undo Timeout</key>
+			<integer>30</integer>
 			<key>Shortcut</key>
 			<string></string>
 			<key>Silence Bell</key>
@@ -716,37 +708,29 @@
 	</array>
 	<key>NoSyncCommandHistoryHasEverBeenUsed</key>
 	<true/>
-<<<<<<< HEAD
-	<key>NoSyncNeverRemindPrefsChangesLostForFile</key>
-=======
 	<key>NoSyncLastTipTime</key>
-	<real>475644594.81352597</real>
+	<real>476695014.58839601</real>
 	<key>NoSyncNeverRemindPrefsChangesLostForFile</key>
 	<true/>
 	<key>NoSyncNeverRemindPrefsChangesLostForFile_selection</key>
 	<integer>0</integer>
 	<key>NoSyncPermissionToShowTip</key>
->>>>>>> f208af4b2e2f21e076bf085669ab0e8b45d388ba
 	<true/>
-	<key>NoSyncNeverRemindPrefsChangesLostForFile_selection</key>
-	<integer>0</integer>
 	<key>NoSyncTimeOfFirstLaunchOfVersionWithTip</key>
-<<<<<<< HEAD
-	<real>475632403.828116</real>
-	<key>NoSyncTimeOfLastPromo</key>
-	<real>475632245.77938402</real>
-	<key>NoSyncTimeOfLastPromoDownload</key>
-	<real>475632245.77972102</real>
-	<key>OpenTmuxWindowsIn</key>
-	<integer>2</integer>
-=======
-	<real>475397788.45262498</real>
+	<real>474976688.23196298</real>
 	<key>NoSyncTipsToNotShow</key>
 	<array>
 		<string>000</string>
 		<string>0000</string>
+		<string>0001</string>
+		<string>0002</string>
+		<string>0003</string>
+		<string>0004</string>
+		<string>0005</string>
+		<string>0006</string>
+		<string>0007</string>
+		<string>0008</string>
 	</array>
->>>>>>> f208af4b2e2f21e076bf085669ab0e8b45d388ba
 	<key>PointerActions</key>
 	<dict>
 		<key>Button,1,1,,</key>
@@ -782,8 +766,6 @@
 	</dict>
 	<key>PrefsCustomFolder</key>
 	<string>/Users/alexgw/TimeForScience/Config/Alex_Williams/iterm-preferences</string>
-	<key>SUAutomaticallyUpdate</key>
-	<false/>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedAlternateAppNameKey</key>
@@ -793,15 +775,9 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-<<<<<<< HEAD
-	<date>2016-01-29T21:05:00Z</date>
-	<key>TabStyle</key>
-	<integer>0</integer>
-=======
-	<date>2016-01-28T03:29:47Z</date>
+	<date>2016-02-07T07:37:03Z</date>
 	<key>SUSendProfileInfo</key>
 	<false/>
->>>>>>> f208af4b2e2f21e076bf085669ab0e8b45d388ba
 	<key>ToolbeltTools</key>
 	<array>
 		<string>Profiles</string>
