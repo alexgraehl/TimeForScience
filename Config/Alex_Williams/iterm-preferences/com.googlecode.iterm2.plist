@@ -49,6 +49,7 @@
 	<key>NSWindow Frame NSFontPanel</key>
 	<string>1563 110 931 383 0 0 2560 1417 </string>
 	<key>NSWindow Frame Preferences</key>
+<<<<<<< HEAD
 	<string>269 284 606 456 0 0 2560 1417 </string>
 	<key>NSWindow Frame SUUpdateAlert</key>
 	<string>972 768 620 392 0 0 2560 1417 </string>
@@ -60,6 +61,17 @@
 	<string>364 158 1465 987 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 3</key>
 	<string>494 50 1501 987 0 0 2560 1417 </string>
+=======
+	<string>269 255 606 456 0 0 2560 1417 </string>
+	<key>NSWindow Frame SUUpdateAlert</key>
+	<string>972 768 620 392 0 0 2560 1417 </string>
+	<key>NSWindow Frame iTerm Window 0</key>
+	<string>1280 10 1276 1407 0 0 2560 1417 </string>
+	<key>NSWindow Frame iTerm Window 1</key>
+	<string>4 10 2554 1407 0 0 2560 1417 </string>
+	<key>NSWindow Frame iTerm Window 2</key>
+	<string>0 10 1276 1407 0 0 2560 1417 </string>
+>>>>>>> a00d3f78df865fc5c9d05754015b33b52e94d8d0
 	<key>New Bookmarks</key>
 	<array>
 		<dict>
@@ -709,7 +721,11 @@
 	<key>NoSyncCommandHistoryHasEverBeenUsed</key>
 	<true/>
 	<key>NoSyncLastTipTime</key>
+<<<<<<< HEAD
 	<real>476695014.58839601</real>
+=======
+	<real>477359324.04926401</real>
+>>>>>>> a00d3f78df865fc5c9d05754015b33b52e94d8d0
 	<key>NoSyncNeverRemindPrefsChangesLostForFile</key>
 	<true/>
 	<key>NoSyncNeverRemindPrefsChangesLostForFile_selection</key>
@@ -717,12 +733,21 @@
 	<key>NoSyncPermissionToShowTip</key>
 	<true/>
 	<key>NoSyncTimeOfFirstLaunchOfVersionWithTip</key>
+<<<<<<< HEAD
 	<real>474976688.23196298</real>
+=======
+	<real>475632403.828116</real>
+	<key>NoSyncTimeOfLastPromo</key>
+	<real>475632245.77938402</real>
+	<key>NoSyncTimeOfLastPromoDownload</key>
+	<real>475632245.77972102</real>
+>>>>>>> a00d3f78df865fc5c9d05754015b33b52e94d8d0
 	<key>NoSyncTipsToNotShow</key>
 	<array>
 		<string>000</string>
 		<string>0000</string>
 		<string>0001</string>
+<<<<<<< HEAD
 		<string>0002</string>
 		<string>0003</string>
 		<string>0004</string>
@@ -731,6 +756,11 @@
 		<string>0007</string>
 		<string>0008</string>
 	</array>
+=======
+	</array>
+	<key>OpenTmuxWindowsIn</key>
+	<integer>2</integer>
+>>>>>>> a00d3f78df865fc5c9d05754015b33b52e94d8d0
 	<key>PointerActions</key>
 	<dict>
 		<key>Button,1,1,,</key>
@@ -775,16 +805,22 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
+<<<<<<< HEAD
 	<date>2016-02-07T07:37:03Z</date>
 	<key>SUSendProfileInfo</key>
 	<false/>
+=======
+	<date>2016-02-16T23:48:25Z</date>
+	<key>TabStyle</key>
+	<integer>0</integer>
+>>>>>>> a00d3f78df865fc5c9d05754015b33b52e94d8d0
 	<key>ToolbeltTools</key>
 	<array>
 		<string>Profiles</string>
 		<string>Jobs</string>
 	</array>
 	<key>iTerm Version</key>
-	<string>2.9.20160113</string>
+	<string>2.9.20160206</string>
 	<key>kCPKSelectionViewPreferredModeKey</key>
 	<integer>0</integer>
 	<key>kCPKSelectionViewShowHSBTextFieldsKey</key>

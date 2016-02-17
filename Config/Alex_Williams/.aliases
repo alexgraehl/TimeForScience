@@ -178,6 +178,7 @@ alias cheat="echo \
 \">> R: Show versions of installed packages: sessionInfo(...) \" ${NL}\
 \">> R: Collapse a list down to a basic vector: unlist(...) \" ${NL}\
 \">> R: Resize terminal width / columns: options(width=Sys.getenv(\\\"COLUMNS\\\")) \" ${NL}\
+\">> R: write.table(DATA, file='x.txt', row.names=T, col.names=NA, sep='\t', quote=F)  \" ${NL}\
 \">> R: make libraries usable by non-root users: sudo chmod -R a+r /usr/local/lib/R ; sudo find /usr/local/lib/R -type d | sudo xargs chmod a+x \" ${NL}\
 \">> R: update all installed packages: update.packages(ask=FALSE, checkBuilt=TRUE) \" ${NL}\
 \">> R: read from clipboard: y=data.matrix(read.delim(pipe(\\\"pbpaste\\\"))); \" ${NL}\
@@ -263,6 +264,8 @@ alias cheat="echo \
 \" \" ${NL}\
 \">> RNASEQ SAM --> BAM:  samtools view -bS in.sam > out.bam \" ${NL}\
 \">> RNASEQ BAM --> SAM:  samtools view -h  in.bam > out.sam \" ${NL}\
+\">> RNASEQ samtools view first read of pair only:  samtools view -f  64 file.bam \" ${NL}\
+\">> RNASEQ samtools view second read of pair only: samtools view -f 128 file.bam \" ${NL}\
 \">> RNASEQ sorting and setting the 'sorted' flag:  java -Xmx2g  -jar SortSam.jar INPUT=in.sam SORT_ORDER=coordinate OUTPUT=out_sorted.sam \" ${NL}\
 \">> RNASEQ View BAM header: samtools view -H  in.bam \" ${NL}\
 \">> RNASEQ Merge BAM files in subdirectories: for f in * ; do samtools merge \\\${f}_merged.bam \\\$f/*.bam; done \" ${NL}\
@@ -728,7 +731,7 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
     D=${1%/}
     DARCH=${D}_ARCHIVE
     TARGET=/bag_of_holding/work_archive/${D}
-    echo "We would like to move the directory (without a slash) \"${D}\" to the final target \"${TARGET}\"... sound ok to you? Select a NUMERIC option below:"
+    echo "We would like to move the directory (without a slash) \"${D}\" to the final TAPE DRIVE target \"${TARGET}\"... sound ok to you? Select a NUMERIC option below:"
     select yn in "[Cancel]" "Move those files!"; do
 	case $yn in
 	    Move*) sudo mv ./${D} ./${DARCH}
@@ -744,7 +747,7 @@ function neararchive { # usage: cd /work/projects  then: "workarchive myproj-123
     D=${1%/}
     DARCH=${D}_ARCHIVE
     TARGET=/nearline_storage/projects/${D}
-    echo "We would like to move the directory (without a slash) \"${D}\" to the final target \"${TARGET}\"... sound ok to you? Select a NUMERIC option below:"
+    echo "We would like to move the directory (without a slash) \"${D}\" to the final SECONDARY STORAGE target \"${TARGET}\"... sound ok to you? Select a NUMERIC option below:"
     select yn in "[Cancel]" "Move those files!"; do
 	case $yn in
 	    Move*) sudo mv ./${D} ./${DARCH}
