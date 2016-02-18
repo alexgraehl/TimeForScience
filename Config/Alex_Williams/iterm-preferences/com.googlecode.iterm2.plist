@@ -49,9 +49,17 @@
 	<key>NSWindow Frame NSFontPanel</key>
 	<string>1563 110 931 383 0 0 2560 1417 </string>
 	<key>NSWindow Frame Preferences</key>
-	<string>269 197 606 456 0 0 2560 1417 </string>
+	<string>269 516 606 456 0 0 2560 1417 </string>
+	<key>NSWindow Frame SUUpdateAlert</key>
+	<string>972 768 620 392 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>461 370 1465 987 0 0 2560 1417 </string>
+	<string>4 422 1465 987 0 0 2560 1417 </string>
+	<key>NSWindow Frame iTerm Window 1</key>
+	<string>4 10 1276 1407 0 0 2560 1417 </string>
+	<key>NSWindow Frame iTerm Window 2</key>
+	<string>364 158 1465 987 0 0 2560 1417 </string>
+	<key>NSWindow Frame iTerm Window 3</key>
+	<string>494 50 1501 987 0 0 2560 1417 </string>
 	<key>New Bookmarks</key>
 	<array>
 		<dict>
@@ -693,8 +701,14 @@
 			<string>/Users/alexgw</string>
 		</dict>
 	</array>
+	<key>NoSyncCommandHistoryHasEverBeenUsed</key>
+	<true/>
 	<key>NoSyncLastTipTime</key>
-	<real>475572997.35222399</real>
+	<real>477469332.72428298</real>
+	<key>NoSyncNeverRemindPrefsChangesLostForFile</key>
+	<true/>
+	<key>NoSyncNeverRemindPrefsChangesLostForFile_selection</key>
+	<integer>1</integer>
 	<key>NoSyncPermissionToShowTip</key>
 	<true/>
 	<key>NoSyncTimeOfFirstLaunchOfVersionWithTip</key>
@@ -703,6 +717,17 @@
 	<array>
 		<string>000</string>
 		<string>0000</string>
+		<string>0001</string>
+		<string>0002</string>
+		<string>0003</string>
+		<string>0004</string>
+		<string>0005</string>
+		<string>0006</string>
+		<string>0007</string>
+		<string>0008</string>
+		<string>0009</string>
+		<string>0010</string>
+		<string>0011</string>
 	</array>
 	<key>PointerActions</key>
 	<dict>
@@ -748,7 +773,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2016-01-27T07:36:27Z</date>
+	<date>2016-02-17T08:48:12Z</date>
 	<key>SUSendProfileInfo</key>
 	<false/>
 	<key>ToolbeltTools</key>
@@ -757,7 +782,7 @@
 		<string>Jobs</string>
 	</array>
 	<key>iTerm Version</key>
-	<string>2.9.20160113</string>
+	<string>2.9.20160206</string>
 	<key>kCPKSelectionViewPreferredModeKey</key>
 	<integer>0</integer>
 	<key>kCPKSelectionViewShowHSBTextFieldsKey</key>
