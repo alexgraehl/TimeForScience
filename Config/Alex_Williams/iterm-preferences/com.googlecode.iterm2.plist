@@ -49,36 +49,14 @@
 	<key>NSWindow Frame NSFontPanel</key>
 	<string>1563 110 931 383 0 0 2560 1417 </string>
 	<key>NSWindow Frame Preferences</key>
-<<<<<<< HEAD
-	<string>269 284 606 456 0 0 2560 1417 </string>
-	<key>NSWindow Frame SUUpdateAlert</key>
-	<string>972 768 620 392 0 0 2560 1417 </string>
+	<string>269 197 606 456 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>385 135 1465 987 0 0 2560 1417 </string>
-	<key>NSWindow Frame iTerm Window 1</key>
-	<string>4 10 1276 1407 0 0 2560 1417 </string>
-	<key>NSWindow Frame iTerm Window 2</key>
-	<string>364 158 1465 987 0 0 2560 1417 </string>
-	<key>NSWindow Frame iTerm Window 3</key>
-	<string>494 50 1501 987 0 0 2560 1417 </string>
-=======
-	<string>269 255 606 456 0 0 2560 1417 </string>
-	<key>NSWindow Frame SUUpdateAlert</key>
-	<string>972 768 620 392 0 0 2560 1417 </string>
-	<key>NSWindow Frame iTerm Window 0</key>
-	<string>1280 10 1276 1407 0 0 2560 1417 </string>
-	<key>NSWindow Frame iTerm Window 1</key>
-	<string>4 10 2554 1407 0 0 2560 1417 </string>
-	<key>NSWindow Frame iTerm Window 2</key>
-	<string>0 10 1276 1407 0 0 2560 1417 </string>
->>>>>>> a00d3f78df865fc5c9d05754015b33b52e94d8d0
+	<string>461 370 1465 987 0 0 2560 1417 </string>
 	<key>New Bookmarks</key>
 	<array>
 		<dict>
 			<key>ASCII Anti Aliased</key>
 			<true/>
-			<key>Allow Title Reporting</key>
-			<false/>
 			<key>Ambiguous Double Width</key>
 			<false/>
 			<key>Ansi 0 Color</key>
@@ -326,7 +304,6 @@
 				<string>ssh</string>
 				<string>slogin</string>
 				<string>telnet</string>
-				<string>tmux</string>
 			</array>
 			<key>Keyboard Map</key>
 			<dict>
@@ -626,13 +603,13 @@
 			<key>Option Key Sends</key>
 			<integer>2</integer>
 			<key>Prompt Before Closing 2</key>
-			<integer>2</integer>
+			<false/>
 			<key>Right Option Key Sends</key>
 			<integer>2</integer>
 			<key>Rows</key>
 			<integer>48</integer>
 			<key>Screen</key>
-			<integer>-2</integer>
+			<integer>-1</integer>
 			<key>Scrollback Lines</key>
 			<integer>1000</integer>
 			<key>Selected Text Color</key>
@@ -663,8 +640,6 @@
 			</dict>
 			<key>Send Code When Idle</key>
 			<false/>
-			<key>Session Close Undo Timeout</key>
-			<integer>30</integer>
 			<key>Shortcut</key>
 			<string></string>
 			<key>Silence Bell</key>
@@ -718,49 +693,17 @@
 			<string>/Users/alexgw</string>
 		</dict>
 	</array>
-	<key>NoSyncCommandHistoryHasEverBeenUsed</key>
-	<true/>
 	<key>NoSyncLastTipTime</key>
-<<<<<<< HEAD
-	<real>476695014.58839601</real>
-=======
-	<real>477359324.04926401</real>
->>>>>>> a00d3f78df865fc5c9d05754015b33b52e94d8d0
-	<key>NoSyncNeverRemindPrefsChangesLostForFile</key>
-	<true/>
-	<key>NoSyncNeverRemindPrefsChangesLostForFile_selection</key>
-	<integer>0</integer>
+	<real>475572997.35222399</real>
 	<key>NoSyncPermissionToShowTip</key>
 	<true/>
 	<key>NoSyncTimeOfFirstLaunchOfVersionWithTip</key>
-<<<<<<< HEAD
 	<real>474976688.23196298</real>
-=======
-	<real>475632403.828116</real>
-	<key>NoSyncTimeOfLastPromo</key>
-	<real>475632245.77938402</real>
-	<key>NoSyncTimeOfLastPromoDownload</key>
-	<real>475632245.77972102</real>
->>>>>>> a00d3f78df865fc5c9d05754015b33b52e94d8d0
 	<key>NoSyncTipsToNotShow</key>
 	<array>
 		<string>000</string>
 		<string>0000</string>
-		<string>0001</string>
-<<<<<<< HEAD
-		<string>0002</string>
-		<string>0003</string>
-		<string>0004</string>
-		<string>0005</string>
-		<string>0006</string>
-		<string>0007</string>
-		<string>0008</string>
 	</array>
-=======
-	</array>
-	<key>OpenTmuxWindowsIn</key>
-	<integer>2</integer>
->>>>>>> a00d3f78df865fc5c9d05754015b33b52e94d8d0
 	<key>PointerActions</key>
 	<dict>
 		<key>Button,1,1,,</key>
@@ -805,22 +748,16 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-<<<<<<< HEAD
-	<date>2016-02-07T07:37:03Z</date>
+	<date>2016-01-27T07:36:27Z</date>
 	<key>SUSendProfileInfo</key>
 	<false/>
-=======
-	<date>2016-02-16T23:48:25Z</date>
-	<key>TabStyle</key>
-	<integer>0</integer>
->>>>>>> a00d3f78df865fc5c9d05754015b33b52e94d8d0
 	<key>ToolbeltTools</key>
 	<array>
 		<string>Profiles</string>
 		<string>Jobs</string>
 	</array>
 	<key>iTerm Version</key>
-	<string>2.9.20160206</string>
+	<string>2.9.20160113</string>
 	<key>kCPKSelectionViewPreferredModeKey</key>
 	<integer>0</integer>
 	<key>kCPKSelectionViewShowHSBTextFieldsKey</key>
