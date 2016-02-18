@@ -240,6 +240,7 @@ alias cheat="echo \
 \">> UNIX / APTITUTDE: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
 \">> UNIX / APT-GET: upgrade only EXISTING packages matching wildcard pattern: apt-get install --only-upgrade 'r-cran*' \" ${NL}\
 \">> UNIX / APT-GET: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
+\">> SSH without loading bashrc or bash_profile: ssh -t user@server bash --norc --noprofile \" ${NL}\
 \">> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub \" ${NL}\
 \"                        to server ~/.ssh/authorized_keys \" ${NL}\
 \">> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ${NL}\
