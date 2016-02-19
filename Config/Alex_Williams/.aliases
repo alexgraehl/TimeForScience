@@ -298,7 +298,7 @@ alias cheat="echo \
 
 #pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
 
-if [[ -n `which exa` ]] ; then # check for 'exa' -- the 'ls' replacement
+if [[ -n `which examjd 2> /dev/null` ]] ; then # check for 'exa' -- the 'ls' replacement
     alias ls='exa'
     alias ll='exa -l -a'
     alias lmac='exa'
