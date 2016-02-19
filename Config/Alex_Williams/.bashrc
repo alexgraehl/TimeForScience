@@ -114,6 +114,11 @@ export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"
 
 # ============================= DONE WITH PATH STUFF ============================
 
+function agw_cmd_exists() {
+    # or try: if [[ -n `which exa 2> /dev/null` ]] ...
+    type "$1" &> /dev/null ;
+    #export -f agw_cmd_exists
+}
 
 
 # Alias definitions.
