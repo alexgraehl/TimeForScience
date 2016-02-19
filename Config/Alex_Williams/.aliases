@@ -158,7 +158,7 @@ alias cheat="echo \
 \">> R: Aggregate rows / average rows with same name (mean): mAGG <- t(sapply(by(MAT,rownames(MAT),colMeans),identity)) \" ${NL}\
 \">> R: Read bzip/gz file:  x <- read.table(bzfile(\\\"name.bz2\\\") or gzfile(...) \" ${NL}\
 \">> R: Read from stdin:    x <- read.table(pipe(\\\"cat something name.bz2 | bunzip2\\\") \" ${NL}\
-\">> R: Install package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
+\">> R: Pick CRAN mirror, no GUI popup (install.packages): chooseCRANmirror(graphics=F) \" ${NL}\
 \">> R: Install package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
 \">> R: sessionInfo(): show packages. ls('package:something') shows details. '.libPaths()' shows lib dirs. \" ${NL}\
 \">> R: traceback() - to properly debug. Also: options(error=recover()) \" ${NL}\
@@ -298,7 +298,7 @@ alias cheat="echo \
 
 #pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
 
-if [[ -n `which exa 2> /dev/null` ]] ; then # check for 'exa' -- the 'ls' replacement
+if agw_cmd_exists "exa" ; then # check for 'exa' -- the 'ls' replacement
     alias ls='exa'
     alias ll='exa -l -a'
     alias lmac='exa'
@@ -324,21 +324,25 @@ fi
 
 alias l='ls'
 alias lo='ll -r -t' # Depends on "ll" already being defined above. List by TIME so that NEWEST files are at the bottom
+alias p='pwd -P'
 
 alias c='cd'
-alias p='pwd -P'
-alias tc='randomize_terminal_color.pl -cycle'
-#alias cd='pushd'
-alias b='popd'
 alias ..='cd ..'
+
 #alias ..='pushd ..'
-alias recrash='sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist; sleep 1; sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist'
 alias res='source ~/.bashrc ; source ~/.bash_profile'
 alias mv='mv -i'
 alias cp='cp -i'
 alias kpk='exit'
+
 alias diffdir='diff -rq' ## diff on directories
 
+# Turn on/off crashplan. No longer necessary.
+#alias recrash='sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist; sleep 1; sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist'
+
+alias tc='randomize_terminal_color.pl -cycle'
+#alias cd='pushd'
+alias b='popd'
 
 # Stop Junos Pulse from automatically starting: from https://gist.github.com/Andrewpk/7558715
 # "Be sure to change your /Library/LaunchAgents/net.juniper.pulsetray.plist file to reflect the `KeepAlive` key being set to <false/> as well!"
@@ -625,32 +629,29 @@ function maczip {
 # maybe this will help with escaping? for f in `ls`; do printf "%q " $f; done
 # looks like 'printf' can save the day
 function mini {
-    if [[ "$#" == 1 ]] ; then theCompressedBasename="$1"; ## If you pass it one argument, then that argument will also be the filename
-    else theCompressedBasename="Archive";
-    fi
-    [[ -n `which ionice` ]] && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
-    theCompressedBasename=`echo "$theCompressedBasename" | sed "s/[/]//"` ## Let's remove any slashes from the name of the *output*. That way if someone types "mini MyDir/" it will generate "MyDir.tar.bz2" and NOT "MyDir/.tar.bz2"
-    if [[ $(tar --version) =~ .*bsdtar.* ]]; then TAREX=" -c -v "  # BSD tar
-    else TAREX=" --preserve-permissions --atime-preserve -c -v "   # GNU tar
-    fi
-    if [[ -f "${theCompressedBasename}.tar" || -f "${theCompressedBasename}.tar.bz2" ]] ; then
-	echo "mini: HALTING: Cannot create a new archive---either ${theCompressedBasename}.tar or ${theCompressedBasename}.tar.bz2 already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive!!! Delete it and compress again." ;
+    [[ "$#" == 1 ]]         && compressedBasename="$1" || compressedBasename="Archive" ## If you pass it one argument, then that argument will also be the filename
+    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
+    
+    compressedBasename=`echo "$compressedBasename" | sed "s/[/]//"` ## Let's remove any slashes from the name of the *output*. That way if someone types "mini MyDir/" it will generate "MyDir.tar.bz2" and NOT "MyDir/.tar.bz2"
+    if [[ $(tar --version) =~ .*bsdtar.* ]]; then TAREX=" -c -v "      # BSD tar
+    else TAREX=" --preserve-permissions --atime-preserve -c -v "; fi   # GNU tar
+    if [[ -f "${compressedBasename}.tar" || -f "${compressedBasename}.tar.bz2" ]] ; then
+	echo "mini: HALTING: Cannot create a new archive---either ${compressedBasename}.tar or ${compressedBasename}.tar.bz2 already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive!!! Delete it and compress again." ;
 	return ;
     else
 	if [[ "$#" -gt 1 ]] ; then echo "Adding a total of $# files to the archive." ; fi
-	for var in "$@"; do echo " * Archiving $var --> ${theCompressedBasename}.tar.bz2" ; done
+	for var in "$@"; do echo " * Archiving $var --> ${compressedBasename}.tar.bz2" ; done
 	echo "[TAR] command running now..." ;
-	${AGW_IONICE} tar $TAREX --bzip2 -f "${theCompressedBasename}.tar.bz2" $@ ;
+	${AGW_IONICE} tar $TAREX --bzip2 -f "${compressedBasename}.tar.bz2" $@ ;
 	echo "[Done]" ;
     fi
 }
 
 ## Extracts any number of compressed files. Usage: 'unmini a.bz2 b.tar.gz c.tar.bz2 ... etc...'
 function unmini {
-    [[ -n `which ionice` ]] && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
-    if [[ $(tar --version) =~ .*bsdtar.* ]]; then TARPARAM=" -x -v "      # BSD tar
-    else TARPARAM=" --preserve-permissions --atime-preserve --keep-old-files -x -v "   # GNU tar
-    fi
+    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
+    if [[ $(tar --version) =~ .*bsdtar.* ]]; then TARPARAM=" -x -v "                 # BSD tar
+    else TARPARAM=" --preserve-permissions --atime-preserve --keep-old-files -x -v "; fi # GNU tar
     for an in "$@"; do # Loop through all the input arguments
 	echo " * Decompressing \"$an\"..."
 	case "$an" in 
@@ -660,7 +661,7 @@ function unmini {
 	    *.gz)      EX_CMD="gzip  --decompress " ;; 
 	    *.bz2)     EX_CMD="bzip2 --decompress " ;;
 	    *.zip)     echo "ZIP commands are a disaster and are not supported yet. Sorry."; return ;;
-	    *) echo "Failed to detect type of archive <$an>... aborting." ; return ;;
+	    *) echo "unmini has failed to detect type of archive (filename is <$an>. Recommendation: make sure that file exists)... aborting." ; return ;;
 	esac
 	$AGW_IONICE $EX_CMD "$an" # <-- actually decompress the file
     done
