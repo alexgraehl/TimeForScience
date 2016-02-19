@@ -298,14 +298,27 @@ alias cheat="echo \
 
 #pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
 
-[[ "$color_prompt" && "$isMac" ]] && AGW_LS_OPT=' -F -G ' #-@ ' ## Mac: Color option is -G. Also, on a Mac, show the extended attributes (-@)
-[[ "$color_prompt" && (-z "$isMac") ]] && AGW_LS_OPT=' --indicator-style=slash --color=auto ' ## Ubuntu: color is --color=auto
+if [[ -n `which exa` ]] ; then # check for 'exa' -- the 'ls' replacement
+    alias ls='exa'
+    alias ll='exa -l -a'
+    alias lmac='exa'
+else
+    if [[ "$color_prompt" && "$isMac" ]]; then
+	AGW_LS_OPT=' -F -G ' #-@ ' ## Mac: Color option is -G. Also, on a Mac, show the extended attributes (-@)
+	AGW_MAC_EXTENDED_ATTR= ' -@ '
+    elif [[ "$color_prompt" && (-z "$isMac") ]]; then
+	AGW_LS_OPT=' --indicator-style=slash --color=auto ' ## Ubuntu: color is --color=auto
+	AGW_MAC_EXTENDED_ATTR= ' '  # mac-specific, but we are NOT on a Mac!
+    else
+	AGW_LS_OPT=''
+	AGW_MAC_EXTENDED_ATTR= ' '  # mac-specific, but we are NOT on a Mac!
+    fi
+    alias ls="/bin/ls               ${AGW_LS_OPT} "
+    alias ll="/bin/ls   -l -h -A -F ${AGW_LS_OPT} "
+    alias lmac="/bin/ls -l -h -A -F ${AGW_LS_OPT} ${AGW_MAC_EXTENDED_ATTR} " # mac-specific with EXTENDED attributes (-@)
+fi
 
-alias ls="/bin/ls ${AGW_LS_OPT} "
 alias l='ls'
-
-alias ll="/bin/ls -l -h -A -F ${AGW_LS_OPT} "
-alias lmac="/bin/ls -l -h -A -F ${AGW_LS_OPT} -@ " # mac-specific with EXTENDED attributes (-@)
 alias lo='ll -r -t' # Depends on "ll" already being defined above. List by TIME so that NEWEST files are at the bottom
 
 alias c='cd'
