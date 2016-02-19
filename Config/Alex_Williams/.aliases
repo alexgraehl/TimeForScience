@@ -158,7 +158,7 @@ alias cheat="echo \
 \">> R: Aggregate rows / average rows with same name (mean): mAGG <- t(sapply(by(MAT,rownames(MAT),colMeans),identity)) \" ${NL}\
 \">> R: Read bzip/gz file:  x <- read.table(bzfile(\\\"name.bz2\\\") or gzfile(...) \" ${NL}\
 \">> R: Read from stdin:    x <- read.table(pipe(\\\"cat something name.bz2 | bunzip2\\\") \" ${NL}\
-\">> R: Install package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
+\">> R: Pick CRAN mirror, no GUI popup (install.packages): chooseCRANmirror(ind=81) \" ${NL}\
 \">> R: Install package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
 \">> R: sessionInfo(): show packages. ls('package:something') shows details. '.libPaths()' shows lib dirs. \" ${NL}\
 \">> R: traceback() - to properly debug. Also: options(error=recover()) \" ${NL}\
