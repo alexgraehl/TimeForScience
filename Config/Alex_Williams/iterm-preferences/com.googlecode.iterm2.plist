@@ -59,7 +59,7 @@
 	<key>NSWindow Frame SUUpdateAlert</key>
 	<string>972 768 620 392 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>776 100 1465 987 0 0 2560 1417 </string>
+	<string>385 135 1465 987 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
 	<string>4 10 2554 1407 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 2</key>
@@ -742,12 +742,14 @@
 	<key>NoSyncCommandHistoryHasEverBeenUsed</key>
 	<true/>
 	<key>NoSyncLastTipTime</key>
-	<real>477534155.380588</real>
+	<real>477948471.25919998</real>
 	<key>NoSyncNeverRemindPrefsChangesLostForFile</key>
 	<true/>
 	<key>NoSyncNeverRemindPrefsChangesLostForFile_selection</key>
 	<integer>1</integer>
 	<key>NoSyncPermissionToShowTip</key>
+	<true/>
+	<key>NoSyncSuppressAnnyoingBellOffer</key>
 	<true/>
 	<key>NoSyncTimeOfFirstLaunchOfVersionWithTip</key>
 	<real>475632403.828116</real>
@@ -762,6 +764,9 @@
 		<string>0001</string>
 		<string>0002</string>
 		<string>0003</string>
+		<string>0004</string>
+		<string>0005</string>
+		<string>0006</string>
 	</array>
 	<key>OpenTmuxWindowsIn</key>
 	<integer>2</integer>
@@ -811,7 +816,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2016-02-18T22:14:09Z</date>
+	<date>2016-02-22T22:14:28Z</date>
 	<key>TabStyle</key>
 	<integer>1</integer>
 	<key>ToolbeltTools</key>
