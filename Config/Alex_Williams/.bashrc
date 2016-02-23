@@ -118,6 +118,9 @@ function agw_cmd_exists() {
     # or try: if [[ -n `which exa 2> /dev/null` ]] ...
     type "$1" &> /dev/null ;
     #export -f agw_cmd_exists
+    # This returns something that will show up as true
+    # in an "if" statement if a command exists, and false otherwise.
+    # Note: the exit code is backwards--0 = exists, 1 = nope
 }
 
 

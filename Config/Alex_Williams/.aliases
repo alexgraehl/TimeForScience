@@ -298,7 +298,7 @@ alias cheat="echo \
 
 #pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
 
-if agw_cmd_exists "exa" ; then # check for 'exa' -- the 'ls' replacement
+if [[ $(agw_cmd_exists "exa") && "$isMac" ]]; then # check for 'exa' -- the 'ls' replacement, but only on the Mac---it's slow on Rigel!
     alias ls='exa'
     alias ll='exa -l -a'
     alias lmac='exa'
@@ -319,7 +319,7 @@ else
     
     alias ls="/bin/ls               ${AGW_LS_OPT} "
     alias ll="/bin/ls   -l -h -A -F ${AGW_LS_OPT} "
-    alias lmac="/bin/ls -l -h -A -F ${AGW_LS_OPT} ${AGW_MAC_EXTENDED_ATTR} " # mac-specific with EXTENDED attributes (-@)
+    alias lmac="ll ${AGW_MACEXT} " # mac-specific with EXTENDED attributes (-@)
 fi
 
 alias l='ls'
@@ -340,9 +340,9 @@ alias diffdir='diff -rq' ## diff on directories
 # Turn on/off crashplan. No longer necessary.
 #alias recrash='sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist; sleep 1; sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist'
 
-alias tc='randomize_terminal_color.pl -cycle'
+#alias tc='randomize_terminal_color.pl -cycle'
 #alias cd='pushd'
-alias b='popd'
+#alias b='popd'
 
 # Stop Junos Pulse from automatically starting: from https://gist.github.com/Andrewpk/7558715
 # "Be sure to change your /Library/LaunchAgents/net.juniper.pulsetray.plist file to reflect the `KeepAlive` key being set to <false/> as well!"
