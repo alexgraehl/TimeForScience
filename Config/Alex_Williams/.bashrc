@@ -116,23 +116,8 @@ export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"
 
 function agw_cmd_exists() {
     # or try: if [[ -n `which exa 2> /dev/null` ]] ...
-    type "$1" &> /dev/null ;
-    #export -f agw_cmd_exists
-    # This returns something that will show up as true
-    # in an "if" statement if a command exists, and false otherwise.
-    # Note: the exit code is backwards--0 = exists, 1 = nope
+    type "$1" &> /dev/null
 }
-
-if agw_cmd_exists "ls"; then
-    echo "ls appears to exist"
-fi
-
-if agw_cmd_exists "fdsfds"; then
-    echo "fdsfds appears to exist"
-else
-    echo "fdsfds does not exist"
-fi
-
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
