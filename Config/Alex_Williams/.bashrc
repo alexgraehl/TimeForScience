@@ -123,6 +123,16 @@ function agw_cmd_exists() {
     # Note: the exit code is backwards--0 = exists, 1 = nope
 }
 
+if agw_cmd_exists "ls"; then
+    echo "ls appears to exist"
+fi
+
+if agw_cmd_exists "fdsfds"; then
+    echo "fdsfds appears to exist"
+else
+    echo "fdsfds does not exist"
+fi
+
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
