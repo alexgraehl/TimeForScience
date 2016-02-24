@@ -301,11 +301,11 @@ alias cheat="echo \
 #hasExa=agw_cmd_exists "exa"
 
 #if [[ "$hasExa" && "$isMac" ]]; then # check for 'exa' -- the 'ls' replacement, but only on the Mac---it's slow on Rigel!
-#    alias ls='exa'
-#    alias ll='exa -l -a'
-#    alias lmac='exa'
-if [[ 1 == 0 ]] ; then
-    x1234=1
+
+if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then
+    alias ls='exa'
+    alias ll='exa -l -a'
+    alias lmac='exa'
 else
     if [[ "$color_prompt" && "$isMac" ]]; then
 	AGW_LS_OPT=' -F -G ' #-@ ' ## Mac: Color option is -G. Also, on a Mac, show the extended attributes (-@)

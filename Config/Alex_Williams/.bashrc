@@ -22,8 +22,8 @@ case "$TERM" in
     xterm-color|xterm-256color|screen-256color)	color_prompt=1 ;;
     *)	                        ;;
 esac
-[[ -n "$TMUX" ]] && [[ color_prompt==1 ]] && export TERM=screen-256color
-if [[ "$OSTYPE" == darwin* ]] ; then isMac=1 ; fi
+[[ -n "$TMUX" ]] && [[ color_prompt == 1 ]] && export TERM=screen-256color
+if [[ "$OSTYPE" == darwin* ]] ; then isMac="1" ; fi
 
 COMPYNAME="$HOSTNAME" # <-- we will have to modify this if it's my home machine / some machine where $HOSTNAME doesn't work
 
@@ -117,7 +117,13 @@ export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"
 function agw_cmd_exists() {
     # or try: if [[ -n `which exa 2> /dev/null` ]] ...
     type "$1" &> /dev/null
+    # Usage example: if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then ... 
 }
+#if agw_cmd_exists "exja" && [ 1 == 1 ]; then
+#    echo "exa"
+#else
+#    echo "no exa"
+#fi
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
