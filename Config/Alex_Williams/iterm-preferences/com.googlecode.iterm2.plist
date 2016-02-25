@@ -16,8 +16,6 @@
 	<true/>
 	<key>LoadPrefsFromCustomFolder</key>
 	<true/>
-	<key>NSFontPanelAttributes</key>
-	<string>1, 2</string>
 	<key>NSNavLastRootDirectory</key>
 	<string>~/TimeForScience/Config/Alex_Williams/iterm-preferences</string>
 	<key>NSNavPanelExpandedSizeForOpenMode</key>
@@ -53,17 +51,19 @@
 		<integer>1</integer>
 	</dict>
 	<key>NSWindow Frame NSFontPanel</key>
-	<string>1060 110 1434 700 0 0 2560 1417 </string>
+	<string>1563 110 931 383 0 0 2560 1417 </string>
 	<key>NSWindow Frame Preferences</key>
-	<string>269 255 606 456 0 0 2560 1417 </string>
+	<string>269 719 606 456 0 0 2560 1417 </string>
 	<key>NSWindow Frame SUUpdateAlert</key>
 	<string>972 768 620 392 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>385 135 1465 987 0 0 2560 1417 </string>
+	<string>1095 69 1465 987 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
-	<string>4 10 2554 1407 0 0 2560 1417 </string>
+	<string>1095 430 1465 987 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 2</key>
-	<string>0 10 1276 1407 0 0 2560 1417 </string>
+	<string>364 158 1465 987 0 0 2560 1417 </string>
+	<key>NSWindow Frame iTerm Window 3</key>
+	<string>494 50 1501 987 0 0 2560 1417 </string>
 	<key>New Bookmarks</key>
 	<array>
 		<dict>
@@ -742,21 +742,15 @@
 	<key>NoSyncCommandHistoryHasEverBeenUsed</key>
 	<true/>
 	<key>NoSyncLastTipTime</key>
-	<real>477948471.25919998</real>
+	<real>478062119.64685899</real>
 	<key>NoSyncNeverRemindPrefsChangesLostForFile</key>
 	<true/>
 	<key>NoSyncNeverRemindPrefsChangesLostForFile_selection</key>
 	<integer>1</integer>
 	<key>NoSyncPermissionToShowTip</key>
 	<true/>
-	<key>NoSyncSuppressAnnyoingBellOffer</key>
-	<true/>
 	<key>NoSyncTimeOfFirstLaunchOfVersionWithTip</key>
-	<real>475632403.828116</real>
-	<key>NoSyncTimeOfLastPromo</key>
-	<real>475632245.77938402</real>
-	<key>NoSyncTimeOfLastPromoDownload</key>
-	<real>475632245.77972102</real>
+	<real>474976688.23196298</real>
 	<key>NoSyncTipsToNotShow</key>
 	<array>
 		<string>000</string>
@@ -767,6 +761,16 @@
 		<string>0004</string>
 		<string>0005</string>
 		<string>0006</string>
+		<string>0007</string>
+		<string>0008</string>
+		<string>0009</string>
+		<string>0010</string>
+		<string>0011</string>
+		<string>0012</string>
+		<string>0013</string>
+		<string>0014</string>
+		<string>0015</string>
+		<string>0016</string>
 	</array>
 	<key>OpenTmuxWindowsIn</key>
 	<integer>2</integer>
@@ -805,8 +809,6 @@
 	</dict>
 	<key>PrefsCustomFolder</key>
 	<string>/Users/alexgw/TimeForScience/Config/Alex_Williams/iterm-preferences</string>
-	<key>SUAutomaticallyUpdate</key>
-	<false/>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedAlternateAppNameKey</key>
@@ -816,7 +818,9 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2016-02-22T22:14:28Z</date>
+	<date>2016-02-24T08:42:11Z</date>
+	<key>SUSendProfileInfo</key>
+	<false/>
 	<key>TabStyle</key>
 	<integer>1</integer>
 	<key>ToolbeltTools</key>
