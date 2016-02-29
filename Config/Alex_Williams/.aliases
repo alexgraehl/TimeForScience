@@ -257,8 +257,8 @@ alias cheat="echo \
 \">> UNIX/Perl fast sort with ONE header line: cat FILE | perl -e 'print scalar (<>); print sort <>' > OUTFILE \" ${NL}\
 \">> Perl: REGEXP multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \\\$ work \" ${NL}\
 \">> Perl/web: Chrome web form non-breaking space (ASCII 160) is [\\xA0] (or 'use feature qw(unicode_strings);') \" ${NL}\
-\">> Perl:  CPAN invocation: perl -MCPAN -e shell \" ${NL}\
-\">> Perl: CPAN upgrade-all: perl -MCPAN -e \\\"upgrade /(.\\*)/\\\" \" ${NL}\
+\">> Perl: CPAN invocation: sudo perl -MCPAN -e shell \" ${NL}\
+\">> Perl: CPAN upgrade all WITHOUT prompting: PERL_MM_USE_DEFAULT=1 && sudo perl -MCPAN -e shell >> then o conf build_requires_install_policy yes  ; o conf prerequisites_policy 'follow'  ; o conf commit ;  upgrade /(.\\*)/\\\" \" ${NL}\
 \">> Perl: Backreferences/does something show up twice on a line: perl -n -e 'print ((\\\$_ =~ /\b(Something\d+)\s.\g1/) ? qq{match: \\\$1\\n} : qq{Nope\\n});' \" ${NL}\
 \">> EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
 \">> EMACS: install new packages: list-packages \" ${NL}\
