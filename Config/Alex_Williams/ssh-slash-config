@@ -10,9 +10,15 @@ ServerAliveCountMax 90
 
 Host *
     User             alexgw
+    KeepAlive        yes
+    ForwardX11       yes
     Compression      yes
     CompressionLevel 9
-    KeepAlive        yes
 
 
+#Host whatever.only.internal.use internal
+#   User         yourname
+#   HostName     whatever.only.internal.use
+#   ProxyCommand ssh yourname@publicmachine.edu nc %h %p 2> /dev/null
+#
 
