@@ -611,14 +611,14 @@ function maczip {
     if [[ "$#" == 1 ]] ; then theCompressedBasename="$1"; ## If you pass it one argument, then that argument will also be the filename
     else theCompressedBasename="Archive_zipped_without_Mac_files";
     fi
-    theCompressedBasename=`echo "$theCompressedBasename" | sed "s/[/]//"` ## Let's remove any slashes from the name of the *output*. That way if someone types "mini MyDir/" it will generate "MyDir.tar.bz2" and NOT "MyDir/.tar.bz2"
+    theCompressedBasename=`echo "$theCompressedBasename" | sed "s/[/]//"` ## Let's remove any slashes from the name of the *output*. That way if someone types "mini MyDir/" it will generate "MyDir.zip" and NOT "MyDir/.zip"
     if [[ -f "${theCompressedBasename}.zip" ]] ; then
-	echo "mini: HALTING: Cannot create a new archive---either ${theCompressedBasename}.zip already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive!!! Delete it and compress again." ;
+	echo "mini: HALTING: Cannot create a new archive---perhaps ${theCompressedBasename}.zip already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive!!! Delete it and compress again." ;
 	return ;
     else
-	if [[ "$#" -gt 1 ]] ; then echo "Adding a total of $# files to the archive." ; fi
+	if [[ "$#" -gt 1 ]] ; then echo "Adding a total of $# files to the new zip archive, which OMITS Mac-specific files (e.g. .DS_Store)." ; fi
 	for var in "$@"; do echo " * Archiving $var --> ${theCompressedBasename}.zip" ; done
-	echo "[TAR] command running now..." ;
+	echo "[ZIP] command running now..." ;
 	zip -r -X "${theCompressedBasename}.zip" $@ -x "*.DS_Store" ;
 	echo "[Done]" ;
     fi
