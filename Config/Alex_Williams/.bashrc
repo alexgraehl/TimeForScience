@@ -10,6 +10,8 @@
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
 # for examples
 
+# This site also has some useful commands: https://github.com/mrzool/bash-sensible/blob/master/sensible.bash
+
 # ============= Set up things below ONLY if this shell is interactive ===============
 
 if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
@@ -191,14 +193,51 @@ fi
 
 ## ===============================================
 ## ====== TERMINAL HISTORY =======================
-export HISTSIZE=30123
-export HISTCONTROL=ignoredups # Do not save duplicate/blank lines to the history
-export HISTIGNORE="ls:kpk:exit:p:pwd:rr:clear:history:fg:bg" ## Commands that are NOT saved to the history!
+export HISTSIZE=500000
+export HISTFILESIZE=100000
+HISTCONTROL="erasedups:ignoreboth"  # Avoid duplicate entries
+export HISTIGNORE="&:[ ]*:ls:l:ll:kpk:exit:p:pwd:rr:clear:history:fg:bg" ## Commands that are NOT saved to the history!
+# Useful timestamp format
+HISTTIMEFORMAT='%F %T '
 set revert-all-at-newline on # <-- prevents editing of history lines! If this gets turned off, it is SUPER annoying.
 shopt -s histappend # Save terminal history between sessions
+shopt -s cmdhist   # Save multi-line commands as one command
 PROMPT_COMMAND='history -a' ## save ALL terminal histories
 ## ====== TERMINAL HISTORY =======================
 ## ===============================================
+
+
+
+
+
+
+## BETTER DIRECTORY NAVIGATION ##
+
+# Prepend cd to directory names automatically
+#shopt -s autocd
+# Correct spelling errors during tab-completion
+#shopt -s dirspell
+# Correct spelling errors in arguments supplied to cd
+#shopt -s cdspell
+
+# This defines where cd looks for targets
+# Add the directories you want to have fast access to, separated by colon
+# Ex: CDPATH=".:~:~/projects" will look for targets in the current working directory, in home and in the ~/projects folder
+#CDPATH="."
+
+# This allows you to bookmark your favorite places across the file system
+# Define a variable containing a path and you will be able to cd into it regardless of the directory you're in
+#shopt -s cdable_vars
+
+# Examples:
+# export dotfiles="$HOME/dotfiles"
+# export projects="$HOME/projects"
+# export documents="$HOME/Documents"
+# export dropbox="$HOME/Dropbox"
+
+
+
+
 
 stty -ixon  # Disable the totally useless START/STOP output control (enables you to pause input by pressing the Ctrl-S key sequence and resume output by pressing the Ctrl-Q key sequence)
 
@@ -211,6 +250,22 @@ shopt -s cmdhist ## Save multi-line pasted commands into one single history comm
 #shopt -s lithist ##
 shopt -s no_empty_cmd_completion ## Don't display ALL commands on an empty-line tab
 shopt -s nocaseglob ## Match glob / regexp in case-insensitive fashion
+
+# Prevent file overwrite on stdout redirection
+set -o noclobber
+
+# Automatically trim long paths in the prompt (requires Bash 4.x)
+PROMPT_DIRTRIM=2
+
+# Perform file completion in a case insensitive fashion
+bind "set completion-ignore-case on"
+
+# Treat hyphens and underscores as equivalent
+bind "set completion-map-case on"
+
+# Display matches for ambiguous patterns at first tab press
+bind "set show-all-if-ambiguous on"
+
 
 # set variable identifying the chroot you work in (used in the prompt below)
 if [[ -z $debian_chroot ]] && [[ -r /etc/debian_chroot ]]; then
