@@ -196,7 +196,7 @@ fi
 export HISTSIZE=500000
 export HISTFILESIZE=100000
 HISTCONTROL="erasedups:ignoreboth"  # Avoid duplicate entries
-export HISTIGNORE="&:[ ]*:ls:l:ll:kpk:exit:p:pwd:rr:clear:history:fg:bg" ## Commands that are NOT saved to the history!
+export HISTIGNORE="&:[ ]*:kpk:exit:p:pwd:rr:clear:history:fg:bg" ## Commands that are NOT saved to the history!
 # Useful timestamp format
 HISTTIMEFORMAT='%F %T '
 set revert-all-at-newline on # <-- prevents editing of history lines! If this gets turned off, it is SUPER annoying.
