@@ -816,6 +816,7 @@ function wholog {
 function qing {
     echo "'qing' is 'qstats' but only showing NON-COMPLETED jobs..."
     qstats | grep -v ' COMPLETE '
+    qstat -f -Q
 }
 
 alias tab="column -t -s $'\t'"
