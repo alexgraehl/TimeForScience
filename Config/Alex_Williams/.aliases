@@ -819,4 +819,12 @@ function qing {
     qstat -f -Q
 }
 
+function mypylint {
+    if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass AT LEAST ONE PYTHON filename into this function!"; return; fi
+    echo "Lintifying this file... $FILE"
+    DISABLE_THESE_CHECKS="locally-disabled,global-variable-not-assigned,line-too-long,superfluous-parens,bad-whitespace,unused-wildcard-import,trailing-whitespace,unnecessary-pass,missing-docstring,invalid-name,global-statement,multiple-statements,too-many-locals,too-many-statements,too-many-branches,too-few-public-methods,too-many-lines,too-many-instance-attributes,too-many-arguments,wildcard-import,bad-continuation,unidiomatic-typecheck,expression-not-assigned,deprecated-lambda"
+    pylint --jobs=4 --output-format=colorized --disable=$DISABLE_THESE_CHECKS "$@"
+    # Best usage is: mypylint | s for viewing the colorized output!
+}
+
 alias tab="column -t -s $'\t'"
