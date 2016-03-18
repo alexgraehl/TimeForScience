@@ -1,5 +1,11 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
+# ======================
+# "Unofficial bash strict mode: " #!/bin/bash
+# set -euo pipefail
+# IFS=$'\n\t'
+# ======================
+
 if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
     source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
