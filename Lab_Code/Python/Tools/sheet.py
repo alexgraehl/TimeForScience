@@ -744,10 +744,11 @@ class AGW_Table:
         ## We want to see which file we should read from.
         ## 1. We either got a HYPHEN, which is the UNIX shorthand for "read from STDIN"
         ## 2. or we got a real filename, in which case we try to read the file from the filesystem
-        if (theFilename is kSTDIN_HYPHEN):                      GlobalCurrentFile = sys.stdin
-        elif re.search(r"[.](gz|gzip)", theFilename.lower()):   GlobalCurrentFile = gzip.open(theFilename) # read GZIP
-        elif re.search(r"[.](bz2|bzip2)", theFilename.lower()): GlobalCurrentFile = bz2.BZ2File(theFilename) # read BZIP2
-        else:                                                   GlobalCurrentFile = open(theFilename, 'r') # read NORMAL TEXT
+        if (theFilename is kSTDIN_HYPHEN):                        GlobalCurrentFile = sys.stdin
+        elif re.search(r"[.](Z|gz|gzip)$", theFilename, re.IGNORECASE):  GlobalCurrentFile = gzip.open(theFilename) # read GZIP
+        elif re.search(r"[.](bz2|bzip2)$", theFilename, re.IGNORECASE):  GlobalCurrentFile = bz2.BZ2File(theFilename) # read BZIP2
+        elif re.search(r"[.](zip)$",       theFilename, re.IGNORECASE):  raise "Sadly we cannot look at a .ZIP file directly!"
+        else:                                                     GlobalCurrentFile = open(theFilename, 'r') # read NORMAL TEXT
         print("Loaded the file named " + theFilename)
         GlobalCurrentFilename = theFilename
         GlobalCurrentNumLinesLoaded = 0
