@@ -339,6 +339,8 @@ alias p='pwd -P'
 
 alias c='cd'
 alias ..='cd ..'
+#alias ../='cd ..'
+#alias ../../='cd ../../'
 
 #alias ..='pushd ..'
 alias res='source ~/.bashrc ; source ~/.bash_profile'
