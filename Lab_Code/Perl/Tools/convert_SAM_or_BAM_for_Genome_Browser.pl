@@ -279,8 +279,7 @@ for my $originalInputFilename (@INPUT_FILES) {
 	($scaleFactor >= 0.99999) or die "BUG REPORT 87X: how is the scale factor LESS than 1? That should be impossible. This is a programming error! We are supposed to scale the smaller files UP to the largest file, so no files should be scaled down at all!";
     }
 
-    my $scaleString = ($shouldScale) ? ".scaled_by_${scaleFactor}" : ""; # Change the title of the files, if the user specified scaling.
-
+    my $scaleString        = ($shouldScale) ? ".scaled_by_${scaleFactor}" : ""; # Change the title of the files, if the user specified scaling.
     my $bedGraphScaledFile = "Browser.tmp.${bamPrefixWithoutFileExtension}${scaleString}.bedgraph";
     my $bigWigOutFile      = "Browser.${bamPrefixWithoutFileExtension}${scaleString}.bw";
 
