@@ -17,16 +17,35 @@ my $WIG_TO_BIGWIG_EXE = "wigToBigWig";
 sub printUsageAndQuit() { print STDOUT <DATA>; exit(0); }
 
 sub datePrint($) {
-    my $d = `date`;
-    chomp($d);
-    print $d . ":\t" . $_[0];
+	my ($msg) = @_;
+	my $d = `date`; chomp($d);
+	chomp($msg);
+	print "${d}:\t${msg}\n";
 }
 
 sub cleanedUpFilename($) {
     my ($name) = @_;
-    $name =~ s/[.]bam$//i; $name =~ s/[.]bw$//i; ## remove recognized file extensions
+    $name =~ s/[.](sam|bam|bw|bigwig|wig|bed|bigbed|bb)$//i; # remove recognized file extensions at the VERY END only
     $name =~ s/[-._]accepted[-._]hits//i; $name =~ s/[-._]sort[e]?[d]?//i; $name =~ s/Browser[-._]//i;
     return($name);
+}
+
+sub exeExistsOrFail($) {
+	my ($exe) = @_;
+	(0 == system("which $exe > /dev/null")) or die "FATAL ERROR: MISSING the \"$exe\" executable.\nWe were NOT able to find it using the 'which' command. Verify that this executable exists. You may be able to install it with 'apt-get install $exe' or 'yum install $exe' or (on the Mac) perhaps 'brew install $exe', assuming you have Homebrew installed...";
+}
+
+sub systemZeroOrFailArray(\@) {
+	# System call with an ARRAY. Fail on non-zero exit code.
+	my ($arrayPtr) = @_;
+	(0 == system(@$arrayPtr)) or die("[ERROR in convert_SAM_or_BAM_for_genome_browser.pl]: This sub command failed: " . join(" ", @$arrayPtr) . "\n ...");
+}
+sub systemZeroOrFail($;$) {
+	# System call with a STRING. Fail on non-zero exit code.
+	my ($cmd, $thisInfo) = @_;
+	$thisInfo = (defined($thisInfo) ? $thisInfo : "this command");
+	datePrint(": Running $thisInfo: ${cmd}...\n");
+	(0 == system($cmd)) or die "[ERROR in convert_SAM_or_BAM_for_genome_browser.pl]: This sub-command failed: $cmd\n ...";
 }
 
 my %groupsColHash = (); # Key = group name. Value = color string.
@@ -127,13 +146,9 @@ chomp(@INPUT_FILES);
 my $random_number = rand();
 my $chrLenTempFile = "Browser.tmp.TEMPORARY.chrlen_" . rand() . "-" . time() . "_convert_SAM_or_BAM_for_Genome_Browser.tmp";
 
-(0 == system(("which", $SAMTOOLS_EXE))) or die "FATAL ERROR: MISSING the \"$SAMTOOLS_EXE\" executable.\nWe were NOT able to find it using the 'which' command. Verify that this executable exists. You may be able to install it with 'apt-get install samtools' or 'yum install samtools' or (on the Mac) perhaps 'brew install samtools', assuming you have Homebrew installed..";
-
-if ($makeWig) {
-	# Require that $GENOME_COVERAGE_BED_EXE and $WIG_TO_BIGWIG_EXE both exist and can be run
-	(0 == system(("which", $GENOME_COVERAGE_BED_EXE))) or die "FATAL ERROR: MISSING the \"$GENOME_COVERAGE_BED_EXE\" executable, which is part of 'bedtools' software suite.\nWe were NOT able to find it using the 'which' command. Verify that this executable exists. You may be able to install it with 'apt-get install bedtools' or 'yum install bedtools' or (on the Mac) perhaps 'brew install bedtools', assuming you have Homebrew installed..";
-	(0 == system(("which", $WIG_TO_BIGWIG_EXE))) or die "FATAL ERROR: MISSING the \"$WIG_TO_BIGWIG_EXE\" executable, which is part of 'kenttools' UCSC Genome Browser software suite.\nWe were NOT able to find it using the 'which' command. Verify that this executable exists. You may be able to install it manually by downloading it from http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/ (for Linux) or http://hgdownload.soe.ucsc.edu/admin/exe/macOSX.x86_64/ (for Mac).";
-}
+exeExistsOrFail($SAMTOOLS_EXE);
+($makeWig) and exeExistsOrFail($GENOME_COVERAGE_BED_EXE); # Only required if we are making a wiggle track
+($makeWig) and exeExistsOrFail($WIG_TO_BIGWIG_EXE);
 
 print STDOUT "Files to be processed by convert_SAM_or_BAM_for_Genome_Browser:\n";
 foreach (@INPUT_FILES) {
@@ -201,7 +216,7 @@ for my $originalInputFilename (@INPUT_FILES) {
 	$bamFilename = $originalInputFilename;
 	$bamFilename =~ s/\.sam$/\.bam/i;
 	if (not(-e $bamFilename)) {
-	    print "Time to make the bam file named <$bamFilename> from the input SAM file that was named <$originalInputFilename>... this will take a minute or two...\n";
+	    print "Now making the bam file named <$bamFilename> from the input SAM file that was named <$originalInputFilename>... this will take a minute or two...\n";
 	    my $exitCode = system("$SAMTOOLS_EXE view -S -b $originalInputFilename > $bamFilename"); ## generate a BAM file from the sam file
 	    if (0 != $exitCode) { 
 		unlink($bamFilename); # Definitely remove the screwed-up bam file first!! Otherwise we will think this is a valid input file.
@@ -213,8 +228,7 @@ for my $originalInputFilename (@INPUT_FILES) {
 		} else {
 		    print "ADDITIONAL INFORMATION: It was unclear whether the header was the problem, but you should check the input sam file yourself. View <$originalInputFilename> with 'less' or another tool, and see if you can figure out what is wrong with it.\n$results";
 		}
-		print "FAILURE: fix the SAM file and try again!\n";
-		exit(1);
+		die "FAILURE: fix the SAM file and try again!\n";
 	    }
 	} else {
 	    print "Not remaking the BAM file named <$bamFilename>, because it already existed.\n";
@@ -228,8 +242,8 @@ for my $originalInputFilename (@INPUT_FILES) {
 
     # At this point, we can assume the file is DEFINITELY a bam file--if it was SAM, we have already converted it!
     if ($makeWig) {
-	system(qq{$SAMTOOLS_EXE view -H $bamFilename | grep "^\@SQ" | sed -e "s/SN://" -e "s/LN://" | cut -f 2,3 > ${chrLenTempFile} });
-	## make a temp file with chromosome lengths in it!
+	    systemZeroOrFail(qq{$SAMTOOLS_EXE view -H $bamFilename | grep "^\@SQ" | sed -e "s/SN://" -e "s/LN://" | cut -f 2,3 > ${chrLenTempFile} });
+	    ## make a temp file with chromosome lengths in it!
     }
 
     my $bamPrefixWithoutFileExtension = $bamFilename; ## Don't just get the basename: get the WHOLE PATH that led up to this file. basename($bamFilename);
@@ -247,20 +261,18 @@ for my $originalInputFilename (@INPUT_FILES) {
     } else {
 	if (!$shouldSort) {
 	    datePrint(": Assuming that the file <$bamFilename> is already COORDINATE sorted---we will make a symlink to <$sortBamFullFilename> rather than re-sorting it with Samtools.\n");
-	    system("ln -s $bamFilename $sortBamFullFilename");
+	    systemZeroOrFail("/bin/ln -s -f $bamFilename $sortBamFullFilename");
 	} else {
-	    my $sortCmd = "$SAMTOOLS_EXE sort $bamFilename $sortBamFilePrefix"; ## <-- Note: this should NOT have the .bam extension, because samtools automatically adds the ".bam" extension
-	    datePrint(": Running the SAMTOOLS sort-by-leftmost-coordinate command: ${sortCmd}...\n");
-	    system($sortCmd);
+	    my $sortCmd = "$SAMTOOLS_EXE sort $bamFilename > $sortBamFullFilename"; ## <-- Note: this should NOT have the .bam extension, because samtools automatically adds the ".bam" extension
+	    datePrint(": Running the SAMTOOLS sort-by-leftmost-coordinate command: ${sortCmd} \n");
+	    systemZeroOrFail($sortCmd);
 	}
     }
     
     if ((-e $bamIndexOutfile) && (-s $bamIndexOutfile > 0)) {
 	print "[Skipping] We are NOT re-generating an index file. One already exists ($bamIndexOutfile).\n";
     } else {
-	my $indexCmd = "$SAMTOOLS_EXE index ${sortBamFullFilename}";
-	datePrint(": Running the SAMTOOLS index command: ${indexCmd}...\n");
-	system($indexCmd);
+	systemZeroOrFail("$SAMTOOLS_EXE index ${sortBamFullFilename}", "the SAMTOOLS index command");
     }
 
     my $scaleFactor      = "ERROR_UNDEFINED";
@@ -290,9 +302,7 @@ for my $originalInputFilename (@INPUT_FILES) {
 	    datePrint(": Now generating a 'bigWig' browser wiggle track named $bedGraphIntermediateFile (this is slow, and can take up to an hour per input RNASeq file!)...\n");
 	    ## Note: genomeCoverageBed REQUIRES that the input bam file be sorted by position. Luckily, we just sorted it!
 	    ## The "-g" genome file needs the chromosome sizes. Luckily, this is information we can find in the $chrLenTempFile that we just made!
-	    my $wigCmd1 = (qq{$GENOME_COVERAGE_BED_EXE -split -bg -ibam $sortBamFullFilename -g $chrLenTempFile > $bedGraphIntermediateFile});
-	    datePrint(": Now running this command: $wigCmd1\n");
-	    system($wigCmd1);
+	    systemZeroOrFail(qq{$GENOME_COVERAGE_BED_EXE -split -bg -ibam $sortBamFullFilename -g $chrLenTempFile > $bedGraphIntermediateFile});
 	    my $whichFileToWigify = undef;
 	    if ($shouldScale) {
 		if ($scaleFactor == 1.0) {
@@ -320,7 +330,7 @@ for my $originalInputFilename (@INPUT_FILES) {
 	    ## -clip means "allow errant entries off the end of the chromosome". This is important, because otherwise wigToBigWig quits with errors like "something went off the end of chr12_random"
 	    my @wigCmd2 = ("$WIG_TO_BIGWIG_EXE", "-clip", $whichFileToWigify, $chrLenTempFile, $bigWigOutFile);
 	    datePrint("Now running this command: @wigCmd2\n");
-	    system(@wigCmd2); ## makes a BIGWIG file from the WIG file
+	    systemZeroOrFailArray(@wigCmd2); ## makes a BIGWIG file from the WIG file
 	    if (!$shouldKeepTempFiles) {
 		if (-e $chrLenTempFile)           { unlink($chrLenTempFile) }; ## <-- delete the $chrLenTempFile now! We don't need it anymore.
 		if (-e $bedGraphScaledFile)       { unlink($bedGraphScaledFile); }
@@ -424,7 +434,7 @@ OPTIONS:
    --nobam: If you only want the smaller wiggle tracks, this will delete the intermediate bam files.
             Generally not recommended, unless you need to save space on your server that hosts browser
             tracks.
-  
+
    --keeptemp: Keeps the temp files (bedgraph files) instead of deleting them.
 
    --url   : (Optional) The base directory URL for the files that will be served.
