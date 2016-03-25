@@ -10,9 +10,9 @@ use Getopt::Long;
 use File::Basename;
 use File::Spec::Functions qw(catfile);
 
-my $SAMTOOLS_EXE = "samtools";
+my $SAMTOOLS_EXE            = "samtools";
 my $GENOME_COVERAGE_BED_EXE = "genomeCoverageBed";
-my $WIG_TO_BIGWIG_EXE = "wigToBigWig";
+my $WIG_TO_BIGWIG_EXE       = "wigToBigWig";
 
 sub printUsageAndQuit() { print STDOUT <DATA>; exit(0); }
 
@@ -82,10 +82,8 @@ sub guessColorFromFilename($) {
     return($thisColor);
 }
 
-sub removeTrailingSlash($) { # Removes a trailing slash from a path
-    my ($s) = @_; $s =~ s/\/$//;
-    return($s);
-}
+sub removeTrailingSlash($) { my ($s)=@_; $s=~s/\/$//; return($s); } # Removes a single trailing slash from a path
+
 sub browserTrackString($$$) {
     ## Takes "bigWig" or "bam" as its first argument
     ## and a filename as its second argument.
@@ -105,20 +103,18 @@ sub browserTrackString($$$) {
 	$options .= qq{ } . qq{visibility="dense"};  ## bam tracks are DENSE (almost totally hidden) by default
 	$options .= qq{ } . qq{colorByStrand="255,0,0 0,0,255"}; # Forward strand reads = red, reverse strand reads = blue.
     } else {
-	die "[ERROR] Sorry, we only know how to write BIGWIG and BAM files. You specified '$type'. This is a problem!\n";
+	die "[ERROR] Sorry, we only know how to write BIGWIG and BAM files, but you specified '$type'. This is a problem!\n";
     }
 
     # If the url was defined, then we use that as the directory URL. Otherwise, we use a placeholder URL with 'YOURLOCATION'
     # Do ***NOT*** use "catfile" here, because it messes up http:// (turns it into 'http:/' with just one slash)
-    my $url = (defined($urlBase)) ? removeTrailingSlash($urlBase) . "/" . $filename  :  "https://gb.ucsf.edu/bio/browser/YOURLOCATION/${filename}";
-
+    my $url = (defined($urlBase)) ? removeTrailingSlash($urlBase) . "/$filename"  :  "https://gb.ucsf.edu/bio/browser/YOURLOCATION/${filename}";
     my $clean = cleanedUpFilename($filename);
     my $cleanWithoutScale = $clean; $cleanWithoutScale =~ s/[-. _]scaled[-. _]by[-. _].*//;
     my $cleanWithSpaces   = $clean; $cleanWithSpaces   =~ s/[-. _]scaled[-. _]by[-. _]/ scaled by /;
     my $str = qq{track type=${type} name="${cleanWithoutScale}${parenthetical}" description="${cleanWithSpaces}${parenthetical}" bigDataUrl="${url}"} . $options . qq{\n};
     return($str);
 }
-
 
 my $makeWig = 1; ## By default, generate a bigwig track too. Specify "nowig" to avoid this.
 my $makeBam = 1; ## By default, assume we ARE outputting the bam files. But if you want to keep file size smaller, specify "nobam" to only keep the bam files TEMPORARILY and delete them after the wiggle tracks are made.
@@ -242,7 +238,9 @@ for my $originalInputFilename (@INPUT_FILES) {
 
     # At this point, we can assume the file is DEFINITELY a bam file--if it was SAM, we have already converted it!
     if ($makeWig) {
-	    systemZeroOrFail(qq{$SAMTOOLS_EXE view -H $bamFilename | grep "^\@SQ" | sed -e "s/SN://" -e "s/LN://" | cut -f 2,3 > ${chrLenTempFile} });
+	    systemZeroOrFail(qq{$SAMTOOLS_EXE view -H $bamFilename | perl -ne 'if (m/^[@]SQ.*SN:(\\S+).*LN:([0-9]+)/) { print qq{\$1\\t\$2\n}; }' > ${chrLenTempFile} }, "the command to generate a temporary chromosome lengths (a 'chrom.sizes.txt') file from a bam file");
+	    `wc -l < $chrLenTempFile` >= 1 or die "Problem in generating the temporary chromosome length file---it did not have even one line in it!";
+	    #systemZeroOrFail(qq{$SAMTOOLS_EXE view -H $bamFilename | perl -ne 'print if m/^\@SQ/' | sed -e "s/SN://" -e "s/LN://" | cut -f 2,3 > ${chrLenTempFile} });
 	    ## make a temp file with chromosome lengths in it!
     }
 
@@ -401,7 +399,7 @@ where your BAM files are, and it magically uses the BAM files from your local we
 
 Requres the following additional software:
     * <samtools> must be installed (to sort the bam files)
-        - You can install it with `apt-get install samtools`
+        - You can install it with `apt-get install samtools` or `yum install samtools` or `brew install samtools`
 
 If you want a wiggle track, which you most likely do (if you do not, you can specify `--nowig`):
     * <genomeCoverageBed> must be installed
@@ -410,7 +408,7 @@ If you want a wiggle track, which you most likely do (if you do not, you can spe
 Input to program:
     * Any number of SAM or BAM files (with aligned reads to a reference genome).
 
-These files can be viewed in the genome browser.
+These files can be viewed in the UCSC Genome Browser.
 
 OPTIONS:
 
@@ -447,16 +445,16 @@ OPTIONS:
 
 EXAMPLES:
 
-convert_SAM_or_BAM_for_Genome_Browser.pl alignment.bam
+convert_SAM_or_BAM_for_Genome_Browser.pl align1.bam align2.bam
 
 convert_SAM_or_BAM_for_Genome_Browser.pl --nosort  *.bam
 
 convert_SAM_or_BAM_for_Genome_Browser.pl --nowig  alignment.bam
   * Only generate browser-suitable BAM files, not wiggle tracks.
-  
+
 convert_SAM_or_BAM_for_Genome_Browser.pl --noscale  --url=https://myserver.com/browser/  *.bam
   * Do not re-adjust the scale for each wiggle track.
-  
+
 convert_SAM_or_BAM_for_Genome_Browser.pl --nobam  alignment.bam
   * Generates wiggle tracks, then deletes the (temporary) intermediate BAM files.
 

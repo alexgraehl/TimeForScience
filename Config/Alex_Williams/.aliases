@@ -779,7 +779,7 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
 function neararchive { # usage: cd /work/projects  then: "workarchive myproj-1234-rna-mouse"  --> will move things to the nearline storage
     D=${1%/}
     DARCH=${D}_ARCHIVE
-    TARGET=/nearline_storage/projects/${D}
+    TARGET=/nearline_storage/castles_made_of_sand/not_backed_up/${D}
     echo "We would like to move the directory (without a slash) \"${D}\" to the final SECONDARY STORAGE target \"${TARGET}\"... sound ok to you? Select a NUMERIC option below:"
     select yn in "[Cancel]" "Move those files!"; do
 	case $yn in
