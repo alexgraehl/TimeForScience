@@ -364,13 +364,15 @@ alias diffdir='diff -rq' ## diff on directories
 startvpn() {
     sudo launchctl load -w /Library/LaunchDaemons/net.juniper.AccessService.plist
     launchctl load -w /Library/LaunchAgents/net.juniper.pulsetray.plist
+    open -a '/Applications/Junos Pulse.app/Contents/Plugins/JamUI/PulseTray.app/Contents/MacOS/PulseTray'
+
 }
 stopvpn() {
+    osascript -e 'tell application "Junos Pulse" to quit';
+    osascript -e 'tell application \"PulseTray.app\" to quit';
     launchctl unload -w /Library/LaunchAgents/net.juniper.pulsetray.plist
     sudo launchctl unload -w /Library/LaunchDaemons/net.juniper.AccessService.plist
-    osascript -e 'tell application "Junos Pulse" to quit'
 }
-
 
 ## "showoff" makes it so that everyone can a+rx any directories and a+r any files.
 ## Note that we don't want to make it so everyone can execute *files* necessarily, just folders
