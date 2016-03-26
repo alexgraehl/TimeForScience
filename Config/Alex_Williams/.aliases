@@ -778,6 +778,27 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
     done
 }
 
+function mvln { # move and then make an ALIAS where the previous file was
+    if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass AT LEAST ONE filename (source) and ONE DESTINATION (probably a directory?) into this function!"; return; fi
+
+    if [[ "$#" != 2 ]] ; then echo "[ERROR] Right now, this only works with TWO ARGUMENTS (target and destination)!"; return; fi
+
+    FILE=$1
+    if [[ ! -e $FILE ]] ; then echo "[ERROR] Your source file ($FILE) does not exist!"; return; fi
+    LAST=${@: -1}
+    if [[ -d $LAST ]]; then
+	# target is a directory
+	mv $FILE $LAST/
+	ln -s $LAST/$FILE $FILE
+    else
+	# target is a file
+	mv $FILE $LAST
+	ln -s $LAST $FILE
+    fi
+    #touch $LAST
+    #if [[ ! -e $FILE ]] ; then echo "[ERROR] Your source file ($FILE) does not exist!"; return; fi
+}
+
 function neararchive { # usage: cd /work/projects/your-project  then: "neararchive myproj-1234-rna-mouse"  --> will move things to the nearline storage and symlink them back
     if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass AT LEAST ONE filename into this function!"; return; fi
     D=$(basename `pwd`)
