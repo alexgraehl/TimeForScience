@@ -83,6 +83,13 @@ function hunt { # cd into a directory with a script
     echo "Moved into directory <$THEDIR>."
 }
 
+function cto { # instead of CD to a file, CD directly to a file's directory, since naturally you can't actually CD to a file
+    if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass EXACTLY ONE filename or directory name into this function!"; return; fi
+    if [[ -d "$1" ]] ; then cd "$1" ; return 0; fi # it's already a directory, change to it!
+    TO=$(dirname "$1")
+    cd "$TO"
+}
+
 function witch { # Shows the versions for all on-your-path verisons of software.
     # Takes TWO required arguments
     # Example:   witch emacs --version
