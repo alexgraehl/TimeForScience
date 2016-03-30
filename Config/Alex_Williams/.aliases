@@ -773,12 +773,13 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
     D=${1%/}
     DARCH=${D}_ARCHIVE
     TARGET=/bag_of_holding/work_archive/${D}
+    IONICE="ionice -c3"
     echo "We would like to move the directory (without a slash) \"${D}\" to the final TAPE DRIVE target \"${TARGET}\"... sound ok to you? Select a NUMERIC option below:"
     select yn in "[Cancel]" "Move those files!"; do
 	case $yn in
 	    Move*) sudo mv ./${D} ./${DARCH}
 		 ln -s ${TARGET} ./${D}
-		 sudo mv ./${DARCH}  ${TARGET}
+		 sudo ${IONICE} mv ./${DARCH}  ${TARGET}
 		 break;;
 	    *) echo "Ok, not doing anything."; break;;
 	esac
@@ -789,17 +790,17 @@ function mvln { # move and then make an ALIAS where the previous file was
     if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass AT LEAST ONE filename (source) and ONE DESTINATION (probably a directory?) into this function!"; return; fi
 
     if [[ "$#" != 2 ]] ; then echo "[ERROR] Right now, this only works with TWO ARGUMENTS (target and destination)!"; return; fi
-
+    IONICE="ionice -c3"
     FILE=$1
     if [[ ! -e $FILE ]] ; then echo "[ERROR] Your source file ($FILE) does not exist!"; return; fi
     LAST=${@: -1}
     if [[ -d $LAST ]]; then
 	# target is a directory
-	mv $FILE $LAST/
+	${IONICE} mv $FILE $LAST/
 	ln -s $LAST/$FILE $FILE
     else
 	# target is a file
-	mv $FILE $LAST
+	${IONICE} mv $FILE $LAST
 	ln -s $LAST $FILE
     fi
     #touch $LAST
