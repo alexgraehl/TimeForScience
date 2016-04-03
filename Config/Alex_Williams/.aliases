@@ -853,6 +853,8 @@ function wholog {
 
 function qing {
     echo "'qing' is 'qstats' but only showing NON-COMPLETED jobs..."
+    echo "Note that 'qstat -f' may fail in cases where 'qstat' does not. Try plain 'qstat' if this command seems to be taking forever."
+    echo "'qstat -f' has been known to take upwards of 2 minutes to run."
     qstats | grep -v ' COMPLETE '
     qstat -f -Q
 }
