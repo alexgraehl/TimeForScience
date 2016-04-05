@@ -46,6 +46,8 @@ my $numHeaderLines    = 0;
 my $multiJoinType     = 0;
 my $includeFilenameInHeader = 0;
 
+my $shouldReverse     = 0; # Should we print KEY FILE2 FILE1? Default is KEY FILE1 FILE2.
+
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "q" => sub { $verbose = 0; }
@@ -57,12 +59,13 @@ GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "o=s"  => \$stringWhenNoMatch
 	   , "ob!"  => sub { $stringWhenNoMatch = ''; } # shortcut for just a blank when there's no match. Default is to OMIT lines with no match.
 	   , "do=s" => \$outputDelim
-	   , "neg!" => \$shouldNegate
+	   , "v|neg!" => \$shouldNegate
 	   , "h|header|headers=i" => \$numHeaderLines
 	   , "fnh|filename-in-header" => \$includeFilenameInHeader # only for multi-join
 	   , "nrk|no-reorder-key!"  => \$preserveKeyOrder
 	   , "eok|allow-empty-key!" => \$allowEmptyKey # basically, do we skip blank lines?
 	   , "i|ignore-case!" => \$shouldIgnoreCase
+##	   , "rev" => \$shouldReverse  # Should we print KEY FILE2 FILE1? Default is KEY FILE1 FILE2.
 	   , "multi=s" => \$multiJoinType
 	   , "debug!" => \$isDebugging
     ) or printUsageAndQuit();
@@ -198,20 +201,24 @@ sub arrayOfNonKeyElements(\@$) {
     return (@nonKeyElements); # The subset of the inputArrayPtr that does NOT include the non-key elements!
 }
 
-sub joinedUpOutputLine($$$$$$$) {
-    my ($delim, $mainKey, $array1Ref, $k1col, $array2Ref, $k2col, $shouldNotMoveKey) = @_;
-    if ($shouldNotMoveKey) {
-	# do NOT move the key to the front of the line---this is a bit unusual! The key stays wherever it was on the line.
-	return join($delim, @$array1Ref, @$array2Ref); # no newline!
-    } else {
-	# key gets moved to the front! -- like in unix join. This is the DEFAULT and UNIX-join-like way of doing it
-	if (@{$array2Ref}) {
-	    return join($delim, $mainKey, arrayOfNonKeyElements(@{$array1Ref}, $k1col), arrayOfNonKeyElements(@{$array2Ref}, $k2col)); # no newline!
-	} else {
-	    # array 2 was EMPTY
-	    return join($delim, $mainKey, arrayOfNonKeyElements(@{$array1Ref}, $k1col)); # no newline!
+sub joinedUpOutputLine($$$$$$$$) {
+	my ($delim, $mainKey, $array1Ref, $k1col, $array2Ref, $k2col, $shouldNotMoveKey, $rev) = @_;
+	if ($rev) {
+		($k1col, $k2col) = ($k2col, $k1col); # Flip around which is "first" and which is "second"!
+		($array1Ref, $array2Ref) = ($array2Ref, $array1Ref); # Flip around which is "first" and which is "second"!
 	}
-    }
+	if ($shouldNotMoveKey) {
+		# do NOT move the key to the front of the line---this is a bit unusual! The key stays wherever it was on the line.
+		return join($delim, @$array1Ref, @$array2Ref); # no newline!
+	} else {
+		# key gets moved to the front! -- like in unix join. This is the DEFAULT and UNIX-join-like way of doing it
+		if (@{$array2Ref}) {
+			return join($delim, $mainKey, arrayOfNonKeyElements(@{$array1Ref}, $k1col), arrayOfNonKeyElements(@{$array2Ref}, $k2col)); # no newline!
+		} else {
+			# array 2 was EMPTY
+			return join($delim, $mainKey, arrayOfNonKeyElements(@{$array1Ref}, $k1col)); # no newline!
+		}
+	}
 }
 
 sub handleMultiJoin($$) {
@@ -294,7 +301,8 @@ if ($multiJoinType) {
 	# Ok, we are doing MULTI-joining. Otherwise, just the regular (full-featured) two-file joining
 	($keyCol1 == 1)     or quitWithUsageError("For multi-joining, you CANNOT use any key columns except -k 1 (or -1 1). The key must be the first column.");
 	($keyCol2 == 1)     or quitWithUsageError("For multi-joining, keyCol 2 is not used. Do not specify -2 = (something) on the command line!");
-	(not $shouldNegate) or quitWithUsageError("For multi-joining, negation is not supported. Remove --neg from the command line!");
+	(not $shouldReverse) or quitWithUsageError("For multi-joining, reversal of output order is not supported. Remove --rev from the command line!");
+	(not $shouldNegate) or quitWithUsageError("For multi-joining, negation is not supported. Remove --neg / -v from the command line!");
 	(not $preserveKeyOrder) or quitWithUsageError("For multi-joining, preserving key order is not supported. Remove --no-reorder-key (--nrk) from the command line!");
 	handleMultiJoin($keyCol1, \@files);
 } else {
@@ -313,7 +321,6 @@ if ($multiJoinType) {
 		if ($lineNumPrimary % 2500 == 0) {
 			verboseUpdatePrint("Line $lineNumPrimary...");
 		}
-		;
 		$lineNumPrimary++; # Start it at ONE during the first iteration of the loop! (Was initialized to zero before!)
 		($line !~ m/\r/) or die "ERROR: Exiting! The file <$file1> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNumPrimary).\n         We cannot handle this character automatically at this point in time, and are QUITTING.";
 		#$line =~ s/\r\n?/\n/g; # Actually it TOTALLY FAILS on mac line endings! You cannot loop over them. Should work on PC line endings though. Turn PC-style \r\n, or Mac-style just-plain-\r into UNIX \n
@@ -337,7 +344,7 @@ if ($multiJoinType) {
 			verboseWarnPrint("Warning: skipping line $lineNumPrimary---there was no key column on that line. (Key column: $keyCol1, Columns on line: " . scalar(@sp1) . ")");
 			next;	# <-- skip to next iteration of loop!ll
 		}
-    
+		
 		my $thisKey = $sp1[ ($keyCol1-1) ]; # index from ZERO here, that's why we subtract 1 from the key column
 		if ($thisKey =~ /\s/) {
 			verboseWarnPrint("Warning: key \"$thisKey\" on line $lineNumPrimary of file 1 ($file1) had whitespace in it. This is possibly unintentional--beware!");
@@ -345,7 +352,7 @@ if ($multiJoinType) {
 		if (!defined($thisKey)) {
 			verboseWarnPrint("Warning: key at column number $keyCol1 (counting from 1) on line $lineNumPrimary of file 1 ($file1) was UNDEFINED. This is possibly a programming error in join.pl!");
 		}
-    
+		
 		my @sp2;	# matching split-up line
 		if ($shouldIgnoreCase) {
 			my $keyInOrigCase = $originalCaseHash{uc($thisKey)}; # mutate the key so that it's in the SAME CASE as it was in the key we added
@@ -372,19 +379,19 @@ if ($multiJoinType) {
 				# Since we are NEGATING this, don't print the match when it's found (only when it isn't...)
 			} else {
 				# Great, the OTHER file had a valid entry for this key as well! So print it... UNLESS we are negating.
-				print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder) . "\n";
+				print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder, $shouldReverse) . "\n";
 			}
 		} else {
 			# Ok, there was NO MATCH for this key!
 			debugPrint("WARNING: Hash2 didn't have the key $thisKey\n");
 			if ($shouldNegate) {
 				# We didn't find a match for this key, but because we are NEGATING the output, we'll print this line anyway
-				print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder) . "\n";
+				print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder, $shouldReverse) . "\n";
 			} else {
 				if (defined($stringWhenNoMatch)) {
 				# We print the line ANYWAY, because the user specified an outer join, with the "-o SOMETHING" option.
 					my $suffixWhenNoMatch = (length($stringWhenNoMatch)>0) ? "${outputDelim}${stringWhenNoMatch}" : "$stringWhenNoMatch"; # handle zero-length -ob SPECIALLY
-					print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder) . $suffixWhenNoMatch . "\n";
+					print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder, $shouldReverse) . $suffixWhenNoMatch . "\n";
 				#print STDOUT join($outputDelim, $thisKey, arrayOfNonKeyElements(@sp1, $keyCol1)) . $suffixWhenNoMatch . "\n";
 				} else {
 				# Omit the line entirely, since there was no match in the secondary file.

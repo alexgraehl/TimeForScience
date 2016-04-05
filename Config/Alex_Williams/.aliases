@@ -789,19 +789,16 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
 
 function mvln { # move and then make an ALIAS where the previous file was
     if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass AT LEAST ONE filename (source) and ONE DESTINATION (probably a directory?) into this function!"; return; fi
-
     if [[ "$#" != 2 ]] ; then echo "[ERROR] Right now, this only works with TWO ARGUMENTS (target and destination)!"; return; fi
-    IONICE="ionice -c3"
+    IONICE="/usr/bin/ionice -c3"
     FILE=$1
     if [[ ! -e $FILE ]] ; then echo "[ERROR] Your source file ($FILE) does not exist!"; return; fi
     LAST=${@: -1}
-    if [[ -d $LAST ]]; then
-	# target is a directory
-	${IONICE} mv $FILE $LAST/
+    if [[ -d $LAST ]]; then # target is a directory
+	$IONICE mv $FILE $LAST/
 	ln -s $LAST/$FILE $FILE
-    else
-	# target is a file
-	${IONICE} mv $FILE $LAST
+    else # target is a file
+	$IONICE mv $FILE $LAST
 	ln -s $LAST $FILE
     fi
     #touch $LAST
