@@ -89,7 +89,7 @@ sub main() { # Main program
 	my $catter; # <-- the thing that does the 'cat' command
 	#if (!defined($filename) or $filename eq $STDIN_FILENAME) { $catter = ''; }
 	if    ($filename =~ /[.](gz|gzip)$/i)       { $catter = "gzip --decompress --stdout"; }     # Un-gzip a file and send it to STDOUT.
-	elsif ($filename =~ /[.](bz2|bzip2)$/i)     { $catter = "bzip2 --dcompress --stdout"; }    # Un-bz2 a file and send it to STDOUT
+	elsif ($filename =~ /[.](bz2|bzip2)$/i)     { $catter = "bzip2 --decompress --stdout"; }    # Un-bz2 a file and send it to STDOUT
 	elsif ($filename =~ /[.](zip)$/i)           { $catter = "unzip -p"; } # Un-regular-zip a file and send it to STDOUT with "-p": which is DIFFERENT from -c (-c is NOT what you want here). See 'man unzip'
 	else                                        { $catter = "cat"; }  # Default: just read a file normally
 
