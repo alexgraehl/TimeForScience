@@ -774,13 +774,13 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
     D=${1%/}
     DARCH=${D}_ARCHIVE
     TARGET=/bag_of_holding/work_archive/${D}
-    IONICE="ionice -c3"
+    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
     echo "We would like to move the directory (without a slash) \"${D}\" to the final TAPE DRIVE target \"${TARGET}\"... sound ok to you? Select a NUMERIC option below:"
     select yn in "[Cancel]" "Move those files!"; do
 	case $yn in
 	    Move*) sudo mv ./${D} ./${DARCH}
 		 ln -s ${TARGET} ./${D}
-		 sudo ${IONICE} mv ./${DARCH}  ${TARGET}
+		 sudo ${AGW_IONICE} mv ./${DARCH}  ${TARGET}
 		 break;;
 	    *) echo "Ok, not doing anything."; break;;
 	esac
@@ -790,16 +790,16 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
 function mvln { # move and then make an ALIAS where the previous file was
     if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass AT LEAST ONE filename (source) and ONE DESTINATION (probably a directory?) into this function!"; return; fi
     if [[ "$#" != 2 ]] ; then echo "[ERROR] Right now, this only works with TWO ARGUMENTS (target and destination)!"; return; fi
-    IONICE="/usr/bin/ionice -c3"
+    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
     FILE=$1
     if [[ ! -e $FILE ]] ; then echo "[ERROR] Your source file ($FILE) does not exist!"; return; fi
     LAST=${@: -1}
     if [[ -d $LAST ]]; then # target is a directory
-	$IONICE mv $FILE $LAST/
-	ln -s $LAST/$FILE $FILE
+	$AGW_IONICE mv "$FILE" "$LAST/"
+	ln -s "$LAST/$FILE" "$FILE"
     else # target is a file
-	$IONICE mv $FILE $LAST
-	ln -s $LAST $FILE
+	$AGW_IONICE mv "$FILE" "$LAST"
+	ln -s "$LAST" "$FILE"
     fi
     #touch $LAST
     #if [[ ! -e $FILE ]] ; then echo "[ERROR] Your source file ($FILE) does not exist!"; return; fi
@@ -808,12 +808,12 @@ function mvln { # move and then make an ALIAS where the previous file was
 function neararchive { # usage: cd /work/projects/your-project  then: "neararchive myproj-1234-rna-mouse"  --> will move things to the nearline storage and symlink them back
     if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass AT LEAST ONE filename into this function!"; return; fi
     D=$(basename `pwd`)
-    TARGET=/nearline_storage/castles_made_of_sand/not_backed_up/${D}
+    TARGET="/nearline_storage/castles_made_of_sand/not_backed_up/${D}"
     echo "We would like to move the following $# files to the NEARLINE SECONDARY STORAGE folder <${TARGET}/>... sound ok to you? Select a NUMERIC option below:"
     ls -1 -lh $@
     select yn in "[Cancel]" "Move those files!"; do
 	case $yn in
-	    Move*) mkdir -p $TARGET; for f in "$@"; do mv $f ${TARGET}/ && ln -s ${TARGET}/$f ./ ; echo "Moved <$f> to <${TARGET}/$f>..." ; done; break;;
+	    Move*) mkdir -p "$TARGET"; for f in "$@"; do mv "$f" "${TARGET}/" && ln -s "${TARGET}/$f" ./ ; echo "Moved <$f> to <${TARGET}/$f>..." ; done; break;;
 	    *) echo "Ok, not doing anything."; break;;
 	esac
     done
