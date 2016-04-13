@@ -240,7 +240,7 @@ alias cheat="echo \
 \">> UNIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
 \">> UNIX: Check Linux version: cat /etc/*-release \" ${NL}\
 \">> UNIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
-\">> UNIX: Rsync transfer files: rsync --dry-run -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
+\">> UNIX: Rsync transfer files: rsync --dry-run -R -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
 \">> UNIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
 \">> UNIX/WGET/TRICKLE: Rate limit any command to 500kbps (-d = down, -u = up): sudo trickle -d 500 -u 500 ncftp 'your_ftp_site_here' \" ${NL}\
 \">> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
@@ -285,8 +285,8 @@ alias cheat="echo \
 \">> RNASEQ sorting and setting the 'sorted' flag:  java -Xmx2g  -jar SortSam.jar INPUT=in.sam SORT_ORDER=coordinate OUTPUT=out_sorted.sam \" ${NL}\
 \">> RNASEQ View BAM header: samtools view -H  in.bam \" ${NL}\
 \">> RNASEQ Merge BAM files in subdirectories: for f in * ; do samtools merge \\\${f}_merged.bam \\\$f/*.bam; done \" ${NL}\
-\">> RNASEQ SAM flags / remove non-primary alignments: samtools view -b -F 0x100 in.bam > primary.bam \" ${NL}\
-\">> RNASEQ count primary (100) mapped (4) reads: samtools view -c -F 0x104 in.bam > COUNT.txt\" ${NL}\
+\">> RNASEQ remove non-primary and non-aligned reads: samtools view -b -F 0x104 in.bam > mapped_primary.bam \" ${NL}\
+\">> RNASEQ count primary (0x100) mapped (0x4) reads: samtools view -c -F 0x104 in.bam > COUNT.txt\" ${NL}\
 \">> RNASEQ Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ${NL}\
 \">> RNASEQ TOPHAT/rename TEST: for f in *; do echo \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
 \">> RNASEQ TOPHAT/rename RUN : for f in *; do   mv \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
