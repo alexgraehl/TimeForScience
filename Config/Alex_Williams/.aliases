@@ -255,9 +255,7 @@ alias cheat="echo \
 \">> UNIX / APT-GET: upgrade only EXISTING packages matching wildcard pattern: apt-get install --only-upgrade 'r-cran*' \" ${NL}\
 \">> UNIX / APT-GET: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
 \">> SSH without loading bashrc or bash_profile: ssh -t user@server bash --norc --noprofile \" ${NL}\
-\">> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub \" ${NL}\
-\"                        to server ~/.ssh/authorized_keys \" ${NL}\
-\">> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x \" ${NL}\
+\">> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub   to server ~/.ssh/authorized_keys \" ${NL}\
 \" \" ${NL}\
 \">> ZIP: Zip a folder: zip -r ARCHIVENAME FOLDER \" ${NL}\
 \">> BASH: Foreach/rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
@@ -267,6 +265,8 @@ alias cheat="echo \
 \">> BASH: Expand tabs / tab width: something | expand -t 32 \" ${NL}\
 \">> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ${NL}\
 \">> XARGS/FIND: find . -name SOMEFILE -print0 | xargs -0 -I {} sh -c \\\"echo {}; thing {} | piped here | wc -l\\\"  \" ${NL}\
+\">> XARGS/FIND: bzip all the bed/diff/count files that you can find: find . -type f \( -iname \\\"*.bed\\\" -o -iname \\\"*_tracking\\\" -o -iname \\\"*.diff\\\" -o -iname \\\"*.bed.count\\\" \) -print0 | xargs -0 bzip2 \" ${NL}\
+\">> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x   (this is the command 'sudoshowoff')\" ${NL}\
 \">> GNU FIND and DELETE a file (dangerous): find . -name SOMEFILE -delete \" ${NL}\
 \">> UNIX/Perl fast sort with ONE header line: cat FILE | perl -e 'print scalar (<>); print sort <>' > OUTFILE \" ${NL}\
 \">> Perl: REGEXP multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \\\$ work \" ${NL}\
