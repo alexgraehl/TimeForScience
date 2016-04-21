@@ -753,7 +753,7 @@
 					<key>partial</key>
 					<true/>
 					<key>regex</key>
-					<string>[eE][rR][rR][oO][rR]</string>
+					<string>\b[eE][rR][rR][oO][rR]\b</string>
 				</dict>
 				<dict>
 					<key>action</key>
@@ -763,7 +763,7 @@
 					<key>partial</key>
 					<true/>
 					<key>regex</key>
-					<string>[wW][aA][rR][nN][iI][nN][gG]</string>
+					<string>\b[wW][aA][rR][nN][iI][nN][gG]\b</string>
 				</dict>
 			</array>
 			<key>Unlimited Scrollback</key>
