@@ -59,7 +59,7 @@
 	<key>NSWindow Frame SUUpdateAlert</key>
 	<string>3210 733 620 392 2560 127 1920 1200 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>0 10 2554 1407 0 0 2560 1417 </string>
+	<string>2990 140 952 1187 2560 127 1920 1200 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
 	<string>4 10 2554 1407 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 2</key>
@@ -735,7 +735,7 @@
 					<key>partial</key>
 					<false/>
 					<key>regex</key>
-					<string>\s[.](UGENE\S*|aws|mono|hg\S*|git\S*|mozilla|rstudio\S*|Rprofile|pulse\S*|sudo_as_admin_successful|opennx|esd_auth|aliases-server-config|ICEauthority|VirtualBox|matlab|rpmdb|aptitude|bash_logout|felix|links2|mysql_history|lvm_history|profile|sqlite_history|cvspass|CFUserTextEncoding|Trash|eclipse_keyring|oracle_jre_usage|inkscape-etc|fdt\S*|genmappcs|gcutil[._]\S+|gnome2\S*|history|texlive\d+|local|putty|python-eggs|recentf|rnd|lesshst|julia_history|julia|bash_sessions|bashrc\S*|bash_history|bash_profile|aliases|Rhistory|RData|Rapp.history|DS_Store|InstallAnywhere|cache|chimera|config|cpan\S*|cups|cytoscape|dbus\S*|dropbox|eclipse\S*|emacs\S*|fontconfig|gnupg|gsutil|htoprc|igb|igv|inputrc|ncftp|matplotlib|lighttable|pylint\S*|ssh|screenrc|subversion|tmux.conf|wget-hsts|cargo|cmake|elinks|distlib|elinks|gconf\S*|java|ipython|lftp|linuxbrew|log|pip|pki|python_history|pyxbld|viminfo|Xauthority)(\s+-&gt;\s+.*)?</string>
+					<string>\s[.$](RECYCLE.BIN|UGENE\S*|aws|mono|hg\S*|git\S*|mozilla|rstudio\S*|Rprofile|pulse\S*|sudo_as_admin_successful|opennx|esd_auth|aliases-server-config|ICEauthority|VirtualBox|matlab|rpmdb|aptitude|bash_logout|felix|links2|mysql_history|lvm_history|profile|sqlite_history|cvspass|CFUserTextEncoding|Trash|eclipse_keyring|oracle_jre_usage|inkscape-etc|fdt\S*|genmappcs|gcutil[._]\S+|gnome2\S*|history|texlive\d+|local|putty|python-eggs|recentf|rnd|lesshst|julia_history|julia|bash_sessions|bashrc\S*|bash_history|bash_profile|aliases|Rhistory|RData|Rapp.history|DS_Store|InstallAnywhere|cache|chimera|config|cpan\S*|cups|cytoscape|dbus\S*|dropbox|eclipse\S*|emacs\S*|fontconfig|gnupg|gsutil|htoprc|igb|igv|inputrc|ncftp|matplotlib|lighttable|pylint\S*|ssh|screenrc|subversion|tmux.conf|wget-hsts|cargo|cmake|elinks|distlib|elinks|gconf\S*|java|ipython|lftp|linuxbrew|log|pip|pki|python_history|pyxbld|viminfo|Xauthority)(\s+-&gt;\s+.*)?</string>
 				</dict>
 				<dict>
 					<key>action</key>
