@@ -16,6 +16,8 @@
 	<true/>
 	<key>LoadPrefsFromCustomFolder</key>
 	<true/>
+	<key>NSFontPanelAttributes</key>
+	<string>1, 2</string>
 	<key>NSNavLastRootDirectory</key>
 	<string>~/TimeForScience/Config/Alex_Williams/iterm-preferences</string>
 	<key>NSNavPanelExpandedSizeForOpenMode</key>
@@ -51,19 +53,17 @@
 		<integer>1</integer>
 	</dict>
 	<key>NSWindow Frame NSFontPanel</key>
-	<string>1563 110 931 383 0 0 2560 1417 </string>
+	<string>1060 110 1434 700 0 0 2560 1417 </string>
 	<key>NSWindow Frame Preferences</key>
-	<string>269 951 606 456 0 0 2560 1417 </string>
+	<string>269 458 606 456 0 0 2560 1417 </string>
 	<key>NSWindow Frame SUUpdateAlert</key>
-	<string>972 768 620 392 0 0 2560 1417 </string>
+	<string>3210 733 620 392 2560 127 1920 1200 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>1280 10 1276 1407 0 0 2560 1417 </string>
+	<string>0 10 2554 1407 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
-	<string>1095 430 1465 987 0 0 2560 1417 </string>
+	<string>4 10 2554 1407 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 2</key>
-	<string>364 158 1465 987 0 0 2560 1417 </string>
-	<key>NSWindow Frame iTerm Window 3</key>
-	<string>494 50 1501 987 0 0 2560 1417 </string>
+	<string>0 10 1276 1407 0 0 2560 1417 </string>
 	<key>New Bookmarks</key>
 	<array>
 		<dict>
@@ -735,7 +735,7 @@
 					<key>partial</key>
 					<false/>
 					<key>regex</key>
-					<string>\s[.](UGENE\S*|aws|mono|hg\S*|git\S*|mozilla|rstudio\S*|Rprofile|pulse\S*|sudo_as_admin_successful|opennx|esd_auth|aliases-server-config|ICEauthority|VirtualBox|matlab|rpmdb|aptitude|bash_logout|felix|links2|mysql_history|lvm_history|profile|sqlite_history|cvspass|CFUserTextEncoding|Trash|eclipse_keyring|oracle_jre_usage|inkscape-etc|fdt\S*|genmappcs|gcutil[._]\S+|gnome2\S*|history|texlive\d+|local|putty|python-eggs|recentf|rnd|lesshst|julia_history|julia|bash_sessions|bashrc\S*|bash_history|bash_profile|aliases|Rhistory|RData|Rapp.history|DS_Store|InstallAnywhere|cache|chimera|config|cpan\S+|cups|cytoscape|dbus\S*|dropbox|eclipse\S*|emacs\S*|fontconfig|gnupg|gsutil|htoprc|igb|igv|inputrc|ncftp|matplotlib|lighttable|pylint\S*|ssh|screenrc|subversion|tmux.conf|wget-hsts|cargo|cmake|elinks|distlib|elinks|gconf\S*|java|ipython|lftp|linuxbrew|log|pip|pki|python_history|pyxbld|viminfo|Xauthority)(\s+-&gt;\s+.*)?</string>
+					<string>\s[.](UGENE\S*|aws|mono|hg\S*|git\S*|mozilla|rstudio\S*|Rprofile|pulse\S*|sudo_as_admin_successful|opennx|esd_auth|aliases-server-config|ICEauthority|VirtualBox|matlab|rpmdb|aptitude|bash_logout|felix|links2|mysql_history|lvm_history|profile|sqlite_history|cvspass|CFUserTextEncoding|Trash|eclipse_keyring|oracle_jre_usage|inkscape-etc|fdt\S*|genmappcs|gcutil[._]\S+|gnome2\S*|history|texlive\d+|local|putty|python-eggs|recentf|rnd|lesshst|julia_history|julia|bash_sessions|bashrc\S*|bash_history|bash_profile|aliases|Rhistory|RData|Rapp.history|DS_Store|InstallAnywhere|cache|chimera|config|cpan\S*|cups|cytoscape|dbus\S*|dropbox|eclipse\S*|emacs\S*|fontconfig|gnupg|gsutil|htoprc|igb|igv|inputrc|ncftp|matplotlib|lighttable|pylint\S*|ssh|screenrc|subversion|tmux.conf|wget-hsts|cargo|cmake|elinks|distlib|elinks|gconf\S*|java|ipython|lftp|linuxbrew|log|pip|pki|python_history|pyxbld|viminfo|Xauthority)(\s+-&gt;\s+.*)?</string>
 				</dict>
 				<dict>
 					<key>action</key>
@@ -811,7 +811,7 @@
 	<key>NoSyncCommandHistoryHasEverBeenUsed</key>
 	<true/>
 	<key>NoSyncLastTipTime</key>
-	<real>483005974.29785299</real>
+	<real>483304237.08826798</real>
 	<key>NoSyncNeverRemindPrefsChangesLostForFile</key>
 	<true/>
 	<key>NoSyncNeverRemindPrefsChangesLostForFile_selection</key>
@@ -821,7 +821,11 @@
 	<key>NoSyncSuppressAnnyoingBellOffer</key>
 	<true/>
 	<key>NoSyncTimeOfFirstLaunchOfVersionWithTip</key>
-	<real>474976688.23196298</real>
+	<real>475632403.828116</real>
+	<key>NoSyncTimeOfLastPromo</key>
+	<real>475632245.77938402</real>
+	<key>NoSyncTimeOfLastPromoDownload</key>
+	<real>475632245.77972102</real>
 	<key>NoSyncTipsToNotShow</key>
 	<array>
 		<string>000</string>
@@ -871,6 +875,9 @@
 		<string>0043</string>
 		<string>0044</string>
 		<string>0045</string>
+		<string>0046</string>
+		<string>0047</string>
+		<string>0048</string>
 	</array>
 	<key>OpenTmuxWindowsIn</key>
 	<integer>2</integer>
@@ -909,6 +916,8 @@
 	</dict>
 	<key>PrefsCustomFolder</key>
 	<string>/Users/alexgw/TimeForScience/Config/Alex_Williams/iterm-preferences</string>
+	<key>SUAutomaticallyUpdate</key>
+	<false/>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedAlternateAppNameKey</key>
@@ -918,9 +927,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2016-04-22T05:50:06Z</date>
-	<key>SUSendProfileInfo</key>
-	<false/>
+	<date>2016-04-22T20:02:39Z</date>
 	<key>TabStyle</key>
 	<integer>1</integer>
 	<key>ToolbeltTools</key>
