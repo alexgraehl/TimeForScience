@@ -32,6 +32,10 @@ sub debugPrint($) {   ($isDebugging) and print STDERR $_[0]; }
 sub verboseWarnPrint($) { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "yellow on_blue"); } }
 sub verboseUpdatePrint($) { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "black on_green"); } }
 
+
+my $RENAME_SUFFIX      = "MD5_CHECKSUM_FAILURE";
+my $MAX_RENAMED_FILES  = 999;
+
 my $MD5_OK_COLOR       = "green";
 my $MD5_FAILURE_COLOR  = "red";
 my $FILE_MISSING_COLOR = "yellow on_black";
@@ -102,8 +106,9 @@ GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "q|onlybad" => sub { $onlyPrintFailures = 1; }
 	   , "nc" => sub { $useColor = 0; } # 'no color'
 	   , "c!" => $useColor # default is "yes, use color"
+	   , "r" => sub { die "-r is not a valid command line option!"; }
 	   , "rename!" => \$shouldRenameBad
-	   , "del|delete!" => \$shouldDeleteBad
+#	   , "del|delete!" => \$shouldDeleteBad
 	   , "vv" => sub { $isDebugging = 1; $verbose = 1; }
 	   , "v|version" => sub { print "VERSION $VERSION\n"; exit(0); }
     ) or printUsageAndQuit();
@@ -181,11 +186,11 @@ foreach my $md5file (@md5files) {
 			confess "Failure to find an md5 sum on line $lineNum of $md5file...";
 		}
 
+		my $filebase       = File::Basename::basename($fn); # hmm, maybe only the BASENAME of this file exists, from the current path? (it could be some path like /other_server/whatever/myfile.txt, where only "myfile.txt" is correct
 		my $filePathOurSystem = undef;
 		if (-e $fn) {
 			$filePathOurSystem = $fn; # cool, the file exists
 		} else {
-			my $filebase       = File::Basename::basename($fn); # hmm, maybe only the BASENAME of this file exists, from the current path? (it could be some path like /other_server/whatever/myfile.txt, where only "myfile.txt" is correct
 			$filePathOurSystem = $dir . "/" . $filebase;
 		}
 
@@ -194,14 +199,26 @@ foreach my $md5file (@md5files) {
 			$observedMd5 = undef; # can't find the file on the filesystem...
 		} else {
 			$observedMd5 = md5_of_file($filePathOurSystem);
-
 			if ($observedMd5 ne $md) {
 				# Bad file detected!
 				if ($shouldRenameBad) {
 					debugPrint("Would be renaming the file now...\n");
+					my $renamePath = undef;
+					for (my $i = 1; $i <= $MAX_RENAMED_FILES; $i++) {
+						$renamePath = $filePathOurSystem . "." . sprintf("%04d", $i) . "." . $RENAME_SUFFIX;
+						if (not -e $renamePath) { # great, no existing file at this path!
+							last;
+						}
+					}
+					(not -e $renamePath) or confess "[ERROR] Can't rename a file without overwriting another one (renaming bad files due to '--rename' option) Hit the limit of renaming files! Tried to rename <$filePathOurSystem>, but there were already at least $MAX_RENAMED_FILES files with the rename suffix!";
+					printColorStderr("* Since --rename was specified, now renaming the MD5-mismatching file <$filebase> to " . File::Basename::basename($renamePath) . "...", $MD5_FAILURE_COLOR);
+					system(("mv", "$filePathOurSystem", "$renamePath"));
 				}
 				if ($shouldDeleteBad) {
-					debugPrint("Would be deleting the file now...\n");
+					printColorStderr("* Since --delete was specified, now renaming the MD5-mismatching file <$filebase> to add the '.delete_me' suffix ", $MD5_FAILURE_COLOR);
+					print STDERR ("note---not actually deleting the file, just renaming it to '.deleteme'. You will need to delete these yourself for now!");
+					warn("note---not actually deleting the file, just renaming it to '.delete_me_bad_md5'. You will need to delete these yourself for now!");
+					system(("mv", "-f", "$filePathOurSystem", "${filePathOurSystem}.delete_me_bad_md5"));
 				}
 			}
 
@@ -223,6 +240,11 @@ printColorStderr("     [MISSING FILES]:\t$G_NMISSING\n", ($G_NMISSING > 0 ? $FIL
 
 exit(0); # looks like we were successful
 
+
+# --delete: Dubiously implemented for now. Adds the '.delete_me' suffix to a filename.
+
+
+  
 ################# END MAIN #############################
 
 __DATA__
@@ -232,15 +254,17 @@ by Alex Williams, 2016
 
 This program calculates 'md5' checksums and verifies them against an input file of expected checksums.
 
- OPTIONS:
+OPTIONS:
 -nc:  No color (default: yes, color please)
 
---onlybad (or -q): Quiet mode. Do not report the files where the MD5 sum matched OK.
+-q or --onlybad: Quiet mode. Only report BAD and MISSING files, not OK ones.
 
---rename (Not implemented yet -- will rename bad files)
---delete (Not implemented yet -- will delete bad files)
+--rename: Instead of just checking files, if a file has a non-matching MD5 sum, it is renamed
+          to have the suffix $RENAME_SUFFIX. We try to avoid overwriting files in the case of multiple
+          failed checksums, so the first one would be e.g. failed_file.0001.$RENAME_SUFFIX. A second 
+          bad copy of the same file would be named failed_file.0002.$RENAME_SUFFIX , etc, up through a 
+          maximum of $MAX_RENAMED_FILES.
 
---v: verbose
 --vv (debugging)
 
 EXAMPLES:
