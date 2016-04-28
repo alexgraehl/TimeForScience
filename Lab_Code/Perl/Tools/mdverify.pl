@@ -37,9 +37,9 @@ my $MD5_FAILURE_COLOR  = "red";
 my $FILE_MISSING_COLOR = "yellow on_black";
 my $VERSION = "1.00";
 
-my $totalOK       = 0;
-my $totalMismatch = 0;
-my $totalMissing  = 0;
+my $G_NOK      = 0;
+my $G_NBAD     = 0;
+my $G_NMISSING = 0;
 
 sub tryToLoadModule($) {
 	my $x = eval("require $_[0]");
@@ -124,18 +124,19 @@ sub appendStatus($$$) {
 		$actualMd5 = "<FILE_MISSING>                  "; # replace 'undefined' with this (32 chars)
 		$statusStr    = "[MISSING] ";
 		$shortStatus = "missing";
-		$totalMissing++;
+		$G_NMISSING++;
 		$outColor = $FILE_MISSING_COLOR;
 	} elsif ($actualMd5 ne $expectedMd5) {
 		$statusStr = "[MD5_FAIL]";
 		$shortStatus = "bad";
-		$totalMismatch++;
+		$G_NBAD++;
 		$outColor = $MD5_FAILURE_COLOR;
 	} else {
 		# I guess it was oK!
 		$statusStr   = "[OK]      "; # 10 characters
 		$shortStatus = "ok";
 		$outColor    = $MD5_OK_COLOR;
+		$G_NOK++;
 	}
 	my $line = $statusStr . "\t" . $actualMd5 . "\t" . $expectedMd5 . "\t" . $path . "\n"; # global variable
 	$G_FILE_STATUS .= $line;
@@ -156,23 +157,34 @@ foreach my $md5file (@md5files) {
 	(($md5file eq '-') or (-f $md5file and -r $md5file)) or quitWithUsageError("[ERROR]: md5 file '$md5file' ($base) at path ($dir) did not appear to exist!");
 	debugPrint("Handling md5 file <$md5file> ($base) at path ($dir)...\n");
 
-	open(my $fh, "<", "$md5file") or die "Cannot open $md5file...\n";
+	open(my $fh, "<", "$md5file") or confess "[ERROR] Cannot open the (supposedly existing) MD5 checksum file named <$md5file>--check to make sure it really exists!";
 	my $lineNum=0;
 	while (my $x = <$fh>) {
 		$lineNum++;
 		chomp($x);
-		my @a = split(/[ ][ ]/, $x);
-		(scalar(@a) == 2) or die "Problem parsing $md5file -- all lines should have two spaces as the md5 delimiter!";
-
 		my $md = undef;
 		my $fn = undef;
-		if (isMd5($a[0])) {
-			($md, $fn) = ($a[0], $a[1]);
-		} elsif (isMd5($a[1])) {
-			($md, $fn) = ($a[1], $a[0]); # switch the order
+		my @a = split(/[ ][ ])/, $x);
+		if (scalar(@a) != 2) {
+			# Ok, this wasn't a normal "two spaces is the delimiter" md5sum output file. Maybe we can still figure it out, though.
+			# Sometimes the delimiter is " = ", and in fact, it looks like:   MD5 (filename here) = 12345...
+			my $x2 = $x;
+			$x2 =~ m/^MD5 [(]([^)])[)] = ([0-9a-zA-Z]{32})$/;
+			@a = [$1, $2];
 		} else {
-			confess "Failure to find an md5 sum on line $lineNum of $md5file...";
+			(scalar(@a) == 2) or confess "[ERROR] Cannot properly parsing the (supposedly) MD5 checksum file named <$md5file>---we expect it to have two columns of data, with either TWO SPACES as the delimiter OR possibly ' = ' (equals sign surrounded by a single space--this is apparently what the BSD version of 'md5' prints) as the delimiter!";
+			if (isMd5($a[0])) {
+				($md, $fn) = ($a[0], $a[1]);
+			} elsif (isMd5($a[1])) {
+				($md, $fn) = ($a[1], $a[0]); # switch the order
+			} else {
+				confess "Failure to find an md5 sum on line $lineNum of $md5file...";
+			}
 		}
+		
+
+
+
 
 		my $filePathOurSystem = undef;
 		if (-e $fn) {
@@ -209,14 +221,13 @@ foreach my $md5file (@md5files) {
 
 #print $G_FILE_STATUS;
 
-my $totalFiles = ($totalOK + $totalMismatch + $totalMissing);
-print STDERR " TOTAL FILES CHECKED:\t$totalFiles\n";
-print STDERR "       [CHECKSUM OK]:\t$totalOK\n";
-print STDERR "     [CHECKSUM FAIL]:\t$totalMismatch\n";
-print STDERR "     [MISSING FILES]:\t$totalMissing\n";
+my $totalFiles = ($G_NOK + $G_NMISSING + $G_NBAD);
+printColorStderr(" TOTAL FILES CHECKED:\t$totalFiles\n", undef);
+printColorStderr("       [CHECKSUM OK]:\t$G_NOK\n", undef);
+printColorStderr("     [CHECKSUM FAIL]:\t$G_NBAD\n", ($G_NBAD > 0 ? $MD5_FAILURE_COLOR : undef));
+printColorStderr("     [MISSING FILES]:\t$G_NMISSING\n", ($G_NMISSING > 0 ? $FILE_MISSING_COLOR : undef));
 
 exit(0); # looks like we were successful
-
 
 ################# END MAIN #############################
 
