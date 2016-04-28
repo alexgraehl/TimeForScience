@@ -108,11 +108,11 @@ GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "rename!" => \$shouldRenameBad
 #	   , "del|delete!" => \$shouldDeleteBad
 	   , "vv" => sub { $isDebugging = 1; $verbose = 1; }
-	   , "v|version" => sub { print "VERSION $VERSION\n"; exit(0); }
+	   , "v|version" => sub { print "$VERSION\n"; exit(0); }
     ) or printUsageAndQuit();
 
 my $numUnprocessedArgs = scalar(@ARGV);
-($numUnprocessedArgs >= 1) or quitWithUsageError("[Error] in arguments! You must send at least ONE path (or one filename and '-' for STDIN) to this program.");
+($numUnprocessedArgs >= 1) or quitWithUsageError("[Error] in arguments! You must send at least ONE md5 filepath to this program. It cannot accept STDIN reading currently.");
 
 my @md5files = @ARGV;
 
@@ -251,26 +251,33 @@ This program calculates 'md5' checksums and verifies them against an input file 
 OPTIONS:
 -nc:  No color (default: yes, color please)
 
--q or --onlybad: Quiet mode. Only report BAD and MISSING files, not OK ones.
+--onlybad or -q: Quiet mode. Only report BAD and MISSING files, not OK ones.
 
 --rename: Instead of just checking files, if a file has a non-matching MD5 sum, it is renamed
           to have the suffix $RENAME_SUFFIX. We try to avoid overwriting files in the case of multiple
-          failed checksums, so the first one would be e.g. failed_file.0001.$RENAME_SUFFIX. A second 
-          bad copy of the same file would be named failed_file.0002.$RENAME_SUFFIX , etc, up through a 
+          failed checksums, so the first one would be e.g. failed_file.0001.$RENAME_SUFFIX. A second
+          bad copy of the same file would be named failed_file.0002.$RENAME_SUFFIX , etc, up through a
           maximum of $MAX_RENAMED_FILES.
 
+
 --vv (debugging)
+
+--version or -v: Print the version number and exit.
 
 EXAMPLES:
   mdverify.pl --color **/*md5*  (check a bunch of subdirectories)
 
   mdverify.pl --onlybad md5.txt (do not report the OK files)
+  mdverify.pl -q  Download[12]/*/*md5_checksum.txt (similar to the above example, but for multiple files)
 
-
+  mdverify.pl --rename  */**/md5.txt (rename files where the MD5 sum does not match)
 
 KNOWN BUGS:
 (None yet)
 
 TO DO:
 
-(Nothing yet)
+Maybe re-enable the "--delete" option after testing it.
+Maybe allow STDIN to be read?
+
+
