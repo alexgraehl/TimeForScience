@@ -59,11 +59,15 @@
 	<key>NSWindow Frame SUUpdateAlert</key>
 	<string>3210 733 620 392 2560 127 1920 1200 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>2990 140 952 1187 2560 127 1920 1200 </string>
+	<string>385 135 1465 987 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
 	<string>4 10 2554 1407 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 2</key>
 	<string>0 10 1276 1407 0 0 2560 1417 </string>
+	<key>NeverWarnAboutShortLivedSessions_9F128B9A-CAEC-4D6D-ABD4-0E99B5AD4D5D</key>
+	<true/>
+	<key>NeverWarnAboutShortLivedSessions_9F128B9A-CAEC-4D6D-ABD4-0E99B5AD4D5D_selection</key>
+	<integer>0</integer>
 	<key>New Bookmarks</key>
 	<array>
 		<dict>
@@ -691,7 +695,7 @@
 			<key>Silence Bell</key>
 			<false/>
 			<key>Smart Cursor Color</key>
-			<false/>
+			<true/>
 			<key>Sync Title</key>
 			<false/>
 			<key>Tab Color</key>
@@ -811,7 +815,7 @@
 	<key>NoSyncCommandHistoryHasEverBeenUsed</key>
 	<true/>
 	<key>NoSyncLastTipTime</key>
-	<real>483304237.08826798</real>
+	<real>483569593.84944999</real>
 	<key>NoSyncNeverRemindPrefsChangesLostForFile</key>
 	<true/>
 	<key>NoSyncNeverRemindPrefsChangesLostForFile_selection</key>
@@ -878,6 +882,9 @@
 		<string>0046</string>
 		<string>0047</string>
 		<string>0048</string>
+		<string>0049</string>
+		<string>0050</string>
+		<string>0051</string>
 	</array>
 	<key>OpenTmuxWindowsIn</key>
 	<integer>2</integer>
@@ -927,7 +934,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2016-04-22T20:02:39Z</date>
+	<date>2016-04-28T13:58:19Z</date>
 	<key>TabStyle</key>
 	<integer>1</integer>
 	<key>ToolbeltTools</key>
@@ -935,6 +942,10 @@
 		<string>Profiles</string>
 		<string>Jobs</string>
 	</array>
+	<key>findIgnoreCase_iTerm</key>
+	<true/>
+	<key>findRegex_iTerm</key>
+	<false/>
 	<key>iTerm Version</key>
 	<string>2.9.20160313</string>
 	<key>kCPKSelectionViewPreferredModeKey</key>
