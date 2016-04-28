@@ -18,28 +18,26 @@ use Digest::MD5;
 use Term::ANSIColor;
 $| = 1;  # Flush output to STDOUT immediately.
 
-my $verbose = 0;
+my $verbose = 1;
 my $isDebugging = 0;
 my $useColor    = 1;
 my $onlyPrintFailures = 0; # by default, print ALL file results
 my $shouldRenameBad = 0; # should we rename bad files on the filesystem?
 my $shouldDeleteBad = 0; # should we DELETE bad files on the filesystem? May be more dangerous!
 
-sub quitWithUsageError($) { print($_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
-sub printUsageAndQuit() { printUsageAndContinue(); exit(1); }
+sub quitWithUsageError($)   { print($_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
+sub printUsageAndQuit()     { printUsageAndContinue(); exit(1); }
 sub printUsageAndContinue() {    print STDOUT <DATA>; }
-sub debugPrint($) {   ($isDebugging) and print STDERR $_[0]; }
-sub verboseWarnPrint($) { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "yellow on_blue"); } }
-sub verboseUpdatePrint($) { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "black on_green"); } }
+sub debugPrint($)           { ($isDebugging) and print STDERR $_[0]; }
+sub verboseWarnPrint($)     { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "yellow on_blue"); } }
+sub verboseUpdatePrint($)   { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "black on_green"); } }
 
-
-my $RENAME_SUFFIX      = "MD5_CHECKSUM_FAILURE";
+my $RENAME_SUFFIX      = "VERIFICATION_FAILURE";
 my $MAX_RENAMED_FILES  = 999;
-
 my $MD5_OK_COLOR       = "green";
 my $MD5_FAILURE_COLOR  = "red";
 my $FILE_MISSING_COLOR = "yellow on_black";
-my $VERSION = "1.00";
+my $VERSION            = "1.00";
 
 my $G_NOK      = 0;
 my $G_NBAD     = 0;
@@ -177,23 +175,17 @@ foreach my $md5file (@md5files) {
 				@a = ($1, $2); # ok, the regexp matched!
 			}
 		}
-		(scalar(@a) == 2) or confess "[ERROR] Cannot properly parse the (supposedly) MD5 checksum file named <$md5file>---we expect it to have two columns of data, with either TWO SPACES as the delimiter OR possibly ' = ' (equals sign surrounded by a single space--this is apparently what the BSD version of 'md5' prints) as the delimiter!";
-		if (isMd5($a[0])) {
-			($md, $fn) = ($a[0], $a[1]);
-		} elsif (isMd5($a[1])) {
-			($md, $fn) = ($a[1], $a[0]); # switch the order
-		} else {
-			confess "Failure to find an md5 sum on line $lineNum of $md5file...";
-		}
-
+		(scalar(@a) == 2) or confess "[ERROR] Cannot properly parse the (supposedly) MD5 checksum file named <$md5file>---we expect it to have two columns of data, with either TWO SPACES as the delimiter OR possibly ' = ' (equals sign surrounded by a single space) as the delimiter!";
+		if    (isMd5($a[0])) {  ($md, $fn) = ($a[0], $a[1]); }
+		elsif (isMd5($a[1])) {  ($md, $fn) = ($a[1], $a[0]); } # switch the order
+		else {                  confess "Failure to find an md5 sum on line $lineNum of $md5file..."; }
+		
 		my $filebase       = File::Basename::basename($fn); # hmm, maybe only the BASENAME of this file exists, from the current path? (it could be some path like /other_server/whatever/myfile.txt, where only "myfile.txt" is correct
 		my $filePathOurSystem = undef;
-		if (-e $fn) {
-			$filePathOurSystem = $fn; # cool, the file exists
-		} else {
-			$filePathOurSystem = $dir . "/" . $filebase;
-		}
 
+		if (-e $fn) {   $filePathOurSystem = $fn; }# cool, the file exists
+		else {        $filePathOurSystem = $dir . "/" . $filebase; }
+		
 		my $observedMd5;
 		if (not -e $filePathOurSystem) {
 			$observedMd5 = undef; # can't find the file on the filesystem...
@@ -210,15 +202,17 @@ foreach my $md5file (@md5files) {
 							last;
 						}
 					}
-					(not -e $renamePath) or confess "[ERROR] Can't rename a file without overwriting another one (renaming bad files due to '--rename' option) Hit the limit of renaming files! Tried to rename <$filePathOurSystem>, but there were already at least $MAX_RENAMED_FILES files with the rename suffix!";
-					printColorStderr("* Since --rename was specified, now renaming the MD5-mismatching file <$filebase> to " . File::Basename::basename($renamePath) . "...", $MD5_FAILURE_COLOR);
-					system(("mv", "$filePathOurSystem", "$renamePath"));
+					if (-e $renamePath) {
+						verboseWarnPrint("*** [ERROR] Can't rename a file without overwriting another one (renaming bad files due to '--rename' option) Hit the limit of renaming files! Tried to rename <$filePathOurSystem>, but there were already at least $MAX_RENAMED_FILES files with the rename suffix!");
+					} else {
+						printColorStderr("* Since --rename was specified, now renaming the MD5-mismatching file <$filebase> to " . File::Basename::basename($renamePath) . "...", $MD5_FAILURE_COLOR);
+						system(("mv", "$filePathOurSystem", "$renamePath"));
+					}
 				}
 				if ($shouldDeleteBad) {
-					printColorStderr("* Since --delete was specified, now renaming the MD5-mismatching file <$filebase> to add the '.delete_me' suffix ", $MD5_FAILURE_COLOR);
-					print STDERR ("note---not actually deleting the file, just renaming it to '.deleteme'. You will need to delete these yourself for now!");
-					warn("note---not actually deleting the file, just renaming it to '.delete_me_bad_md5'. You will need to delete these yourself for now!");
-					system(("mv", "-f", "$filePathOurSystem", "${filePathOurSystem}.delete_me_bad_md5"));
+					# not currently implemented
+					printColorStderr("* Since --delete was specified, now DELETING the MD5-mismatching file <$filePathOurSystem>.", $MD5_FAILURE_COLOR);
+					unlink($filePathOurSystem) or verboseWarnPrint("*** [ERROR]: Failed to delete <$filePathOurSystem>");
 				}
 			}
 
