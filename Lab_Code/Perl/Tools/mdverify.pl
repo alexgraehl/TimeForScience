@@ -164,34 +164,28 @@ foreach my $md5file (@md5files) {
 		chomp($x);
 		my $md = undef;
 		my $fn = undef;
-		my @a = split(/[ ][ ])/, $x);
+		my @a = split(/[ ][ ]/, $x);
 		if (scalar(@a) != 2) {
 			# Ok, this wasn't a normal "two spaces is the delimiter" md5sum output file. Maybe we can still figure it out, though.
 			# Sometimes the delimiter is " = ", and in fact, it looks like:   MD5 (filename here) = 12345...
-			my $x2 = $x;
-			$x2 =~ m/^MD5 [(]([^)])[)] = ([0-9a-zA-Z]{32})$/;
-			@a = [$1, $2];
-		} else {
-			(scalar(@a) == 2) or confess "[ERROR] Cannot properly parsing the (supposedly) MD5 checksum file named <$md5file>---we expect it to have two columns of data, with either TWO SPACES as the delimiter OR possibly ' = ' (equals sign surrounded by a single space--this is apparently what the BSD version of 'md5' prints) as the delimiter!";
-			if (isMd5($a[0])) {
-				($md, $fn) = ($a[0], $a[1]);
-			} elsif (isMd5($a[1])) {
-				($md, $fn) = ($a[1], $a[0]); # switch the order
-			} else {
-				confess "Failure to find an md5 sum on line $lineNum of $md5file...";
+			if ($x =~ m/^MD5 [(]([^)]+)[)]\s+=\s+([0-9a-zA-Z]{32})$/i) {
+				@a = ($1, $2); # ok, the regexp matched!
 			}
 		}
-		
-
-
-
+		(scalar(@a) == 2) or confess "[ERROR] Cannot properly parse the (supposedly) MD5 checksum file named <$md5file>---we expect it to have two columns of data, with either TWO SPACES as the delimiter OR possibly ' = ' (equals sign surrounded by a single space--this is apparently what the BSD version of 'md5' prints) as the delimiter!";
+		if (isMd5($a[0])) {
+			($md, $fn) = ($a[0], $a[1]);
+		} elsif (isMd5($a[1])) {
+			($md, $fn) = ($a[1], $a[0]); # switch the order
+		} else {
+			confess "Failure to find an md5 sum on line $lineNum of $md5file...";
+		}
 
 		my $filePathOurSystem = undef;
 		if (-e $fn) {
 			$filePathOurSystem = $fn; # cool, the file exists
 		} else {
-			# hmm, maybe only the BASENAME of this file exists, from the current path?
-			my $filebase       = File::Basename::basename($fn);
+			my $filebase       = File::Basename::basename($fn); # hmm, maybe only the BASENAME of this file exists, from the current path? (it could be some path like /other_server/whatever/myfile.txt, where only "myfile.txt" is correct
 			$filePathOurSystem = $dir . "/" . $filebase;
 		}
 
