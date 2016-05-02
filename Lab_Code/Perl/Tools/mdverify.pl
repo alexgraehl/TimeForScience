@@ -32,7 +32,7 @@ sub debugPrint($)           { ($isDebugging) and print STDERR $_[0]; }
 sub verboseWarnPrint($)     { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "yellow on_blue"); } }
 sub verboseUpdatePrint($)   { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "black on_green"); } }
 
-my $RENAME_SUFFIX      = "VERIFICATION_FAILURE";
+my $RENAME_SUFFIX      = "VERIFICATION_FAILED";
 my $MAX_RENAMED_FILES  = 999;
 my $MD5_OK_COLOR       = "green";
 my $MD5_FAILURE_COLOR  = "red";
@@ -254,9 +254,9 @@ OPTIONS:
 --onlybad or -q: Quiet mode. Only report BAD and MISSING files, not OK ones.
 
 --rename: Instead of just checking files, if a file has a non-matching MD5 sum, it is renamed
-          to have the suffix $RENAME_SUFFIX. We try to avoid overwriting files in the case of multiple
-          failed checksums, so the first one would be e.g. failed_file.0001.$RENAME_SUFFIX. A second
-          bad copy of the same file would be named failed_file.0002.$RENAME_SUFFIX , etc, up through a
+          to have the suffix "VERIFICATION_FAILED". We try to avoid overwriting files in the case of multiple
+          failed checksums, so the first one would be e.g. failed_file.0001.VERIFICATION_FAILED. A second
+          bad copy of the same file would be named failed_file.0002.VERIFICATION_FAILED , etc, up through a
           maximum of $MAX_RENAMED_FILES.
 
 
