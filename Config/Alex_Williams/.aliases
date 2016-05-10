@@ -882,3 +882,16 @@ function mo {
 }
 
 alias tab="column -t -s $'\t'"
+
+function rtag {
+    # Recursively set finder tags
+    tag=$1
+    shift
+    for fff in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
+	#find . -exec tag --add tagname {} \;  -print
+	#find $name -type f | xargs xattr -wx com.apple.FinderInfo "`xattr -px sampleFile`"
+	echo "Adding tag $tag to $fff"
+    done
+}
+
+
