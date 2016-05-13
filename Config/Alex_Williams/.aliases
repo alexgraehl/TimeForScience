@@ -883,6 +883,16 @@ function mo {
 
 alias tab="column -t -s $'\t'"
 
+function brutallycompress {
+    if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass AT LEAST ONE target directory into this function!"; return; fi
+    COMPRESS="gzip --verbose -9"
+    echo "About to compress ($COMPRESS) anything that has the extension: .bed, _tracking, .diff, .bed.count, .moa, .fa, .fq, .fasta, .fastq, .txt"
+    for location in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
+	if [[ ! -d "$location" ]] ; then echo "[ERROR]: input '$location' was not a directory!"; return 1; fi
+	find "$location" -type f \( -iname "*.bed" -o -iname "*_tracking" -o -iname "*.diff" -o -iname "*.bed.count" -o -iname "*.moa" -o -iname "*.fa" -o -iname "*.fq" -o -iname "*.fasta" -o -iname "*.fastq" -o -iname "*.txt" \) -print0 | xargs -0 $COMPRESS
+    done
+}
+
 function rtag {
     # Recursively set finder tags
     tag=$1
