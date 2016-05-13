@@ -884,6 +884,8 @@ function mo {
 alias tab="column -t -s $'\t'"
 
 function brutallycompress {
+    # Usage:    brutallycompress  DIRECTORY1   DIRECTORY2   DIRECTORY3
+    # Recursively goes through and compresses (gzip -9) any files with the extensions listed below.
     if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass AT LEAST ONE target directory into this function!"; return; fi
     COMPRESS="gzip --verbose -9"
     echo "About to compress ($COMPRESS) anything that has the extension: .bed, _tracking, .diff, .bed.count, .moa, .fa, .fq, .fasta, .fastq, .txt"
