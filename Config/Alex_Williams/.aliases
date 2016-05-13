@@ -6,8 +6,8 @@
 # IFS=$'\n\t'
 # ======================
 
-if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
-    source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
+if [ -f $HOME/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
+    source $HOME/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
 
 if [ -f ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/aliases-server-config ]; then
@@ -531,8 +531,8 @@ alias wesx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${WES_IP}'
 alias rig=' ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
 alias rigx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
 
-alias lig=' ssh ${AGW_SSH_OPTIONS}     ${LIG_U}@${LIG_IP}' # <-- LIG = different username!
-alias ligx='ssh ${AGW_SSH_OPTIONS} -Y  ${LIG_U}@${LIG_IP}' # <-- LIG = different username!
+alias lig=' ssh ${AGW_SSH_OPTIONS}     ${PL_USERNAME}@${PL_IP}' # <-- LIG = different username!
+alias ligx='ssh ${AGW_SSH_OPTIONS} -Y  ${PL_USERNAME}@${PL_IP}' # <-- LIG = different username!
 
 alias bue=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PB_IP}'
 alias buex='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${PB_IP}'
@@ -882,6 +882,16 @@ function mo {
 }
 
 alias tab="column -t -s $'\t'"
+
+function brutallycompress {
+    if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass AT LEAST ONE target directory into this function!"; return; fi
+    COMPRESS="gzip --verbose -9"
+    echo "About to compress ($COMPRESS) anything that has the extension: .bed, _tracking, .diff, .bed.count, .moa, .fa, .fq, .fasta, .fastq, .txt"
+    for location in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
+	if [[ ! -d "$location" ]] ; then echo "[ERROR]: input '$location' was not a directory!"; return 1; fi
+	find "$location" -type f \( -iname "*.bed" -o -iname "*_tracking" -o -iname "*.diff" -o -iname "*.bed.count" -o -iname "*.moa" -o -iname "*.fa" -o -iname "*.fq" -o -iname "*.fasta" -o -iname "*.fastq" -o -iname "*.txt" \) -print0 | xargs -0 $COMPRESS
+    done
+}
 
 function rtag {
     # Recursively set finder tags
