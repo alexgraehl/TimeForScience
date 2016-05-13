@@ -68,6 +68,7 @@ else
     if [[ -d ${TIME_FOR_SCIENCE_DIR} ]]; then
 	true # Don't do anything; it was found, which is fine
     else
+	echo "[WARNING in .bashrc: TIME_FOR_SCIENCE_DIR not found]"
 	export TIME_FOR_SCIENCE_DIR="COULD_NOT_FIND_TIME_FOR_SCIENCE_DIRECTORY_ON_FILESYSTEM"
     fi
 fi
@@ -100,15 +101,20 @@ export PERLLIB=${PERL5LIB}
 ### =============
 
 
-if [[ "$COMPYNAME" == "Slithereens" ]]; then
-    export BINF_CORE_WORK_DIR="/Users/${USER}/work" # <-- set BINF_CORE work directory
-elif [[ "$HOSTNAME" == "westway" ]] || [[ "$HOSTNAME" == "bueno" ]]; then
-    export BINF_CORE_WORK_DIR="/home/alexgw/work"
-elif [[ "$COMPYNAME" == "lighthousewww" ]] || [[ "$COMPYNAME" == "lighthouse" ]]; then
-    export BINF_CORE_WORK_DIR="/home/awilliams/work"
-else
+if [[ -d "$HOME/work" ]]; then
+    export BINF_CORE_WORK_DIR="$HOME/work" # <-- set BINF_CORE work directory
+elif [[ -d "/work" ]]; then
     export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
+else
+    echo "[WARNING in .bashrc: WORK directory not found]"
+    export BINF_CORE_WORK_DIR="WORK_DIR_NOT_FOUND"
 fi
+
+#elif [[ "$HOSTNAME" == "westway" ]] || [[ "$HOSTNAME" == "bueno" ]]; then
+#    export BINF_CORE_WORK_DIR="/home/alexgw/work"
+#elif [[ "$COMPYNAME" == "lighthousewww" ]] || [[ "$COMPYNAME" == "lighthouse" ]]; then
+#    export BINF_CORE_WORK_DIR="/home/awilliams/work"
+
 
 export PATH="${PATH}:$BINF_CORE_WORK_DIR/Common/Code/Python:$BINF_CORE_WORK_DIR/Common/Code/alexgw"
 
