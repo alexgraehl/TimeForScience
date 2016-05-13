@@ -6,8 +6,8 @@
 # IFS=$'\n\t'
 # ======================
 
-if [ -f ~/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
-    source ~/TimeForScience/Config/Alex_Williams/bash-platform-specific
+if [ -f $HOME/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
+    source $HOME/TimeForScience/Config/Alex_Williams/bash-platform-specific
 fi
 
 if [ -f ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/aliases-server-config ]; then
@@ -531,8 +531,8 @@ alias wesx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${WES_IP}'
 alias rig=' ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
 alias rigx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
 
-alias lig=' ssh ${AGW_SSH_OPTIONS}     ${LIG_U}@${LIG_IP}' # <-- LIG = different username!
-alias ligx='ssh ${AGW_SSH_OPTIONS} -Y  ${LIG_U}@${LIG_IP}' # <-- LIG = different username!
+alias lig=' ssh ${AGW_SSH_OPTIONS}     ${PL_USERNAME}@${PL_IP}' # <-- LIG = different username!
+alias ligx='ssh ${AGW_SSH_OPTIONS} -Y  ${PL_USERNAME}@${PL_IP}' # <-- LIG = different username!
 
 alias bue=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PB_IP}'
 alias buex='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${PB_IP}'
