@@ -837,9 +837,11 @@ function accuse { # See who is using the CPU. Usage: just "accuse" with no argum
 }
 
 function giant { # find giant files
+    #SAVED_IFS=$IFS; IFS=$(echo -en "\n\b")
     echo "Calculating all sizes first, then sorting them in ascending order..." >&2 # print to stderr
     DIRS="$@"
     sudo du -sc $DIRS | perl -nle 'print if not m/\btotal\b/' | perl -nle "@a = split(/\s+/); if (\$a[0]>0){print ((\$a[0]/1024.0/1024.0).qq{\t}.\$a[1]);} else { };" | sort -k1,1g | perl -e "my \$t = 0; while(<>) { my @a=split; \$t += \$a[0]; print join(qq{\t}, int(\$t/1024.0).qq{T}, int(\$a[0]).qq{G}, \$a[1]).qq{\n} }"
+    #IFS=$SAVED_IFS
 }
 
 function wholog {
