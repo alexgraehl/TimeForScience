@@ -94,7 +94,6 @@ sub main() { # Main program
 	       , "dp=i" => \$decimalPlaces
 	) or printUsageAndQuit();
 
-
     print STDERR "===============================\n";
     print STDOUT safeColor("test color\n", "blue on_yellow");
     printColorStdout("hey", "red");
