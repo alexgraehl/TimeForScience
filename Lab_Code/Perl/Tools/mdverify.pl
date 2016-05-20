@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-#@COMMENT@ mdverify.pl is a script to easily verify a bunch of files with md5 sums. Frequency-of-use rating: 2/10.
+#@COMMENT@ mdverify.pl is a script to easily verify a bunch of files with md5 checksums. It understands the difference between 'md5' and 'md5sum' (Mac vs Linux) and can handle md5 files with either the filename first OR the checksum first, unlike normal md5(sum). Frequency-of-use rating: 2/10.
 
 # April 2016 by Alex Williams.
 
@@ -102,11 +102,11 @@ sub md5_of_file($) {
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "q|onlybad" => sub { $onlyPrintFailures = 1; }
-	   , "nc" => sub { $useColor = 0; } # 'no color'
+	   , "nc|bw" => sub { $useColor = 0; } # 'no color'
 	   , "c!" => $useColor # default is "yes, use color"
 	   , "r" => sub { die "-r is not a valid command line option!"; }
 	   , "rename!" => \$shouldRenameBad
-#	   , "del|delete!" => \$shouldDeleteBad
+	   , "delete!" => \$shouldDeleteBad
 	   , "vv" => sub { $isDebugging = 1; $verbose = 1; }
 	   , "v|version" => sub { print "$VERSION\n"; exit(0); }
     ) or printUsageAndQuit();
@@ -249,9 +249,7 @@ by Alex Williams, 2016
 This program calculates 'md5' checksums and verifies them against an input file of expected checksums.
 
 OPTIONS:
--nc:  No color (default: yes, color please)
-
---onlybad or -q: Quiet mode. Only report BAD and MISSING files, not OK ones.
+-q or --onlybad: Quiet mode. Only report BAD and MISSING files, not OK ones.
 
 --rename: Instead of just checking files, if a file has a non-matching MD5 sum, it is renamed
           to have the suffix "VERIFICATION_FAILED". We try to avoid overwriting files in the case of multiple
@@ -259,25 +257,25 @@ OPTIONS:
           bad copy of the same file would be named failed_file.0002.VERIFICATION_FAILED , etc, up through a
           maximum of $MAX_RENAMED_FILES.
 
+--delete: DELETES any files with bad checksums. May be dangerous!
+
+--nc|bw:  No color (default: colored text). "bw" is short for black & white.
 
 --vv (debugging)
 
---version or -v: Print the version number and exit.
+--version or -v or -V: Print the version number and exit.
 
 EXAMPLES:
   mdverify.pl --color **/*md5*  (check a bunch of subdirectories)
 
   mdverify.pl --onlybad md5.txt (do not report the OK files)
+
   mdverify.pl -q  Download[12]/*/*md5_checksum.txt (similar to the above example, but for multiple files)
 
   mdverify.pl --rename  */**/md5.txt (rename files where the MD5 sum does not match)
 
 KNOWN BUGS:
-(None yet)
+  (None yet)
 
-TO DO:
-
-Maybe re-enable the "--delete" option after testing it.
-Maybe allow STDIN to be read?
-
+----------
 
