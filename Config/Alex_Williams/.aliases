@@ -909,4 +909,17 @@ function rtag {
     done
 }
 
+function wgetdevour { # wget devour
+    if [[ "$#" != "3" ]] ; then echo "[ERROR] You need to pass THREE arguments -- username, password, directory!"; return; fi
+    USERNAME=$1
+    PASSWORD=$2
+    DIRECTORY=$3
+    wget -mk -r -U mozilla --connect-timeout=90 --random-wait -e robots=off --limit-rate=1m --tries=99 --timeout=50 \
+	 -A md5,fasta,fa,fastq,fq,bz2,gz,Z,gzip,bzip2,pdf,xls,xlsx,bed,sam,bam,vcf,csv,txt,sh,complete \
+	 --no-parent \
+	 --http-user="$USERNAME" --http-passwd="$PASSWORD" "$DIRECTORY/" # trailing slash here is crucial
+}
+
+
+
 
