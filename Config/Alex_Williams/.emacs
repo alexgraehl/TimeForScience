@@ -1084,3 +1084,49 @@ current line."
 ;(setq iswitchb-buffer-ignore '("^\\*" "^ " "*Buffer"))
 ;(setq iswitchb-buffer-ignore '("^\\*")) ;; This one is useful if you want to lose the *…* special buffers from the list. It’s helpful if you’re using the JDEE for editing Java apps, as you end up with buffers named org.whatever.package.Class which you might want to eliminate:
 (put 'downcase-region 'disabled nil)
+
+
+;;;;;;;; ========================= SHELL INTEGRATION: allow the user to put their cursor on a line, hit "Control-Option-L" and have that text run in the shell ============
+(defun sh-send-line-or-region (&optional shouldStep) ;; From here: http://stackoverflow.com/questions/6286579/emacs-shell-mode-how-to-send-region-to-shell
+  ;; Run this to execute some text in the shell!
+  (interactive ())
+  (let ((proc (get-process "shell"))
+        pbuff min max command)
+    (unless proc
+      (let ((currbuff (current-buffer)))
+        (shell)
+        (switch-to-buffer currbuff)
+        (setq proc (get-process "shell"))
+        ))
+    (setq pbuff (process-buffer proc)) ; is this a typo?
+    (if (use-region-p)
+        (setq min (region-beginning)
+              max (region-end))
+      (setq min (point-at-bol)
+            max (point-at-eol)))
+    (setq command (concat (buffer-substring min max) "\n"))
+    (with-current-buffer pbuff
+      (goto-char (process-mark proc))
+      (insert command)
+      (move-marker (process-mark proc) (point))
+      ) ;;pop-to-buffer does not work with save-current-buffer -- bug?
+    (process-send-string  proc command)
+    (display-buffer (process-buffer proc) t)
+    (when shouldStep (goto-char max) (next-line)) ; advance to the next line by default
+    ))
+
+(defun sh-send-line-or-region-and-step () ; "step" means: go to the next line in the input text window (the window with the commands you are running)
+  (interactive)
+  (sh-send-line-or-region t))
+
+(defun sh-switch-to-process-buffer () ; not sure what this does
+  (interactive)
+  (pop-to-buffer (process-buffer (get-process "shell")) t))
+
+;(define-key sh-mode-map [(control ?j)] 'sh-send-line-or-region-and-step)
+;(define-key sh-mode-map [(control ?c) (control ?z)] 'sh-switch-to-process-buffer)
+(setq comint-scroll-to-bottom-on-output t) ; <-- scroll to bottom when the shell prints something
+
+;;;; =========== SHORTCUT KEY DEFINED HERE: you can change it from Ctrl-option-L by changing the text below =================
+(global-set-key [(control meta l)] 'sh-send-line-or-region-and-step) ; option-control-l will execute the current line the cursor is on in the shell, OR a whole region if there' a highlighted region
+;;;;;;;; ========================= SHELL INTEGRATION: allow the user to put their cursor on a line, hit "Control-Option-L" and have that text run in the shell ============
