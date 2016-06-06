@@ -1,5 +1,7 @@
 default: all
 
+SHELL:=/bin/bash
+
 include $(MAPDIR)/Templates/Make/common.mak
 # If a variable called CHILDREN is defined, including this
 # makefile in another makefile will provide an automatic
