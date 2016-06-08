@@ -246,9 +246,10 @@ alias cheat="echo \
 \">> UNIX/WGET/TRICKLE: Rate limit any command to 500kbps (-d = down, -u = up): sudo trickle -d 500 -u 500 ncftp 'your_ftp_site_here' \" ${NL}\
 \">> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
 \">> UNIX/TOP/USAGE/HTOP: CPU usage by user: top -b -n 1 -u \\\$USER | awk 'NR>7 { sum += \\\$9; } END { print sum; }' \" ${NL}\
-\">> QSTAT/QSUB/QUEUE/TORQUE: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
-\">> QSTAT/QSUB/QUEUE/TORQUE: restart torque: sudo service pbs_server restart ;sudo service pbs_sched restart ; sudo service pbs_mom restart \" ${NL}\
-\">> QSTAT/QSUB/QUEUE/TORQUE: info on the queue: qstat -Qf or qstat -B more details \" ${NL}\
+\">> QSTAT/QSUB/QRUN/QUEUE/TORQUE: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
+\">> QSTAT/QSUB/QRUN/QUEUE/TORQUE: restart torque: sudo service pbs_sched stop ; sudo service pbs_mom stop ; sudo service pbs_server stop ; sudo /bin/rm /var/lock/subsys/pbs_server ; sudo service pbs_sched start ; sudo service pbs_mom start ; sudo service pbs_server start ; qstat \" ${NL}\
+\">> QSTAT/QSUB/QRUN/QUEUE/TORQUE: info on the queue: qstat -Qf or qstat -B more details \" ${NL}\
+\">> QSTAT/QSUB/QRUN/QUEUE/TORQUE: qrun MULTIPLE jobs in a range: for f in \\\$(seq 119905 119919); do sudo \\\$(which qrun) \\\$f; done \" ${NL}\
 \">> UNIX / DPKG / APT-GET: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
 \">> UNIX / DPKG / APT-GET: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
 \">> UNIX / YUM / RPM install: (this NEVER works, but): rpm -Uvh your.rpm . Does NOT handle dependencies.\" ${NL}\
@@ -291,7 +292,7 @@ alias cheat="echo \
 \">> RNASEQ Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ${NL}\
 \">> RNASEQ TOPHAT/rename TEST: for f in *; do echo \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
 \">> RNASEQ TOPHAT/rename RUN : for f in *; do   mv \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
-\">> RNASEQ:: Truncate a fastq file to length 19 without using fastx-trimmer: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
+\">> RNASEQ: Truncate a fastq file to length 19 without using fastx-trimmer: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
 \">> DNA reverse-complement: perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
 \">> APACHE error log: sudo less -S /var/log/apache2/error.log \" ${NL}\
 \">> Mac OS X Dictionary: /usr/share/dict/words \" ${NL}\
