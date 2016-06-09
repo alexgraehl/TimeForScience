@@ -668,7 +668,7 @@ function mini {
 	for var in "$@"; do echo " * Archiving $var --> ${compressedBasename}.tar.bz2" ; done
 	echo "[TAR] command running now..." ;
 	echo "$AGW_IONICE tar ... $TAREX"
-	$AGW_IONICE tar "$TAREX" --bzip2 -f "${compressedBasename}.tar.bz2" $@;
+	eval "$AGW_IONICE" tar "$TAREX" --bzip2 -f "${compressedBasename}.tar.bz2" $@;
 	echo "[Done]" ;
     fi
 }
@@ -689,7 +689,7 @@ function unmini {
 	    *.zip)     echo "ZIP commands are a disaster and are not supported yet. Sorry."; return ;;
 	    *) echo "unmini has failed to detect type of archive (filename is <$an>. Recommendation: make sure that file exists)... aborting." ; return ;;
 	esac
-	$AGW_IONICE $EX_CMD "$an" # <-- actually decompress the file
+	eval "$AGW_IONICE" "$EX_CMD" "$an" # <-- actually decompress the file
     done
 }
 
@@ -783,7 +783,7 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
 	case $yn in
 	    Move*) sudo mv ./${D} ./${DARCH}
 		 ln -s ${TARGET} ./${D}
-		 sudo ${AGW_IONICE} mv ./${DARCH}  ${TARGET}
+		 eval sudo ${AGW_IONICE} mv ./${DARCH}  ${TARGET}
 		 break;;
 	    *) echo "Ok, not doing anything."; break;;
 	esac
@@ -798,10 +798,10 @@ function mvln { # move and then make an ALIAS where the previous file was
     if [[ ! -e $FILE ]] ; then echo "[ERROR] Your source file ($FILE) does not exist!"; return; fi
     LAST=${@: -1}
     if [[ -d $LAST ]]; then # target is a directory
-	$AGW_IONICE mv "$FILE" "$LAST/"
+	eval $AGW_IONICE mv "$FILE" "$LAST/"
 	ln -s "$LAST/$FILE" "$FILE"
     else # target is a file
-	$AGW_IONICE mv "$FILE" "$LAST"
+	eval $AGW_IONICE mv "$FILE" "$LAST"
 	ln -s "$LAST" "$FILE"
     fi
     #touch $LAST
