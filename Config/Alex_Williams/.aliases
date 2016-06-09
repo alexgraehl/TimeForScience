@@ -667,7 +667,6 @@ function mini {
 	if [[ "$#" -gt 1 ]] ; then echo "Adding a total of $# files to the archive." ; fi
 	for var in "$@"; do echo " * Archiving $var --> ${compressedBasename}.tar.bz2" ; done
 	echo "[TAR] command running now..." ;
-	echo "$AGW_IONICE tar ... $TAREX"
 	eval "$AGW_IONICE" tar "$TAREX" --bzip2 -f "${compressedBasename}.tar.bz2" $@;
 	echo "[Done]" ;
     fi
