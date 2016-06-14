@@ -44,35 +44,32 @@ echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
 #echo $GIT_COMMITTER_EMAIL
 # echo $GIT_AUTHOR_EMAIL # not important if you set the other thing
 
+
+CODE_DIRS_FOR_GREPPING="${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core ${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode ${BINF_CORE_WORK_DIR}/Common/Code/alexgw ${HOME}/TimeForScience"
+
 ## Searches both the R source and the current directory (and any subdirectories!)
 ## Note that it only looks for files with a ".R" ending!!!!!!!
 if [[ -n "$isMac" ]] ; then
     ## It *is* a mac!
     function ff {
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
-	    "$@" \
-	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
-	    "${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode" \
-	    "${HOME}/TimeForScience" \
-	    ./
+	    "$@" ${CODE_DIRS_FOR_GREPPING} ./
     }
 
     alias zcat='gunzip -c' ## On the Mac, "zcat" likes to append '.Z' to filenames. Super annoying.
 else
     ## Not the mac!
     function ff {     ## Annoyingly, grep is different between mac/unix
-	grep --color=always -T \
+	cmd=(	grep --color=always -T \
 	    --ignore-case \
 	    --recursive \
 	    --extended-regexp \
 	    --line-number --with-filename \
 	    --exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="CVS" --exclude-dir="[bB]ackup*" \
 	    --binary-files=without-match \
-	    --include=*.R --include=*.pl --include=*.py \
-	    "$@" \
-	    "${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core" \
-	    "${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode" \
-	    "${HOME}/TimeForScience"
+	    --include=*.R --include=*.pl --include=*.pm --include=*.py --include=*.sh --include=*.py )
+	cmd=("${cmd[@]}" "$@" ${CODE_DIRS_FOR_GREPPING}) # some weird array format
+	"${cmd[@]}" # <- Actually execute. See http://unix.stackexchange.com/questions/131766/why-does-my-shell-script-choke-on-whitespace-or-other-special-characters
     }
 fi
 
