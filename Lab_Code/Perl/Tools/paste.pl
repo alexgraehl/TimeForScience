@@ -12,45 +12,37 @@ my @files;
 my $num_files = 0;
 
 # This is a bit of a mess but it's basically "getopt"
-while(@ARGV) {
+while (@ARGV) {
 	my $arg = shift @ARGV;
-	if($arg eq '--help') {
+	if ($arg eq '--help') {
 		print STDOUT <DATA>;
 		exit(0);
-	} elsif((-f $arg) or (-l $arg) or ($arg eq '-')) {
+	} elsif ((-f $arg) or (-l $arg) or ($arg eq '-')) {
 		$num_files++;
 		push(@files, $arg);
 		push(@is_file, $num_files);
 		push(@columns, $arg);
+	} elsif ($arg eq '-q') {
+		$verbose = 0;
+	} elsif ($arg eq '-d') {
+		$delim = shift(@ARGV);
+	} elsif ($arg eq '-di' or $arg eq '--di') {
+		$delim_in = shift(@ARGV);
+	} elsif ($arg eq '-do' or $arg eq '--do') {
+		$delim_out = shift(@ARGV);
+	} elsif ($arg eq '-nd') {
+		# No delimiters
+		$delim_in = '';
+		$delim_out = '';
+	} else {
+		push(@is_file, 0);
+		$arg =~ s/([^\\])\\t/$1\t/g;
+		$arg =~ s/^\\t/\t/;
+		$arg =~ s/([^\\])\\n/$1\n/g;
+		$arg =~ s/^\\n/\n/;
+		$arg =~ s/\\\\/\\/g;
+		push(@columns, $arg);
 	}
-	elsif($arg eq '-q')
-	  {
-		  $verbose = 0;
-	  }
-	elsif($arg eq '-d')
-	  {
-		  $delim = shift(@ARGV);
-	  }
-	elsif($arg eq '-di')
-	  {
-		  $delim_in = shift(@ARGV);
-	  }
-	elsif($arg eq '-do')
-	  {
-		  $delim_out = shift(@ARGV);
-	  } elsif($arg eq '-nd') {
-		  # No delimiters
-		  $delim_in = '';
-		  $delim_out = '';
-	  } else {
-		  push(@is_file, 0);
-		  $arg =~ s/([^\\])\\t/$1\t/g;
-		  $arg =~ s/^\\t/\t/;
-		  $arg =~ s/([^\\])\\n/$1\n/g;
-		  $arg =~ s/^\\n/\n/;
-		  $arg =~ s/\\\\/\\/g;
-		  push(@columns, $arg);
-	  }
 }
 
 $delim_in  = defined($delim_in)  ? $delim_in  : $delim;
@@ -118,24 +110,28 @@ sub printMultiLists {
 }
 
 __DATA__
-syntax: paste.pl [OPTIONS]
+syntax: paste.pl [OPTIONS]  input1 [input2] [input3]...
+
+'Pastes' together files (like UNIX paste) or literal text. Prints to standard out.
 
 EXAMPLES:
 
-paste.pl -do ''  '>' FILE
-  Adds a > to the leftmost position of every line in a file.
+paste.pl -do ''  '>>>>' INFILE  > OUTFILE
+  Adds >>> to the BEGINNING of every line in INFILE, printing this to OUTFILE.
+  Note the part with -do '', which suppresss the normal (tab) delimiting between inputs.
 
-paste.pl FILE 'UNKNOWN_SOURCE'
-  Puts a tab and then "UNKNOWN_SOURCE" at the end of every line.
+paste.pl INFILE 'UNKNOWN_SOURCE' > OUTFILE
+  Puts a tab (the default delimiter) and then "UNKNOWN_SOURCE" at the END of every line.
 
-paste.pl 'LEFT' 'MORE' FILE FILE 'RIGHT'
-  Pastes a bunch of files and text together.
+paste.pl 'LEFT' 'MORE' FILE1 FILE2 'RIGHT'
+  Pastes a bunch of files and text together, printing to the console.
 
-CAVEAT:
-
-You cannot paste text that is ALSO a filename!! (Files override literal text.)
+WARNING: You cannot paste text that is ALSO a filename!! (Files override literal text.)
  Therefore:  paste.pl FILE "FILE"
- will paste TWO copies of the FILE, not the literal text "FILE"
+ will paste TWO copies of the FILE, not the literal text "FILE", assuming "FILE" is an actual filename.
+ Workaround:
+ Instead of:   paste.pl  FILE  "FILE"
+ you can do:   paste.pl  FILE  "__FILE__" (assuming "__FILE__" is not also a valid filename)
 
 OPTIONS:
 
