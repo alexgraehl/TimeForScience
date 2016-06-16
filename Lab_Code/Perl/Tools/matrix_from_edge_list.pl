@@ -201,7 +201,8 @@ VALUE options (default is -v 3):
 -s: Symmetric.  Assume edges are undirected so add symmetric relationships.
 
 --missing STRING (Default: (blank))
-        * Sets the value for "not found." Examples: --missing='NA' or --missing=NONE.
+        * Sets the value for "not found." Examples: --missing 'NA' or --missing NONE.
+        * Note: Do not put an equal sign between <missing> and the string!
 
 USAGE EXAMPLES:
 
