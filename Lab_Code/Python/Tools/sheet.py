@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#from __future__  import print_function # lets you do print("...") like python 3
+#from __future__ import print_function # lets you do print("...") like python 3
 #from __future__ import division # no more "1/2 == 0"
 
 # Instructions for pylint below:
