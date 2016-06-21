@@ -886,13 +886,19 @@ alias tab="column -t -s $'\t'"
 
 function brutallycompress {
     # Usage:    brutallycompress  DIRECTORY1   DIRECTORY2   DIRECTORY3
-    # Recursively goes through and compresses (gzip -9) any files with the extensions listed below.
-    if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass AT LEAST ONE target directory into this function!"; return; fi
-    COMPRESS="gzip --verbose -9"
-    echo "About to compress ($COMPRESS) anything that has the extension: .bed, _tracking, .diff, .bed.count, .moa, .fa, .fq, .fasta, .fastq, .txt"
+    # Recursively goes through and compresses (with gzip) any files with the extensions listed below.
+    if [[ "$#" == 0 ]] ; then echo "[ERROR in arguments to brutallycompress] You need to pass AT LEAST ONE target directory into this function--it can also be '.' for the current directory!"; return; fi
+    RESTRING=".*[._]\(bed\|_tracking\|diff\|bed.count\|moa\|fa\|fasta\|fq\|fastq\|txt\|csv\|tab\)"
+    COMPRESS="gzip --verbose -6"
+    echo -e "# About to compress ($COMPRESS)\n#     anything in the following locations: $@\n#     that matches this REGULAR EXPRESSION: $RESTRING"
+    echo -e "# -----------------------------------------------------------------------------------------------"
+    for location in "$@"; do # Sanity check to make sure all inputs are DIRECTORIES to start
+	if [[ ! -d "$location" ]] ; then echo "[ERROR in arguments to brutallycompress]: input '$location' was not a directory. Fix this--only give DIRECTORIES to 'brutallycompress'. Use '.' (not '*') if you want everything in the current directory!"; return 1; fi
+    done
     for location in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
 	if [[ ! -d "$location" ]] ; then echo "[ERROR]: input '$location' was not a directory!"; return 1; fi
-	find "$location" -type f \( -iname "*.bed" -o -iname "*_tracking" -o -iname "*.diff" -o -iname "*.bed.count" -o -iname "*.moa" -o -iname "*.fa" -o -iname "*.fq" -o -iname "*.fasta" -o -iname "*.fastq" -o -iname "*.txt" \) -print0 | xargs -0 $COMPRESS
+	find "$location" -type f -regex "$RESTRING" -print0 | xargs -0 $COMPRESS # <-- do **NOT** put double quotes around $COMPRESS (no "")
+	#find "$location" -type f \( -iname "*.bed" -o -iname "*_tracking" -o -iname "*.diff" -o -iname "*.bed.count" -o -iname "*.moa" -o -iname "*.fa" -o -iname "*.fq" -o -iname "*.fasta" -o -iname "*.fastq" -o -iname "*.txt" \) -print0 | xargs -0 $COMPRESS
     done
 }
 
