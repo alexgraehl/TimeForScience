@@ -12,6 +12,8 @@
 	<string>9F128B9A-CAEC-4D6D-ABD4-0E99B5AD4D5D</string>
 	<key>DimOnlyText</key>
 	<false/>
+	<key>DisablePotentiallyInsecureEscapeSequences</key>
+	<true/>
 	<key>HideTab</key>
 	<true/>
 	<key>LoadPrefsFromCustomFolder</key>
@@ -59,7 +61,7 @@
 	<key>NSWindow Frame SUUpdateAlert</key>
 	<string>3210 733 620 392 2560 127 1920 1200 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>1822 -8 1465 987 0 0 2560 1417 </string>
+	<string>1280 10 1276 1407 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
 	<string>4 10 2554 1407 0 0 2560 1417 </string>
 	<key>NSWindow Frame iTerm Window 2</key>
@@ -994,6 +996,10 @@
 		<string>Profiles</string>
 		<string>Jobs</string>
 	</array>
+	<key>TrimWhitespaceOnCopy</key>
+	<true/>
+	<key>UseAdaptiveFrameRate</key>
+	<true/>
 	<key>findIgnoreCase_iTerm</key>
 	<true/>
 	<key>findRegex_iTerm</key>

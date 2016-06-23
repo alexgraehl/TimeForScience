@@ -318,6 +318,9 @@
 
 ;;(setq scroll-preserve-screen-position 1)
 
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+
 (setq
  toggle-enable-multibyte-characters t ; probably the default also
  default-enable-multibyte-characters t ; probably the default also
