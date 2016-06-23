@@ -335,7 +335,9 @@ export  CVSEDITOR="emacs -nw"
 export SVN_EDITOR="emacs -nw"
 export     EDITOR="emacs -nw"
 
-export LANG=C    # Set the LANG to C. Speeds some command line tools up, but *BREAKS* some UTF-8 stuff!
+export LANG="en_US.UTF-8"    # Set the LANG to UTF-8
+#export LANG=C               # Set the LANG to C. Speeds some command line tools up, but *BREAKS* some UTF-8 stuff, like emacs!
+#export LANG="en_US.UTF-8" &&  emacs --no-splash -nw ~/Downloads/XDownloads/unicode.txt
 
 export CXX=/usr/bin/g++ # The location of the c++ compiler. NOT "cpp"--that is the C preprocessor.
 

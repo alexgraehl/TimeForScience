@@ -425,6 +425,7 @@ alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
 #    alias e='emacs --no-splash -nw ' # use 'brew install emacs' to update emacs
 #else
 alias e="emacsclient -nw  -c --alternate-editor=\"\"" # "As a special exception, if command is the empty string, then emacsclient starts Emacs in daemon mode (as emacs --daemon) and then tries connecting again."
+#alias e2="LANG='en_US.UTF-8' bash -c 'emacsclient -nw  -c --alternate-editor=\"\"'" # "As a special exception, if command is the empty string, then emacsclient starts Emacs in daemon mode (as emacs --daemon) and then tries connecting again."
 #fi
 
 #alias t='transpose.pl -q'
