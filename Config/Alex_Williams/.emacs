@@ -46,6 +46,7 @@
 ;; Emacs is a monstrosity, but it only takes 2 or 3 hours to figure out how to
 ;; configure it with additional packages (assuming you're already an expert)
 ;; See here: http://ergoemacs.org/emacs/emacs_package_system.html
+
 (when (>= emacs-major-version 24)
   (require 'package)
   (package-initialize)
@@ -216,7 +217,6 @@
 (if (not (boundp 'should-load-ess))
     (setq should-load-ess nil)) ;; <-- if should-load-ess is not already defined, then initialize a new variable if we haven't loaded ess, then this *remains* "nil"
 
-
 (setq load-path (cons "~/.emacs.d/ess/" load-path))
 
 (if (system-type-is-darwin)
@@ -316,7 +316,17 @@
 ;(global-linum-mode 1) ; always show line numbers
 ;(global-visual-line-mode 1) ; wrap lines at word boundaries instead of by characters
 
+;;(setq scroll-preserve-screen-position 1)
+
 (setq
+ toggle-enable-multibyte-characters t ; probably the default also
+ default-enable-multibyte-characters t ; probably the default also
+ 
+ backup-inhibited          t
+ make-backup-files         nil ;; Don't make those #scratch-042# backup files!
+ auto-save-mode            nil ;; Don't auto save!!!!!
+ auto-save-default         nil ;; Don't auto save!!!!!
+
  inhibit-startup-message   t
  frame-title-format        (list "Emacs: %f") ;; Set titles: %f = filename, %b = buffer name
  icon-title-format         "Emacs - %b"	;; see above line
@@ -411,11 +421,11 @@
 (global-set-key (kbd "M-;") '(lambda () "Run keyboard macro"   (interactive) (call-last-kbd-macro) (message "Repeated the last macro defined with M-'..."))) ;; <-- and here's how you EXECUTE that temporary sequence
 ;; ========================= DONE DEFINING A KEY SEQUENCE THAT WILL BE REPEATED (TEMPORARY MACRO) ====================
 
-
+(global-unset-key [(control x) (m)]) ;; no clue what this does... ctrl-x m?
+(global-set-key [(meta m)]       '(lambda () "Next pane..." (interactive) (other-window 1)))
+(global-set-key [(shift meta m)] '(lambda () "Previous pane..." (interactive) (other-window -1)))
 (global-set-key (kbd "M-1") '(lambda () "Close other windows"   (interactive) (delete-other-windows) (message "delete-other-windows: Closed all windows besides the active one.")))
-
 (global-set-key (kbd "M-2") '(lambda () "Split window vertically"   (interactive) (split-window-vertically) (message "split-window-vertically: Split the window into top/bottom panes.")))
-
 (global-set-key (kbd "M-3") '(lambda () "Split window horizontally"   (interactive) (split-window-horizontally) (message "split-window-horizontally: Split the window into left/right panes.")))
 
 (global-set-key (kbd "M-%") 'set-variable)
@@ -491,18 +501,8 @@ current line."
 
 (global-set-key (kbd "M-{") '(lambda () "Decrease left margin..." (interactive) (my-decrease-left-margin)));;(decrease-left-margin (region-beginning) (region-end) nil)))
 (global-set-key (kbd "M-}") '(lambda () "Increase left margin..." (interactive) (my-increase-left-margin)));;(increase-left-margin (region-beginning) (region-end) nil)))
-
-
-
-
-(global-set-key [(meta m)] '(lambda () "Next pane..." (interactive) (other-window 1)))
-
-(global-set-key [(shift meta m)] '(lambda () "Previous pane..." (interactive) (other-window -1)))
-
 ;;(global-unset-key "\C-v")
 ;;(global-unset-key "\M-v") ;; now it's meta-u and meta-o
-
-(global-unset-key [(control x) (m)])
 
 (global-unset-key [insert])	  ; Disable the "insert" key
 (global-set-key [insert] (function (lambda () (interactive) (message "The insert key was DISABLED in the ~/.emacs file."))))
@@ -516,8 +516,7 @@ current line."
 
 (define-key text-mode-map (kbd "TAB") 'self-insert-command) ; tab inserts ONE TAB ONLY AND DOES NOT INDENT in text mode
 
-(define-key text-mode-map (kbd "M-s") 'save-buffer) ; tab inserts ONE TAB ONLY AND DOES NOT INDENT in text mode
-
+(define-key text-mode-map (kbd "M-s") 'save-buffer) ; option-S = savetab inserts ONE TAB ONLY AND DOES NOT INDENT in text mode
 
 ;; FIX THE BACKSPACE AND DELETE KEYS
 ;; (finally they work like they're supposed to)
@@ -537,8 +536,6 @@ current line."
 (global-set-key "\M-z" 'undo)
 ;;(global-set-key "\M-e" 'recentf-open-files)
 ;;(recentf-mode 1)  ;; Recentf is super annoying when it can't save files sometimes!
-
-
 
 ;; Alex's navigation keys
 ;;         ^  Navigation Keys (ijkl)
@@ -904,20 +901,12 @@ current line."
 
 ;;(global-set-key "\C-x w" 'kill-current-buffer-and-window)
 
-
-;;(setq scroll-preserve-screen-position 1)
-(setq backup-inhibited t)
-(setq make-backup-files  nil) ;; Don't make those #scratch-042# backup files!
-(auto-save-mode          nil) ;; Don't auto save!!!!!
-(setq auto-save-default nil)
-
 ;; ================= BACKUP FILES AND AUTOSAVING =================
 
 (icomplete-mode t)
 ;(iswitchb-mode t) ;; enhances buffer switching (C-x b)
 
 ;;(message "My .emacs loaded in %ds" (destructuring-bind (hi lo ms) (current-time) (- (+ hi lo) (+ (first *emacs-load-start*) (second *emacs-load-start*)))))
-
 
 ;;(defun CustomMoveByWord(X)
 ;;  "AGW: Move the cursor by X words horizontally."
@@ -940,9 +929,7 @@ current line."
 ;	   (require 'hidesearch nil t)
 ;	   (setq has-hidelines t)))
 
-
 (global-set-key [(control meta l)] '(lambda () (interactive) (hidesearch) (message "Only showing matching lines: use Ctrl-G to show all lines again."))) ;; control g now shows the invisibles, as well as generally cancelling
-
 
 (global-set-key [(control g)] '(lambda () "Cancels normal operations, and also cancels out of search-and-hide-lines mode."
 				 (interactive)
