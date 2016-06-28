@@ -30,9 +30,10 @@ sub cleanedUpFilename($) {
     return($name);
 }
 
-sub exeExistsOrFail($) {
-	my ($exe) = @_;
-	(0 == system("which $exe > /dev/null")) or die "FATAL ERROR: MISSING the \"$exe\" executable.\nWe were NOT able to find it using the 'which' command. Verify that this executable exists. You may be able to install it with 'apt-get install $exe' or 'yum install $exe' or (on the Mac) perhaps 'brew install $exe', assuming you have Homebrew installed...";
+sub exeExistsOrFail($;$) {
+	my ($exe, $msg) = @_;
+	if (!defined($msg)) { $msg = ""; }
+	(0 == system("which $exe > /dev/null")) or die "FATAL ERROR: MISSING the \"$exe\" executable. ${msg}\nWe were NOT able to find it using the 'which' command. Verify that this executable exists. You may possibly be able to install it with 'apt-get install $exe' or 'yum install $exe' or (on the Mac) perhaps 'brew install $exe', assuming you have Homebrew installed...";
 }
 
 sub systemZeroOrFailArray(\@) {
@@ -143,8 +144,8 @@ my $random_number = rand();
 my $chrLenTempFile = "Browser.tmp.TEMPORARY.chrlen_" . rand() . "-" . time() . "_convert_SAM_or_BAM_for_Genome_Browser.tmp";
 
 exeExistsOrFail($SAMTOOLS_EXE);
-($makeWig) and exeExistsOrFail($GENOME_COVERAGE_BED_EXE); # Only required if we are making a wiggle track
-($makeWig) and exeExistsOrFail($WIG_TO_BIGWIG_EXE);
+($makeWig) and exeExistsOrFail($GENOME_COVERAGE_BED_EXE, "This is part of BEDTOOLS, so you can probably install it with 'sudo apt-get install bedtools'. Also check this site: http://bedtools.readthedocs.io/ ."); # Only required if we are making a wiggle track
+($makeWig) and exeExistsOrFail($WIG_TO_BIGWIG_EXE, "WigToBigWig is part of the Kent Tools. You may be able to download it here: http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/ .");
 
 print STDOUT "Files to be processed by convert_SAM_or_BAM_for_Genome_Browser:\n";
 foreach (@INPUT_FILES) {
@@ -402,7 +403,7 @@ Requres the following additional software:
         - You can install it with `apt-get install samtools` or `yum install samtools` or `brew install samtools`
 
 If you want a wiggle track, which you most likely do (if you do not, you can specify `--nowig`):
-    * <genomeCoverageBed> must be installed
+    * <genomeCoverageBed> must be installed. This is part of BEDTOOLS (http://bedtools.readthedocs.io/)
     * <wigToBigWig> must be installed
 
 Input to program:
