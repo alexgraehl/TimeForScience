@@ -1,10 +1,10 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
-# ======================
+# ---------------------
 # "Unofficial bash strict mode: " #!/bin/bash
 # set -euo pipefail
 # IFS=$'\n\t'
-# ======================
+# ---------------------
 
 if [ -f $HOME/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
     source $HOME/TimeForScience/Config/Alex_Williams/bash-platform-specific
@@ -20,30 +20,20 @@ else
 fi
 
 if [[ "$USER" == "alexgw" ]]; then
-    #echo "Fixing my git status on various accounts..."
-    #git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@users.noreply.github.com"
-
-    ## =====================================================================================================================
-    ## ====== SAFER 'rm' COMMANDS --only applies to the user alexgw, unless you change the line above!  ====================
+    ## SAFER 'rm' COMMANDS --only applies to the user alexgw, unless you change the line above!
     ## Below: aliases the command "rm" to actually run the script "trash.pl," which moves files to a trash directory in /tmp.
     ## They can be recovered by just copying them back.
     ## Use the "checktrash" command to find the trash directory if you forget where it is.
-    #alias rm='/home/${USER}/trash.pl'
-    
     ## Below: the command to list the top-level contents of the trash directory. You may have to look through the files here if you want to recover something you just accidentally deleted. Beware, files don't last long in /tmp\!
     alias checktrash='mkdir -p /tmp/${USER}/Trash/ && echo "Contents of /tmp/${USER}/Trash:" && ls /tmp/${USER}/Trash/'
     alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv /tmp/${USER}/Trash/ && echo "Emptied the trash directory (/tmp/${USER}/Trash)" ;'
-    ## ====== SAFER 'rm' COMMANDS ====================
-    ## ===============================================================
     alias rm='trash.pl' ## <-- Note that the "real" rm can still always be invoked by '/bin/rm'
 fi
 
 # git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@users.noreply.github.com"
-
 echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
 #echo $GIT_COMMITTER_EMAIL
 # echo $GIT_AUTHOR_EMAIL # not important if you set the other thing
-
 
 CODE_DIRS_FOR_GREPPING="${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core ${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode ${BINF_CORE_WORK_DIR}/Common/Code/alexgw ${HOME}/TimeForScience"
 
@@ -543,23 +533,17 @@ alias tuck='ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PS_IP}'
 alias oso='ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${OSO_IP}'
 alias osox='ssh ${AGW_SSH_OPTIONS} -Y ${ACC_U}@${OSO_IP}'
 
-## ===============================================
-## ====== LESS ===================================
+## LESS +++++++++++++++++
 export PAGER=less
 [[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)" # make "less" friendly for non-text input files
-
-# Things related to "LESS"
 export LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_basic.sh %s"
-# lesspipe_basic.sh casues less to transparently decompress gzipped files before showing them
-# Old:  '|/usr/bin/lesspipe.sh %s'
-
+# lesspipe_basic.sh casues less to transparently decompress gzipped files before showing them. Old:  '|/usr/bin/lesspipe.sh %s'
 alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_advanced.sh %s" /usr/bin/less -S --RAW-CONTROL-CHARS -f --IGNORE-CASE'
 # It's less, but it "magically" handles gzipped files and automatically runs ".tab" files through sheet.pl
 # Note that this only magically happens if the files are passed in on the command line--otherwise you have
 # to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
 # sheet.pl unless you say "cat something | ssf"
-## ====== LESS ===================================
-## ===============================================
+## LESS +++++++++++++++++
 
 # Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
 alias sn='/usr/bin/less -S --LINE-NUMBERS --status-column --RAW-CONTROL-CHARS -f --IGNORE-CASE'
@@ -654,6 +638,9 @@ function maczip {
 function mini {
     [[ "$#" == 1 ]]         && compressedBasename="$1" || compressedBasename="Archive" ## If you pass it one argument, then that argument will also be the filename
     agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
+
+    # xz is 10 times slower than bz2 to compress, but can be ~30% smaller for text.
+    # xz is FASTER to decompress than bzip2, and is nearly the same as gzip.
     
     compressedBasename=`echo "$compressedBasename" | sed "s/[/]//"` ## Let's remove any slashes from the name of the *output*. That way if someone types "mini MyDir/" it will generate "MyDir.tar.bz2" and NOT "MyDir/.tar.bz2"
     if [[ $(tar --version) =~ .*bsdtar.* ]]; then TAREX=" -c -v "      # BSD tar
@@ -664,29 +651,32 @@ function mini {
     else
 	if [[ "$#" -gt 1 ]] ; then echo "Adding a total of $# files to the archive." ; fi
 	for var in "$@"; do echo " * Archiving $var --> ${compressedBasename}.tar.bz2" ; done
-	echo "[TAR] command running now..." ;
+	echo "[TAR] command running now... maybe should use 'xz' instead of bzip" ;
 	eval "$AGW_IONICE" tar "$TAREX" --bzip2 -f "${compressedBasename}.tar.bz2" $@;
 	echo "[Done]" ;
     fi
 }
 
-## Extracts any number of compressed files. Usage: 'unmini a.bz2 b.tar.gz c.tar.bz2 ... etc...'
+## Extracts any number of compressed files of ANY type. Usage: 'unmini a.bz2 b.tar.gz c.tar.bz2 ... etc...'
 function unmini {
     agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
     if [[ $(tar --version) =~ .*bsdtar.* ]]; then TARPARAM=" -x -v "                 # BSD tar
     else TARPARAM=" --preserve-permissions --atime-preserve --keep-old-files -x -v "; fi # GNU tar
-    for an in "$@"; do # Loop through all the input arguments
-	echo " * Decompressing \"$an\"..."
-	case "$an" in 
-	    *.tar.gz)  EX_CMD="tar $TARPARAM --ungzip -f " ;; 
-	    *.tar.bz2) EX_CMD="tar $TARPARAM  --bzip2 -f " ;; 
-	    *.tar)     EX_CMD="tar $TARPARAM          -f " ;; 
-	    *.gz)      EX_CMD="gzip  --decompress " ;; 
-	    *.bz2)     EX_CMD="bzip2 --decompress " ;;
-	    *.zip)     echo "ZIP commands are a disaster and are not supported yet. Sorry."; return ;;
-	    *) echo "unmini has failed to detect type of archive (filename is <$an>. Recommendation: make sure that file exists)... aborting." ; return ;;
+    NEVER_OVERWRITE_ZIP=" -n "
+    for fff in "$@"; do # Loop through all the input arguments
+	echo " * Decompressing \"$fff\"..."
+	case "$fff" in 
+	    *.tar.gz)  EX_CMD="tar $TARPARAM --ungzip -f  $fff" ;; 
+	    *.tar.bz2) EX_CMD="tar $TARPARAM  --bzip2 -f  $fff" ;;
+	    *.tar.xz)  EX_CMD="tar $TARPARAM     --xz -f  $fff" ;; 
+	    *.tar)     EX_CMD="tar $TARPARAM          -f  $fff" ;;
+	    *.xz)      EX_CMD="xz    --decompress         $fff" ;; 
+	    *.gz)      EX_CMD="gzip  --decompress         $fff" ;; 
+	    *.bz2)     EX_CMD="bzip2 --decompress         $fff" ;;
+	    *.zip)     EX_CMD="unzip $NEVER_OVERWRITE_ZIP $fff   -d ${fff/.zip/}" ;;
+	    *) echo "unmini has failed to detect type of archive (filename is <$fff>. Recommendation: make sure that file exists)... aborting." ; return ;;
 	esac
-	eval "$AGW_IONICE" "$EX_CMD" "$an" # <-- actually decompress the file
+	eval "$AGW_IONICE" "$EX_CMD" # <-- actually decompress the file
     done
 }
 
