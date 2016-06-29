@@ -19,8 +19,8 @@ else
     echo "Note: no .aliases-server-config was found. SSH commands and tmux coloring may fail. You may want to MANUALLY copy this file over from another machine. Copy the other machine's ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/aliases-server-config to this local machine's ~/.aliases-server-config ."
 fi
 
-if [[ "$USER" == "alexgw" ]]; then
-    ## SAFER 'rm' COMMANDS --only applies to the user alexgw, unless you change the line above!
+if [[ "$USER" == "alexgw" ]] || [[ "$USER" == "awilliams" ]]; then
+    ## SAFER 'rm' COMMANDS --only applies to the user(s) above.
     ## Below: aliases the command "rm" to actually run the script "trash.pl," which moves files to a trash directory in /tmp.
     ## They can be recovered by just copying them back.
     ## Use the "checktrash" command to find the trash directory if you forget where it is.
