@@ -74,14 +74,19 @@ else
 fi
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/ ## <-- Used by Josh Stuart's scripts. Mostly these are enhanced perl versions of UNIX scripts, like "cut.pl" and "join.pl".
 
+export BINF_BIN_ROOT=/data/bin
+export BINF_BIN_VERSION=2015_06    # example: /data/bin/2015_06
 
 # PATH: The FIRST things get run first!
 # Low priority: Normal UNIX paths. Clear out the initial path here.
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin ## <-- clear out initial path!!
+
 # Medium priority: specific installs of tools
 export PATH=/usr/local/bin:/work/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
+export PATH=${PATH}:/opt/pbs/default/bin  # PBS pro / queue binaries on RIG:
+
 # Highest priority: things in the HOME directory or TimeForScience or /bioinformatics/bin
-export PATH="${HOME}/bin:${HOME}/.linuxbrew/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:/data/bin/2015_06"
+export PATH="${BINF_BIN_ROOT}/${BINF_BIN_VERSION}:${HOME}/bin:${HOME}/.linuxbrew/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}"
 export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:/data/lib:$LD_LIBRARY_PATH"
 
 #export PERL5LIB=/usr/local/lib/perl5/site_perl/5.12.1/  # note: sometimes it's in /usr/lib instead of /usr/local!!
