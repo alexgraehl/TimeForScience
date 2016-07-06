@@ -5,11 +5,6 @@
 # set -euo pipefail
 # IFS=$'\n\t'
 # ---------------------
-
-if [ -f $HOME/TimeForScience/Config/Alex_Williams/bash-platform-specific ]; then
-    source $HOME/TimeForScience/Config/Alex_Williams/bash-platform-specific
-fi
-
 if [ -f ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/aliases-server-config ]; then
     source ${BINF_CORE_WORK_DIR}/Common/Code/alexgw/aliases-server-config
 elif [ -f ~/.aliases-server-config ]; then
@@ -35,7 +30,7 @@ echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
 #echo $GIT_COMMITTER_EMAIL
 # echo $GIT_AUTHOR_EMAIL # not important if you set the other thing
 
-CODE_DIRS_FOR_GREPPING="${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core ${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode ${BINF_CORE_WORK_DIR}/Common/Code/alexgw ${HOME}/TimeForScience"
+CODE_DIRS_FOR_GREPPING="${R_BINF_CORE} ${BINF_CORE_WORK_DIR}/Common/Code/ProjectCode ${BINF_CORE_WORK_DIR}/Common/Code/SystemScripts ${BINF_CORE_WORK_DIR}/Common/Code/alexgw ${TIME_FOR_SCIENCE_DIR}"
 
 ## Searches both the R source and the current directory (and any subdirectories!)
 ## Note that it only looks for files with a ".R" ending!!!!!!!
@@ -602,8 +597,8 @@ function v {
 }
 
 alias huh='cat <(declare -f) <(alias)' ## uses bash subshells to show everything that is defined
-alias backoff='~/TimeForScience/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh off'
-alias backon='~/TimeForScience/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh on'
+alias backoff='${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh off'
+alias backon='${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh on'
 
 function n { # show colors
     echo -e  "$color_prefix[30m black $color_prefix[31mred $color_prefix[32mgreen $color_prefix[33myellow $color_prefix[34mblue $color_prefix[35mmagenta $color_prefix[36mcyan $color_prefix[37mwhite"
@@ -916,5 +911,7 @@ function wgetdevour { # wget devour
 }
 
 
-
+function truename {
+    qsub -I -l ncpus=1
+}
 

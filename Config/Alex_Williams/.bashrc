@@ -51,11 +51,21 @@ fi
 
 echo -e "${a_echo_color}>>> BASH: Loading .bashrc...${a_end_color}" ## <-- comes after the colors are set up in platform-specific fashion
 
+if [[ -d "$HOME/work" ]]; then
+    export BINF_CORE_WORK_DIR="$HOME/work" # <-- set BINF_CORE work directory
+elif [[ -d "/work" ]]; then
+    export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
+else
+    echo "[WARNING in .bashrc: WORK directory not found]"
+    export BINF_CORE_WORK_DIR="WORK_DIR_NOT_FOUND"
+fi
+
+
 bind 'set mark-directories on'
 bind 'set mark-symlinked-directories on'
 
 # ============================= PATH STUFF ============================
-export BOWTIE_INDEXES=/work/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
+export BOWTIE_INDEXES=${BINF_CORE_WORK_DIR}/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
 
 if [[ -d "$HOME/TimeForScience" ]]; then
     ## If this is in the home directory, then set it no matter what.
@@ -76,54 +86,27 @@ export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/ ## <-- Used by Josh Stua
 
 export BINF_BIN_ROOT=/data/bin
 export BINF_BIN_VERSION=2015_06    # example: /data/bin/2015_06
+export R_BINF_CORE=${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core
 
 # PATH: The FIRST things get run first!
 # Low priority: Normal UNIX paths. Clear out the initial path here.
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin ## <-- clear out initial path!!
 
 # Medium priority: specific installs of tools
-export PATH=/usr/local/bin:/work/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
+export PATH=/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${PATH}  # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 export PATH=${PATH}:/opt/pbs/default/bin  # PBS pro / queue binaries on RIG:
 
 # Highest priority: things in the HOME directory or TimeForScience or /bioinformatics/bin
-export PATH="${BINF_BIN_ROOT}/${BINF_BIN_VERSION}:${HOME}/bin:${HOME}/.linuxbrew/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}"
+export PATH="${BINF_BIN_ROOT}/${BINF_BIN_VERSION}:${HOME}/bin:${HOME}/.linuxbrew/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Common/Code/Python:${BINF_CORE_WORK_DIR}/Common/Code/alexgw"
 export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:/data/lib:$LD_LIBRARY_PATH"
 
 #export PERL5LIB=/usr/local/lib/perl5/site_perl/5.12.1/  # note: sometimes it's in /usr/lib instead of /usr/local!!
-
-### ============== Below: Added Nov 27, 2012 for MRC metagenomics classifier project ======================
-### Setup stuff for MRC for Tom Sharpton
-#export PKG_CONFIG_PATH="/usr/share/doc/libgenome-1.3-0:$PKG_CONFIG_PATH"
-#export PERL5LIB=/home/sharpton/dev/bioperl-live:/home/sharpton/sandbox/bioperl-run/lib:/home/sharpton/sandbox/bioperl-live/:/home/sharpton/src/bioperl-live:/home/sharpton/src/bioperl-live/t/lib:/lib:/home/sharpton/projects/MRC/lib:/home/sharpton/projects/MetaPASSAGE/simPipeModules:$PERL5LIB:/home/sharpton/projects/MRC/scripts/:/home/sharpton/src/netcdf-perl-1.2.4/src/perl/:/home/sharpton/projects/MRC/db_loader/lib:/home/sharpton/projects/matchmaking/scripts/lib:/home/sharpton/scripts/perl_modules/
-#export WNHOME=/home/sharpton/projects/s_clustering/data/WNdb-3.0.tar.gz
-### ============== Above: Added Nov 27, 2012 for MRC metagenomics classifier project ======================
-
 ### ============= For VCFtools, Jan 28, 2016:
 #brew install vcftools
 #==> Caveats  To use the Perl modules, make sure Vcf.pm, VcfStats.pm, and FaSlice.pm are included in your PERL5LIB environment variable:
 export PERL5LIB=/data/home/alexgw/.linuxbrew/lib/perl5/site_perl:${PERL5LIB}
 export PERLLIB=${PERL5LIB}
 ### =============
-
-
-if [[ -d "$HOME/work" ]]; then
-    export BINF_CORE_WORK_DIR="$HOME/work" # <-- set BINF_CORE work directory
-elif [[ -d "/work" ]]; then
-    export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
-else
-    echo "[WARNING in .bashrc: WORK directory not found]"
-    export BINF_CORE_WORK_DIR="WORK_DIR_NOT_FOUND"
-fi
-
-#elif [[ "$HOSTNAME" == "westway" ]] || [[ "$HOSTNAME" == "bueno" ]]; then
-#    export BINF_CORE_WORK_DIR="/home/alexgw/work"
-#elif [[ "$COMPYNAME" == "lighthousewww" ]] || [[ "$COMPYNAME" == "lighthouse" ]]; then
-#    export BINF_CORE_WORK_DIR="/home/awilliams/work"
-
-
-export PATH="${PATH}:$BINF_CORE_WORK_DIR/Common/Code/Python:$BINF_CORE_WORK_DIR/Common/Code/alexgw"
-
-export R_BINF_CORE="$BINF_CORE_WORK_DIR/Common/Code/R_Binf_Core"
 
 # ============================= DONE WITH PATH STUFF ============================
 
