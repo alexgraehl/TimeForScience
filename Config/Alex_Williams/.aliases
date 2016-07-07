@@ -912,7 +912,7 @@ function wgetdevour { # wget devour
 
 
 function truename {
-    qsub -I -l ncpus=1
+    qsub -I -q Bio -W group_list="bioqueue" -l ncpus=1
 }
 
 function qq {
