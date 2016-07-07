@@ -104,7 +104,10 @@ export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:/data/lib:$LD_LIBRARY_PATH"
 ### ============= For VCFtools, Jan 28, 2016:
 #brew install vcftools
 #==> Caveats  To use the Perl modules, make sure Vcf.pm, VcfStats.pm, and FaSlice.pm are included in your PERL5LIB environment variable:
-export PERL5LIB=/data/home/alexgw/.linuxbrew/lib/perl5/site_perl:${PERL5LIB}
+
+export RIG_PERL_LIB_BASE=/data/applications/libperl
+export RIG_PERL_LIB_DIR=${RIG_PERL_LIB_BASE}/lib/perl5
+export PERL5LIB=${RIG_PERL_LIB_DIR}:/data/home/alexgw/.linuxbrew/lib/perl5/site_perl:${PERL5LIB}
 export PERLLIB=${PERL5LIB}
 ### =============
 

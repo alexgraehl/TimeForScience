@@ -923,3 +923,7 @@ function qq {
     echo -e "About to execute this command:\n----------\nCOMMAND>      ${cmd[@]}\n----------"
     "${cmd[@]}" # <- Actually execute. See http://unix.stackexchange.com/questions/131766/why-does-my-shell-script-choke-on-whitespace-or-other-special-characters
 }
+
+function hist {
+    history | tail -n 100
+}
