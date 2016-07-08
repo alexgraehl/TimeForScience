@@ -98,17 +98,23 @@ export PATH=${PATH}:/opt/pbs/default/bin  # PBS pro / queue binaries on RIG:
 
 # Highest priority: things in the HOME directory or TimeForScience or /bioinformatics/bin
 export PATH="${BINF_BIN_ROOT}/${BINF_BIN_VERSION}:${HOME}/bin:${HOME}/.linuxbrew/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Common/Code/Python:${BINF_CORE_WORK_DIR}/Common/Code/alexgw"
-export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:/data/lib:$LD_LIBRARY_PATH"
+export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:/data/lib:$RIG_APPLICATIONS_BASE/lib"
 
 #export PERL5LIB=/usr/local/lib/perl5/site_perl/5.12.1/  # note: sometimes it's in /usr/lib instead of /usr/local!!
 ### ============= For VCFtools, Jan 28, 2016:
 #brew install vcftools
 #==> Caveats  To use the Perl modules, make sure Vcf.pm, VcfStats.pm, and FaSlice.pm are included in your PERL5LIB environment variable:
 
-export RIG_PERL_LIB_BASE=/data/applications/libperl
+
+
+export RIG_APPLICATIONS_BASE=/data/applications
+export RIG_PERL_LIB_BASE=$RIG_APPLICATIONS_BASE/libperl
 export RIG_PERL_LIB_DIR=${RIG_PERL_LIB_BASE}/lib/perl5
-export PERL5LIB=${RIG_PERL_LIB_DIR}:/data/home/alexgw/.linuxbrew/lib/perl5/site_perl:${PERL5LIB}
+export PERL5LIB=${RIG_PERL_LIB_DIR}:/data/home/alexgw/.linuxbrew/lib/perl5/site_perl:$HOME/.linuxbrew/lib/perl5/site_perl:${PERL5LIB}
 export PERLLIB=${PERL5LIB}
+
+export CPATH=$RIG_APPLICATIONS_BASE:$RIG_APPLICATIONS_BASE/include # Find 'include' files http://stackoverflow.com/questions/2497344/what-is-the-environment-variable-for-gcc-g-to-look-for-h-files-during-compila
+
 ### =============
 
 # ============================= DONE WITH PATH STUFF ============================
