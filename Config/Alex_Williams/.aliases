@@ -73,20 +73,28 @@ function cto { # instead of CD to a file, CD directly to a file's directory, sin
 }
 
 function witch { # Shows the versions for all on-your-path verisons of software.
-    # Takes TWO required arguments
-    # Example:   witch emacs --version
+    # Takes ONE required argument: the program name. Can also take a SECOND argument, which is the actual command to run to check versions (if it isn't 'version')
+    # Example:   witch emacs
+    #               This works, because 'emacs --version' is how you get the version
+    # But for Java, you have to say the following:
     # Or:        witch java -version   (some programs are dumb and do not support --version)
-    # Or:        witch something -V
-    if [[ "$2" == "" ]]; then
+    #               Since the default "--version" doesn't work with Java
+    VER_STR=" --version "
+    if [[ "$#" == 0 ]]; then
 	echo "ERR: You need to specify a program to check the versions of. Example:  witch emacs --version ."
 	return 1;
     fi
-    if [[ "$2" == "" ]]; then
-	echo "ERR: You need to specify a version-obtaining-argument like '--version' to the 'witch' command";
-	echo "     Example:   witch emacs --version   or java -version (Java doesn't support --version)";
-	return 1;
+    if [[ "$#" == 1 ]] ; then
+	echo "witch: Using default '--version' to check for program version...";
     fi
-    for f in $(which -a "$1"); do echo -en "\n${a_echo_color}$f${a_end_color} --> "; $f "$2" | head -n 3; done; echo ""
+    if [[ "$2" != "" ]]; then
+	# $2 was actually defined...
+	VER_STR="$2"
+	#echo "ERR: You need to specify a version-obtaining-argument like '--version' to the 'witch' command";
+	#echo "     Example:   witch emacs --version   or java -version (Java doesn't support --version)";
+	#return 1;
+    fi
+    for f in $(which -a "$1"); do echo -en "\n${a_echo_color}$f${a_end_color} --> "; eval "$f $VER_STR" | head -n 2; done; echo ""
 }
 
 function delve {
