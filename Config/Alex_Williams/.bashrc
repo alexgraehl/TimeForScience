@@ -82,11 +82,9 @@ else
 	export TIME_FOR_SCIENCE_DIR="COULD_NOT_FIND_TIME_FOR_SCIENCE_DIRECTORY_ON_FILESYSTEM"
     fi
 fi
-export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/ ## <-- Used by Josh Stuart's scripts. Mostly these are enhanced perl versions of UNIX scripts, like "cut.pl" and "join.pl".
+export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/
 export R_BINF_CORE=${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core
 
-# PATH: The FIRST things get run first!
-# Low priority: Normal UNIX paths. Clear out the initial path here.
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin ## <-- clear out initial path!!
 export PATH=/opt/pbs/default/bin:/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${PATH}
 export PATH="${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Common/Code/Python:${BINF_CORE_WORK_DIR}/Common/Code/alexgw"   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
@@ -95,16 +93,17 @@ BINFAPPBASE=/data/applications # BIOINFORMATICS SPECIFIC
 BINFVERSION=2015_06 # BIOINFORMATICS SPECIFIC
 BINFSWROOT=$BINFAPPBASE/$BINFVERSION      # "bioinformatics software root" BIOINFORMATICS SPECIFIC# example: /data/applications/2015_06/
 
+export BINFBINROOT=${BINFSWROOT}/bin   # used elsewhere, be sure to EXPORT it
+
 export PERL5LIB=${BINFSWROOT}/libperl/lib/perl5:$HOME/.linuxbrew/lib/perl5/site_perl:${PERL5LIB}
 export PERLLIB=${PERL5LIB}
 export R_LIBS=$BINFSWROOT/libr      # Libraries for R
-export PATH="${BINFSWROOT}/bin:${PATH}" # BIOINFORMATICS SPECIFIC
+export PATH="${BINFBINROOT}:${PATH}" # BIOINFORMATICS SPECIFIC
 export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:$BINFSWROOT/lib"
 export LIBRARY_PATH=${LD_LIBRARY_PATH}
 export CPATH=$BINFSWROOT/include # Find 'include' files http://stackoverflow.com/questions/2497344/what-is-the-environment-variable-for-gcc-g-to-look-for-h-files-during-compila
 
 # ============================= DONE WITH PATH STUFF ============================
-
 function agw_cmd_exists() {
     # or try: if [[ -n `which exa 2> /dev/null` ]] ...
     type "$1" &> /dev/null
