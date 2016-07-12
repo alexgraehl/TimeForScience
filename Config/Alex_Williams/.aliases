@@ -124,13 +124,13 @@ alias cheat="echo \
 \">> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
 \">> Unzip files into SUBDIRECTORIES always: ls *.zip|awk -F'.zip' '{print \\\"unzip \\\"\\\$0\\\" -d \\\"\\\$1}'|sh  \" ${NL}\
 \">> ZIP on Mac without the dot files: zip -r -X out.zip input_directory_here    -x \\\"*.DS_Store\\\" \" ${NL}\
-\">> RAM / Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
+\">> RAM/Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
 \">> Mac: what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
 \">> Mac disk: specific file I/O: fs_usage <programname> \" ${NL}\
 \">> Mac disk: filesystem I/O:    fs_usage -w | grep -v '0\\.0'  \" ${NL}\
 \">> Mac set startup disk: sudo bless -mount /Volumes/YOURDISK -setBoot \" ${NL}\
 \">> Mac: show weird file flags: ls -l -@ \" ${NL}\
-\">> Mac Time Machine: exclude / check: tmutil isexcluded / tmutil addexclusion (-p) PATH \" ${NL}\
+\">> Mac Time Machine: exclude/check: tmutil isexcluded/tmutil addexclusion (-p) PATH \" ${NL}\
 \">> Mac Time Machine: delete backups: tmutil delete /Volumes/DISK/Backups.backupdb/COMPNAME/ \" ${NL}\
 \">> Mac: recursively clear worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
 \">> Mac: delete impossible-to-delete files find FILE -flags schg -exec chflags noschg {} \\; \" ${NL}\
@@ -141,7 +141,7 @@ alias cheat="echo \
 \">> Mac: No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
 \">> Mac: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
 \">> Mac: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
-\">> Mac / cron : edit crontab cron.tab with emacs: env EDITOR=emacs crontab -e \" ${NL}\
+\">> Mac/cron : edit crontab cron.tab with emacs: env EDITOR=emacs crontab -e \" ${NL}\
 \">> Image SIPS: PNG -> JPEG: mkdir outjpegs; sips -s format jpeg *.png --out outjpegs \" ${NL}\
 \">> Imagemagick convert multi-page pdf: for a in \\\$(seq 90); do echo \\\"Converting page \\\$a...\\\"; convert -quality 80 your.pdf[\\\$a] OUT_page_\\\$a.jpg ; done  \" ${NL}\
 \">> Imagemagick convert recursive: find ./ -name \\\"*.jp*\\\" -print0 | xargs -0 -I{} convert -resize 1024x768 -quality 85 {} {}  # or resize 50%\" ${NL}\
@@ -210,12 +210,12 @@ alias cheat="echo \
 \">> GIT see old version of file (example: ~4 = 4 revisons ago): git show HEAD~4:./some_file.txt \" ${NL}\
 \">> TERM: Get terminal width/height: tput cols  or  tput lines \" ${NL}\
 \">> BACKUPS: Check for changed files of a certain name: grep -E '>f.' /it/backup/log/*.log | grep YOURNAME \" ${NL}\
-\">> UNIX / FILE: Add filename to top of (copy of) files. for f in FILES*; do echo \\\$f | cat - $f > NEW_\\\$f ; done \" ${NL}\
+\">> UNIX/FILE: Add filename to top of (copy of) files. for f in FILES*; do echo \\\$f | cat - $f > NEW_\\\$f ; done \" ${NL}\
 \">>           ...or if you will later paste/join those: for f in SPLIT*.diff; do echo \\\$f | cat - \\\$f | table-no-ragged.py - > NEW_\\\$f; done \" ${NL}\
 \">> UNIX: convert RELATIVE symlinks to ABSOLUTE PATHS: for fff in *; do FULL=\\\$(readlink -f \\\$fff); ln -sf \\\$FULL \\\$fff ; done \" ${NL}\
 \">> UNIX: 1) double-dereference symlinks, showing their final targets: find -L . -type f -exec readlink -f {} \\\; \" ${NL}\
 \">> UNIX: 2) double-dereference symlinks, showing their final targets: for f in * ; do echo -e \\\$f\\\"\\t\\\"\\\$(readlink -f \\\$f); done   \" ${NL}\
-\">> UNIX: print ORPHANED / broken symlinks: find . -type l -exec sh -c \\\"file -b {} | grep -q ^broken\\\" \; -print \" ${NL}\
+\">> UNIX: print orphaned/broken symlinks: find . -type l -exec sh -c \\\"file -b {} | grep -q ^broken\\\" \; -print \" ${NL}\
 \">> UNIX: total file size for files with a certain extension (Here, jpg): find . -type f -iname '*.jpg' -print0 | du -ch --files0-from=- \" ${NL}\
 \">> UNIX: list files w/modified time MORE THAN one week ago: find . -mtime +7 \" ${NL}\
 \">> UNIX: list files w/modified time LESS THAN one week ago: find . -mtime -7 \" ${NL}\
@@ -236,18 +236,18 @@ alias cheat="echo \
 \">> UNIX/WGET/TRICKLE: Rate limit any command to 500kbps (-d = down, -u = up): sudo trickle -d 500 -u 500 ncftp 'your_ftp_site_here' \" ${NL}\
 \">> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
 \">> UNIX/TOP/USAGE/HTOP: CPU usage by user: top -b -n 1 -u \\\$USER | awk 'NR>7 { sum += \\\$9; } END { print sum; }' \" ${NL}\
-\">> QSTAT/QSUB/QRUN/QUEUE/TORQUE: echo 'echo \\\"hello I am a test job\\\"' | qsub -q Bio -W group_list=bioqueue ; sleep 10; cat STDIN*; \" ${NL}\
-\">> QSTAT/QSUB/QRUN/QUEUE/TORQUE: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
-\">> QSTAT/QSUB/QRUN/QUEUE/TORQUE: restart torque: sudo service pbs_sched stop ; sudo service pbs_mom stop ; sudo service pbs_server stop ; sudo /bin/rm /var/lock/subsys/pbs_server ; sudo service pbs_sched start ; sudo service pbs_mom start ; sudo service pbs_server start ; qstat \" ${NL}\
-\">> QSTAT/QSUB/QRUN/QUEUE/TORQUE: info on the queue: qstat -Qf or qstat -B more details \" ${NL}\
-\">> QSTAT/QSUB/QRUN/QUEUE/TORQUE: qrun MULTIPLE jobs in a range: for f in \\\$(seq 119905 119919); do sudo \\\$(which qrun) \\\$f; done \" ${NL}\
-\">> UNIX / DPKG / APT-GET: dpkg / apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
-\">> UNIX / DPKG / APT-GET: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
-\">> UNIX / YUM / RPM install: (this NEVER works, but): rpm -Uvh your.rpm . Does NOT handle dependencies.\" ${NL}\
+\">> QSUB/QUEUE/PBS submit job: echo 'echo \\\"hello I am a test job\\\"' | qsub -q Bio -W group_list=bioqueue ; sleep 10; cat STDIN*; \" ${NL}\
+\">> QSUB/QUEUE/PBS: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
+\">> QSUB/QUEUE/PBS: restart torque: sudo service pbs_sched stop ; sudo service pbs_mom stop ; sudo service pbs_server stop ; sudo /bin/rm /var/lock/subsys/pbs_server ; sudo service pbs_sched start ; sudo service pbs_mom start ; sudo service pbs_server start ; qstat \" ${NL}\
+\">> QSUB/QUEUE/PBS: info on the queue: qstat -Qf or qstat -B more details \" ${NL}\
+\">> QSUB/QUEUE/PBS: qrun MULTIPLE jobs in a range: for f in \\\$(seq 119905 119919); do sudo \\\$(which qrun) \\\$f; done \" ${NL}\
+\">> UNIX/DPKG/APT-GET: dpkg/apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
+\">> UNIX/DPKG/APT-GET: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
+\">> UNIX/YUM/RPM install: (this NEVER works, but): rpm -Uvh your.rpm . Does NOT handle dependencies.\" ${NL}\
 \">> YUM list installed packages: yum list installed \\\"*perl*\\\"  <-- stars are important!    \" ${NL}\
-\">> UNIX / APTITUTDE: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
-\">> UNIX / APT-GET: upgrade only EXISTING packages matching wildcard pattern: apt-get install --only-upgrade 'r-cran*' \" ${NL}\
-\">> UNIX / APT-GET: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
+\">> UNIX/APTITUTDE: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
+\">> UNIX/APT-GET: upgrade only EXISTING packages matching wildcard pattern: apt-get install --only-upgrade 'r-cran*' \" ${NL}\
+\">> UNIX/APT-GET: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
 \">> SSH without loading bashrc or bash_profile: ssh -t user@server bash --norc --noprofile \" ${NL}\
 \">> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub   to server ~/.ssh/authorized_keys \" ${NL}\
 \" \" ${NL}\
@@ -256,7 +256,7 @@ alias cheat="echo \
 \">> BASH: redirect STDERR & STDOUT both to console and to a file: THECMD 2>&1 | tee --append LOGFILE\" ${NL}\
 \">> BASH: See a function definition: type FUNCTIONNAME \" ${NL}\
 \">> BASH: Change tab width in bash:  setterm -regtabs 16 (16 = huge!) \" ${NL}\
-\">> BASH: Expand tabs / tab width: something | expand -t 32 \" ${NL}\
+\">> BASH: Expand tabs/tab width: something | expand -t 32 \" ${NL}\
 \">> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ${NL}\
 \">> XARGS/FIND: find . -name SOMEFILE -print0 | xargs -0 -I {} sh -c \\\"echo {}; thing {} | piped here | wc -l\\\"  \" ${NL}\
 \">> XARGS/FIND: bzip all the bed/diff/count files that you can find: find . -type f \( -iname \\\"*.bed\\\" -o -iname \\\"*_tracking\\\" -o -iname \\\"*.diff\\\" -o -iname \\\"*.moa\\\" -o -iname \\\"*.fasta\\\" -o -iname \\\".fa\\\" -o -iname \\\"*.bed.count\\\" \) -print0 | xargs -0 bzip2 \" ${NL}\
@@ -303,7 +303,7 @@ alias cheat="echo \
 \">> GREP Count occurrences of a match per line: cat FILE | grep -o -n SEARCHTERM | cut -d : -f 1 | uniq -c \" ${NL}\
 "
 
-# Shell navigation / commands
+# Shell navigation/commands
 
 #pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
 
@@ -642,7 +642,7 @@ function maczip {
 # looks like 'printf' can save the day
 function mini {
     [[ "$#" == 1 ]]         && compressedBasename="$1" || compressedBasename="Archive" ## If you pass it one argument, then that argument will also be the filename
-    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
+    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD/Mac, so check for it
 
     # xz is 10 times slower than bz2 to compress, but can be ~30% smaller for text.
     # xz is FASTER to decompress than bzip2, and is nearly the same as gzip.
@@ -664,7 +664,7 @@ function mini {
 
 ## Extracts any number of compressed files of ANY type. Usage: 'unmini a.bz2 b.tar.gz c.tar.bz2 ... etc...'
 function unmini {
-    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
+    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD/Mac, so check for it
     if [[ $(tar --version) =~ .*bsdtar.* ]]; then TARPARAM=" -x -v "                 # BSD tar
     else TARPARAM=" --preserve-permissions --atime-preserve --keep-old-files -x -v "; fi # GNU tar
     NEVER_OVERWRITE_ZIP=" -n "
@@ -769,7 +769,7 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
     D=${1%/}
     DARCH=${D}_ARCHIVE
     TARGET=/bag_of_holding/work_archive/${D}
-    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
+    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD/Mac, so check for it
     echo "We would like to move the directory (without a slash) \"${D}\" to the final TAPE DRIVE target \"${TARGET}\"... sound ok to you? Select a NUMERIC option below:"
     select yn in "[Cancel]" "Move those files!"; do
 	case $yn in
@@ -785,7 +785,7 @@ function workarchive { # usage: cd /work/projects  then: "workarchive myproj-123
 function mvln { # move and then make an ALIAS where the previous file was
     if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass AT LEAST ONE filename (source) and ONE DESTINATION (probably a directory?) into this function!"; return; fi
     if [[ "$#" != 2 ]] ; then echo "[ERROR] Right now, this only works with TWO ARGUMENTS (target and destination)!"; return; fi
-    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD / Mac, so check for it
+    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD/Mac, so check for it
     FILE=$1
     if [[ ! -e $FILE ]] ; then echo "[ERROR] Your source file ($FILE) does not exist!"; return; fi
     LAST=${@: -1}
