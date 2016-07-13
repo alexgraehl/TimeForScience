@@ -947,7 +947,7 @@ function qsud {
 	    return 99
 	    ;;
     esac
-    cmd=( "qsub" "-q" $QGRP "-V" "-W group_list=\"$QQUE\"" "$@" )
+    cmd=( "qsub" "-q" $QGRP "-V" "-l walltime=320:59:59" "-W group_list=\"$QQUE\"" "$@" ) # 14 days is the longest possible
     echo -e "About to execute this command. Note that all paths must be FULL PATHS:\n----------\nCOMMAND>      ${cmd[@]}\n----------"
     "${cmd[@]}" # <- Actually execute. See http://unix.stackexchange.com/questions/131766/why-does-my-shell-script-choke-on-whitespace-or-other-special-characters
 }
