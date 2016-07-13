@@ -728,7 +728,7 @@ function qstatlong { # show qstat with LONG (full) job names:
 function qsass { # kill all jobs that match this grep... works for usernames, jobs, etc. Be careful!
     # Example usage:  qsass    yourname             # Hopefully yourname is not a subset of someone ELSE's name!
     # or:             qsass    test_job_number_     # Uses GREP, so watch out for invalid regexps!
-    sudo echo 'Initializing sudo permissions here'
+    #sudo echo 'Initializing sudo permissions here'
     if [[ ${#1} -lt 4 ]]; then
 	echo "ERR: Your argument to qsass ($1) was not long enough (it is only length ${#1})---it needs to be at least 4 characters, or else we don't believe it's a valid input! Be careful! Even PARTIAL MATCHES will trigger the job deletion. So don't delete 'bad_job' if you don't also want to delete 'not_a_bad_job'."
 	return 1;
@@ -744,7 +744,7 @@ function qsass { # kill all jobs that match this grep... works for usernames, jo
     echo "If you really want to DELETE those jobs, input a '2'."
     select yn in "Wrong! Keep these jobs!" "Delete these jobs from the queue!"; do
 	case $yn in
-	    Delete*) for j in "${DELETE_US[@]}"; do echo "Deleting job ID $j..."; sudo `which qdel` $j ; done; break;;
+	    Delete*) for j in "${DELETE_US[@]}"; do echo "Deleting job ID $j..."; `which qdel` $j ; done; break;;
 	    Wrong*)  echo "Cancelled!"; break;;
 	esac
     done
@@ -933,7 +933,6 @@ function qsud {
     PBS_GEN_GGG="General"
     PBS_GEN_QQQ="genqueue"
     groupstr=`groups`
-    echo "<$groupstr> is the group string"
     case "$groupstr" in 
 	*bioqueue*)
     	    QGRP="$PBS_BIO_GGG"
@@ -948,8 +947,8 @@ function qsud {
 	    return 99
 	    ;;
     esac
-    cmd=( "qsub" "-q" $QGRP "-W group_list=\"$QQUE\"" "$@" )
-    echo -e "About to execute this command:\n----------\nCOMMAND>      ${cmd[@]}\n----------"
+    cmd=( "qsub" "-q" $QGRP "-V" "-W group_list=\"$QQUE\"" "$@" )
+    echo -e "About to execute this command. Note that all paths must be FULL PATHS:\n----------\nCOMMAND>      ${cmd[@]}\n----------"
     "${cmd[@]}" # <- Actually execute. See http://unix.stackexchange.com/questions/131766/why-does-my-shell-script-choke-on-whitespace-or-other-special-characters
 }
 
