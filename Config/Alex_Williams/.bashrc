@@ -156,7 +156,7 @@ if [[ -n "$color_prompt" ]] ; then
 		iterm_bg=302000 ;
 		iterm_top="120 100 40" ;
 		;;
-	    --) ## OTHER unknown machine
+	    *) ## OTHER unknown machine
 		a_machine_prompt_main_color="${color_prefix}[41m${color_prefix}[3;37m"
 		iterm_bg=333333 ;
 		iterm_top="120 50 120" ;
@@ -253,7 +253,17 @@ bind "set show-all-if-ambiguous on"      # Display matches for ambiguous pattern
 #fi
 
 #PS1="[\D{%e}=\t \h:\W]$ "
-PS1="[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
+
+case "$COMPYNAME"
+    in
+    $RIGNODE_IP)
+	echo "yes did find $COMPYNAME in $RIG_IP"
+	export PS1="[COMPUTE_NODE] [\D{%e}~\t~${COMPYNAME:0:3}~\W]$ "
+	;;
+    *) ## Otherwise...
+	export PS1="[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
+	;;
+esac
 
 ## Conditional logic IS allowed in the ps1, bizarrely!
 #PS1='$(if [[ $USER == alexgw ]]; then echo "$REGULAR_PROMPT"; else echo "$PWD%"; fi)'
