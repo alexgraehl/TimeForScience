@@ -936,12 +936,10 @@ function qsud {
     echo "<$groupstr> is the group string"
     case "$groupstr" in 
 	*bioqueue*)
-	    echo "Bio group"
     	    QGRP="$PBS_BIO_GGG"
 	    QQUE="$PBS_BIO_QQQ"
 	    ;;
 	*genqueue*)
-	    echo "Gen group"
     	    QGRP="$PBS_GEN_GGG"
 	    QQUE="$PBS_GEN_QQQ"
 	    ;;
@@ -950,7 +948,7 @@ function qsud {
 	    return 99
 	    ;;
     esac
-    cmd=( "qsub" " -q $QGRP " " -W group_list=\"$QQUE\" " "$@" )
+    cmd=( "qsub" "-q" $QGRP "-W group_list=\"$QQUE\"" "$@" )
     echo -e "About to execute this command:\n----------\nCOMMAND>      ${cmd[@]}\n----------"
     "${cmd[@]}" # <- Actually execute. See http://unix.stackexchange.com/questions/131766/why-does-my-shell-script-choke-on-whitespace-or-other-special-characters
 }
