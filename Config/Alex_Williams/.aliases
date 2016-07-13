@@ -953,6 +953,8 @@ function qsud {
     "${cmd[@]}" # <- Actually execute. See http://unix.stackexchange.com/questions/131766/why-does-my-shell-script-choke-on-whitespace-or-other-special-characters
 }
 
+alias qyep='qsub -q General -W group_list=genqueue'
+
 function hist {
     history | tail -n 100
 }
