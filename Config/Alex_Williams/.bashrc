@@ -14,6 +14,11 @@
 
 # ============= Set up things below ONLY if this shell is interactive ===============
 
+function agw_cmd_exists() { # Check if a command exists
+    type "$1" &> /dev/null
+    # or try: if [[ -n `which exa 2> /dev/null` ]] ... # Usage example: if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then ... 
+}
+
 if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
 
 # If we're in TMUX, then change the screen type to "screen-256color" and export the TERM
@@ -60,18 +65,9 @@ else
     export BINF_CORE_WORK_DIR="WORK_DIR_NOT_FOUND"
 fi
 
-
-bind 'set mark-directories on'
-bind 'set mark-symlinked-directories on'
-
-# ============================= PATH STUFF ============================
-export BOWTIE_INDEXES=${BINF_CORE_WORK_DIR}/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
-
-if [[ -d "$HOME/TimeForScience" ]]; then
-    ## If this is in the home directory, then set it no matter what.
+if [[ -d "$HOME/TimeForScience" ]]; then ## If this is in the home directory, then set it no matter what.
     export TIME_FOR_SCIENCE_DIR="$HOME/TimeForScience"
-elif [[ "$USER" == "alexgw" ]]; then
-    ## Location of the TIME FOR SCIENCE directory. This is mostly Alex's code.
+elif [[ "$USER" == "alexgw" ]]; then ## Location of the TIME FOR SCIENCE directory. This is mostly Alex's code.
     export TIME_FOR_SCIENCE_DIR="$HOME/TimeForScience"
 else
     export TIME_FOR_SCIENCE_DIR="/home/alexgw/TimeForScience"
@@ -82,6 +78,23 @@ else
 	export TIME_FOR_SCIENCE_DIR="COULD_NOT_FIND_TIME_FOR_SCIENCE_DIRECTORY_ON_FILESYSTEM"
     fi
 fi
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+# Sets up the aliases whether or not this shell is interactive
+if [[ -f ${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/.aliases ]]; then
+    source ${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/.aliases
+elif [[ -f ${BINF_CORE_WORK_DIR}/Common/Code/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
+    source ${BINF_CORE_WORK_DIR}/Common/Code/TimeForScience/Config/Alex_Williams/.aliases
+elif [[ -f ${HOME}/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
+    source ${HOME}/TimeForScience/Config/Alex_Williams/.aliases
+fi
+
+# ============================= PATH STUFF ============================
+export BOWTIE_INDEXES=${BINF_CORE_WORK_DIR}/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
+
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/
 export R_BINF_CORE=${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core
 
@@ -104,29 +117,6 @@ export LIBRARY_PATH=${LD_LIBRARY_PATH}
 export CPATH=$BINFSWROOT/include # Find 'include' files http://stackoverflow.com/questions/2497344/what-is-the-environment-variable-for-gcc-g-to-look-for-h-files-during-compila
 
 # ============================= DONE WITH PATH STUFF ============================
-function agw_cmd_exists() {
-    # or try: if [[ -n `which exa 2> /dev/null` ]] ...
-    type "$1" &> /dev/null
-    # Usage example: if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then ... 
-}
-#if agw_cmd_exists "exja" && [ 1 == 1 ]; then
-#    echo "exa"
-#else
-#    echo "no exa"
-#fi
-
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# ~/.bash_aliases, instead of adding them here directly.
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
-# Sets up the aliases whether or not this shell is interactive
-if [[ -f ${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/.aliases ]]; then
-    source ${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/.aliases
-elif [[ -f ${BINF_CORE_WORK_DIR}/Common/Code/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
-    source ${BINF_CORE_WORK_DIR}/Common/Code/TimeForScience/Config/Alex_Williams/.aliases
-elif [[ -f ${HOME}/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
-    source ${HOME}/TimeForScience/Config/Alex_Williams/.aliases
-fi
 
 # ======== SET THE COMMAND PROMPT COLOR FOR THIS MACHINE ======== #
 a_machine_prompt_main_color=''
@@ -141,6 +131,11 @@ if [[ -n "$color_prompt" ]] ; then
 	## Ok, we are SSHed into a remote machine...
 	case "$COMPYNAME"
 	    in
+	    $RIG_IP)
+		a_machine_prompt_main_color="${color_prefix}[1;35m" ; ## 1;35m == Bold magenta
+		iterm_bg=002200 ;# iTerm console window background
+		iterm_top="40 120 40" ; # iTerm window top bar color
+		;;
 	    $BN_IP)
 		a_machine_prompt_main_color="${color_prefix}[1;35m" ; ## 1;35m == Bold magenta
 		iterm_bg=002200 ;# iTerm console window background
@@ -245,20 +240,17 @@ set -o noclobber
 # Automatically trim long paths in the prompt (requires Bash 4.x)
 PROMPT_DIRTRIM=2
 
-# Perform file completion in a case insensitive fashion
-bind "set completion-ignore-case on"
-
-# Treat hyphens and underscores as equivalent
-bind "set completion-map-case on"
-
-# Display matches for ambiguous patterns at first tab press
-bind "set show-all-if-ambiguous on"
-
+bind 'set mark-directories on'           # show a '/' at the end of a directory name
+bind 'set mark-symlinked-directories on'
+bind "set completion-ignore-case on"     # Perform file completion in a case insensitive fashion
+bind "set completion-map-case on"        # Treat hyphens and underscores as equivalent
+bind "set show-all-if-ambiguous on"      # Display matches for ambiguous patterns at first tab press
 
 # set variable identifying the chroot you work in (used in the prompt below)
-if [[ -z $debian_chroot ]] && [[ -r /etc/debian_chroot ]]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
+# What the heck even is this
+#if [[ -z $debian_chroot ]] && [[ -r /etc/debian_chroot ]]; then
+#    debian_chroot=$(cat /etc/debian_chroot)
+#fi
 
 #PS1="[\D{%e}=\t \h:\W]$ "
 PS1="[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
