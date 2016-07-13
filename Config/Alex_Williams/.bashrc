@@ -91,7 +91,7 @@ export PATH="${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/P
 
 BINFAPPBASE=/data/applications # BIOINFORMATICS SPECIFIC
 BINFVERSION=2015_06 # BIOINFORMATICS SPECIFIC
-BINFSWROOT=$BINFAPPBASE/$BINFVERSION      # "bioinformatics software root" BIOINFORMATICS SPECIFIC# example: /data/applications/2015_06/
+export BINFSWROOT=$BINFAPPBASE/$BINFVERSION      # "bioinformatics software root" BIOINFORMATICS SPECIFIC# example: /data/applications/2015_06/
 
 export BINFBINROOT=${BINFSWROOT}/bin   # used elsewhere, be sure to EXPORT it
 
