@@ -29,16 +29,16 @@ my $submission_looks_like_a_pbs_script = 0;
 #print("Filename is: $filename\nJobname is: $jobname\n");
 
 my $ncpus      = 1;
-my $memMB     = 150;
+my $memGB     = 150;
 
-my $memString  = $memMB . "mb";
+my $memString  = $memGB . "gb";
 my $timeString = "00:29:00";
 
 #my $pbsheader = qq{}
 #  . qq{#!/usr/bin/bash} . "\n"
 #  . qq{#PBS -N $jobname} . "\n"
 #  . qq{#PBS -l ncpus=${ncpus}} . "\n"
-#  . qq{#PBS -l mem=${memMB}mb} . "\n"
+#  . qq{#PBS -l mem=${memGB}mb} . "\n"
 #  . qq{#PBS -l walltime=${timeInMin}:00} . "\n";
 #
 #open(my $fh, '>', $filename) or die "Could not open file '$filename' $!";

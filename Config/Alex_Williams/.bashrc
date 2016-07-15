@@ -114,6 +114,21 @@ export PATH="${BINFBINROOT}:${PATH}" # BIOINFORMATICS SPECIFIC
 export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:$BINFSWROOT/lib"
 export LIBRARY_PATH=${LD_LIBRARY_PATH}
 export CPATH=$BINFSWROOT/include # Find 'include' files http://stackoverflow.com/questions/2497344/what-is-the-environment-variable-for-gcc-g-to-look-for-h-files-during-compila
+
+
+BINFAPPBASE=/data/applications
+BINFVERSION=2015_06
+BINFSWROOT=$BINFAPPBASE/$BINFVERSION
+export BINFBINROOT=$BINFSWROOT/bin
+export PERL5LIB=$BINFSWROOT/libperl/lib/perl5:$HOME/.linuxbrew/lib/perl5/site_perl:$PERL5LIB
+export PERLLIB=$PERL5LIB
+export R_LIBS=$BINFSWROOT/libr:$R_LIBS
+export PATH=$BINFBINROOT:$PATH
+export LD_LIBRARY_PATH="$HOME/.linuxbrew/lib:$BINFSWROOT/lib:$LD_LIBRARY_PATH"
+export LIBRARY_PATH=$LD_LIBRARY_PATH
+export CPATH=$BINFSWROOT/include:$CPATH
+
+
 export CXX=/usr/bin/g++ # The location of the c++ compiler. NOT "cpp"--that is the C preprocessor.
 export LANG="en_US.UTF-8"    # Set the LANG to UTF-8
 #export LANG=C               # Set the LANG to C. Speeds some command line tools up, but *BREAKS* some UTF-8 stuff, like emacs!
