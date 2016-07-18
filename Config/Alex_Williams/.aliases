@@ -921,7 +921,8 @@ function wgetdevour { # wget devour
 }
 
 function truename {
-    qsub -I -q Bio -W group_list="bioqueue" -l ncpus=1
+    qsub -I  -l ncpus=1 -l mem=8gb  -l walltime=24:00:00 -q Interactive -W group_list="interactive"
+    #qsub -I -q Bio -W group_list="bioqueue" -l ncpus=1
     #    qsub -q Bio     -W group_list="bioqueue" [/path/to/script]
     # or qsub -q General -W group_list="genqueue" [/path/to/script]
 }
