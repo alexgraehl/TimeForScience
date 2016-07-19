@@ -142,6 +142,7 @@ alias cheat="echo \
 \">> Mac: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
 \">> Mac: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
 \">> Mac/cron : edit crontab cron.tab with emacs: env EDITOR=emacs crontab -e \" ${NL}\
+\">> Delayed sudo: sudo sh -c \\\"(sleep 3600; do your command here )\\\" \" ${NL}\
 \">> Image SIPS: PNG -> JPEG: mkdir outjpegs; sips -s format jpeg *.png --out outjpegs \" ${NL}\
 \">> Imagemagick convert multi-page pdf: for a in \\\$(seq 90); do echo \\\"Converting page \\\$a...\\\"; convert -quality 80 your.pdf[\\\$a] OUT_page_\\\$a.jpg ; done  \" ${NL}\
 \">> Imagemagick convert recursive: find ./ -name \\\"*.jp*\\\" -print0 | xargs -0 -I{} convert -resize 1024x768 -quality 85 {} {}  # or resize 50%\" ${NL}\
