@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-use strict;  use warnings;  use diagnostics;
+use strict;  use warnings;  #use diagnostics;
 use POSIX;
 use List::Util qw(max min);
 use Getopt::Long;
@@ -13,26 +13,29 @@ $| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buf
 #use Scalar::Util;
 #print Scalar::Util::looks_like_number($string), "\n";
 
+my $QSUB_EXE = "qsub";
 my $UNIX_BIOGRP = "bioqueue";
 my $UNIX_GENGRP = "genqueue";
 my %QSETTINGS = ( "unix_gname_to_gid" => {"$UNIX_BIOGRP"   => "35098"
 					  , "$UNIX_GENGRP" => "35099" }
-		  , "dest"             => {"$UNIX_BIOGRP"   => "-q Bio"
-					   , "$UNIX_GENGRP" => "-q General" }
-		  , "grouplist"        => {"$UNIX_BIOGRP"   => "-W group_list=bioqueue"
-					   , "$UNIX_GENGRP" => "-W group_list=genqueue" }
+		  , "dest"             => {"$UNIX_BIOGRP"   => "Bio"
+					   , "$UNIX_GENGRP" => "General" }
+		  , "grouplist"        => {"$UNIX_BIOGRP"   => "bioqueue" # <-- could theoretically be different from the UNIX_BIOGRP, so don't change this from plain text
+					   , "$UNIX_GENGRP" => "genqueue" } # <-- could theoretically be different from the UNIX_GENGRP
 		  , "max_ncpus"        => {"$UNIX_BIOGRP"   => 16
 					   , "$UNIX_GENGRP" => 16 }
-		  , "max_mem"       => {"$UNIX_BIOGRP"   => 256 # GB of ram!
+		  , "max_mem"          => {"$UNIX_BIOGRP"   => 256 # GB of ram!
 					   , "$UNIX_GENGRP" => 64 }
+		  , "max_walltime_hours" => {"$UNIX_BIOGRP"   => 335
+					   , "$UNIX_GENGRP" => 335 }
 		  , "default_ncpus"    => {"$UNIX_BIOGRP"   => 1
 					   , "$UNIX_GENGRP" => 1 }
 		  , "default_mem"      => {"$UNIX_BIOGRP"   => 4
 					   , "$UNIX_GENGRP" => 4 }
-		  , "default_walltime"    => {"$UNIX_BIOGRP"   => "00:29:00"
+		  , "default_walltime" => {"$UNIX_BIOGRP"   => "00:29:00"
 					   , "$UNIX_GENGRP" => "00:29:00" }
-	 );
 
+	 );
 
 sub tryToLoadModule($) {
 	my $x = eval("require $_[0]");
@@ -81,24 +84,51 @@ sub printColorStdout($;$) {
 }
 
 sub dryNotify(;$) {		# one optional argument
-	my ($msg) = @_;
+	my ($msg) = @_; chomp($msg);
 	$msg = (defined($msg)) ? $msg : "This was only a dry run, so we skipped executing a command.";
 	print STDERR safeColor("[DRY RUN]: $msg\n", "black on_yellow");
 }
 
 sub notify($) {			# one required argument
-	my ($msg) = @_;
+	my ($msg) = @_; chomp($msg);
 	warn safeColor("[DRY RUN]: $msg\n", "cyan on_blue");
+}
+
+
+sub printCool($) {			# one required argument
+	my ($msg) = @_; chomp($msg);
+	print STDERR safeColor("[PROGRESS REPORT]: $msg\n", "white on_blue");
 }
 
 sub main();
 sub quitWithUsageError($) { print("[ERROR]: " . $_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
+
+my $GLOBAL_WARN_STRING = "";
+sub ourWarn($) { my $s = $_[0]; chomp($s); print("[WARNING]: $s\n"); $GLOBAL_WARN_STRING .= "$s\n"; }
+
 sub printUsageAndQuit() { printUsage(); exit(1); }
 
 sub printUsage() {
 	print STDOUT <DATA>;
 	exit(0);
 }
+
+
+
+
+sub fileIsProbablySomeScript($) { # detect if a filename seems to be an ok-to-submit PBS script
+	my ($filename) = @_; # filename
+	if (-e $filename) {
+		# it's a file that EXISTS at this path, then maybe it's a script we can run??
+		return 1;
+	}
+	#if ($maybeScriptToSubmit =~ m/[.](sh|pl|py|R|rb)$/i) {
+		# it has a common script extension like ".sh" or ".pl"
+	#return 1;
+	#}
+	return 0;
+}
+
 
 sub getOurQueueGroup() {
 	# == See if we are in the bio group
@@ -111,34 +141,37 @@ sub getOurQueueGroup() {
 }
 
 # ==1==
-sub main() {			# Main program
+sub main() { # Main program
 	my ($delim) = "\t";
 	my ($decimalPlaces) = 4; # How many decimal places to print, by default
 	$Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 
 	my ($pbs_ncpus, $pbs_mem, $pbs_walltime) = (undef, undef, undef);
+	my ($pbs_submit_file) = undef;
+
 
 	GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 		   , "delim|d=s" => \$delim
 		   , "ncpus|c=i" => \$pbs_ncpus
 		   , "mem|m=i" => \$pbs_mem
 		   , "walltime|t=s" => \$pbs_walltime
+		   , "f=s"          => \$pbs_submit_file
 		  ) or printUsageAndQuit();
 
 	my $grp = getOurQueueGroup();
 
 	if (defined($pbs_mem)) {
 		($pbs_mem =~ m/^\d+(gb|g|)$/i) or quitWithUsageError("(Bad value to --mem / -m): Your memory request (in GIGABYTES) was invalid. You need to speciy an integer number of GB (e.g. '10' or '10gb' or '10g'. You specified this value: $pbs_mem");
-		$pbs_mem =~ s/[A-Za-z]//g; # remove any letters from it, now $pbs_mem is purely numeric
-		($pbs_mem =~ m/^\d+$/) or confess("Programming error: somehow failed to make pbs_mem numeric! Offending variable was: $pbs_mem");; # remove any letters from it, now $pbs_mem is purely numeric
-		($pbs_mem <= $QSETTINGS{max_mem}{$grp}) or quitWithUsageError("(Bad value to --mem / -m): You requested too much RAM! The maximum you can specify at this specific queue/user/group combination is " . $QSETTINGS{max_mem){$grp} . " (in gigabytes), but your request was for this number: $pbs_mem");
+		$pbs_mem =~ s/[A-Za-z]//g; # <-- remove any letters from it, now $pbs_mem is purely numeric (i.e., "24gb => 24")
+		($pbs_mem =~ m/^\d+$/) or confess("Programming error: somehow failed to make pbs_mem numeric! Offending variable was: $pbs_mem"); # remove any letters from it, now $pbs_mem is purely numeric
+		($pbs_mem <= $QSETTINGS{max_mem}{$grp}) or quitWithUsageError("(Bad value to --mem / -m): You requested too much RAM! The maximum you can specify at this specific queue/user/group combination is " . $QSETTINGS{max_mem}{$grp} . " (in gigabytes), but your request was for this number: $pbs_mem");
 	} else {
-		$pbs_ncpus = $QSETTINGS{default_mem}{$grp};
+		$pbs_mem = $QSETTINGS{default_mem}{$grp};
 	}
 
 	if (defined($pbs_ncpus)) {
-		($pbs_ncpus =~ m/[1-9]\d+/) or quitWithUsageError("(Bad value to --ncpus / -c): You need to specify a non-zero integer number of CPU cores to use. You specified this value: $pbs_ncpus");
-		($pbs_ncpus <= $QSETTINGS{max_ncpus){$grp}) or quitWithUsageError("(Bad value to --ncpus / -c): You specified TOO MANY cpus. The maximum you can specify at this specific queue/user/group combination is " . $QSETTINGS{max_ncpus){$grp} . ", but your request was for this number: $pbs_ncpus");
+		($pbs_ncpus =~ m/[1-9]\d*/) or quitWithUsageError("(Bad value to --ncpus / -c): You need to specify a non-zero integer number of CPU cores to use. You specified this value: $pbs_ncpus");
+		($pbs_ncpus <= $QSETTINGS{max_ncpus}{$grp}) or quitWithUsageError("(Bad value to --ncpus / -c): You specified TOO MANY cpus. The maximum you can specify at this specific queue/user/group combination is " . $QSETTINGS{max_ncpus}{$grp} . ", but your request was for this number: $pbs_ncpus");
 	} else {
 		$pbs_ncpus = $QSETTINGS{default_ncpus}{$grp};
 	}
@@ -150,19 +183,65 @@ sub main() {			# Main program
 	}
 
 
+	my ($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = split(':', $pbs_walltime);
+	
+	($pbs_wall_hr <= $QSETTINGS{max_walltime_hours}{$grp}) or quitWithUsageError("You requested TOO MUCH walltime! The maximum is: $QSETTINGS{max_walltime_hours}{$grp}:00:00 . Try again with a smaller value!");
+
 	my $numUnprocessedArgs = scalar(@ARGV);
-	if ($numUnprocessedArgs == 0) {
+	if (0 == $numUnprocessedArgs) {
 		quitWithUsageError("Cannot execute with NO commands... try some example like 'qplz echo \"Hello\"'...\n");
 	}
 
-	my $filename1 = undef;
-	foreach (@ARGV) { # these were arguments that were not understood by GetOptions
-		if (!defined($filename1)) {
-			$filename1 = $_;
-		} else {
-			print STDERR "Unprocessed argument: $_\n";
-		}
+	if (1 == $numUnprocessedArgs and fileIsProbablySomeScript($ARGV[0])) {
+		# See if the unprocessed argument is a FILENAME (a script to submit)
+		$pbs_submit_file = $ARGV[0];
 	}
+
+
+
+	my $qdest      = $QSETTINGS{dest}{$grp};
+	my $qgrouplist = $QSETTINGS{grouplist}{$grp};
+
+	my $stderr   = "";	#"-e /dev/null"
+	my $stdout   = "";	#"-o /dev/null"
+
+	my $qsub_common = qq{$QSUB_EXE }
+	  . qq{ -q "$qdest" }
+	  . qq{ -W group_list="$qgrouplist" }
+	  . qq{ -l ncpus=${pbs_ncpus} }
+	  . qq{ -l mem="${pbs_mem}gb" }
+	  . qq{ -l walltime="${pbs_walltime}"};
+
+	my $cmd = undef;
+	if (defined($pbs_submit_file)) {
+		(-e $pbs_submit_file) or quitWithUsageError("It looked like you submitted a script file directly on the command line (we though this was a script to submit to PBS: \"$pbs_submit_file\"), but somehow it seems like that file did not exist. Weird!");
+		if ($pbs_submit_file !~ m/[.](sh|pl|py|R|rb)$/) {
+			ourWarn(qq{You submitted a file to qsub (specifically, "$pbs_submit_file") that did not have a common script ending... just be aware of this!});
+		}
+		$cmd = qq{$qsub_common $pbs_submit_file};
+	} else {
+		# ok, looks like we are just submitting a QUICK job right on the command line
+		my $cmdArgs = join(" ", @ARGV); # mash the command line arguments together
+		$cmd = qq{echo '$cmdArgs' | $qsub_common};
+	}
+
+	printCool(qq{Submitting this job to the queue:\n    YOUR JOB -->   $cmd\n});
+	my $exitText = `$cmd`;
+	my $exitCode = $?; # <-- would be the result of system($cmd)
+	if ($exitCode == 0) {
+		printCool("You can type 'qstat' (basic) or 'qstats' (fancy) to check on the status of your job. --Alex\n");
+	} else {
+		die qq{[ERROR] Curses! Something went wrong, and the queue command returned the error code '$exitCode'. Unclear what this means, but something is probably wrong with your input command.\n};
+	}
+
+	#my $filename1 = undef;
+	#foreach (@ARGV) { # these were arguments that were not understood by GetOptions
+	#	if (!defined($filename1)) {
+	#		$filename1 = $_;
+	#	} else {
+	#		print STDERR "Unprocessed argument: $_\n";
+	#	}
+	#}
 
 	print STDERR "===============================\n";
 	print STDOUT safeColor("test color\n", "blue on_yellow");
@@ -176,14 +255,10 @@ sub main() {			# Main program
 	print STDERR "Test color!\n";
 	print STDERR "===============================\n";
 
-	my $qsub_exe = "qsub";
-
 	#sub agw_make_temp() {
 	#	my $timeInSecondsSince1970 = time();
 	#	my ($temp_filehandle, $temp_filename) = File::Temp::tempfile(TEMPLATE=>"cluster.${timeInSecondsSince1970}.XXXXX", DIR=>"", SUFFIX=>"$CMD_SUFFIX", UNLINK=>0); return($temp_filename);
 	#}
-
-	my $submission_looks_like_a_pbs_script = 0;
 
 	# $ qsub -q General -W group_list="genqueue" [/path/to/script]
 	# $ qsub -q Bio -W group_list="bioqueue" [/path/to/script]
@@ -192,47 +267,24 @@ sub main() {			# Main program
 	#my $jobname   = $filename; $jobname =~ s/${CMD_SUFFIX}$//; # filename WITHOUT the annoying suffix
 	#
 	#print("Filename is: $filename\nJobname is: $jobname\n");
+	
 
-	my $timeString = "00:29:00";
+	print STDERR "Your job will be allowed to run for this long: ${pbs_wall_hr} hours and ${pbs_wall_min} minutes\n";
+	print STDERR "Your job has been allocated the following:\n";
+	print STDERR "                CPU CORES: ${pbs_ncpus}\n";
+	print STDERR "                      RAM: ${pbs_mem}gb\n";
+	print STDERR "                     TIME: ${pbs_walltime}\n";
 
-	my $qdest      = $QSETTINGS{dest}{$grp};
-	my $qgrouplist = $QSETTINGS{grouplist}{$grp};
-	my $cmd="";
+	print STDERR "Now you can type these commands to check your job:\n";
+	print STDERR "             qstats   (print out a color list of jobs that are running\n";
+	print STDERR "             qstat    (print out monochrome list of the above jobs\n";
+	print STDERR "             qstat -u \$USER (print out YOUR jobs only\n";
+	#print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
 
-	my $cmdargs = join(" ", @ARGV);
-
-	my $qsub_common = qq{$qsub_exe -q "$qdest" -W group_list="$qgrouplist" -l ncpus=${pbs_ncpus} -l mem=\"${pbs_mem}gb\" -l walltime=\"${pbs_walltime}\"};
-
-	#my $mem      = "-l mem="      . (defined($hr->{pbs_mem})      ? $hr->{pbs_mem}      : "8gb");
-	#my $walltime = "-l walltime=" . (defined($hr->{pbs_walltime}) ? $hr->{pbs_walltime} : "299:59:59");
-	#my $ncpus    = "-l ncpus="    . (defined($hr->{pbs_ncpus})    ? $hr->{pbs_ncpus}    : "1");
-	#my $nodes    = "-l nodes=1:ppn=1"; # <-- ????????? unclear if this is useful
-	my $stderr   = "";	#"-e /dev/null"
-	my $stdout   = "";	#"-o /dev/null"
-
-
-
-	if ($submission_looks_like_a_pbs_script) {
-		# looks like someone passed in a script...
-		$cmd = qq{$qsub_common $cmdargs};
-	} else {
-		$cmd = qq{echo '$cmdargs' | $qsub_common};
-	}
-
-	print("Executing: $cmd\n");
-
-	my $exCode = system($cmd);
-
-	print STDERR qq{[QUEUED] Submitted this job to the queue: $cmd\n};
-	if ($exCode == 0) {
-		print STDERR "[QUEUED] You can type 'qstat' (basic) or 'qstats' (fancy) to check on the status of your job. --Alex\n";
-	} else {
-		die qq{[ERROR] Curses! Something went wrong, and the queue command returned the error code '$exCode'. Unclear what this means, but something is probably wrong with your input command.\n};
-	}
-
-	print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
-
+	#print STDERR $GLOBAL_WARN_STRING . "\n";
 	print STDERR safeColor("===============================\n", "green");
+
+
 } # end main()
 
 
