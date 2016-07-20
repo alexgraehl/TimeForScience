@@ -312,6 +312,7 @@ __DATA__
 
 qplz.pl [OPTIONS]  <script_or_command>
   by Alex Williams, 2016
+  Tested with PBS Pro v 13.
 
 "QUEUE PLEASE" (qplz) is a frontend to 'qsub' that makes it easier to submit queue jobs to PBS Pro 13.
 
@@ -368,4 +369,5 @@ CAVEATS:
  -o and -e (STDERR / STDOUT redirection) is not working yet.
   By default, PBS will write to your job submission directory with a bunch of stuff like "STDIN.o1234".
 
+ Does not yet support other fancy PBS options like joining STDERR and STDOUT.
   --------------
