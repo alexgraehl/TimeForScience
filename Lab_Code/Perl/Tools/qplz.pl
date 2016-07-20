@@ -101,12 +101,12 @@ sub printCool($) {			# one required argument
 
 sub printBadNews($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
-	print STDERR safeColor("[ERROR]: $msg\n", "yellow on_red");
-	die "$msg\n";
+	print STDERR safeColor("[ERROR]: $msg\n", "white on_red");
 }
 sub printBadNewsAndDie($) { printBadNews($_[0]); die $_[0]; }
 
 sub main();
+
 sub quitWithUsageError($) { printBadNews($_[0]); printUsage(); printBadNews($_[0]); exit(1); }
 
 my $GLOBAL_WARN_STRING = "";
@@ -116,7 +116,6 @@ sub printUsageAndQuit() { printUsage(); exit(1); }
 
 sub printUsage() {
 	print STDOUT <DATA>;
-	exit(0);
 }
 
 sub fileIsProbablySomeScript($) { # detect if a filename seems to be an ok-to-submit PBS script
@@ -148,12 +147,9 @@ sub main() { # Main program
 	my ($delim) = "\t";
 	my ($decimalPlaces) = 4; # How many decimal places to print, by default
 	$Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
-
 	my ($pbs_ncpus, $pbs_mem, $pbs_walltime) = (undef, undef, undef);
 	my ($pbs_submit_file) = undef;
-
-
-	GetOptions("help|?|man" => sub { printUsageAndQuit(); }
+	GetOptions("h|help|?|man" => sub { printUsageAndQuit(); }
 		   , "delim|d=s" => \$delim
 		   , "ncpus|c=i" => \$pbs_ncpus
 		   , "mem|m=i" => \$pbs_mem
@@ -362,15 +358,14 @@ qplz.pl -t 24 -m 8 -c 2 myscript.pl
 
 CAVEATS:
 
+ Warning: if you try to run a 'quick' command (e.g. qplz.pl pwd), yet there is ALSO a file in the directory
+  named 'pwd', we will assume 'pwd' is a script and submit that instead of running the standard UNIX 'pwd'.
+ This is likely to occur if you're trying to submit a program with arguments, for example "bowtie arg1" and you
+  are in the same directory as the actual 'bowtie' exectuable. "qplz.pl" will assume 'bowtie' is a PBS-able script and will
+  FAIL, because it then doesn't understand what 'arg1' is supposed to be.
+  This can probably be fixed with more smart detection of files or maybe a 'quick job' flag.
 
-
-qplz
-
-TO DO:
-
-Add ???.
+ -o and -e (STDERR / STDOUT redirection) is not working yet.
+  By default, PBS will write to your job submission directory with a bunch of stuff like "STDIN.o1234".
 
   --------------
-
-
-
