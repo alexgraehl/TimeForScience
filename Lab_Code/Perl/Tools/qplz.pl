@@ -34,7 +34,6 @@ my %QSETTINGS = ( "unix_gname_to_gid" => {"$UNIX_BIOGRP"   => "35098"
 					   , "$UNIX_GENGRP" => 4 }
 		  , "default_walltime" => {"$UNIX_BIOGRP"   => "00:29:00"
 					   , "$UNIX_GENGRP" => "00:29:00" }
-
 	 );
 
 sub tryToLoadModule($) {
@@ -100,8 +99,15 @@ sub printCool($) {			# one required argument
 	print STDERR safeColor("[PROGRESS REPORT]: $msg\n", "white on_blue");
 }
 
+sub printBadNews($) {			# one required argument
+	my ($msg) = @_; chomp($msg);
+	print STDERR safeColor("[ERROR]: $msg\n", "yellow on_red");
+	die "$msg\n";
+}
+sub printBadNewsAndDie($) { printBadNews($_[0]); die $_[0]; }
+
 sub main();
-sub quitWithUsageError($) { print("[ERROR]: " . $_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
+sub quitWithUsageError($) { printBadNews($_[0]); printUsage(); printBadNews($_[0]); exit(1); }
 
 my $GLOBAL_WARN_STRING = "";
 sub ourWarn($) { my $s = $_[0]; chomp($s); print("[WARNING]: $s\n"); $GLOBAL_WARN_STRING .= "$s\n"; }
@@ -112,9 +118,6 @@ sub printUsage() {
 	print STDOUT <DATA>;
 	exit(0);
 }
-
-
-
 
 sub fileIsProbablySomeScript($) { # detect if a filename seems to be an ok-to-submit PBS script
 	my ($filename) = @_; # filename
@@ -176,35 +179,38 @@ sub main() { # Main program
 		$pbs_ncpus = $QSETTINGS{default_ncpus}{$grp};
 	}
 
-	if (defined($pbs_walltime)) {
-		($pbs_walltime =~ m/\d+:\d\d:\d\d/) or quitWithUsageError("(Bad value to --walltime / -t): You need to specify a valid walltime in this format: 11:22:33 (hours, minutes, seconds). You specified this value: $pbs_walltime");
-	} else {
+	if (not defined($pbs_walltime)) {
 		$pbs_walltime = $QSETTINGS{default_walltime}{$grp};
+	} elsif ($pbs_walltime =~ m/^\d+$/) { # if it's literally JUST a single number (the number of hours)
+		$pbs_walltime = "${pbs_walltime}:00:00"; # I guess it's JUST the number of hours
 	}
-
-
-	my ($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = split(':', $pbs_walltime);
 	
+	($pbs_walltime =~ m/^(\d+):(\d\d):(\d\d)$/) or quitWithUsageError("(Bad value to --walltime / -t): You need to specify a valid walltime in this format: 11:22:33 (hours, minutes, seconds). You specified this value: $pbs_walltime");
+	my ($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = ($1, $2, $3); # <-- results from the match expression above
 	($pbs_wall_hr <= $QSETTINGS{max_walltime_hours}{$grp}) or quitWithUsageError("You requested TOO MUCH walltime! The maximum is: $QSETTINGS{max_walltime_hours}{$grp}:00:00 . Try again with a smaller value!");
 
 	my $numUnprocessedArgs = scalar(@ARGV);
-	if (0 == $numUnprocessedArgs) {
-		quitWithUsageError("Cannot execute with NO commands... try some example like 'qplz echo \"Hello\"'...\n");
+	if (defined($pbs_submit_file) and $numUnprocessedArgs > 0) {
+		quitWithUsageError("Weird, you specified a pbs_submit_file on the command line with the '-f' option, yet there is still an unrecognized argument at the end (which normally would be a script file, maybe)). We have some unrecognized arguments on the command line. See why these are here, as qplz does not understand them: " . join(" ", @ARGV)); # ok, we should NOT have any unprocessed arguments if the user defined a script file
 	}
+
+	if (!defined($pbs_submit_file) and 0 == $numUnprocessedArgs) {
+		quitWithUsageError("Cannot submit a job with no job script or command! Make sure you actually submitted a script filename (or arguments on the command line, for example:  qplz echo \"Hello\")...\n");
+	}
+
+
 
 	if (1 == $numUnprocessedArgs and fileIsProbablySomeScript($ARGV[0])) {
 		# See if the unprocessed argument is a FILENAME (a script to submit)
 		$pbs_submit_file = $ARGV[0];
+	} else {
+		# looks like the user submitted a 'quick command' on the command line, like 'qplz.pl pwd'
 	}
-
-
 
 	my $qdest      = $QSETTINGS{dest}{$grp};
 	my $qgrouplist = $QSETTINGS{grouplist}{$grp};
-
 	my $stderr   = "";	#"-e /dev/null"
 	my $stdout   = "";	#"-o /dev/null"
-
 	my $qsub_common = qq{$QSUB_EXE }
 	  . qq{ -q "$qdest" }
 	  . qq{ -W group_list="$qgrouplist" }
@@ -225,13 +231,13 @@ sub main() { # Main program
 		$cmd = qq{echo '$cmdArgs' | $qsub_common};
 	}
 
-	printCool(qq{Submitting this job to the queue:\n    YOUR JOB -->   $cmd\n});
+	printCool(qq{Submitting this actual command to the queue:\n    ACTUAL JOB SUBMISSION COMMAND -->   $cmd\n});
 	my $exitText = `$cmd`;
 	my $exitCode = $?; # <-- would be the result of system($cmd)
 	if ($exitCode == 0) {
 		printCool("You can type 'qstat' (basic) or 'qstats' (fancy) to check on the status of your job. --Alex\n");
 	} else {
-		die qq{[ERROR] Curses! Something went wrong, and the queue command returned the error code '$exitCode'. Unclear what this means, but something is probably wrong with your input command.\n};
+		printBadNewsAndDie("[ERROR] Curses! Something went wrong, and the queue command returned the error code '$exitCode'. Unclear what this means, but something is probably wrong with your input command.\n");
 	}
 
 	#my $filename1 = undef;
@@ -243,17 +249,17 @@ sub main() { # Main program
 	#	}
 	#}
 
-	print STDERR "===============================\n";
-	print STDOUT safeColor("test color\n", "blue on_yellow");
-	printColorStdout("hey", "red");
-	printColorStdout("what", "red");
-	printColorStderr("stderr what", "blue on_white");
-	printColorStdout("is", "red on_blue");
-	printColorStdout("this", "red on_green");
-	printColorStderr("stderr what", "red on_white");
-	print STDERR "hellow\n";
-	print STDERR "Test color!\n";
-	print STDERR "===============================\n";
+	# print STDERR "===============================\n";
+	# print STDOUT safeColor("test color\n", "blue on_yellow");
+	# printColorStdout("hey", "red");
+	# printColorStdout("what", "red");
+	# printColorStderr("stderr what", "blue on_white");
+	# printColorStdout("is", "red on_blue");
+	# printColorStdout("this", "red on_green");
+	# printColorStderr("stderr what", "red on_white");
+	# print STDERR "hellow\n";
+	# print STDERR "Test color!\n";
+	# print STDERR "===============================\n";
 
 	#sub agw_make_temp() {
 	#	my $timeInSecondsSince1970 = time();
@@ -269,18 +275,22 @@ sub main() { # Main program
 	#print("Filename is: $filename\nJobname is: $jobname\n");
 	
 
-	print STDERR "Your job will be allowed to run for this long: ${pbs_wall_hr} hours and ${pbs_wall_min} minutes\n";
+
 	print STDERR "Your job has been allocated the following:\n";
 	print STDERR "                CPU CORES: ${pbs_ncpus}\n";
 	print STDERR "                      RAM: ${pbs_mem}gb\n";
 	print STDERR "                     TIME: ${pbs_walltime}\n";
 
 	print STDERR "Now you can type these commands to check your job:\n";
-	print STDERR "             qstats   (print out a color list of jobs that are running\n";
-	print STDERR "             qstat    (print out monochrome list of the above jobs\n";
-	print STDERR "             qstat -u \$USER (print out YOUR jobs only\n";
+	print STDERR "To check your job 1:  qstats   (print out a color list of jobs that are running\n";
+	print STDERR "To check your job 2:  qstat    (print out monochrome list of the above jobs\n";
+	print STDERR "To check your job 3:  qstat -u \$USER (print out YOUR jobs only\n";
+	print STDERR "If you want to cancel your job (maybe you just realized that it needs more time / RAM):\n";
+	print STDERR "    To delete a job: 1. Find the 'Job id' number with 'qstat' (leftmost column)\n";
+	print STDERR "    To delete a job: 2. Then use 'qdel ####' (that same number) to cancel it\n";
 	#print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
 
+	printColorStderr("Your job will be allowed to use ${pbs_mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n", "white on_red");
 	#print STDERR $GLOBAL_WARN_STRING . "\n";
 	print STDERR safeColor("===============================\n", "green");
 
@@ -304,36 +314,57 @@ exit(0);
 
 __DATA__
 
-MYPROGRAM.pl  [OPTIONS]
+qplz.pl [OPTIONS]  <script_or_command>
+  by Alex Williams, 2016
 
-  by YOUR NAME, THE_YEAR
+"QUEUE PLEASE" (qplz) is a frontend to 'qsub' that makes it easier to submit queue jobs to PBS Pro 13.
 
-  THIS PROGRAM DOES SOMETHING. YOU GIVE IT ONE THING AND THIS OTHER THING,
-  AND THE OUTPUT IS THIS FINAL THING.
+Examples: qplz.pl "pwd"   or  qplz.pl my_script.sh
 
-  See the examples below for more information.
+OPTIONS:
 
- CAVEATS:
+--walltime=HH:MM:SS or "-t HH:MM:SS"
+ Default: 00:30:00 = 30 minutes
+  Lets your job run for at least this long. It gets auto-killed if this time is exceeded.
+  Example of a job that wants to run for 123 hours and 45 minutes:  -t 123:45:00
 
-MAYBE IT TAKES 30 MINUTES TO RUN.
+--mem=INTEGER or "-m INTEGER"
+ Default: 4 (4 gigabytes)  (Example ways to request 4 GB of RAM: "-m 4" or "-m 4gb" or "-m 4g")
+  Lets your job use this much memory, in gigabytes. Job will be auto-killed if it tries to use more.
 
- OPTIONS:
+--ncpus=INTEGER or "-c INTEGER"
+ Default: 1 (1 core)
+  Lets your job use this many cores.
+  A job can *try* to use more, but all of its threads will be placed onto this many cores.
 
---delim = DELIMITER   (Default: tab)
-  Sets the input delimiter to DELIMITER.
+  (Note: If hyperthreading is enabled (which it typically is NOT on our server), then this number
+  would be the number of *hyperthreaded* cores instead of physical cores.)
 
- EXAMPLES:
+-f FILENAME (or just put the filename at the end of the line)
+  Submit the commands in this filename. Example:   qplz.pl -f myscript.sh  -t 1:00:00
+  Note that this is normally equivalent to just putting the filename at the end of the line, too, like:
+     * qplz.pl myscript.sh
 
-MYPROGRAM.pl --help
-  Displays this help
+TO DO: add '-o' (STDOUT) and '-e' (STDERR) options
 
-  MYPROGRAM.pl  --works=yes --bugs=4  -q
-  Does nothing. -q indicates "quiet" operation.
+EXAMPLES:
+
+qplz.pl ls
+  Lists your home directory
+
+qplz.pl -t 1:00:00 pwd
+or
+qplz.pl -t 1 pwd
+  Prints the current directory, allowing the script one hour to do so.
+
+qplz.pl -t 24 -m 8 -c 2 myscript.pl
+  Runs 'myscript.pl' for up to 24 hours and 8 GB of RAM, with 2 CPU cores.
+
+CAVEATS:
 
 
-KNOWN BUGS:
 
-None known.
+qplz
 
 TO DO:
 
