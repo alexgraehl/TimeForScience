@@ -954,3 +954,7 @@ alias qyep='qsub -q General -W group_list=genqueue'
 function hist {
     history | tail -n 100
 }
+
+function clearlogs {
+    rm *.[eo][0-9][0-9]*
+}
