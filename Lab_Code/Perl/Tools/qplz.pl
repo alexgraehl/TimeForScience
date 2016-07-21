@@ -118,6 +118,17 @@ sub printUsage() {
 	print STDOUT <DATA>;
 }
 
+
+sub regarg($) {
+	my ($filename) = @_;
+	open my $fff, '<', $filename or die "whoops, no file somehow";
+	while (my $line = <$fff>) {
+		if ($line =~ /REGEX/) {
+			
+		}
+	}
+}
+
 sub fileIsProbablySomeScript($) { # detect if a filename seems to be an ok-to-submit PBS script
 	my ($filename) = @_; # filename
 	if (-e $filename) {
@@ -284,6 +295,7 @@ sub main() { # Main program
 	print STDERR "If you want to cancel your job (maybe you just realized that it needs more time / RAM):\n";
 	print STDERR "    To delete a job: 1. Find the 'Job id' number with 'qstat' (leftmost column)\n";
 	print STDERR "    To delete a job: 2. Then use 'qdel ####' (that same number) to cancel it\n";
+	print STDERR "    To delete all your jobs ever (dangerous!): qselect -u \$USER | xargs qdel  <-- deletes all your jobs\n";
 	#print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
 
 	printColorStderr("Your job will be allowed to use ${pbs_mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n", "white on_red");
