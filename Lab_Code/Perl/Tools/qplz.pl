@@ -32,8 +32,8 @@ my %QSETTINGS = ( "unix_gname_to_gid" => {"$UNIX_BIOGRP"   => "35098"
 					   , "$UNIX_GENGRP" => 1 }
 		  , "default_mem"      => {"$UNIX_BIOGRP"   => 4
 					   , "$UNIX_GENGRP" => 4 }
-		  , "default_walltime" => {"$UNIX_BIOGRP"   => "00:29:00"
-					   , "$UNIX_GENGRP" => "00:29:00" }
+		  , "default_walltime" => {"$UNIX_BIOGRP"   => "23:59:59"
+					   , "$UNIX_GENGRP" => "23:59:59" }
 	 );
 
 sub tryToLoadModule($) {
@@ -218,7 +218,10 @@ sub main() { # Main program
 	my $qgrouplist = $QSETTINGS{grouplist}{$grp};
 	my $stderr   = "";	#"-e /dev/null"
 	my $stdout   = "";	#"-o /dev/null"
+	my $jobname  = "QPLZ_jobname";
 	my $qsub_common = qq{$QSUB_EXE }
+	  . qq{ -V }
+	  . qq{ -N "$jobname" }
 	  . qq{ -q "$qdest" }
 	  . qq{ -W group_list="$qgrouplist" }
 	  . qq{ -l ncpus=${pbs_ncpus} }
@@ -280,8 +283,6 @@ sub main() { # Main program
 	#my $jobname   = $filename; $jobname =~ s/${CMD_SUFFIX}$//; # filename WITHOUT the annoying suffix
 	#
 	#print("Filename is: $filename\nJobname is: $jobname\n");
-	
-
 
 	print STDERR "Your job has been allocated the following:\n";
 	print STDERR "                CPU CORES: ${pbs_ncpus}\n";
@@ -299,6 +300,11 @@ sub main() { # Main program
 	#print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
 
 	printColorStderr("Your job will be allowed to use ${pbs_mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n", "white on_red");
+
+	if ($pbs_wall_hr <= 0) {
+		printColorStderr("WARNING: Note that your job will be cancelled if it takes longer than ${pbs_wall_min} minutes to run!\n", "white on_red");
+	}
+
 	#print STDERR $GLOBAL_WARN_STRING . "\n";
 	print STDERR safeColor("===============================\n", "green");
 
