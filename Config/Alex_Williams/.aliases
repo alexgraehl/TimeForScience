@@ -962,3 +962,5 @@ function clearlogs {
     find . -maxdepth 1 -regex '.*[.][eo][0-9]+' -print0 | xargs -0 -I{} trash.pl {}
 }
 
+
+
