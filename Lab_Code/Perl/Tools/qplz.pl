@@ -3,6 +3,7 @@ use strict;  use warnings;  #use diagnostics;
 use POSIX;
 use List::Util qw(max min);
 use Getopt::Long;
+use File::Basename;
 use Carp; # backtrace on errors. Has the "confess" function. Use this instead of "die" if you want useful information!   
 
 #use File::Basename;
@@ -12,6 +13,8 @@ $| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buf
 #no warnings 'numeric';
 #use Scalar::Util;
 #print Scalar::Util::looks_like_number($string), "\n";
+
+my $JOBNAME_MAX_LEN = 32; # cut it down to some reasonable size
 
 my $QSUB_EXE = "qsub";
 my $UNIX_BIOGRP = "bioqueue";
@@ -218,7 +221,19 @@ sub main() { # Main program
 	my $qgrouplist = $QSETTINGS{grouplist}{$grp};
 	my $stderr   = "";	#"-e /dev/null"
 	my $stdout   = "";	#"-o /dev/null"
-	my $jobname  = "QPLZ_jobname";
+	my $jobname  = undef;
+	if (defined($pbs_submit_file)) {
+		(-e $pbs_submit_file) or quitWithUsageError("It looked like you submitted a script file directly on the command line (we though this was a script to submit to PBS: \"$pbs_submit_file\"), but somehow it seems like that file did not exist. Weird!");
+		if ($pbs_submit_file !~ m/[.](sh|pl|py|R|rb)$/) {
+			ourWarn(qq{You submitted a file to qsub (specifically, "$pbs_submit_file") that did not have a common script ending... just be aware of this!});
+		}
+		$jobname = File::Basename::basename($pbs_submit_file); # Job name is the SUBMITTED SCRIPT name (but not the full path)
+	} else {
+		$jobname = join("_", @ARGV);
+	}
+	$jobname =~ s/[\W\s]/_/g; # replace any "weird" non-word characters with underscores
+	substr($jobname, $JOBNAME_MAX_LEN); # Job name is the first N characters of the command line arguments.
+
 	my $qsub_common = qq{$QSUB_EXE }
 	  . qq{ -V }
 	  . qq{ -N "$jobname" }
@@ -228,19 +243,15 @@ sub main() { # Main program
 	  . qq{ -l mem="${pbs_mem}gb" }
 	  . qq{ -l walltime="${pbs_walltime}"};
 
+	my $pwd = `pwd`; chomp($pwd);
+
 	my $cmd = undef;
 	if (defined($pbs_submit_file)) {
-		(-e $pbs_submit_file) or quitWithUsageError("It looked like you submitted a script file directly on the command line (we though this was a script to submit to PBS: \"$pbs_submit_file\"), but somehow it seems like that file did not exist. Weird!");
-		if ($pbs_submit_file !~ m/[.](sh|pl|py|R|rb)$/) {
-			ourWarn(qq{You submitted a file to qsub (specifically, "$pbs_submit_file") that did not have a common script ending... just be aware of this!});
-		}
 		$cmd = qq{$qsub_common $pbs_submit_file};
-	} else {
-		# ok, looks like we are just submitting a QUICK job right on the command line
+	} else { # ok, looks like we are just submitting a QUICK job right on the command line
 		my $cmdArgs = join(" ", @ARGV); # mash the command line arguments together
-		$cmd = qq{echo '$cmdArgs' | $qsub_common};
+		$cmd = qq{echo 'cd "$pwd" && $cmdArgs' | $qsub_common};
 	}
-
 	printCool(qq{Submitting this actual command to the queue:\n    ACTUAL JOB SUBMISSION COMMAND -->   $cmd\n});
 	my $exitText = `$cmd`;
 	my $exitCode = $?; # <-- would be the result of system($cmd)
@@ -304,6 +315,8 @@ sub main() { # Main program
 	if ($pbs_wall_hr <= 0) {
 		printColorStderr("WARNING: Note that your job will be cancelled if it takes longer than ${pbs_wall_min} minutes to run!\n", "white on_red");
 	}
+
+	# maybe make and then delete a fake file here just to refresh the queue
 
 	#print STDERR $GLOBAL_WARN_STRING . "\n";
 	print STDERR safeColor("===============================\n", "green");

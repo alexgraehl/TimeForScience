@@ -101,21 +101,6 @@ export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin ## <-- clear out 
 export PATH=/opt/pbs/default/bin:/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${PATH}
 export PATH="${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Common/Code/Python:${BINF_CORE_WORK_DIR}/Common/Code/alexgw"   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 
-BINFAPPBASE=/data/applications # BIOINFORMATICS SPECIFIC
-BINFVERSION=2015_06 # BIOINFORMATICS SPECIFIC
-export BINFSWROOT=$BINFAPPBASE/$BINFVERSION      # "bioinformatics software root" BIOINFORMATICS SPECIFIC# example: /data/applications/2015_06/
-
-export BINFBINROOT=${BINFSWROOT}/bin   # used elsewhere, be sure to EXPORT it
-
-export PERL5LIB=${BINFSWROOT}/libperl/lib/perl5:$HOME/.linuxbrew/lib/perl5/site_perl:${PERL5LIB}
-export PERLLIB=${PERL5LIB}
-export R_LIBS=$BINFSWROOT/libr      # Libraries for R
-export PATH="${BINFBINROOT}:${PATH}" # BIOINFORMATICS SPECIFIC
-export LD_LIBRARY_PATH="${HOME}/.linuxbrew/lib:$BINFSWROOT/lib"
-export LIBRARY_PATH=${LD_LIBRARY_PATH}
-export CPATH=$BINFSWROOT/include # Find 'include' files http://stackoverflow.com/questions/2497344/what-is-the-environment-variable-for-gcc-g-to-look-for-h-files-during-compila
-
-
 BINFAPPBASE=/data/applications
 BINFVERSION=2015_06
 BINFSWROOT=$BINFAPPBASE/$BINFVERSION
@@ -127,7 +112,6 @@ export PATH=$BINFBINROOT:$PATH
 export LD_LIBRARY_PATH="$HOME/.linuxbrew/lib:$BINFSWROOT/lib:$LD_LIBRARY_PATH"
 export LIBRARY_PATH=$LD_LIBRARY_PATH
 export CPATH=$BINFSWROOT/include:$CPATH
-
 
 export CXX=/usr/bin/g++ # The location of the c++ compiler. NOT "cpp"--that is the C preprocessor.
 export LANG="en_US.UTF-8"    # Set the LANG to UTF-8
