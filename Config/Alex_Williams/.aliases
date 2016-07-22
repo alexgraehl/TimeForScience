@@ -959,11 +959,14 @@ function hist {
 
 function clearlogs {
     echo "Deleting any of those qsub logs, which are files ending with (for example) .e1234 or .o456"
-    find . -maxdepth 1 -regex '.*[.][eo][0-9]+' -print0 | xargs -0 -I{} trash.pl {}
+    find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' -print0 | xargs -0 -I{} trash.pl {}
 }
 
 function catlogs {
-    cat *.[eo][0-9][0-9]* | s
+    echo "Trying to 'cat' all the default QSUB logs... (together into one file)"
+    #cat *.[eo][0-9][0-9]* | s
+    find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' -print0 | xargs -0 -I{} paste.pl "FILE={}" {} | s
+    #find . -maxdepth 1 -type f -exec paste.pl "FILE={}" {} \; | s
 }
 
 function refresh {
