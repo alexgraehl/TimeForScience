@@ -16,6 +16,8 @@ $| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buf
 
 my $JOBNAME_MAX_LEN = 32; # cut it down to some reasonable size
 
+my $PBS_DIRECTIVE_PREFIX = "#PBS";
+
 my $QSUB_EXE = "qsub";
 my $UNIX_BIOGRP = "bioqueue";
 my $UNIX_GENGRP = "genqueue";
@@ -208,11 +210,19 @@ sub main() { # Main program
 		quitWithUsageError("Cannot submit a job with no job script or command! Make sure you actually submitted a script filename (or arguments on the command line, for example:  qplz echo \"Hello\")...\n");
 	}
 
-
-
-	if (1 == $numUnprocessedArgs and fileIsProbablySomeScript($ARGV[0])) {
+	my $isRunningAScript = (1 == $numUnprocessedArgs and fileIsProbablySomeScript($ARGV[0]));
+	if ($isRunningAScript) {
 		# See if the unprocessed argument is a FILENAME (a script to submit)
 		$pbs_submit_file = $ARGV[0];
+
+		# Let's check the script for #PBS directives... if there ARE any, then do not let us override them!
+		
+		open my $fff, '<', $filename or die "Cannot read <$pbs_submit_file>...";
+		while (my $line = <$fff>) {
+			if ($line =~ m/^$PBS_DIRECTIVE_PREFIX/i) {
+				# ok, better parse this and make sure we did not override it!
+			}
+		}
 	} else {
 		# looks like the user submitted a 'quick command' on the command line, like 'qplz.pl pwd'
 	}
