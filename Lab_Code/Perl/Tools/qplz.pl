@@ -16,8 +16,10 @@ $| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buf
 
 my $JOBNAME_MAX_LEN = 32; # cut it down to some reasonable size
 
-my $PBS_DIRECTIVE_PREFIX = "#PBS";
+my @RECOGNIZED_PBS_OPTIONS = ("walltime", "mem", "ncpus"); # The ones we handle in this script
 
+my $PBS_DIRECTIVE_PREFIX = "#PBS"; # <-- the thing at the top of 'your_submitted_script.sh' that means a PBS directive is coming. Usually "#PBS"
+my $GLOBAL_WARN_STRING = ""; # record any POSSIBLE problems so that we can print them out at the very end where the user can see them in a convenient summarized format
 my $QSUB_EXE = "qsub";
 my $UNIX_BIOGRP = "bioqueue";
 my $UNIX_GENGRP = "genqueue";
@@ -104,6 +106,11 @@ sub printCool($) {			# one required argument
 	print STDERR safeColor("[PROGRESS REPORT]: $msg\n", "white on_blue");
 }
 
+sub printNote($) {			# one required argument
+	my ($msg) = @_; chomp($msg);
+	print STDERR safeColor("[NOTE]: $msg\n", "white on_blue");
+}
+
 sub printBadNews($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
 	print STDERR safeColor("[ERROR]: $msg\n", "white on_red");
@@ -112,17 +119,16 @@ sub printBadNewsAndDie($) { printBadNews($_[0]); die $_[0]; }
 
 sub main();
 
+sub quitWithComplaintAboutScript($$$) { my ($scriptFile, $lineNum, $msg) = @_; printBadNews(qq{On line $lineNum of the script file <$scriptFile>, we ran into this problem: $msg}); exit(1); }
+
+sub quitWithComplaintAboutScriptOption($$$) { my ($offendingOption, $scriptFile, $lineNum) = @_; printBadNews(qq{On line $lineNum of the script file <$scriptFile>, we ran into this problem: you have, "you have specified '$offendingOption' in the submitted script (<$scriptFile>) and ALSO you specified '$offendingOption' on your command line call to 'qplz'.\nHOW TO FIX THIS: Either remove '$PBS_DIRECTIVE_PREFIX $offendingOption' from line $lineNum in your script, OR remove the '--$offendingOption' option from your call to qplz, OR add the '--override' option in qplz to override the script's setting and use the one you specified on the command line.}); exit(1); }
+
 sub quitWithUsageError($) { printBadNews($_[0]); printUsage(); printBadNews($_[0]); exit(1); }
 
-my $GLOBAL_WARN_STRING = "";
 sub ourWarn($) { my $s = $_[0]; chomp($s); print("[WARNING]: $s\n"); $GLOBAL_WARN_STRING .= "$s\n"; }
 
 sub printUsageAndQuit() { printUsage(); exit(1); }
-
-sub printUsage() {
-	print STDOUT <DATA>;
-}
-
+sub printUsage() { print STDOUT <DATA>; }
 
 sub regarg($) {
 	my ($filename) = @_;
@@ -160,17 +166,19 @@ sub getOurQueueGroup() {
 
 # ==1==
 sub main() { # Main program
-	my ($delim) = "\t";
 	my ($decimalPlaces) = 4; # How many decimal places to print, by default
 	$Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 	my ($pbs_ncpus, $pbs_mem, $pbs_walltime) = (undef, undef, undef);
 	my ($pbs_submit_file) = undef;
+	my ($shouldOverridePbsDirectives) = 0;
+	my %pbsOpt = (); # new hash of final values
+
 	GetOptions("h|help|?|man" => sub { printUsageAndQuit(); }
-		   , "delim|d=s" => \$delim
-		   , "ncpus|c=i" => \$pbs_ncpus
+		   , "ncpus|ncpu|c=i" => \$pbs_ncpus
 		   , "mem|m=i" => \$pbs_mem
 		   , "walltime|t=s" => \$pbs_walltime
 		   , "f=s"          => \$pbs_submit_file
+		   , "override!"    => \$shouldOverridePbsDirectives
 		  ) or printUsageAndQuit();
 
 	my $grp = getOurQueueGroup();
@@ -212,19 +220,27 @@ sub main() { # Main program
 
 	my $isRunningAScript = (1 == $numUnprocessedArgs and fileIsProbablySomeScript($ARGV[0]));
 	if ($isRunningAScript) {
-		# See if the unprocessed argument is a FILENAME (a script to submit)
-		$pbs_submit_file = $ARGV[0];
-
+		$pbs_submit_file = $ARGV[0]; # See if the unprocessed argument is a FILENAME (a script to submit)
 		# Let's check the script for #PBS directives... if there ARE any, then do not let us override them!
-		
-		open my $fff, '<', $filename or die "Cannot read <$pbs_submit_file>...";
+		open my $fff, '<', $pbs_submit_file or die "Cannot read <$pbs_submit_file>...";
+		my $lineNum = 0;
 		while (my $line = <$fff>) {
-			if ($line =~ m/^$PBS_DIRECTIVE_PREFIX/i) {
-				# ok, better parse this and make sure we did not override it!
+			$lineNum++;
+			next if (not $line =~ m/^$PBS_DIRECTIVE_PREFIX/i); # skip any non-pbs lines
+			foreach my $opt (@RECOGNIZED_PBS_OPTIONS) {
+				if ($line =~ m/^$PBS_DIRECTIVE_PREFIX.*\b{$opt}\b/i and defined($pbsOpt{$opt})) {
+					# ok, better parse this and make sure we did not override it!
+					if ($shouldOverridePbsDirectives) {
+						printNote(qq{Since you specified '--override', we are overriding the script's PBS directive for '$opt' and will be using the one you specified on the command line instead (specifically, '${opt}=$pbsOpt{$opt}').});
+					} else {
+						quitWithComplaintAboutScriptOption($opt, $pbs_submit_file, $lineNum); # Here's a problem, you both defined the option on the command line AND ALSO defined it in the script! We don't know which one to use.
+					}
+				}
 			}
+			(not $line =~ m/\bncpu\b/i) or die "Hey, it looks like you specified 'ncpu' instead of ncpus (plural) in the PBS directive in your script named <$pbs_submit_file>. Fix this!";
 		}
 	} else {
-		# looks like the user submitted a 'quick command' on the command line, like 'qplz.pl pwd'
+		# looks like the user submitted a 'quick command' on the command line, like 'qplz.pl pwd'. So no need to handle overrides.
 	}
 
 	my $qdest      = $QSETTINGS{dest}{$grp};
@@ -243,6 +259,11 @@ sub main() { # Main program
 	}
 	$jobname =~ s/[\W\s]/_/g; # replace any "weird" non-word characters with underscores
 	substr($jobname, $JOBNAME_MAX_LEN); # Job name is the first N characters of the command line arguments.
+
+	foreach my $opt (@RECOGNIZED_PBS_OPTIONS) {
+		# Get default values if there aren't any yet...
+		#if (!defined($pbsOpt{$opt})) { $pbsOpt{$opt} = $QSETTINGS{"default_$opt"}{$grp}; }
+	}
 
 	my $qsub_common = qq{$QSUB_EXE }
 	  . qq{ -V }
@@ -270,6 +291,13 @@ sub main() { # Main program
 	} else {
 		printBadNewsAndDie("[ERROR] Curses! Something went wrong, and the queue command returned the error code '$exitCode'. Unclear what this means, but something is probably wrong with your input command.\n");
 	}
+
+	$exitText =~ m/^(\d+)/ or die "Weird... unexpected exit text ('$exitText'). We thought it would start with a numeric-only job number (like '1234.my-cluster').";
+	my $jobNumber = $1; # grab the job number from the $exitText
+
+	my $expectedStdout = "${jobname}.o${jobNumber}"; # expected filename
+	my $expectedStderr = "${jobname}.e${jobNumber}"; # expected filename
+	
 
 	#my $filename1 = undef;
 	#foreach (@ARGV) { # these were arguments that were not understood by GetOptions
@@ -326,6 +354,9 @@ sub main() { # Main program
 		printColorStderr("WARNING: Note that your job will be cancelled if it takes longer than ${pbs_wall_min} minutes to run!\n", "white on_red");
 	}
 
+	printColorStderr("Please wait 3 seconds while we refresh the filesystem...\n");
+	system('echo "[1/3]..."; sleep 1; echo "[2/3]..."; sleep 1; echo "[3/3]..."; sleep 1; FAKEFILE=$(mktemp ./tmp.qplz.XXXXXX.tmp); /bin/rm $FAKEFILE;'); # wait 3 seconds, then refresh the filesystem. This lets us catch immediate problems that lead to output files being generated, without having to wait 60 seconds for the filesystem to update.
+	printColorStderr("[DONE] Output from this script should be available in the two files '$expectedStdout' and '$expectedStderr'... probably.\n");
 	# maybe make and then delete a fake file here just to refresh the queue
 
 	#print STDERR $GLOBAL_WARN_STRING . "\n";
@@ -382,6 +413,11 @@ OPTIONS:
   Submit the commands in this filename. Example:   qplz.pl -f myscript.sh  -t 1:00:00
   Note that this is normally equivalent to just putting the filename at the end of the line, too, like:
      * qplz.pl myscript.sh
+
+--override : (default: do not override PBS directives in the script file)
+  If you have a '#PBS' directive in your script file, like "$PBS_DIRECTIVE_PREFIX -l mem=4gb" and you also specify
+  '--mem=8gb' on the command line, you must also pass in '--override' so 'qplz' will know to use your
+  command line option instead of the PBS directive in the script.
 
 TO DO: add '-o' (STDOUT) and '-e' (STDERR) options
 
