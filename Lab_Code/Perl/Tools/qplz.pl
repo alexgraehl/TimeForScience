@@ -106,6 +106,11 @@ sub printCool($) {			# one required argument
 	print STDERR safeColor("[PROGRESS REPORT]: $msg\n", "white on_blue");
 }
 
+sub printJobTechnicalDetails($) {
+	my ($msg) = @_; chomp($msg);
+	print STDERR safeColor("[NOTE]: $msg\n", "green on_black");
+}
+
 sub printNote($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
 	print STDERR safeColor("[NOTE]: $msg\n", "white on_blue");
@@ -295,8 +300,9 @@ sub main() { # Main program
 	$exitText =~ m/^(\d+)/ or die "Weird... unexpected exit text ('$exitText'). We thought it would start with a numeric-only job number (like '1234.my-cluster').";
 	my $jobNumber = $1; # grab the job number from the $exitText
 
-	my $expectedStdout = "${jobname}.o${jobNumber}"; # expected filename
-	my $expectedStderr = "${jobname}.e${jobNumber}"; # expected filename
+
+	my $expectedStdout = "${pwd}/${jobname}.o${jobNumber}"; # expected filename
+	my $expectedStderr = "${pwd}/${jobname}.e${jobNumber}"; # expected filename
 	
 
 	#my $filename1 = undef;
@@ -333,10 +339,10 @@ sub main() { # Main program
 	#
 	#print("Filename is: $filename\nJobname is: $jobname\n");
 
-	print STDERR "Your job has been allocated the following:\n";
-	print STDERR "                CPU CORES: ${pbs_ncpus}\n";
-	print STDERR "                      RAM: ${pbs_mem}gb\n";
-	print STDERR "                     TIME: ${pbs_walltime}\n";
+	printJobTechnicalDetails("Your job has been allocated the following:\n");
+	printJobTechnicalDetails("                CPU CORES: ${pbs_ncpus}\n");
+	printJobTechnicalDetails("                      RAM: ${pbs_mem}gb\n");
+	printJobTechnicalDetails("                     TIME: ${pbs_walltime}\n");
 
 	print STDERR "Now you can type these commands to check your job:\n";
 	print STDERR "To check your job 1:  qstats   (print out a color list of jobs that are running\n";
@@ -348,7 +354,7 @@ sub main() { # Main program
 	print STDERR "    To delete all your jobs ever (dangerous!): qselect -u \$USER | xargs qdel  <-- deletes all your jobs\n";
 	#print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
 
-	printColorStderr("Your job will be allowed to use ${pbs_mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n", "white on_red");
+	printJobTechnicalDetails("Your job will be allowed to use ${pbs_mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n");
 
 	if ($pbs_wall_hr <= 0) {
 		printColorStderr("WARNING: Note that your job will be cancelled if it takes longer than ${pbs_wall_min} minutes to run!\n", "white on_red");
@@ -359,6 +365,32 @@ sub main() { # Main program
 	printColorStderr("[DONE] Output from this script should be available in the two files '$expectedStdout' and '$expectedStderr'... probably.\n");
 	# maybe make and then delete a fake file here just to refresh the queue
 
+	foreach my $STDHUH ("STDERR", "STDOUT") {
+		my $expectedFilename = ($STDHUH eq "STDERR") ? $expectedStderr : $expectedStdout;
+		if (not -e $expectedFilename) {
+			printNote("The $STDHUH file (which is expected to be named <$expectedFilename>) seems not to be available yet. Check for it later.");
+		} else {
+			my $txt = `tail -n 10 "$expectedFilename"`; chomp($txt);
+
+			my $looksLikeError = 0;
+			if ($txt =~ m/not\s+found/i) { $looksLikeError = 1; printBadNews(qq{It looks like either a command or a file was NOT FOUND in your qsub submission! Check the logs for details.\nHOW TO FIX THIS: Probably you need to specify a full path (like /path/to/my/file.txt) instead of just 'file.txt'. Or, if the problem was an executable that was not found, maybe you did not set your \$PATH variable to include all the special lab-specific tools?}); }
+
+			$txt =~ s/^/[Last 10 lines of $STDHUH] /;
+
+			if ($looksLikeError) {
+				printBadNews($txt);
+				printBadNews("*"x80);
+				printBadNews("      YOUR JOB PROBABLY WAS *NOT* SUBMITTED PROPERLY!               ");
+				printBadNews("      Check these files for details:                                ");
+				printBadNews("                 STDOUT: $expectedStdout");
+				printBadNews("                 STDERR: $expectedStderr");
+				printBadNews("*"x80);
+				exit(1);
+			} else {
+				printNote($txt);
+			}
+		}
+	}
 	#print STDERR $GLOBAL_WARN_STRING . "\n";
 	print STDERR safeColor("===============================\n", "green");
 
