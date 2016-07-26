@@ -14,7 +14,7 @@ $| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buf
 #use Scalar::Util;
 #print Scalar::Util::looks_like_number($string), "\n";
 
-my $JOBNAME_MAX_LEN = 32; # cut it down to some reasonable size
+my $JOBNAME_MAX_LEN = 128; # cut it down to some reasonable size
 
 my @RECOGNIZED_PBS_OPTIONS = ("walltime", "mem", "ncpus"); # The ones we handle in this script
 
@@ -95,12 +95,6 @@ sub dryNotify(;$) {		# one optional argument
 	$msg = (defined($msg)) ? $msg : "This was only a dry run, so we skipped executing a command.";
 	print STDERR safeColor("[DRY RUN]: $msg\n", "black on_yellow");
 }
-
-sub notify($) {			# one required argument
-	my ($msg) = @_; chomp($msg);
-	warn safeColor("[DRY RUN]: $msg\n", "cyan on_blue");
-}
-
 
 sub printCool($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
@@ -273,10 +267,8 @@ sub main() { # Main program
 		$jobname = join("_", @ARGV);
 	}
 	$jobname =~ s/[\W\s]/_/g; # replace any "weird" non-word characters with underscores
-	if (length($jobname) > $JOBNAME_MAX_LEN) {
-		$jobname = substr($jobname, $JOBNAME_MAX_LEN); # Job name is the first N characters of the command line arguments.
-	}
 
+	if (length($jobname) > $JOBNAME_MAX_LEN) { $jobname = substr($jobname, 0, $JOBNAME_MAX_LEN); } # Trim very long job names
 	my $qsub_common = qq{$QSUB_EXE }
 	  . qq{ -V }
 	  . qq{ -N "$jobname" }
@@ -348,9 +340,9 @@ sub main() { # Main program
 
 	printJobTechnicalDetails("Your job has been allocated the following:\n");
 	defined($copt{ncpus})    and printJobTechnicalDetails("                CPU CORES: $copt{ncpus}\n");
-	defined($copt{mem})      and printJobTechnicalDetails("                      RAM: $copt{mem}gb\n");
-	defined($copt{walltime}) and printJobTechnicalDetails("                     TIME: $copt{walltime}\n");
-
+	defined($copt{mem})      and printJobTechnicalDetails("                  MAX RAM: $copt{mem}gb\n");
+	defined($copt{walltime}) and printJobTechnicalDetails("                 MAX TIME: $copt{walltime}\n");
+	print STDERR "Be aware that your job will be instantly cancelled if it exceeds the MAX RAM or MAX TIME specified above.";
 	print STDERR "Now you can type these commands to check your job:\n";
 	print STDERR "To check your job 1:  qstats   (print out a color list of jobs that are running\n";
 	print STDERR "To check your job 2:  qstat    (print out monochrome list of the above jobs\n";
@@ -358,13 +350,14 @@ sub main() { # Main program
 	print STDERR "If you want to cancel your job (maybe you just realized that it needs more time / RAM):\n";
 	print STDERR "    To delete a job: 1. Find the 'Job id' number with 'qstat' (leftmost column)\n";
 	print STDERR "    To delete a job: 2. Then use 'qdel ####' (that same number) to cancel it\n";
-	print STDERR "    To delete all your jobs ever (dangerous!): qselect -u \$USER | xargs qdel  <-- deletes all your jobs\n";
+	print STDERR "    To delete all your jobs (dangerous!): qselect -u \$USER | xargs qdel  <-- deletes all your jobs\n";
 	#print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
 
-	printJobTechnicalDetails("Your job will be allowed to use $copt{mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n");
 
-	if ($pbs_wall_hr <= 0) {
-		ourWarn("Be aware that your job will be cancelled if it takes longer than ${pbs_wall_min} minutes to run!\n");
+	#printJobTechnicalDetails("Your job will be allowed to use $copt{mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n");
+
+	if (defined($pbs_wall_hr) and $pbs_wall_hr <= 0 and defined($pbs_wall_min)) { # jobs that are under 1 hour...
+		ourWarn("Be aware that your job will be cancelled if it takes longer than $pbs_wall_min minutes to run!\n");
 	}
 
 	printColorStderr("Please wait a few seconds while we refresh the filesystem...\n");
