@@ -35,12 +35,13 @@ my %QSETTINGS = ( "unix_gname_to_gid" => {"$UNIX_BIOGRP"   => "35098"
 					   , "$UNIX_GENGRP" => 64 }
 		  , "max_walltime_hours" => {"$UNIX_BIOGRP"   => 335
 					   , "$UNIX_GENGRP" => 335 }
-		  , "default_ncpus"    => {"$UNIX_BIOGRP"   => 1
+		  , "pbs_defaults" => { "ncpus" => {"$UNIX_BIOGRP"   => 1
 					   , "$UNIX_GENGRP" => 1 }
-		  , "default_mem"      => {"$UNIX_BIOGRP"   => 4
-					   , "$UNIX_GENGRP" => 4 }
-		  , "default_walltime" => {"$UNIX_BIOGRP"   => "23:59:59"
-					   , "$UNIX_GENGRP" => "23:59:59" }
+					, "mem" => {"$UNIX_BIOGRP"   => 4
+						    , "$UNIX_GENGRP" => 4 }
+					, "walltime" => {"$UNIX_BIOGRP"   => "23:59:59"
+							 , "$UNIX_GENGRP" => "23:59:59" }
+				 }
 	 );
 
 sub tryToLoadModule($) {
@@ -126,7 +127,17 @@ sub main();
 
 sub quitWithComplaintAboutScript($$$) { my ($scriptFile, $lineNum, $msg) = @_; printBadNews(qq{On line $lineNum of the script file <$scriptFile>, we ran into this problem: $msg}); exit(1); }
 
-sub quitWithComplaintAboutScriptOption($$$) { my ($offendingOption, $scriptFile, $lineNum) = @_; printBadNews(qq{On line $lineNum of the script file <$scriptFile>, we ran into this problem: you have, "you have specified '$offendingOption' in the submitted script (<$scriptFile>) and ALSO you specified '$offendingOption' on your command line call to 'qplz'.\nHOW TO FIX THIS: Either remove '$PBS_DIRECTIVE_PREFIX $offendingOption' from line $lineNum in your script, OR remove the '--$offendingOption' option from your call to qplz, OR add the '--override' option in qplz to override the script's setting and use the one you specified on the command line.}); exit(1); }
+sub quitWithComplaintAboutScriptOption($$$) {
+	my ($offendingOption, $scriptFile, $lineNum) = @_;
+	printBadNews(qq{On line $lineNum of the script file <$scriptFile>:});
+	printBadNews(qq{Although you have specified '$offendingOption' on the command line...});
+	printBadNews(qq{...that same setting ALSO appears in the script (<$scriptFile>) on line $lineNum.});
+	printBadNews(qq{TO FIX THIS: Either remove '$PBS_DIRECTIVE_PREFIX -l $offendingOption'});
+	printBadNews(qq{             from line $lineNum in your script...});
+	printBadNews(qq{         ... OR omit '--$offendingOption' on the command line...});
+	printBadNews(qq{         ... OR run qplz with '--override' to overrule the script.});
+	exit(1);
+}
 
 sub quitWithUsageError($) { printBadNews($_[0]); printUsage(); printBadNews($_[0]); exit(1); }
 
@@ -173,57 +184,27 @@ sub getOurQueueGroup() {
 sub main() { # Main program
 	my ($decimalPlaces) = 4; # How many decimal places to print, by default
 	$Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
-	my ($pbs_ncpus, $pbs_mem, $pbs_walltime) = (undef, undef, undef);
+
+	my %copt = ();  # Command OPTions. Hash of final values
+	foreach my $opt (@RECOGNIZED_PBS_OPTIONS) { $copt{$opt} = undef; }
+
 	my ($pbs_submit_file) = undef;
 	my ($shouldOverridePbsDirectives) = 0;
-	my %pbsOpt = (); # new hash of final values
-
-	GetOptions("h|help|?|man" => sub { printUsageAndQuit(); }
-		   , "ncpus|ncpu|c=i" => \$pbs_ncpus
-		   , "mem|m=i" => \$pbs_mem
-		   , "walltime|t=s" => \$pbs_walltime
-		   , "f=s"          => \$pbs_submit_file
-		   , "override!"    => \$shouldOverridePbsDirectives
+	GetOptions("h|help|?|man"     => sub { printUsageAndQuit(); }
+		   , "ncpus|ncpu|c=i" => \$copt{ncpus}
+		   , "mem|m=i"        => \$copt{mem}
+		   , "walltime|t=s"   => \$copt{walltime}
+		   , "f=s"            => \$pbs_submit_file
+		   , "override!"      => \$shouldOverridePbsDirectives
 		  ) or printUsageAndQuit();
 
 	my $grp = getOurQueueGroup();
 
-	if (defined($pbs_mem)) {
-		($pbs_mem =~ m/^\d+(gb|g|)$/i) or quitWithUsageError("(Bad value to --mem / -m): Your memory request (in GIGABYTES) was invalid. You need to speciy an integer number of GB (e.g. '10' or '10gb' or '10g'. You specified this value: $pbs_mem");
-		$pbs_mem =~ s/[A-Za-z]//g; # <-- remove any letters from it, now $pbs_mem is purely numeric (i.e., "24gb => 24")
-		($pbs_mem =~ m/^\d+$/) or confess("Programming error: somehow failed to make pbs_mem numeric! Offending variable was: $pbs_mem"); # remove any letters from it, now $pbs_mem is purely numeric
-		($pbs_mem <= $QSETTINGS{max_mem}{$grp}) or quitWithUsageError("(Bad value to --mem / -m): You requested too much RAM! The maximum you can specify at this specific queue/user/group combination is " . $QSETTINGS{max_mem}{$grp} . " (in gigabytes), but your request was for this number: $pbs_mem");
-	} else {
-		$pbs_mem = $QSETTINGS{default_mem}{$grp};
-	}
-
-	if (defined($pbs_ncpus)) {
-		($pbs_ncpus =~ m/[1-9]\d*/) or quitWithUsageError("(Bad value to --ncpus / -c): You need to specify a non-zero integer number of CPU cores to use. You specified this value: $pbs_ncpus");
-		($pbs_ncpus <= $QSETTINGS{max_ncpus}{$grp}) or quitWithUsageError("(Bad value to --ncpus / -c): You specified TOO MANY cpus. The maximum you can specify at this specific queue/user/group combination is " . $QSETTINGS{max_ncpus}{$grp} . ", but your request was for this number: $pbs_ncpus");
-	} else {
-		$pbs_ncpus = $QSETTINGS{default_ncpus}{$grp};
-	}
-
-	if (not defined($pbs_walltime)) {
-		$pbs_walltime = $QSETTINGS{default_walltime}{$grp};
-	} elsif ($pbs_walltime =~ m/^\d+$/) { # if it's literally JUST a single number (the number of hours)
-		$pbs_walltime = "${pbs_walltime}:00:00"; # I guess it's JUST the number of hours
-	}
-	
-	($pbs_walltime =~ m/^(\d+):(\d\d):(\d\d)$/) or quitWithUsageError("(Bad value to --walltime / -t): You need to specify a valid walltime in this format: 11:22:33 (hours, minutes, seconds). You specified this value: $pbs_walltime");
-	my ($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = ($1, $2, $3); # <-- results from the match expression above
-	($pbs_wall_hr <= $QSETTINGS{max_walltime_hours}{$grp}) or quitWithUsageError("You requested TOO MUCH walltime! The maximum is: $QSETTINGS{max_walltime_hours}{$grp}:00:00 . Try again with a smaller value!");
-
+	my %optIsAlreadyInFile = (); # remember which $PBS directives were defined in the script
+	foreach my $opt (@RECOGNIZED_PBS_OPTIONS) { $optIsAlreadyInFile{opt} = 0; }
 	my $numUnprocessedArgs = scalar(@ARGV);
-	if (defined($pbs_submit_file) and $numUnprocessedArgs > 0) {
-		quitWithUsageError("Weird, you specified a pbs_submit_file on the command line with the '-f' option, yet there is still an unrecognized argument at the end (which normally would be a script file, maybe)). We have some unrecognized arguments on the command line. See why these are here, as qplz does not understand them: " . join(" ", @ARGV)); # ok, we should NOT have any unprocessed arguments if the user defined a script file
-	}
 
-	if (!defined($pbs_submit_file) and 0 == $numUnprocessedArgs) {
-		quitWithUsageError("Cannot submit a job with no job script or command! Make sure you actually submitted a script filename (or arguments on the command line, for example:  qplz echo \"Hello\")...\n");
-	}
-
-	my $isRunningAScript = (1 == $numUnprocessedArgs and fileIsProbablySomeScript($ARGV[0]));
+        my $isRunningAScript = (1 == $numUnprocessedArgs and fileIsProbablySomeScript($ARGV[0]));
 	if ($isRunningAScript) {
 		$pbs_submit_file = $ARGV[0]; # See if the unprocessed argument is a FILENAME (a script to submit)
 		# Let's check the script for #PBS directives... if there ARE any, then do not let us override them!
@@ -232,20 +213,49 @@ sub main() { # Main program
 		while (my $line = <$fff>) {
 			$lineNum++;
 			next if (not $line =~ m/^$PBS_DIRECTIVE_PREFIX/i); # skip any non-pbs lines
+			(not $line =~ m/\bncpu\b/i) or die "Hey, it looks like you specified 'ncpu' instead of ncpus (plural) in the PBS directive in your script named <$pbs_submit_file>. Fix this!";
 			foreach my $opt (@RECOGNIZED_PBS_OPTIONS) {
-				if ($line =~ m/^$PBS_DIRECTIVE_PREFIX.*\b{$opt}\b/i and defined($pbsOpt{$opt})) {
-					# ok, better parse this and make sure we did not override it!
-					if ($shouldOverridePbsDirectives) {
-						printNote(qq{Since you specified '--override', we are overriding the script's PBS directive for '$opt' and will be using the one you specified on the command line instead (specifically, '${opt}=$pbsOpt{$opt}').});
-					} else {
-						quitWithComplaintAboutScriptOption($opt, $pbs_submit_file, $lineNum); # Here's a problem, you both defined the option on the command line AND ALSO defined it in the script! We don't know which one to use.
-					}
+				if ($line =~ m/^$PBS_DIRECTIVE_PREFIX.*\b$opt\b/i) {
+					$optIsAlreadyInFile{$opt} = 1; # remember that this was defined in the script
+					if (defined($copt{$opt}) and not $shouldOverridePbsDirectives) { quitWithComplaintAboutScriptOption($opt, $pbs_submit_file, $lineNum); } # Here's a problem, you both defined the option on the command line AND ALSO defined it in the script! We don't know which one to use.
 				}
 			}
-			(not $line =~ m/\bncpu\b/i) or die "Hey, it looks like you specified 'ncpu' instead of ncpus (plural) in the PBS directive in your script named <$pbs_submit_file>. Fix this!";
 		}
 	} else {
 		# looks like the user submitted a 'quick command' on the command line, like 'qplz.pl pwd'. So no need to handle overrides.
+	}
+
+	foreach my $opt (@RECOGNIZED_PBS_OPTIONS) {
+		# Set some defaults... unless they are already defined in the script
+		if ( not defined($copt{$opt}) and not $optIsAlreadyInFile{$opt}) {
+			$copt{$opt} = $QSETTINGS{pbs_defaults}{$opt}{$grp}; # Set it to the defaults!
+		} elsif (defined($copt{$opt}) and     $optIsAlreadyInFile{$opt}) {
+			# possible problem --collision! Defined both on command line AND in the file!
+			$shouldOverridePbsDirectives or confess "We should have ALREADY exited here with the error checking above.";
+			printNote(qq{Since you specified '--override', we are overriding the script's PBS directive for '$opt' and will be using the one you specified on the command line instead (specifically, '${opt}=$copt{$opt}').});
+		}
+	}
+
+	if (defined($copt{mem})) {
+		($copt{mem} =~ m/^\d+(gb|g|)$/i) or quitWithUsageError("(Bad value to --mem / -m): Your memory request (in GIGABYTES) was invalid. You need to speciy an integer number of GB (e.g. '10' or '10gb' or '10g'. You specified this value: $copt{mem}");
+		$copt{mem} =~ s/[A-Za-z]//g; # <-- remove any letters from it, now $copt{mem} is purely numeric (i.e., "24gb => 24")
+		($copt{mem} =~ m/^\d+$/) or confess("Programming error: somehow failed to make copt{mem} numeric! Offending variable was: $copt{mem}"); # remove any letters from it, now $copt{mem} is purely numeric
+		($copt{mem} <= $QSETTINGS{max_mem}{$grp}) or quitWithUsageError("(Bad value to --mem / -m): You requested too much RAM! The maximum you can specify at this specific queue/user/group combination is " . $QSETTINGS{max_mem}{$grp} . " (in gigabytes), but your request was for this number: $copt{mem}");
+	}
+
+	if (defined($copt{ncpus})) {
+		($copt{ncpus} =~ m/[1-9]\d*/) or quitWithUsageError("(Bad value to --ncpus / -c): You need to specify a non-zero integer number of CPU cores to use. You specified this value: $copt{ncpus}");
+		($copt{ncpus} <= $QSETTINGS{max_ncpus}{$grp}) or quitWithUsageError("(Bad value to --ncpus / -c): You specified TOO MANY cpus. The maximum you can specify at this specific queue/user/group combination is " . $QSETTINGS{max_ncpus}{$grp} . ", but your request was for this number: $copt{ncpus}");
+	}
+
+	my ($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = (undef, undef, undef); # <-- results from the match expression above
+	if (defined($copt{walltime})) {
+		if ($copt{walltime} =~ m/^\d+$/) { # if it's literally JUST a single number (the number of hours)
+			$copt{walltime} = "$copt{walltime}:00:00"; # I guess it's JUST the number of hours
+		}
+		($copt{walltime} =~ m/^(\d+):(\d\d):(\d\d)$/) or quitWithUsageError("(Bad value to --walltime / -t): You need to specify a valid walltime in this format: 11:22:33 (hours, minutes, seconds). You specified this value: $copt{walltime}");
+		($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = ($1, $2, $3); # <-- results from the match expression above
+		($pbs_wall_hr <= $QSETTINGS{max_walltime_hours}{$grp}) or quitWithUsageError("You requested TOO MUCH walltime! The maximum is: $QSETTINGS{max_walltime_hours}{$grp}:00:00 . Try again with a smaller value!");
 	}
 
 	my $qdest      = $QSETTINGS{dest}{$grp};
@@ -263,21 +273,18 @@ sub main() { # Main program
 		$jobname = join("_", @ARGV);
 	}
 	$jobname =~ s/[\W\s]/_/g; # replace any "weird" non-word characters with underscores
-	substr($jobname, $JOBNAME_MAX_LEN); # Job name is the first N characters of the command line arguments.
-
-	foreach my $opt (@RECOGNIZED_PBS_OPTIONS) {
-		# Get default values if there aren't any yet...
-		#if (!defined($pbsOpt{$opt})) { $pbsOpt{$opt} = $QSETTINGS{"default_$opt"}{$grp}; }
+	if (length($jobname) > $JOBNAME_MAX_LEN) {
+		$jobname = substr($jobname, $JOBNAME_MAX_LEN); # Job name is the first N characters of the command line arguments.
 	}
 
 	my $qsub_common = qq{$QSUB_EXE }
 	  . qq{ -V }
 	  . qq{ -N "$jobname" }
 	  . qq{ -q "$qdest" }
-	  . qq{ -W group_list="$qgrouplist" }
-	  . qq{ -l ncpus=${pbs_ncpus} }
-	  . qq{ -l mem="${pbs_mem}gb" }
-	  . qq{ -l walltime="${pbs_walltime}"};
+	  . qq{ -W group_list="$qgrouplist" };
+	if (defined($copt{ncpus}))    { $qsub_common .= qq{ -l ncpus=$copt{ncpus} }; }
+	if (defined($copt{mem}))      { $qsub_common .= qq{ -l mem="$copt{mem}gb" }; }
+	if (defined($copt{walltime})) { $qsub_common .= qq{ -l walltime=$copt{walltime} }; }
 
 	my $pwd = `pwd`; chomp($pwd);
 
@@ -340,9 +347,9 @@ sub main() { # Main program
 	#print("Filename is: $filename\nJobname is: $jobname\n");
 
 	printJobTechnicalDetails("Your job has been allocated the following:\n");
-	printJobTechnicalDetails("                CPU CORES: ${pbs_ncpus}\n");
-	printJobTechnicalDetails("                      RAM: ${pbs_mem}gb\n");
-	printJobTechnicalDetails("                     TIME: ${pbs_walltime}\n");
+	defined($copt{ncpus})    and printJobTechnicalDetails("                CPU CORES: $copt{ncpus}\n");
+	defined($copt{mem})      and printJobTechnicalDetails("                      RAM: $copt{mem}gb\n");
+	defined($copt{walltime}) and printJobTechnicalDetails("                     TIME: $copt{walltime}\n");
 
 	print STDERR "Now you can type these commands to check your job:\n";
 	print STDERR "To check your job 1:  qstats   (print out a color list of jobs that are running\n";
@@ -354,15 +361,14 @@ sub main() { # Main program
 	print STDERR "    To delete all your jobs ever (dangerous!): qselect -u \$USER | xargs qdel  <-- deletes all your jobs\n";
 	#print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
 
-	printJobTechnicalDetails("Your job will be allowed to use ${pbs_mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n");
+	printJobTechnicalDetails("Your job will be allowed to use $copt{mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n");
 
 	if ($pbs_wall_hr <= 0) {
-		printColorStderr("WARNING: Note that your job will be cancelled if it takes longer than ${pbs_wall_min} minutes to run!\n", "white on_red");
+		ourWarn("Be aware that your job will be cancelled if it takes longer than ${pbs_wall_min} minutes to run!\n");
 	}
 
-	printColorStderr("Please wait 3 seconds while we refresh the filesystem...\n");
+	printColorStderr("Please wait a few seconds while we refresh the filesystem...\n");
 	system('echo "[1/3]..."; sleep 1; echo "[2/3]..."; sleep 1; echo "[3/3]..."; sleep 1; FAKEFILE=$(mktemp ./tmp.qplz.XXXXXX.tmp); /bin/rm $FAKEFILE;'); # wait 3 seconds, then refresh the filesystem. This lets us catch immediate problems that lead to output files being generated, without having to wait 60 seconds for the filesystem to update.
-	printColorStderr("[DONE] Output from this script should be available in the two files '$expectedStdout' and '$expectedStderr'... probably.\n");
 	# maybe make and then delete a fake file here just to refresh the queue
 
 	foreach my $STDHUH ("STDERR", "STDOUT") {
@@ -370,27 +376,30 @@ sub main() { # Main program
 		if (not -e $expectedFilename) {
 			printNote("The $STDHUH file (which is expected to be named <$expectedFilename>) seems not to be available yet. Check for it later.");
 		} else {
-			my $txt = `tail -n 10 "$expectedFilename"`; chomp($txt);
-
+			my $numLinesToShow = 15;
+			my $txt = `tail -n $numLinesToShow "$expectedFilename"`; chomp($txt);
 			my $looksLikeError = 0;
-			if ($txt =~ m/not\s+found/i) { $looksLikeError = 1; printBadNews(qq{It looks like either a command or a file was NOT FOUND in your qsub submission! Check the logs for details.\nHOW TO FIX THIS: Probably you need to specify a full path (like /path/to/my/file.txt) instead of just 'file.txt'. Or, if the problem was an executable that was not found, maybe you did not set your \$PATH variable to include all the special lab-specific tools?}); }
-
-			$txt =~ s/^/[Last 10 lines of $STDHUH] /;
-
+			if ($txt =~ m/(not\s+found|not\s+exist)/i) { $looksLikeError = 1; printBadNews(qq{It looks like either a command or a file was NOT FOUND in your qsub submission! Check the logs for details.\nHOW TO FIX THIS: Probably you need to specify a full path (like /path/to/my/file.txt) instead of just 'file.txt'. Or, if the problem was an executable that was not found, maybe you did not set your \$PATH variable to include all the special lab-specific tools?}); }
+			if ($txt =~ m/\b(usage:)/i) { $looksLikeError = 1; printBadNews(qq{Looks like this program doesn't run properly with the current commands. Better double check the 'usage'.}); }
+			if ($txt =~ m/\b(Segmentation\s+fault|segfault)/i) { $looksLikeError = 1; printBadNews(qq{Looks like this program doesn't run properly for some reason!}); }
+			$txt =~ s/^/[Most recent $numLinesToShow lines of $STDHUH] /;
 			if ($looksLikeError) {
 				printBadNews($txt);
 				printBadNews("*"x80);
-				printBadNews("      YOUR JOB PROBABLY WAS *NOT* SUBMITTED PROPERLY!               ");
-				printBadNews("      Check these files for details:                                ");
+				printBadNews("      Your job probably FAILED TO RUN!                              ");
+				printBadNews("      You should check these files for details:                     ");
 				printBadNews("                 STDOUT: $expectedStdout");
 				printBadNews("                 STDERR: $expectedStderr");
 				printBadNews("*"x80);
-				exit(1);
-			} else {
-				printNote($txt);
+				exit(1); # deadly!
 			}
+			printNote($txt); # Looks like there was no major error, that's good!
 		}
 	}
+
+	printNote("[JOB SUBMITTED] Output text will eventually appear in these files:");
+	printNote("                 STDOUT: $expectedStdout");
+	printNote("                 STDERR: $expectedStderr");
 	#print STDERR $GLOBAL_WARN_STRING . "\n";
 	print STDERR safeColor("===============================\n", "green");
 
