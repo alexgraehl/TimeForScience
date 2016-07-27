@@ -44,6 +44,11 @@ my %QSETTINGS = ( "unix_gname_to_gid" => {"$UNIX_BIOGRP"   => "35098"
 				 }
 	 );
 
+
+# another thing to check for: qstat -f :   "job held, too many failed attempts to run"
+
+
+
 sub tryToLoadModule($) {
 	my $x = eval("require $_[0]");
 	if ((defined($@) && $@)) {
@@ -99,6 +104,11 @@ sub dryNotify(;$) {		# one optional argument
 sub printCool($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
 	print STDERR safeColor("[PROGRESS REPORT]: $msg\n", "white on_blue");
+}
+
+sub printProgressWait($) {			# one required argument
+	my ($msg) = @_; chomp($msg);
+	print STDERR safeColor("[PROGRESS REPORT]: $msg\n", "green on_black");
 }
 
 sub printJobTechnicalDetails($) {
@@ -288,21 +298,19 @@ sub main() { # Main program
 		$cmd = qq{echo 'cd "$pwd" && $cmdArgs' | $qsub_common};
 	}
 	printCool(qq{Submitting this actual command to the queue:\n    ACTUAL JOB SUBMISSION COMMAND -->   $cmd\n});
-	my $exitText = `$cmd`;
-	my $exitCode = $?; # <-- would be the result of system($cmd)
-	if ($exitCode == 0) {
+	my $exitText = `$cmd`; chomp($exitText);
+	my $exitCode = $?; # <-- the exit code (i.e., did `$cmd` run properly---same as the result of system($cmd))
+	my $jobID = $exitText;
+	if (0 == $exitCode) {
 		printCool("You can type 'qstat' (basic) or 'qstats' (fancy) to check on the status of your job. --Alex\n");
 	} else {
 		printBadNewsAndDie("[ERROR] Curses! Something went wrong, and the queue command returned the error code '$exitCode'. Unclear what this means, but something is probably wrong with your input command.\n");
 	}
 
-	$exitText =~ m/^(\d+)/ or die "Weird... unexpected exit text ('$exitText'). We thought it would start with a numeric-only job number (like '1234.my-cluster').";
+	$jobID =~ m/^(\d+)/ or die "Weird... unexpected exit text ('$exitText'). We thought it would start with a numeric-only job number (like '1234.my-cluster').";
 	my $jobNumber = $1; # grab the job number from the $exitText
-
-
 	my $expectedStdout = "${pwd}/${jobname}.o${jobNumber}"; # expected filename
 	my $expectedStderr = "${pwd}/${jobname}.e${jobNumber}"; # expected filename
-	
 
 	#my $filename1 = undef;
 	#foreach (@ARGV) { # these were arguments that were not understood by GetOptions
@@ -360,15 +368,39 @@ sub main() { # Main program
 		ourWarn("Be aware that your job will be cancelled if it takes longer than $pbs_wall_min minutes to run!\n");
 	}
 
-	#my $secondsToMonitor = 1800;
-	#my $shouldMonitorForever = 1;
-	#for (my $soFar = 1; ($soFar <= $secondsToMonitor or $shouldMonitorForever); $soFar++) {
-		#system("sleep 1;");
-	#}
+	my $secondsToMonitor = 1800;
+	my $shouldMonitorForever = 1;
+	my $refreshFileInterval = 5; # N seconds between filesystem refreshes
+	my $refreshQstatInterval = 3; # N seconds between qstat calls
+	for (my $sec = 1; ($sec <= $secondsToMonitor or $shouldMonitorForever); $sec++) {
+		sleep(1);
+		printProgressWait("[$sec/$secondsToMonitor]...");
 
-	printColorStderr("Please wait a few seconds while we refresh the filesystem...\n");
-	system('echo "[1/3]..."; sleep 1; echo "[2/3]..."; sleep 1; echo "[3/3]..."; sleep 1; FAKEFILE=$(mktemp ./tmp.qplz.XXXXXX.tmp); /bin/rm $FAKEFILE;'); # wait 3 seconds, then refresh the filesystem. This lets us catch immediate problems that lead to output files being generated, without having to wait 60 seconds for the filesystem to update.
-	# maybe make and then delete a fake file here just to refresh the queue
+		if (0 == $sec % $refreshFileInterval) {
+			my $refreshCmd = ' FAKEFILE=$(mktemp ./tmp.qplz.XXXXXX.tmp) '. ' && ' . ' /bin/rm $FAKEFILE ';
+			system($refreshCmd); # Make and then delete a fake file in order to refresh the filesystem. This lets us catch immediate problems that lead to output files being generated, without having to wait 60 seconds for the filesystem to update.
+		}
+
+		if (0 == $sec % $refreshQstatInterval) {
+			my $qstatCmd  = "qstat -f $jobID";
+			my $qstatText = `$qstatCmd`; chomp($qstatText);
+			my $qstatCode = $?;
+			my $JOB_HAS_FINISHED_ALREADY_CODE = 35;
+			if ($JOB_HAS_FINISHED_ALREADY_CODE == $qstatCode) {
+				# looks like the job is probably done??
+				printCool(qq{Looks like the job finished... the message is: $qstatText});
+				last; # I guess we're done here
+			} elsif (0 == $qstatCode) {
+				# probably still running
+			} else {
+				# got a weird qstat result
+				printBadNews(qq{Weird--we didn't recognize the qstat exit code "$qstatCode", which came along with this message: $qstatText"});
+				last; # I guess we're done here
+			}
+		}
+
+	}
+	die "huh";
 
 	foreach my $STDHUH ("STDERR", "STDOUT") {
 		my $expectedFilename = ($STDHUH eq "STDERR") ? $expectedStderr : $expectedStdout;
