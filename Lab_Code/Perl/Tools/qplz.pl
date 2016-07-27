@@ -360,6 +360,12 @@ sub main() { # Main program
 		ourWarn("Be aware that your job will be cancelled if it takes longer than $pbs_wall_min minutes to run!\n");
 	}
 
+	#my $secondsToMonitor = 1800;
+	#my $shouldMonitorForever = 1;
+	#for (my $soFar = 1; ($soFar <= $secondsToMonitor or $shouldMonitorForever); $soFar++) {
+		#system("sleep 1;");
+	#}
+
 	printColorStderr("Please wait a few seconds while we refresh the filesystem...\n");
 	system('echo "[1/3]..."; sleep 1; echo "[2/3]..."; sleep 1; echo "[3/3]..."; sleep 1; FAKEFILE=$(mktemp ./tmp.qplz.XXXXXX.tmp); /bin/rm $FAKEFILE;'); # wait 3 seconds, then refresh the filesystem. This lets us catch immediate problems that lead to output files being generated, without having to wait 60 seconds for the filesystem to update.
 	# maybe make and then delete a fake file here just to refresh the queue
@@ -372,7 +378,7 @@ sub main() { # Main program
 			my $numLinesToShow = 15;
 			my $txt = `tail -n $numLinesToShow "$expectedFilename"`; chomp($txt);
 			my $looksLikeError = 0;
-			if ($txt =~ m/(not\s+found|not\s+exist)/i) { $looksLikeError = 1; printBadNews(qq{It looks like either a command or a file was NOT FOUND in your qsub submission! Check the logs for details.\nHOW TO FIX THIS: Probably you need to specify a full path (like /path/to/my/file.txt) instead of just 'file.txt'. Or, if the problem was an executable that was not found, maybe you did not set your \$PATH variable to include all the special lab-specific tools?}); }
+			if ($txt =~ m/(not found|not exist|cannot access)/i) { $looksLikeError = 1; printBadNews(qq{It looks like either a command or a file was NOT FOUND in your qsub submission! Check the logs for details.\nHOW TO FIX THIS: ***Probably*** you need to specify a full path (like /path/to/my/file.txt) instead of just 'file.txt'. Or, if the problem was an executable that was not found, maybe you did not set your \$PATH variable to include all the special lab-specific tools?}); }
 			if ($txt =~ m/\b(usage:)/i) { $looksLikeError = 1; printBadNews(qq{Looks like this program doesn't run properly with the current commands. Better double check the 'usage'.}); }
 			if ($txt =~ m/\b(Segmentation\s+fault|segfault)/i) { $looksLikeError = 1; printBadNews(qq{Looks like this program doesn't run properly for some reason!}); }
 			$txt =~ s/^/[Most recent $numLinesToShow lines of $STDHUH] /;
