@@ -21,6 +21,8 @@ my @RECOGNIZED_PBS_OPTIONS = ("walltime", "mem", "ncpus"); # The ones we handle 
 my $PBS_DIRECTIVE_PREFIX = "#PBS"; # <-- the thing at the top of 'your_submitted_script.sh' that means a PBS directive is coming. Usually "#PBS"
 my $GLOBAL_WARN_STRING = ""; # record any POSSIBLE problems so that we can print them out at the very end where the user can see them in a convenient summarized format
 my $QSUB_EXE = "qsub";
+my $QSTAT_EXE = "qstat";
+
 my $UNIX_BIOGRP = "bioqueue";
 my $UNIX_GENGRP = "genqueue";
 my %QSETTINGS = ( "unix_gname_to_gid" => {"$UNIX_BIOGRP"   => "35098"
@@ -145,10 +147,39 @@ sub quitWithComplaintAboutScriptOption($$$) {
 
 sub quitWithUsageError($) { printBadNews($_[0]); printUsage(); printBadNews($_[0]); exit(1); }
 
+
+sub debugPrint($) {			# one required argument
+	my ($msg) = @_; chomp($msg);
+	print STDERR safeColor("[DEBUG] $msg\n", "yellow on_red");
+}
+
 sub ourWarn($) { my $s = $_[0]; chomp($s); print("[WARNING]: $s\n"); $GLOBAL_WARN_STRING .= "$s\n"; }
 
 sub printUsageAndQuit() { printUsage(); exit(1); }
 sub printUsage() { print STDOUT <DATA>; }
+
+
+
+
+sub getAllowedTimeFromQstatOutputText($) {
+	# input: the STDOUT results from 'qstat -f THIS_JOB_NAME'
+	# output: the hours, minutes, and seconds that this job was allocatd according to 'Resource_List.walltime = SOMETHING'
+	my ($qstatOutputText) = @_;
+	chomp($qstatOutputText);
+	my @qstatLines = split(/\n/, $qstatOutputText);
+	my @allowedTimeStrs = grep { /Resource_List.walltime\s*=\s*/i } @qstatLines;
+	if (scalar(@allowedTimeStrs) == 1) {
+		chomp($allowedTimeStrs[0]);
+		if ($allowedTimeStrs[0] =~ m/Resource_List.walltime\s*=\s*(\d+):(\d+):(\d+)/i) {
+			return ($1, $2, $3); # <-- results from the match expression above
+		} else {
+			printBadNews("Weird... we were unable to parse the 'walltime' string from qstat...");
+		}
+	} else {
+		printBadNews("Weird... we were unable to parse the 'qstat' output for some reason...");
+	}
+	return(undef, undef, undef); # <-- failure
+}
 
 sub regarg($) {
 	my ($filename) = @_;
@@ -361,76 +392,101 @@ sub main() { # Main program
 	print STDERR "    To delete all your jobs (dangerous!): qselect -u \$USER | xargs qdel  <-- deletes all your jobs\n";
 	#print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
 
-
 	#printJobTechnicalDetails("Your job will be allowed to use $copt{mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n");
-
-	if (defined($pbs_wall_hr) and $pbs_wall_hr <= 0 and defined($pbs_wall_min)) { # jobs that are under 1 hour...
-		ourWarn("Be aware that your job will be cancelled if it takes longer than $pbs_wall_min minutes to run!\n");
-	}
-
 	my $secondsToMonitor = 1800;
 	my $shouldMonitorForever = 1;
-	my $refreshFileInterval = 5; # N seconds between filesystem refreshes
-	my $refreshQstatInterval = 3; # N seconds between qstat calls
-	for (my $sec = 1; ($sec <= $secondsToMonitor or $shouldMonitorForever); $sec++) {
-		sleep(1);
-		printProgressWait("[$sec/$secondsToMonitor]...");
+	my $REFRESH_FILE_INTERVAL = 5; # N seconds between filesystem refreshes
+	my $REFRESH_QSTAT_INTERVAL = 3; # N seconds between qstat calls
 
-		if (0 == $sec % $refreshFileInterval) {
+	my $walltimeInSec = undef;
+
+	my $qstatClaimsJobIsDone = 0;
+
+	sleep(1);
+	for (my $sec = 1; ($sec <= $secondsToMonitor or $shouldMonitorForever); $sec++) {
+		if (0 == $sec % $REFRESH_FILE_INTERVAL) {
 			my $refreshCmd = ' FAKEFILE=$(mktemp ./tmp.qplz.XXXXXX.tmp) '. ' && ' . ' /bin/rm $FAKEFILE ';
 			system($refreshCmd); # Make and then delete a fake file in order to refresh the filesystem. This lets us catch immediate problems that lead to output files being generated, without having to wait 60 seconds for the filesystem to update.
 		}
 
-		if (0 == $sec % $refreshQstatInterval) {
-			my $qstatCmd  = "qstat -f $jobID";
-			my $qstatText = `$qstatCmd`; chomp($qstatText);
+
+
+		foreach my $STDHUH ("STDERR", "STDOUT") {
+			my $expectedFilename = ($STDHUH eq "STDERR") ? $expectedStderr : $expectedStdout;
+			if (not -e $expectedFilename) {
+				#printNote("The $STDHUH file (which is expected to be named <$expectedFilename>) seems not to be available yet. Check for it later.");
+			} else {
+				my $numLinesToShow = 15;
+				my $txt = `tail -n $numLinesToShow "$expectedFilename"`; chomp($txt);
+				my $looksLikeError = 0;
+				if ($txt =~ m/(not found|not exist|cannot access)/i) {
+					$looksLikeError = 1; printBadNews(qq{It looks like either a command or a file was NOT FOUND in your qsub submission! Check the logs for details.\nHOW TO FIX THIS: ***Probably*** you need to specify a full path (like /path/to/my/file.txt) instead of just 'file.txt'. Or, if the problem was an executable that was not found, maybe you did not set your \$PATH variable to include all the special lab-specific tools?});
+				}
+				if ($txt =~ m/\b(usage:)/i) {
+					$looksLikeError = 1; printBadNews(qq{Looks like this program doesn't run properly with the current commands. Better double check the 'usage'.});
+				}
+				if ($txt =~ m/\b(Segmentation\s+fault|segfault)/i) {
+					$looksLikeError = 1; printBadNews(qq{Looks like this program doesn't run properly for some reason!});
+				}
+				$txt =~ s/^/[Most recent $numLinesToShow lines of $STDHUH] /;
+				if ($looksLikeError) {
+					printBadNews($txt);
+					printBadNews("*"x80);
+					printBadNews("      Your job probably FAILED TO RUN!                              ");
+					printBadNews("      You should check these files for details:                     ");
+					printBadNews("                 STDOUT: $expectedStdout");
+					printBadNews("                 STDERR: $expectedStderr");
+					printBadNews("*"x80);
+					exit(1); # deadly!
+				}
+				printNote($txt); # Looks like there was no major error, that's good!
+			}
+		}
+
+
+		my $shouldUpdateQstat = (!defined($walltimeInSec) or (0 == $sec % $REFRESH_QSTAT_INTERVAL));
+		if ($shouldUpdateQstat) {
+			my $qstatCmd  = "$QSTAT_EXE -f $jobID";
+			debugPrint($qstatCmd);
+			my $qstatText = `$qstatCmd 2>&1`; chomp($qstatText);
 			my $qstatCode = $?;
-			my $JOB_HAS_FINISHED_ALREADY_CODE = 35;
-			if ($JOB_HAS_FINISHED_ALREADY_CODE == $qstatCode) {
+
+			my $JOB_DONE_OK_EXIT_CODE = 35;
+			my $JOB_DONE_OTHER_EXIT_CODE = 8960;
+			if ($qstatCode =~ m/^($JOB_DONE_OK_EXIT_CODE|$JOB_DONE_OTHER_EXIT_CODE)$/) { # ok exit codes: 35 (job finished) and 8960 (job finished)
 				# looks like the job is probably done??
-				printCool(qq{Looks like the job finished... the message is: $qstatText});
-				last; # I guess we're done here
+				printCool(qq{Looks like your job has FINISHED! Qstat text is <<$qstatText>>});
+				last;
 			} elsif (0 == $qstatCode) {
 				# probably still running
 			} else {
 				# got a weird qstat result
 				printBadNews(qq{Weird--we didn't recognize the qstat exit code "$qstatCode", which came along with this message: $qstatText"});
-				last; # I guess we're done here
+				last;
 			}
+
+			print $qstatCode . " is the code \n";
+			($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = getAllowedTimeFromQstatOutputText($qstatText);
 		}
-
-	}
-	die "huh";
-
-	foreach my $STDHUH ("STDERR", "STDOUT") {
-		my $expectedFilename = ($STDHUH eq "STDERR") ? $expectedStderr : $expectedStdout;
-		if (not -e $expectedFilename) {
-			printNote("The $STDHUH file (which is expected to be named <$expectedFilename>) seems not to be available yet. Check for it later.");
+		
+		
+		my $timeLeftString = "";
+		if (defined($pbs_wall_hr)) {
+			$walltimeInSec = 3600*$pbs_wall_hr + 60*$pbs_wall_min + $pbs_wall_sec;
+			my $remainInSec = $walltimeInSec - $sec;
+			my $hhr = floor($remainInSec / 3600);
+			my $mmr = floor(($remainInSec / 60) / 60);
+			my $ssr = $remainInSec % 60;
+			printProgressWait("[$sec] [$hhr:$mmr:$ssr remaining]");
 		} else {
-			my $numLinesToShow = 15;
-			my $txt = `tail -n $numLinesToShow "$expectedFilename"`; chomp($txt);
-			my $looksLikeError = 0;
-			if ($txt =~ m/(not found|not exist|cannot access)/i) { $looksLikeError = 1; printBadNews(qq{It looks like either a command or a file was NOT FOUND in your qsub submission! Check the logs for details.\nHOW TO FIX THIS: ***Probably*** you need to specify a full path (like /path/to/my/file.txt) instead of just 'file.txt'. Or, if the problem was an executable that was not found, maybe you did not set your \$PATH variable to include all the special lab-specific tools?}); }
-			if ($txt =~ m/\b(usage:)/i) { $looksLikeError = 1; printBadNews(qq{Looks like this program doesn't run properly with the current commands. Better double check the 'usage'.}); }
-			if ($txt =~ m/\b(Segmentation\s+fault|segfault)/i) { $looksLikeError = 1; printBadNews(qq{Looks like this program doesn't run properly for some reason!}); }
-			$txt =~ s/^/[Most recent $numLinesToShow lines of $STDHUH] /;
-			if ($looksLikeError) {
-				printBadNews($txt);
-				printBadNews("*"x80);
-				printBadNews("      Your job probably FAILED TO RUN!                              ");
-				printBadNews("      You should check these files for details:                     ");
-				printBadNews("                 STDOUT: $expectedStdout");
-				printBadNews("                 STDERR: $expectedStderr");
-				printBadNews("*"x80);
-				exit(1); # deadly!
-			}
-			printNote($txt); # Looks like there was no major error, that's good!
+			printProgressWait("[$sec] ...");
 		}
+		sleep(1);
 	}
 
-	printNote("[JOB SUBMITTED] Output text will eventually appear in these files:");
-	printNote("                 STDOUT: $expectedStdout");
-	printNote("                 STDERR: $expectedStderr");
+	printNote("Output text may be in these files. Check them as follows:");
+	printNote("         STDOUT:   cat $expectedStdout");
+	printNote("         STDERR:   cat $expectedStderr");
 	#print STDERR $GLOBAL_WARN_STRING . "\n";
 	print STDERR safeColor("===============================\n", "green");
 

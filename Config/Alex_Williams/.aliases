@@ -254,6 +254,7 @@ alias cheat="echo \
 \" \" ${NL}\
 \">> ZIP: Zip a folder: zip -r ARCHIVENAME FOLDER \" ${NL}\
 \">> BASH: Foreach/rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
+\">> PERL: redirect STDERR and STDOUT in backticks: my \\\$stderr_and_out = \\\`commandhere 2>&1\\\`; my \\\$exitCode = \\\$?; \" ${NL}\
 \">> BASH: redirect STDERR & STDOUT both to console and to a file: THECMD 2>&1 | tee --append LOGFILE\" ${NL}\
 \">> BASH: See a function definition: type FUNCTIONNAME \" ${NL}\
 \">> BASH: Change tab width in bash:  setterm -regtabs 16 (16 = huge!) \" ${NL}\
