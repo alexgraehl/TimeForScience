@@ -46,10 +46,9 @@ my %QSETTINGS = ( "unix_gname_to_gid" => {"$UNIX_BIOGRP"   => "35098"
 				 }
 	 );
 
+my $GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 0; # remember if we need to print a newline BEFORE we print something else! happens if we are printing the "progress" dots, which don't have a newline after them
 
 # another thing to check for: qstat -f :   "job held, too many failed attempts to run"
-
-
 
 sub tryToLoadModule($) {
 	my $x = eval("require $_[0]");
@@ -79,53 +78,68 @@ sub safeColor($;$) {		# one required and one optional argument
 	return (($SHOULD_USE_COLORS && defined($color)) ? (Term::ANSIColor::colored($message, $color) . Term::ANSIColor::color("reset")) : $message);
 }
 
-sub printColorStderr($;$) {
+sub printColorStderr($;$$) {
 	# prints color to STDERR *UNLESS* it is re-directed to a file, in which case NO COLOR IS PRINTED.
-	my ($msg, $col) = @_; # Only prints in color if STDERR is to a terminal, NOT if it is redirected to an output file!
-	if (! -t STDERR) {
-		$col = undef;
-	}			# no coloration if this isn't to a terminal
+	my ($msg, $col, $neverPrecedingNewline) = @_; # Only prints in color if STDERR is to a terminal, NOT if it is redirected to an output file!
+	if (! -t STDERR) { $col = undef; } # no coloration if this isn't to a terminal
+	if ((not $neverPrecedingNewline) and $GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT) {
+		print STDOUT "\n";
+		$GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 0;
+	}
 	print STDERR safeColor($msg, $col);
 }
 
-sub printColorStdout($;$) {
+sub printColorStdout($;$$) {
 	# prints color to STDOUT *UNLESS* it is re-directed to a file, in which case NO COLOR IS PRINTED.
-	my ($msg, $col) = @_; # Only prints in color if STDOUT is to a terminal, NOT if it is redirected to an output file!
-	if (! -t STDOUT) {
-		$col = undef;
-	}			# no coloration if this isn't to a terminal
+	my ($msg, $col, $neverPrecedingNewline) = @_; # Only prints in color if STDOUT is to a terminal, NOT if it is redirected to an output file!
+	if (! -t STDOUT) { $col = undef; } # no coloration if this isn't to a terminal
+	if (not $neverPrecedingNewline && $GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT) {
+		print STDOUT "\n";
+		$GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 0;
+	}
 	print STDOUT safeColor($msg, $col);
 }
 
 sub dryNotify(;$) {		# one optional argument
 	my ($msg) = @_; chomp($msg);
 	$msg = (defined($msg)) ? $msg : "This was only a dry run, so we skipped executing a command.";
-	print STDERR safeColor("[DRY RUN]: $msg\n", "black on_yellow");
+	printColorStderr("[DRY RUN]: $msg\n", "black on_yellow");
 }
 
 sub printCool($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
-	print STDERR safeColor("[PROGRESS REPORT]: $msg\n", "white on_blue");
+	printColorStderr("[PROGRESS REPORT]: $msg\n", "white on_blue");
 }
 
-sub printProgressWait($) {			# one required argument
-	my ($msg) = @_; chomp($msg);
-	print STDERR safeColor("[PROGRESS REPORT]: $msg\n", "green on_black");
+sub printProgressWaitNoNewline($$) {			# one required argument
+	my ($msg, $jobID) = @_; chomp($msg);
+	printColorStderr("[PROGRESS REPORT for $jobID]: $msg", "green on_black");
+	$GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 1; # this does NOT end in a newline!
+}
+
+sub printProgressDot() {			# one required argument
+	printColorStderr(".", "green on_black", "never print preceding newline"); # This does NOT end in a newline, nor should it have one before it!
+	$GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 1;
 }
 
 sub printJobTechnicalDetails($) {
 	my ($msg) = @_; chomp($msg);
-	print STDERR safeColor("[NOTE]: $msg\n", "green on_black");
+	printColorStderr("[NOTE]: $msg\n", "green on_black");
+}
+
+sub printGeneralTips($) {
+	my ($msg) = @_; chomp($msg);
+	printColorStderr("[NOTE]: $msg\n");
 }
 
 sub printNote($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
-	print STDERR safeColor("[NOTE]: $msg\n", "white on_blue");
+	printColorStderr("[NOTE]: $msg\n", "white on_blue");
 }
 
 sub printBadNews($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
-	print STDERR safeColor("[ERROR]: $msg\n", "white on_red");
+	printColorStderr("[ERROR]: $msg\n", "white on_red");
 }
 sub printBadNewsAndDie($) { printBadNews($_[0]); die $_[0]; }
 
@@ -150,16 +164,13 @@ sub quitWithUsageError($) { printBadNews($_[0]); printUsage(); printBadNews($_[0
 
 sub debugPrint($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
-	print STDERR safeColor("[DEBUG] $msg\n", "yellow on_red");
+	printColorStderr("[DEBUG] $msg\n", "yellow on_red");
 }
 
 sub ourWarn($) { my $s = $_[0]; chomp($s); print("[WARNING]: $s\n"); $GLOBAL_WARN_STRING .= "$s\n"; }
 
 sub printUsageAndQuit() { printUsage(); exit(1); }
 sub printUsage() { print STDOUT <DATA>; }
-
-
-
 
 sub getAllowedTimeFromQstatOutputText($) {
 	# input: the STDOUT results from 'qstat -f THIS_JOB_NAME'
@@ -381,15 +392,15 @@ sub main() { # Main program
 	defined($copt{ncpus})    and printJobTechnicalDetails("                CPU CORES: $copt{ncpus}\n");
 	defined($copt{mem})      and printJobTechnicalDetails("                  MAX RAM: $copt{mem}gb\n");
 	defined($copt{walltime}) and printJobTechnicalDetails("                 MAX TIME: $copt{walltime}\n");
-	print STDERR "Be aware that your job will be instantly cancelled if it exceeds the MAX RAM or MAX TIME specified above.";
-	print STDERR "Now you can type these commands to check your job:\n";
-	print STDERR "To check your job 1:  qstats   (print out a color list of jobs that are running\n";
-	print STDERR "To check your job 2:  qstat    (print out monochrome list of the above jobs\n";
-	print STDERR "To check your job 3:  qstat -u \$USER (print out YOUR jobs only\n";
-	print STDERR "If you want to cancel your job (maybe you just realized that it needs more time / RAM):\n";
-	print STDERR "    To delete a job: 1. Find the 'Job id' number with 'qstat' (leftmost column)\n";
-	print STDERR "    To delete a job: 2. Then use 'qdel ####' (that same number) to cancel it\n";
-	print STDERR "    To delete all your jobs (dangerous!): qselect -u \$USER | xargs qdel  <-- deletes all your jobs\n";
+	printGeneralTips("Be aware that your job will be instantly cancelled if it exceeds the MAX RAM or MAX TIME specified above.");
+	printGeneralTips("Now you can type these commands to check your job:\n");
+	printGeneralTips("To check your job 1:  qstats   (print out a color list of jobs that are running\n");
+	printGeneralTips("To check your job 2:  qstat    (print out monochrome list of the above jobs\n");
+	printGeneralTips("To check your job 3:  qstat -u \$USER (print out YOUR jobs only\n");
+	printGeneralTips("If you want to cancel your job (maybe you just realized that it needs more time / RAM):\n");
+	printGeneralTips("    To delete a job: 1. Find the 'Job id' number with 'qstat' (leftmost column)\n");
+	printGeneralTips("    To delete a job: 2. Then use 'qdel ####' (that same number) to cancel it\n");
+	printGeneralTips("    To delete all your jobs (dangerous!): qselect -u \$USER | xargs qdel  <-- deletes all your jobs\n");
 	#print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
 
 	#printJobTechnicalDetails("Your job will be allowed to use $copt{mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n");
@@ -397,19 +408,18 @@ sub main() { # Main program
 	my $shouldMonitorForever = 1;
 	my $REFRESH_FILE_INTERVAL = 5; # N seconds between filesystem refreshes
 	my $REFRESH_QSTAT_INTERVAL = 3; # N seconds between qstat calls
+	my $PRINT_NEW_LINE_INTERVAL = 10;
 
 	my $walltimeInSec = undef;
 
 	my $qstatClaimsJobIsDone = 0;
 
 	sleep(1);
-	for (my $sec = 1; ($sec <= $secondsToMonitor or $shouldMonitorForever); $sec++) {
+	for (my $sec = 0; ($sec <= $secondsToMonitor or $shouldMonitorForever); $sec++) {
 		if (0 == $sec % $REFRESH_FILE_INTERVAL) {
 			my $refreshCmd = ' FAKEFILE=$(mktemp ./tmp.qplz.XXXXXX.tmp) '. ' && ' . ' /bin/rm $FAKEFILE ';
 			system($refreshCmd); # Make and then delete a fake file in order to refresh the filesystem. This lets us catch immediate problems that lead to output files being generated, without having to wait 60 seconds for the filesystem to update.
 		}
-
-
 
 		foreach my $STDHUH ("STDERR", "STDOUT") {
 			my $expectedFilename = ($STDHUH eq "STDERR") ? $expectedStderr : $expectedStdout;
@@ -447,15 +457,19 @@ sub main() { # Main program
 		my $shouldUpdateQstat = (!defined($walltimeInSec) or (0 == $sec % $REFRESH_QSTAT_INTERVAL));
 		if ($shouldUpdateQstat) {
 			my $qstatCmd  = "$QSTAT_EXE -f $jobID";
-			debugPrint($qstatCmd);
-			my $qstatText = `$qstatCmd 2>&1`; chomp($qstatText);
+			#debugPrint($qstatCmd);
+			my $qstatText = `$qstatCmd 2>&1`; # grabs both STDERR and STDOUT, comingled
+			chomp($qstatText);
 			my $qstatCode = $?;
-
 			my $JOB_DONE_OK_EXIT_CODE = 35;
 			my $JOB_DONE_OTHER_EXIT_CODE = 8960;
 			if ($qstatCode =~ m/^($JOB_DONE_OK_EXIT_CODE|$JOB_DONE_OTHER_EXIT_CODE)$/) { # ok exit codes: 35 (job finished) and 8960 (job finished)
 				# looks like the job is probably done??
-				printCool(qq{Looks like your job has FINISHED! Qstat text is <<$qstatText>>});
+				printCool(qq{Looks like your job has FINISHED!});
+				my $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT = 2; # arbitrary
+				if (length($qstatText) >= $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT) {
+					printCool($qstatText);
+				}
 				last;
 			} elsif (0 == $qstatCode) {
 				# probably still running
@@ -464,33 +478,33 @@ sub main() { # Main program
 				printBadNews(qq{Weird--we didn't recognize the qstat exit code "$qstatCode", which came along with this message: $qstatText"});
 				last;
 			}
-
-			print $qstatCode . " is the code \n";
 			($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = getAllowedTimeFromQstatOutputText($qstatText);
 		}
 		
-		
-		my $timeLeftString = "";
-		if (defined($pbs_wall_hr)) {
-			$walltimeInSec = 3600*$pbs_wall_hr + 60*$pbs_wall_min + $pbs_wall_sec;
-			my $remainInSec = $walltimeInSec - $sec;
-			my $hhr = floor($remainInSec / 3600);
-			my $mmr = floor(($remainInSec / 60) / 60);
-			my $ssr = $remainInSec % 60;
-			printProgressWait("[$sec] [$hhr:$mmr:$ssr remaining]");
+		if ($sec % $PRINT_NEW_LINE_INTERVAL == 0) {
+			# Print a FULL LINE update every so often
+			my $timeLeftString = "";
+			if (defined($pbs_wall_hr)) {
+				$walltimeInSec = 3600*$pbs_wall_hr + 60*$pbs_wall_min + $pbs_wall_sec;
+				my $remainInSec = $walltimeInSec - $sec;
+				my $hhr = floor($remainInSec / 3600);
+				my $mmr = floor(($remainInSec / 60) / 60);
+				my $ssr = $remainInSec % 60;
+				printProgressWaitNoNewline("[$sec seconds elapsed] [Job will be auto-killed in $hhr:$mmr:$ssr]", $jobID);
+			} else {
+				printProgressWaitNoNewline("[$sec seconds elapsed] ...", $jobID);
+			}
 		} else {
-			printProgressWait("[$sec] ...");
+			# Otherwise just print a new dot every so often...
+			printProgressDot();
 		}
 		sleep(1);
 	}
-
 	printNote("Output text may be in these files. Check them as follows:");
 	printNote("         STDOUT:   cat $expectedStdout");
 	printNote("         STDERR:   cat $expectedStderr");
 	#print STDERR $GLOBAL_WARN_STRING . "\n";
-	print STDERR safeColor("===============================\n", "green");
-
-
+	printColorStderr("===============================\n", "green");
 } # end main()
 
 
