@@ -25,6 +25,7 @@ my $QSTAT_EXE = "qstat";
 
 my $UNIX_BIOGRP = "bioqueue";
 my $UNIX_GENGRP = "genqueue";
+
 my %QSETTINGS = ( "unix_gname_to_gid" => {"$UNIX_BIOGRP"   => "35098"
 					  , "$UNIX_GENGRP" => "35099" }
 		  , "dest"             => {"$UNIX_BIOGRP"   => "Bio"
@@ -108,7 +109,13 @@ sub dryNotify(;$) {		# one optional argument
 
 sub printCool($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
-	printColorStderr("[PROGRESS REPORT]: $msg\n", "white on_blue");
+	printColorStderr("[PROGRESS REPORT]: $msg\n"); #, "white on_blue");
+}
+
+
+sub printImportant($) {			# one required argument
+	my ($msg) = @_; chomp($msg);
+	printColorStderr("$msg\n", "magenta on_black");
 }
 
 sub printProgressWaitNoNewline($$) {			# one required argument
@@ -134,7 +141,7 @@ sub printGeneralTips($) {
 
 sub printNote($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
-	printColorStderr("[NOTE]: $msg\n", "white on_blue");
+	printColorStderr("[NOTE]: $msg\n", "cyan on_black");
 }
 
 sub printBadNews($) {			# one required argument
@@ -178,16 +185,18 @@ sub getAllowedTimeFromQstatOutputText($) {
 	my ($qstatOutputText) = @_;
 	chomp($qstatOutputText);
 	my @qstatLines = split(/\n/, $qstatOutputText);
+	#print join("\n........\n", @qstatLines) . "\n";
 	my @allowedTimeStrs = grep { /Resource_List.walltime\s*=\s*/i } @qstatLines;
-	if (scalar(@allowedTimeStrs) == 1) {
+	if (scalar(@allowedTimeStrs) != 1) {
+		printBadNews("Qstat lines may be messed up. Here it is: " . join("\nQSTAT_LINES: ", @qstatLines) . "\n");
+		printBadNews("Weird... we were unable to parse the 'qstat' output for some reason... the scalar for 'allowedTimeStrs' needed to be exactly 1, but it was actually " . scalar(@allowedTimeStrs) . " . See this text:" . join("\n", @allowedTimeStrs) . "...");
+	} else {
 		chomp($allowedTimeStrs[0]);
 		if ($allowedTimeStrs[0] =~ m/Resource_List.walltime\s*=\s*(\d+):(\d+):(\d+)/i) {
 			return ($1, $2, $3); # <-- results from the match expression above
 		} else {
-			printBadNews("Weird... we were unable to parse the 'walltime' string from qstat...");
+			printBadNews("Weird... we were unable to parse the 'walltime' string from qstat... it looked like this $allowedTimeStrs[0]");
 		}
-	} else {
-		printBadNews("Weird... we were unable to parse the 'qstat' output for some reason...");
 	}
 	return(undef, undef, undef); # <-- failure
 }
@@ -224,6 +233,44 @@ sub getOurQueueGroup() {
 		if (grep(/^$priority$/, @gids)) { return $UNIX_BIOGRP; } # apparently the user belongs to a privileged group--let them use more CPUs, etc.
 	}
 	return $UNIX_GENGRP; # otherwise...
+}
+
+sub refreshTheFilesystem() {
+	my $refreshCmd = ' FAKEFILE=$(mktemp) '. ' && ' . ' /bin/rm $FAKEFILE ';
+	system($refreshCmd); # Make and then delete a fake file in order to refresh the filesystem. This lets us catch immediate problems that lead to output files being generated, without having to wait 60 seconds for the filesystem to update.
+}
+
+
+sub checkTerminalOutput($$) {
+	my ($STDHUH, $expectedFilename) = @_; # should be either "SDTERR" or "STDOUT" as text in capital letters
+	($STDHUH eq "STDERR" or $STDHUH eq "STDOUT") or die "wrong arguments --- must be either STDERR or STDOUT";
+	if (not -e $expectedFilename) {
+		#printNote("The $STDHUH file (which is expected to be named <$expectedFilename>) seems not to be available yet. Check for it later.");
+		return;
+	}
+	my $numLinesToShow = 15;
+	my $txt = `tail -n $numLinesToShow "$expectedFilename"`; chomp($txt);
+	my $looksLikeError = 0;
+	if ($txt =~ m/(not found|not exist|cannot access)/i) {
+		$looksLikeError = 1; printBadNews(qq{It looks like either a command or a file was NOT FOUND in your qsub submission! Check the logs for details.\nHOW TO FIX THIS: ***Probably*** you need to specify a full path (like /path/to/my/file.txt) instead of just 'file.txt'. Or, if the problem was an executable that was not found, maybe you did not set your \$PATH variable to include all the special lab-specific tools?});
+	}
+	if ($txt =~ m/\b(usage:)/i) {
+		$looksLikeError = 1; printBadNews(qq{Looks like this program doesn't run properly with the current commands. Better double check the 'usage'.});
+	}
+	if ($txt =~ m/\b(Segmentation\s+fault|segfault)/i) {
+		$looksLikeError = 1; printBadNews(qq{Looks like this program doesn't run properly for some reason!});
+	}
+	$txt =~ s/^/[Most recent $numLinesToShow lines of $STDHUH] /;
+	if ($looksLikeError) {
+		printBadNews($txt);
+		printBadNews("*"x80);
+		printBadNews("      Your job probably FAILED TO RUN!                              ");
+		printBadNews("      You should check this file for details, as follows:           ");
+		printBadNews("                 cat $expectedFilename");
+		printBadNews("*"x80);
+		exit(1);	# deadly!
+	}
+	printNote($txt);     # Looks like there was no major error, that's good!
 }
 
 # ==1==
@@ -339,153 +386,90 @@ sub main() { # Main program
 		my $cmdArgs = join(" ", @ARGV); # mash the command line arguments together
 		$cmd = qq{echo 'cd "$pwd" && $cmdArgs' | $qsub_common};
 	}
-	printCool(qq{Submitting this actual command to the queue:\n    ACTUAL JOB SUBMISSION COMMAND -->   $cmd\n});
+	printImportant(qq{[QSUB] ACTUAL JOB IS THIS TEXT -->   $cmd\n});
 	my $exitText = `$cmd`; chomp($exitText);
 	my $exitCode = $?; # <-- the exit code (i.e., did `$cmd` run properly---same as the result of system($cmd))
 	my $jobID = $exitText;
-	if (0 == $exitCode) {
-		printCool("You can type 'qstat' (basic) or 'qstats' (fancy) to check on the status of your job. --Alex\n");
-	} else {
-		printBadNewsAndDie("[ERROR] Curses! Something went wrong, and the queue command returned the error code '$exitCode'. Unclear what this means, but something is probably wrong with your input command.\n");
-	}
-
+	(0 == $exitCode) or printBadNewsAndDie("[ERROR] Curses! Something went wrong, and the queue command returned the error code '$exitCode'. Unclear what this means, but something is probably wrong with your input command.\n");
 	$jobID =~ m/^(\d+)/ or die "Weird... unexpected exit text ('$exitText'). We thought it would start with a numeric-only job number (like '1234.my-cluster').";
 	my $jobNumber = $1; # grab the job number from the $exitText
 	my $expectedStdout = "${pwd}/${jobname}.o${jobNumber}"; # expected filename
 	my $expectedStderr = "${pwd}/${jobname}.e${jobNumber}"; # expected filename
 
-	#my $filename1 = undef;
-	#foreach (@ARGV) { # these were arguments that were not understood by GetOptions
-	#	if (!defined($filename1)) {
-	#		$filename1 = $_;
-	#	} else {
-	#		print STDERR "Unprocessed argument: $_\n";
-	#	}
-	#}
-
-	# print STDERR "===============================\n";
-	# print STDOUT safeColor("test color\n", "blue on_yellow");
-	# printColorStdout("hey", "red");
-	# printColorStdout("what", "red");
-	# printColorStderr("stderr what", "blue on_white");
-	# printColorStdout("is", "red on_blue");
-	# printColorStdout("this", "red on_green");
-	# printColorStderr("stderr what", "red on_white");
-	# print STDERR "hellow\n";
-	# print STDERR "Test color!\n";
-	# print STDERR "===============================\n";
-
-	#sub agw_make_temp() {
-	#	my $timeInSecondsSince1970 = time();
-	#	my ($temp_filehandle, $temp_filename) = File::Temp::tempfile(TEMPLATE=>"cluster.${timeInSecondsSince1970}.XXXXX", DIR=>"", SUFFIX=>"$CMD_SUFFIX", UNLINK=>0); return($temp_filename);
-	#}
-
-	# $ qsub -q General -W group_list="genqueue" [/path/to/script]
-	# $ qsub -q Bio -W group_list="bioqueue" [/path/to/script]
-
-	#my $filename  = agw_make_temp();
-	#my $jobname   = $filename; $jobname =~ s/${CMD_SUFFIX}$//; # filename WITHOUT the annoying suffix
-	#
-	#print("Filename is: $filename\nJobname is: $jobname\n");
-
-	printJobTechnicalDetails("Your job has been allocated the following:\n");
-	defined($copt{ncpus})    and printJobTechnicalDetails("                CPU CORES: $copt{ncpus}\n");
-	defined($copt{mem})      and printJobTechnicalDetails("                  MAX RAM: $copt{mem}gb\n");
-	defined($copt{walltime}) and printJobTechnicalDetails("                 MAX TIME: $copt{walltime}\n");
-	printGeneralTips("Be aware that your job will be instantly cancelled if it exceeds the MAX RAM or MAX TIME specified above.");
-	printGeneralTips("Now you can type these commands to check your job:\n");
-	printGeneralTips("To check your job 1:  qstats   (print out a color list of jobs that are running\n");
-	printGeneralTips("To check your job 2:  qstat    (print out monochrome list of the above jobs\n");
-	printGeneralTips("To check your job 3:  qstat -u \$USER (print out YOUR jobs only\n");
+	if (defined($copt{ncpus}) or defined($copt{mem}) or defined($copt{walltime})) {
+		printJobTechnicalDetails("Your job has been allocated the following:\n");
+		defined($copt{ncpus})    and printJobTechnicalDetails("                CPU CORES: $copt{ncpus}\n");
+		defined($copt{mem})      and printJobTechnicalDetails("                  MAX RAM: $copt{mem}gb\n");
+		defined($copt{walltime}) and printJobTechnicalDetails("                 MAX TIME: $copt{walltime}\n");
+		(defined($copt{mem}) or defined($copt{walltime})) and printJobTechnicalDetails("Be aware that your job will be instantly cancelled if it exceeds the MAX RAM or MAX TIME specified above.");
+	}
+	printGeneralTips("To check your job:\n");
+	printGeneralTips("  Check job status 1:   qstats                (print color list of running jobs\n");
+	printGeneralTips("  Check job status 2:   qstat -a -w           (print monochrome list of jobs\n");
+	printGeneralTips("  Check job status 3:   qstat -a -w -u \$USER  (print YOUR jobs only)\n");
+	printGeneralTips("  Historical jobs:      qstat -x  | less      (scroll with arrows or space bar/'B')");
 	printGeneralTips("If you want to cancel your job (maybe you just realized that it needs more time / RAM):\n");
-	printGeneralTips("    To delete a job: 1. Find the 'Job id' number with 'qstat' (leftmost column)\n");
-	printGeneralTips("    To delete a job: 2. Then use 'qdel ####' (that same number) to cancel it\n");
-	printGeneralTips("    To delete all your jobs (dangerous!): qselect -u \$USER | xargs qdel  <-- deletes all your jobs\n");
+	printGeneralTips("  To delete a job: 1. Find the 'Job id' number with 'qstat' (leftmost column)\n");
+	printGeneralTips("  To delete a job: 2. Then use 'qdel ####' (that same number) to cancel it\n");
+	printGeneralTips("  To delete all your jobs (dangerous!): qselect -u \$USER | xargs qdel  <-- deletes all your jobs\n");
 	#print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
 
 	#printJobTechnicalDetails("Your job will be allowed to use $copt{mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n");
 	my $secondsToMonitor = 1800;
 	my $shouldMonitorForever = 1;
+
 	my $REFRESH_FILE_INTERVAL = 5; # N seconds between filesystem refreshes
 	my $REFRESH_QSTAT_INTERVAL = 3; # N seconds between qstat calls
 	my $PRINT_NEW_LINE_INTERVAL = 10;
 
-	my $walltimeInSec = undef;
-
 	my $qstatClaimsJobIsDone = 0;
 
-	sleep(1);
+	my $jobIsRunning = 1;
+	my $jobHasError = 0;
+
+	my $QSTAT_STILL_RUNNING_CODE = 0;
+	my $QSTAT_DONE_OK_1_CODE = 35;
+	my $QSTAT_DONE_OK_2_CODE = 8960;
+
+	my $qstatCode = $QSTAT_STILL_RUNNING_CODE; # by default, assuming the job is still running...
+	my $qstatText = "";
 	for (my $sec = 0; ($sec <= $secondsToMonitor or $shouldMonitorForever); $sec++) {
-		if (0 == $sec % $REFRESH_FILE_INTERVAL) {
-			my $refreshCmd = ' FAKEFILE=$(mktemp ./tmp.qplz.XXXXXX.tmp) '. ' && ' . ' /bin/rm $FAKEFILE ';
-			system($refreshCmd); # Make and then delete a fake file in order to refresh the filesystem. This lets us catch immediate problems that lead to output files being generated, without having to wait 60 seconds for the filesystem to update.
+		sleep(1);
+		if (0 == ($sec % $REFRESH_FILE_INTERVAL)) {
+			refreshTheFilesystem();
+			checkTerminalOutput("STDOUT", $expectedStdout);
+			checkTerminalOutput("STDERR", $expectedStderr);
 		}
 
-		foreach my $STDHUH ("STDERR", "STDOUT") {
-			my $expectedFilename = ($STDHUH eq "STDERR") ? $expectedStderr : $expectedStdout;
-			if (not -e $expectedFilename) {
-				#printNote("The $STDHUH file (which is expected to be named <$expectedFilename>) seems not to be available yet. Check for it later.");
-			} else {
-				my $numLinesToShow = 15;
-				my $txt = `tail -n $numLinesToShow "$expectedFilename"`; chomp($txt);
-				my $looksLikeError = 0;
-				if ($txt =~ m/(not found|not exist|cannot access)/i) {
-					$looksLikeError = 1; printBadNews(qq{It looks like either a command or a file was NOT FOUND in your qsub submission! Check the logs for details.\nHOW TO FIX THIS: ***Probably*** you need to specify a full path (like /path/to/my/file.txt) instead of just 'file.txt'. Or, if the problem was an executable that was not found, maybe you did not set your \$PATH variable to include all the special lab-specific tools?});
-				}
-				if ($txt =~ m/\b(usage:)/i) {
-					$looksLikeError = 1; printBadNews(qq{Looks like this program doesn't run properly with the current commands. Better double check the 'usage'.});
-				}
-				if ($txt =~ m/\b(Segmentation\s+fault|segfault)/i) {
-					$looksLikeError = 1; printBadNews(qq{Looks like this program doesn't run properly for some reason!});
-				}
-				$txt =~ s/^/[Most recent $numLinesToShow lines of $STDHUH] /;
-				if ($looksLikeError) {
-					printBadNews($txt);
-					printBadNews("*"x80);
-					printBadNews("      Your job probably FAILED TO RUN!                              ");
-					printBadNews("      You should check these files for details:                     ");
-					printBadNews("                 STDOUT: $expectedStdout");
-					printBadNews("                 STDERR: $expectedStderr");
-					printBadNews("*"x80);
-					exit(1); # deadly!
-				}
-				printNote($txt); # Looks like there was no major error, that's good!
-			}
-		}
-
-
-		my $shouldUpdateQstat = (!defined($walltimeInSec) or (0 == $sec % $REFRESH_QSTAT_INTERVAL));
-		if ($shouldUpdateQstat) {
-			my $qstatCmd  = "$QSTAT_EXE -f $jobID";
-			#debugPrint($qstatCmd);
-			my $qstatText = `$qstatCmd 2>&1`; # grabs both STDERR and STDOUT, comingled
+		if (!defined($pbs_wall_hr) or (0 == $sec % $REFRESH_QSTAT_INTERVAL)) {
+			my $qstatCmd  = "$QSTAT_EXE -f $jobID"; #debugPrint($qstatCmd);
+			$qstatText = `$qstatCmd 2>&1`; # grabs both STDERR and STDOUT, comingled
 			chomp($qstatText);
-			my $qstatCode = $?;
-			my $JOB_DONE_OK_EXIT_CODE = 35;
-			my $JOB_DONE_OTHER_EXIT_CODE = 8960;
-			if ($qstatCode =~ m/^($JOB_DONE_OK_EXIT_CODE|$JOB_DONE_OTHER_EXIT_CODE)$/) { # ok exit codes: 35 (job finished) and 8960 (job finished)
-				# looks like the job is probably done??
-				printCool(qq{Looks like your job has FINISHED!});
-				my $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT = 2; # arbitrary
-				if (length($qstatText) >= $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT) {
-					printCool($qstatText);
-				}
-				last;
-			} elsif (0 == $qstatCode) {
-				# probably still running
-			} else {
-				# got a weird qstat result
-				printBadNews(qq{Weird--we didn't recognize the qstat exit code "$qstatCode", which came along with this message: $qstatText"});
-				last;
-			}
-			($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = getAllowedTimeFromQstatOutputText($qstatText);
+			$qstatCode = $?;
 		}
-		
-		if ($sec % $PRINT_NEW_LINE_INTERVAL == 0) {
+
+		if (!defined($qstatCode) or $qstatCode == $QSTAT_STILL_RUNNING_CODE) {
+			# still running
+		} elsif ($qstatCode =~ m/^($QSTAT_DONE_OK_1_CODE|$QSTAT_DONE_OK_2_CODE)$/) { # ok exit codes: 35 (job finished) and 8960 (job finished)
+			# looks like the job is probably done??
+			printImportant(qq{Looks like your job has FINISHED!});
+			my $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT = 2; # arbitrary
+			if (length($qstatText) >= $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT) {
+				printImportant($qstatText);
+			}
+			last;
+		} else {
+			# got a weird qstat result
+			printBadNews(qq{Weird--we didn't recognize the qstat exit code "$qstatCode", which came along with this message: $qstatText"});
+			last;
+		}
+
+		if (0 == ($sec % $PRINT_NEW_LINE_INTERVAL)) {
+			($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = getAllowedTimeFromQstatOutputText($qstatText);
 			# Print a FULL LINE update every so often
 			my $timeLeftString = "";
 			if (defined($pbs_wall_hr)) {
-				$walltimeInSec = 3600*$pbs_wall_hr + 60*$pbs_wall_min + $pbs_wall_sec;
+				my $walltimeInSec = 3600*$pbs_wall_hr + 60*$pbs_wall_min + $pbs_wall_sec;
 				my $remainInSec = $walltimeInSec - $sec;
 				my $hhr = floor($remainInSec / 3600);
 				my $mmr = floor(($remainInSec / 60) / 60);
@@ -498,9 +482,10 @@ sub main() { # Main program
 			# Otherwise just print a new dot every so often...
 			printProgressDot();
 		}
-		sleep(1);
+
 	}
-	printNote("Output text may be in these files. Check them as follows:");
+
+	printNote("Output text should (eventually) be in these files. Check them as follows:");
 	printNote("         STDOUT:   cat $expectedStdout");
 	printNote("         STDERR:   cat $expectedStderr");
 	#print STDERR $GLOBAL_WARN_STRING . "\n";
