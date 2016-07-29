@@ -5,6 +5,7 @@ use List::Util qw(max min);
 use Getopt::Long;
 use File::Basename;
 use Carp; # backtrace on errors. Has the "confess" function. Use this instead of "die" if you want useful information!   
+use POSIX; # floor / ceiling
 
 #use File::Basename;
 
@@ -13,8 +14,6 @@ $| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buf
 #no warnings 'numeric';
 #use Scalar::Util;
 #print Scalar::Util::looks_like_number($string), "\n";
-
-my $JOBNAME_MAX_LEN = 128; # cut it down to some reasonable size
 
 my @RECOGNIZED_PBS_OPTIONS = ("walltime", "mem", "ncpus"); # The ones we handle in this script
 
@@ -49,12 +48,51 @@ my %QSETTINGS = ( "unix_gname_to_gid" => {"$UNIX_BIOGRP"   => "35098"
 
 my $GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 0; # remember if we need to print a newline BEFORE we print something else! happens if we are printing the "progress" dots, which don't have a newline after them
 
+use constant JOBNAME_MAX_LEN          => 128; # cut it down to some reasonable size
+use constant QSTAT_STILL_RUNNING_CODE => 0;
+use constant QSTAT_FINISHED_1_CODE    => 35;
+use constant QSTAT_FINISHED_2_CODE    => 8960;
+
 # another thing to check for: qstat -f :   "job held, too many failed attempts to run"
+
+sub trimInMiddle($$$) { # trim a string in the MIDDLE
+	my ($s, $trimToLen, $middleThingToAdd) = @_;
+	# Note: fails totally if trimToLen is something unreasonably short. Not a well-designed f
+	# example:
+	# String is "AAAAAAAAAAAAABBBBBBBBBBBBBB"
+	# trim to len is 10
+	# middleThing is "..."
+	# result:   "AAAA...BBB" <-- note that there are more As than Bs here
+	if (length($s) <= $trimToLen) { return($s); } # nothing to trim
+	my $payloadLen = $trimToLen - length($middleThingToAdd);
+	my $charsOnLeft = POSIX::ceil($payloadLen / 2);
+	my $charsOnRight = POSIX::floor($payloadLen / 2);
+	return(substr($s, 0, $charsOnLeft) . $middleThingToAdd . substr($s, -$charsOnRight));
+}
+
+sub checkForJobFinished($$) {
+	my ($qstatExitCode, $qstatTerminalText) = @_;
+	if (!defined($qstatExitCode) or (QSTAT_STILL_RUNNING_CODE == $qstatExitCode)) {
+		return 0;	# still running, probabaly
+	} elsif ((QSTAT_FINISHED_1_CODE == $qstatExitCode) or (QSTAT_FINISHED_2_CODE == $qstatExitCode)) { # ok exit codes: 35 (job finished) and 8960 (job finished)
+		# looks like the job is probably done??
+		printImportant(qq{Looks like your job has FINISHED!});
+		my $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT = 2; # arbitrary
+		if (length($qstatTerminalText) >= $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT) {
+			printImportant($qstatTerminalText);
+		}
+		return 1;	# done!
+	} else {
+		# got a weird qstat result
+		printBadNews(qq{Weird--we didn't recognize the qstat exit code "$qstatExitCode", which came along with this message: $qstatTerminalText"});
+		return 1;	# done!
+	}
+}
 
 sub tryToLoadModule($) {
 	my $x = eval("require $_[0]");
 	if ((defined($@) && $@)) {
-		warn "We FAILED to load module $_[0]. Skipping this module, but continuing with the program.";
+		warn "We have FAILED to load module $_[0]. Skipping it, but continuing with the program.";
 		return 0;	# FAILURE
 	} else {
 		$_[0]->import();
@@ -355,22 +393,22 @@ sub main() { # Main program
 	my $qgrouplist = $QSETTINGS{grouplist}{$grp};
 	my $stderr   = "";	#"-e /dev/null"
 	my $stdout   = "";	#"-o /dev/null"
-	my $jobname  = undef;
+	my $jobName  = undef;
 	if (defined($pbs_submit_file)) {
 		(-e $pbs_submit_file) or quitWithUsageError("It looked like you submitted a script file directly on the command line (we though this was a script to submit to PBS: \"$pbs_submit_file\"), but somehow it seems like that file did not exist. Weird!");
 		if ($pbs_submit_file !~ m/[.](sh|pl|py|R|rb)$/) {
 			ourWarn(qq{You submitted a file to qsub (specifically, "$pbs_submit_file") that did not have a common script ending... just be aware of this!});
 		}
-		$jobname = File::Basename::basename($pbs_submit_file); # Job name is the SUBMITTED SCRIPT name (but not the full path)
+		$jobName = File::Basename::basename($pbs_submit_file); # Job name is the SUBMITTED SCRIPT name (but not the full path)
 	} else {
-		$jobname = join("_", @ARGV);
+		$jobName = join("_", @ARGV);
 	}
-	$jobname =~ s/[\W\s]/_/g; # replace any "weird" non-word characters with underscores
+	$jobName =~ s/[\W\s]/_/g; # replace any "weird" non-word characters with underscores
+	$jobName = trimInMiddle($jobName, JOBNAME_MAX_LEN, "..."); # Trim very long job names... trim them in the MIDDLE though!
 
-	if (length($jobname) > $JOBNAME_MAX_LEN) { $jobname = substr($jobname, 0, $JOBNAME_MAX_LEN); } # Trim very long job names
 	my $qsub_common = qq{$QSUB_EXE }
 	  . qq{ -V }
-	  . qq{ -N "$jobname" }
+	  . qq{ -N "$jobName" }
 	  . qq{ -q "$qdest" }
 	  . qq{ -W group_list="$qgrouplist" };
 	if (defined($copt{ncpus}))    { $qsub_common .= qq{ -l ncpus=$copt{ncpus} }; }
@@ -389,12 +427,12 @@ sub main() { # Main program
 	printImportant(qq{[QSUB] ACTUAL JOB IS THIS TEXT -->   $cmd\n});
 	my $exitText = `$cmd`; chomp($exitText);
 	my $exitCode = $?; # <-- the exit code (i.e., did `$cmd` run properly---same as the result of system($cmd))
-	my $jobID = $exitText;
+	my $jobID = $exitText; # <-- the full queued request ID, like "1234.machine-name"
 	(0 == $exitCode) or printBadNewsAndDie("[ERROR] Curses! Something went wrong, and the queue command returned the error code '$exitCode'. Unclear what this means, but something is probably wrong with your input command.\n");
 	$jobID =~ m/^(\d+)/ or die "Weird... unexpected exit text ('$exitText'). We thought it would start with a numeric-only job number (like '1234.my-cluster').";
-	my $jobNumber = $1; # grab the job number from the $exitText
-	my $expectedStdout = "${pwd}/${jobname}.o${jobNumber}"; # expected filename
-	my $expectedStderr = "${pwd}/${jobname}.e${jobNumber}"; # expected filename
+	my $jobNum = $1; # grab the job number from the $exitText
+	my $expectedStdout = "${pwd}/${jobName}.o${jobNum}"; # expected filename
+	my $expectedStderr = "${pwd}/${jobName}.e${jobNum}"; # expected filename
 
 	if (defined($copt{ncpus}) or defined($copt{mem}) or defined($copt{walltime})) {
 		printJobTechnicalDetails("Your job has been allocated the following:\n");
@@ -427,11 +465,7 @@ sub main() { # Main program
 	my $jobIsRunning = 1;
 	my $jobHasError = 0;
 
-	my $QSTAT_STILL_RUNNING_CODE = 0;
-	my $QSTAT_DONE_OK_1_CODE = 35;
-	my $QSTAT_DONE_OK_2_CODE = 8960;
-
-	my $qstatCode = $QSTAT_STILL_RUNNING_CODE; # by default, assuming the job is still running...
+	my $qstatCode = QSTAT_STILL_RUNNING_CODE; # by default, assuming the job is still running...
 	my $qstatText = "";
 	for (my $sec = 0; ($sec <= $secondsToMonitor or $shouldMonitorForever); $sec++) {
 		sleep(1);
@@ -448,20 +482,8 @@ sub main() { # Main program
 			$qstatCode = $?;
 		}
 
-		if (!defined($qstatCode) or $qstatCode == $QSTAT_STILL_RUNNING_CODE) {
-			# still running
-		} elsif ($qstatCode =~ m/^($QSTAT_DONE_OK_1_CODE|$QSTAT_DONE_OK_2_CODE)$/) { # ok exit codes: 35 (job finished) and 8960 (job finished)
-			# looks like the job is probably done??
-			printImportant(qq{Looks like your job has FINISHED!});
-			my $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT = 2; # arbitrary
-			if (length($qstatText) >= $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT) {
-				printImportant($qstatText);
-			}
-			last;
-		} else {
-			# got a weird qstat result
-			printBadNews(qq{Weird--we didn't recognize the qstat exit code "$qstatCode", which came along with this message: $qstatText"});
-			last;
+		if (checkForJobFinished($qstatCode, $qstatText)) {
+			last; # Guess the job finished!
 		}
 
 		if (0 == ($sec % $PRINT_NEW_LINE_INTERVAL)) {
@@ -479,10 +501,8 @@ sub main() { # Main program
 				printProgressWaitNoNewline("[$sec seconds elapsed] ...", $jobID);
 			}
 		} else {
-			# Otherwise just print a new dot every so often...
-			printProgressDot();
+			printProgressDot(); # Otherwise just print a new dot every so often...
 		}
-
 	}
 
 	printNote("Output text should (eventually) be in these files. Check them as follows:");
