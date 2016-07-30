@@ -52,7 +52,6 @@ use constant JOBNAME_MAX_LEN          => 128; # cut it down to some reasonable s
 use constant QSTAT_STILL_RUNNING_CODE => 0;
 use constant QSTAT_FINISHED_1_CODE    => 35;
 use constant QSTAT_FINISHED_2_CODE    => 8960;
-
 # another thing to check for: qstat -f :   "job held, too many failed attempts to run"
 
 sub trimInMiddle($$$) { # trim a string in the MIDDLE
@@ -70,20 +69,21 @@ sub trimInMiddle($$$) { # trim a string in the MIDDLE
 	return(substr($s, 0, $charsOnLeft) . $middleThingToAdd . substr($s, -$charsOnRight));
 }
 
-sub checkForJobFinished($$) {
+sub updateQstatInfo($) {
+	my ($jid) = @_;
+	my $qstatCmd = "$QSTAT_EXE -f $jid  2>&1";  # do not put "X" here or that messes things up. '2>&1' grabs both STDERR and STDOUT, comingled. #debugPrint($qstatCmd);
+	my $qText   = `$qstatCmd`; chomp($qText);
+	my $qCode = $?;
+	return($qCode, $qText);
+}
+
+sub jobHasFinished($$) {
 	my ($qstatExitCode, $qstatTerminalText) = @_;
 	if (!defined($qstatExitCode) or (QSTAT_STILL_RUNNING_CODE == $qstatExitCode)) {
 		return 0;	# still running, probabaly
 	} elsif ((QSTAT_FINISHED_1_CODE == $qstatExitCode) or (QSTAT_FINISHED_2_CODE == $qstatExitCode)) { # ok exit codes: 35 (job finished) and 8960 (job finished)
-		# looks like the job is probably done??
-		printImportant(qq{Looks like your job has FINISHED!});
-		my $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT = 2; # arbitrary
-		if (length($qstatTerminalText) >= $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT) {
-			printImportant($qstatTerminalText);
-		}
 		return 1;	# done!
-	} else {
-		# got a weird qstat result
+	} else { # got a weird qstat result
 		printBadNews(qq{Weird--we didn't recognize the qstat exit code "$qstatExitCode", which came along with this message: $qstatTerminalText"});
 		return 1;	# done!
 	}
@@ -186,7 +186,8 @@ sub printBadNews($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
 	printColorStderr("[ERROR]: $msg\n", "white on_red");
 }
-sub printBadNewsAndDie($) { printBadNews($_[0]); die $_[0]; }
+
+sub explode($) { printBadNews($_[0]); die $_[0]; }
 
 sub main();
 
@@ -205,7 +206,6 @@ sub quitWithComplaintAboutScriptOption($$$) {
 }
 
 sub quitWithUsageError($) { printBadNews($_[0]); printUsage(); printBadNews($_[0]); exit(1); }
-
 
 sub debugPrint($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
@@ -239,15 +239,14 @@ sub getAllowedTimeFromQstatOutputText($) {
 	return(undef, undef, undef); # <-- failure
 }
 
-sub regarg($) {
-	my ($filename) = @_;
-	open my $fff, '<', $filename or die "whoops, no file somehow";
-	while (my $line = <$fff>) {
-		if ($line =~ /REGEX/) {
-			
-		}
-	}
-}
+#sub regarg($) {
+#	my ($filename) = @_;
+#	open my $fff, '<', $filename or die "whoops, no file somehow";
+#	while (my $line = <$fff>) {
+#		if ($line =~ /REGEX/) {
+#		}
+#	}
+#}
 
 sub fileIsProbablySomeScript($) { # detect if a filename seems to be an ok-to-submit PBS script
 	my ($filename) = @_; # filename
@@ -261,7 +260,6 @@ sub fileIsProbablySomeScript($) { # detect if a filename seems to be an ok-to-su
 	#}
 	return 0;
 }
-
 
 sub getOurQueueGroup() {
 	# == See if we are in the bio group
@@ -278,6 +276,13 @@ sub refreshTheFilesystem() {
 	system($refreshCmd); # Make and then delete a fake file in order to refresh the filesystem. This lets us catch immediate problems that lead to output files being generated, without having to wait 60 seconds for the filesystem to update.
 }
 
+
+sub verifyAllTerminalOutput($$) {
+	my ($stderrFile, $stdoutFile) = @_;
+	refreshTheFilesystem();
+	checkTerminalOutput("STDOUT", $stderrFile);
+	checkTerminalOutput("STDERR", $stdoutFile);
+}
 
 sub checkTerminalOutput($$) {
 	my ($STDHUH, $expectedFilename) = @_; # should be either "SDTERR" or "STDOUT" as text in capital letters
@@ -311,6 +316,29 @@ sub checkTerminalOutput($$) {
 	printNote($txt);     # Looks like there was no major error, that's good!
 }
 
+sub craftQsubCommand($$$$$) {
+	my ($qsubExe, $theJobName, $scriptFile, $argvPtr, $optionHashPtr) = @_;
+	my $grp = getOurQueueGroup();
+	my $qdest      = $QSETTINGS{dest}{$grp};
+	my $qgrouplist = $QSETTINGS{grouplist}{$grp};
+	my $pwd = `pwd`; chomp($pwd);
+
+	my $qsub_common = qq{$QSUB_EXE }
+	  . qq{ -V }
+	  . qq{ -N "$theJobName" }
+	  . qq{ -q "$qdest" }
+	  . qq{ -W group_list="$qgrouplist" };
+	if (defined($optionHashPtr->{ncpus}))    { $qsub_common .= qq{ -l ncpus=$optionHashPtr->{ncpus} }; }
+	if (defined($optionHashPtr->{mem}))      { $qsub_common .= qq{ -l mem="$optionHashPtr->{mem}gb" }; }
+	if (defined($optionHashPtr->{walltime})) { $qsub_common .= qq{ -l walltime=$optionHashPtr->{walltime} }; }
+	if (defined($scriptFile)) {
+		return(qq{$qsub_common $scriptFile});
+	} else { # ok, looks like we are just submitting a QUICK job right on the command line
+		my $cmdArgs = join(" ", @{$argvPtr}); # mash the command line arguments together
+		return(qq{echo 'cd "$pwd" && $cmdArgs' | $qsub_common});
+	}
+}
+
 # ==1==
 sub main() { # Main program
 	my ($decimalPlaces) = 4; # How many decimal places to print, by default
@@ -321,12 +349,14 @@ sub main() { # Main program
 
 	my ($pbs_submit_file) = undef;
 	my ($shouldOverridePbsDirectives) = 0;
-	GetOptions("h|help|?|man"     => sub { printUsageAndQuit(); }
-		   , "ncpus|ncpu|c=i" => \$copt{ncpus}
-		   , "mem|m=i"        => \$copt{mem}
-		   , "walltime|t=s"   => \$copt{walltime}
-		   , "f=s"            => \$pbs_submit_file
-		   , "override!"      => \$shouldOverridePbsDirectives
+	my ($shouldBackgroundSubmit) = 0; # default: CONSTANTLY MONITOR the job
+	GetOptions("h|help|?|man"      => sub { printUsageAndQuit(); }
+		   , "ncpus|ncpu|c=i"  => \$copt{ncpus}
+		   , "mem|m=i"         => \$copt{mem}
+		   , "walltime|t=s"    => \$copt{walltime}
+		   , "f=s"             => \$pbs_submit_file
+		   , "override!"       => \$shouldOverridePbsDirectives
+		   , "b|background|bg!"=> \$shouldBackgroundSubmit # if we should 'background' submit the job, then exit after the job submits, DO NOT stick around to monitor it
 		  ) or printUsageAndQuit();
 
 	my $grp = getOurQueueGroup();
@@ -389,8 +419,7 @@ sub main() { # Main program
 		($pbs_wall_hr <= $QSETTINGS{max_walltime_hours}{$grp}) or quitWithUsageError("You requested TOO MUCH walltime! The maximum is: $QSETTINGS{max_walltime_hours}{$grp}:00:00 . Try again with a smaller value!");
 	}
 
-	my $qdest      = $QSETTINGS{dest}{$grp};
-	my $qgrouplist = $QSETTINGS{grouplist}{$grp};
+
 	my $stderr   = "";	#"-e /dev/null"
 	my $stdout   = "";	#"-o /dev/null"
 	my $jobName  = undef;
@@ -406,31 +435,16 @@ sub main() { # Main program
 	$jobName =~ s/[\W\s]/_/g; # replace any "weird" non-word characters with underscores
 	$jobName = trimInMiddle($jobName, JOBNAME_MAX_LEN, "..."); # Trim very long job names... trim them in the MIDDLE though!
 
-	my $qsub_common = qq{$QSUB_EXE }
-	  . qq{ -V }
-	  . qq{ -N "$jobName" }
-	  . qq{ -q "$qdest" }
-	  . qq{ -W group_list="$qgrouplist" };
-	if (defined($copt{ncpus}))    { $qsub_common .= qq{ -l ncpus=$copt{ncpus} }; }
-	if (defined($copt{mem}))      { $qsub_common .= qq{ -l mem="$copt{mem}gb" }; }
-	if (defined($copt{walltime})) { $qsub_common .= qq{ -l walltime=$copt{walltime} }; }
-
-	my $pwd = `pwd`; chomp($pwd);
-
-	my $cmd = undef;
-	if (defined($pbs_submit_file)) {
-		$cmd = qq{$qsub_common $pbs_submit_file};
-	} else { # ok, looks like we are just submitting a QUICK job right on the command line
-		my $cmdArgs = join(" ", @ARGV); # mash the command line arguments together
-		$cmd = qq{echo 'cd "$pwd" && $cmdArgs' | $qsub_common};
-	}
+	my $cmd = craftQsubCommand($QSUB_EXE, $jobName, $pbs_submit_file, \@ARGV, \%copt);
 	printImportant(qq{[QSUB] ACTUAL JOB IS THIS TEXT -->   $cmd\n});
+
 	my $exitText = `$cmd`; chomp($exitText);
 	my $exitCode = $?; # <-- the exit code (i.e., did `$cmd` run properly---same as the result of system($cmd))
 	my $jobID = $exitText; # <-- the full queued request ID, like "1234.machine-name"
-	(0 == $exitCode) or printBadNewsAndDie("[ERROR] Curses! Something went wrong, and the queue command returned the error code '$exitCode'. Unclear what this means, but something is probably wrong with your input command.\n");
-	$jobID =~ m/^(\d+)/ or die "Weird... unexpected exit text ('$exitText'). We thought it would start with a numeric-only job number (like '1234.my-cluster').";
+	(0 == $exitCode)    or explode("Curses---something went wrong, and the queue command returned the code number '$exitCode'. It's unclear what this means. Probably something is wrong with your input command.");
+	$jobID =~ m/^(\d+)/ or explode("Weird... unexpected exit text from 'qstat' ('$exitText'). We thought it would start with a numeric-only job number (like '1234.my-cluster'). We will need this job later, so this means there's a programming error and/or incorrect assumptions.");
 	my $jobNum = $1; # grab the job number from the $exitText
+	my $pwd = `pwd`; chomp($pwd);
 	my $expectedStdout = "${pwd}/${jobName}.o${jobNum}"; # expected filename
 	my $expectedStderr = "${pwd}/${jobName}.e${jobNum}"; # expected filename
 
@@ -453,40 +467,29 @@ sub main() { # Main program
 	#print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
 
 	#printJobTechnicalDetails("Your job will be allowed to use $copt{mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n");
-	my $secondsToMonitor = 1800;
-	my $shouldMonitorForever = 1;
-
 	my $REFRESH_FILE_INTERVAL = 5; # N seconds between filesystem refreshes
 	my $REFRESH_QSTAT_INTERVAL = 3; # N seconds between qstat calls
 	my $PRINT_NEW_LINE_INTERVAL = 10;
 
-	my $qstatClaimsJobIsDone = 0;
-
-	my $jobIsRunning = 1;
-	my $jobHasError = 0;
-
-	my $qstatCode = QSTAT_STILL_RUNNING_CODE; # by default, assuming the job is still running...
-	my $qstatText = "";
-	for (my $sec = 0; ($sec <= $secondsToMonitor or $shouldMonitorForever); $sec++) {
+	my $qstatCode = undef;
+	my $qstatText = undef;
+	for (my $sec = 0; 1; $sec++) {
 		sleep(1);
-		if (0 == ($sec % $REFRESH_FILE_INTERVAL)) {
-			refreshTheFilesystem();
-			checkTerminalOutput("STDOUT", $expectedStdout);
-			checkTerminalOutput("STDERR", $expectedStderr);
-		}
 
 		if (!defined($pbs_wall_hr) or (0 == $sec % $REFRESH_QSTAT_INTERVAL)) {
-			my $qstatCmd  = "$QSTAT_EXE -f $jobID"; #debugPrint($qstatCmd);
-			$qstatText = `$qstatCmd 2>&1`; # grabs both STDERR and STDOUT, comingled
-			chomp($qstatText);
-			$qstatCode = $?;
+			($qstatCode, $qstatText) = updateQstatInfo($jobID);
+			if (jobHasFinished($qstatCode, $qstatText)) { # is the job done???
+				printImportant(qq{Looks like your job has probably finished!});
+				last;
+			}
+
 		}
 
-		if (checkForJobFinished($qstatCode, $qstatText)) {
-			last; # Guess the job finished!
+		if (0 == ($sec % $REFRESH_FILE_INTERVAL)) {
+			verifyAllTerminalOutput($expectedStderr, $expectedStdout); # one last time before we exit, we should make sure the terminal output is OK
 		}
 
-		if (0 == ($sec % $PRINT_NEW_LINE_INTERVAL)) {
+		if (0 == ($sec % $PRINT_NEW_LINE_INTERVAL) and defined($qstatText)) {
 			($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = getAllowedTimeFromQstatOutputText($qstatText);
 			# Print a FULL LINE update every so often
 			my $timeLeftString = "";
@@ -503,6 +506,18 @@ sub main() { # Main program
 		} else {
 			printProgressDot(); # Otherwise just print a new dot every so often...
 		}
+
+		if ($shouldBackgroundSubmit and ($sec >= List::Util::max($REFRESH_FILE_INTERVAL, $REFRESH_QSTAT_INTERVAL))) {
+			printImportant("Your job was submitted as ID $jobID. Check on it periodically to see if it has completed.");
+			last; # exit as soon as one round of error checking has finished
+		}
+	}
+
+	verifyAllTerminalOutput($expectedStderr, $expectedStdout); # one last time before we exit, we should make sure the terminal output is OK
+
+	my $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT = 2; # arbitrary, but don't print non-existent text
+	if (defined($qstatText) and (length($qstatText) >= $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT)) {
+		printImportant($qstatText);
 	}
 
 	printNote("Output text should (eventually) be in these files. Check them as follows:");
@@ -514,7 +529,6 @@ sub main() { # Main program
 
 
 main();
-
 
 END {
 	# Runs after everything else.
@@ -565,6 +579,9 @@ OPTIONS:
   If you have a '#PBS' directive in your script file, like "$PBS_DIRECTIVE_PREFIX -l mem=4gb" and you also specify
   '--mem=8gb' on the command line, you must also pass in '--override' so 'qplz' will know to use your
   command line option instead of the PBS directive in the script.
+
+--background or --bg or -b : Instead of monitoring a job for its entire run, only check for immediate failure
+  and then exit after a few seconds. Not recommended.
 
 TO DO: add '-o' (STDOUT) and '-e' (STDERR) options
 
