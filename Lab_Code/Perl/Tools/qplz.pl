@@ -132,7 +132,7 @@ if ($SHOULD_USE_COLORS) {
 	use Term::ANSIColor;
 }
 
-sub warnPrint($) { chomp($_[0]); warn(safeColor("[WARNING]: " . $_[0] . "", "yellow on_black")); } # regarding "warn": if the string ends with a newline it WON'T print the line number!
+sub warnPrint($) { chomp($_[0]); warn(safeColor("[WARNING] " . $_[0] . "", "yellow on_black")); } # regarding "warn": if the string ends with a newline it WON'T print the line number!
 
 sub safeColor($;$) {		# one required and one optional argument
 	## Returns colored text, but only if $SHOULD_USE_COLORS is set.
@@ -169,12 +169,12 @@ sub printColorStdout($;$$) {
 sub dryNotify(;$) {		# one optional argument
 	my ($msg) = @_; chomp($msg);
 	$msg = (defined($msg)) ? $msg : "This was only a dry run, so we skipped executing a command.";
-	printColorStderr("[DRY RUN]: $msg\n", "black on_yellow");
+	printColorStderr("[DRY RUN] $msg\n", "black on_yellow");
 }
 
 sub printCool($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
-	printColorStderr("[PROGRESS REPORT]: $msg\n"); #, "white on_blue");
+	printColorStderr("[PROGRESS REPORT] $msg\n"); #, "white on_blue");
 }
 
 
@@ -185,7 +185,7 @@ sub printImportant($) {			# one required argument
 
 sub printProgressWaitNoNewline($$) {			# one required argument
 	my ($msg, $jobID) = @_; chomp($msg);
-	printColorStderr("[QUEUE REPORT for $jobID]: $msg", "green on_black");
+	printColorStderr("[QUEUE REPORT for $jobID] $msg", "green on_black");
 	$GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 1; # this does NOT end in a newline!
 }
 
@@ -196,22 +196,22 @@ sub printProgressDot() {			# one required argument
 
 sub printJobTechnicalDetails($) {
 	my ($msg) = @_; chomp($msg);
-	printColorStderr("[NOTE]: $msg\n", "green on_black");
+	printColorStderr("[NOTE] $msg\n", "green on_black");
 }
 
 sub printGeneralTips($) {
 	my ($msg) = @_; chomp($msg);
-	printColorStderr("[NOTE]: $msg\n");
+	printColorStderr("[NOTE] $msg\n");
 }
 
 sub printNote($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
-	printColorStderr("[NOTE]: $msg\n", "cyan on_black");
+	printColorStderr("[NOTE] $msg\n", "cyan on_black");
 }
 
 sub printBadNews($) {			# one required argument
 	my ($msg) = @_; chomp($msg);
-	printColorStderr("[ERROR]: $msg\n", "white on_red");
+	printColorStderr("[ERROR] $msg\n", "white on_red");
 }
 
 sub explode($) { printBadNews($_[0]); die $_[0]; }
@@ -239,7 +239,7 @@ sub debugPrint($) {			# one required argument
 	printColorStderr("[DEBUG] $msg\n", "yellow on_red");
 }
 
-sub ourWarn($) { my $s = $_[0]; chomp($s); print("[WARNING]: $s\n"); $GLOBAL_WARN_STRING .= "$s\n"; }
+sub ourWarn($) { my $s = $_[0]; chomp($s); print("[WARNING] $s\n"); $GLOBAL_WARN_STRING .= "$s\n"; }
 
 sub printUsageAndQuit() { printUsage(); exit(1); }
 sub printUsage() { print STDOUT <DATA>; }
@@ -491,6 +491,7 @@ sub main() { # Main program
 		defined($copt{walltime}) and printJobTechnicalDetails("                 MAX TIME: $copt{walltime}\n");
 		(defined($copt{mem}) or defined($copt{walltime})) and printJobTechnicalDetails("Be aware that your job will be instantly cancelled if it exceeds the MAX RAM or MAX TIME specified above.");
 	}
+	printImportant("--> Remember that it's OKAY to cancel the scrolling 'QUEUE REPORT' messages below by typing 'Ctrl-C'. Your job will continue running and can be checked with 'qstat' (see examples below).\n");
 	printGeneralTips("To check your job:\n");
 	printGeneralTips("  Check job status 1:   qstats                (print color list of running jobs\n");
 	printGeneralTips("  Check job status 2:   qstat -a -w           (print monochrome list of jobs\n");
@@ -523,16 +524,16 @@ sub main() { # Main program
 		}
 
 		if ($numProgressLinesPrinted > 10 and (0 == $numProgressLinesPrinted % $REMIND_ME_WHAT_THIS_JOB_WAS_EVERY_N_LINES)) {
-			printProgressWaitNoNewline("[Job reminder: command was]: $cmd   ", $jobID);
+			printProgressWaitNoNewline("[Reminder: this job is] $cmd   ", $jobID);
 			# Also give a 25% chance of a random queue quote
-			(rand() < 0.25) and printProgressWaitNoNewline("[Random queue quote]: \"" . $queueFunFacts[rand(@queueFunFacts)] . "\" --Attributed to " . $quoteAuthors[rand(@quoteAuthors)],  $jobID);
+			(rand() < 0.25) and printProgressWaitNoNewline("[Random queue quote] \"" . $queueFunFacts[rand(@queueFunFacts)] . "\" --Attributed to " . $quoteAuthors[rand(@quoteAuthors)],  $jobID);
 		}
 
 		if (0 == ($sec % $PRINT_NEW_LINE_INTERVAL) and defined($qstatText)) { # Print a FULL LINE update every so often
 			($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = getAllowedTimeFromQstatOutputText($qstatText);
 			my $walltimeInSec = 3600*$pbs_wall_hr + 60*$pbs_wall_min + $pbs_wall_sec;
 			my $elapsedStr    = join(":", totalSecondsToHMS($sec));
-			my $remainStr     = (!defined($pbs_wall_hr)) ? "" : (" [Will be cancelled in " . join(":", totalSecondsToHMS($walltimeInSec - $sec)) . "]");
+			my $remainStr     = (!defined($pbs_wall_hr)) ? "" : (" [Job will auto-cancel in " . join(":", totalSecondsToHMS($walltimeInSec - $sec)) . "]");
 			printProgressWaitNoNewline("[$elapsedStr elapsed]${remainStr}", $jobID);
 			$numProgressLinesPrinted++;
 		} else {
