@@ -523,7 +523,7 @@ sub main() { # Main program
 		if ($numProgressLinesPrinted > 10 and (0 == $numProgressLinesPrinted % $REMIND_ME_WHAT_THIS_JOB_WAS_EVERY_N_LINES)) {
 			printProgressWaitNoNewline("[Job reminder: command was]: $cmd   ", $jobID);
 			# Also give a 25% chance of a random queue quote
-			(rand() < 0.25) and printProgressWaitNoNewline("[Random queue quote]: \"" . $queueFunFacts[rand(@queueFunFacts)] . "\" --" . $quoteAuthors[rand(@quoteAuthors)],  $jobID);
+			(rand() < 0.25) and printProgressWaitNoNewline("[Random queue quote]: \"" . $queueFunFacts[rand(@queueFunFacts)] . "\" --Attributed to " . $quoteAuthors[rand(@quoteAuthors)],  $jobID);
 		}
 
 		if (0 == ($sec % $PRINT_NEW_LINE_INTERVAL) and defined($qstatText)) { # Print a FULL LINE update every so often
