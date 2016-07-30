@@ -58,6 +58,8 @@ my @queueFunFacts = ( "If you cancel out of this script with 'Ctrl-C', that will
 		      , "Jobs that request less than half an hour (00:29:59 or less) get priority over longer jobs."
 		      , "Programs that take longer than 15 seconds to finish should be run on the head node."
 		      , "Disk access (copying files) to / from the head node slows the system down to a crawl, but it's unavoidable and there's no workaround at the moment."
+		      , "It is rumored that the secret command 'tmux' will preserve your terminal sessions even after you log out and can allow multiple simultaneous logins at once."
+		      , "They say that 'qstat -f -x' and 'resources_used.mem' somehow allow you to figure out how much RAM a job really used, but sadly the secret art of doing this has been lost."
 		      );
 my @quoteAuthors = ("Albert Einstein", "Nikola Tesla", "Mark Twain", "Thomas Jefferson", "Ada Lovelace", "Jane Austen", "Winston Churchill", "William Shakespeare", "Queen Elizabeth I", "Sun Tzu", "Count Dracula", "Julius Caesar", "Hamlet");
 
