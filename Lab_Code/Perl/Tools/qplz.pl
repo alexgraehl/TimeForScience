@@ -17,6 +17,14 @@ $| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buf
 
 my @RECOGNIZED_PBS_OPTIONS = ("walltime", "mem", "ncpus"); # The ones we handle in this script
 
+my $REFRESH_FILE_INTERVAL   = 10; # N seconds between filesystem refreshes
+my $REFRESH_QSTAT_INTERVAL  = 5; # N seconds between qstat calls
+my $PRINT_NEW_LINE_INTERVAL = 15; # N seconds between new lines
+my $REMIND_ME_WHAT_THIS_JOB_WAS_EVERY_N_LINES = 80; # only print a 'what was this job' update every so often
+
+my $SLOW_DOWN_THE_REFRESH_RATE_AFTER = 10 * 60; # Don't refresh the console as frequently after this long. 10 * 60 = 10 minutes
+my $SLOWER_REFRESH_INTERVAL          = 60; # only update once a minute after the first N minutes
+
 my $PBS_DIRECTIVE_PREFIX = "#PBS"; # <-- the thing at the top of 'your_submitted_script.sh' that means a PBS directive is coming. Usually "#PBS"
 my $GLOBAL_WARN_STRING = ""; # record any POSSIBLE problems so that we can print them out at the very end where the user can see them in a convenient summarized format
 my $QSUB_EXE = "qsub";
@@ -46,6 +54,13 @@ my %QSETTINGS = ( "unix_gname_to_gid" => {"$UNIX_BIOGRP"   => "35098"
 				 }
 	 );
 
+my @queueFunFacts = ( "If you cancel out of this script with 'Ctrl-C', that will NOT affect your running job in any way! You can still check the job with 'qstat'."
+		      , "Jobs that request less than half an hour (00:29:59 or less) get priority over longer jobs."
+		      , "Programs that take longer than 15 seconds to finish should be run on the head node."
+		      , "Disk access (copying files) to / from the head node slows the system down to a crawl, but it's unavoidable and there's no workaround at the moment."
+		      );
+my @quoteAuthors = ("Albert Einstein", "Nikola Tesla", "Mark Twain", "Thomas Jefferson", "Ada Lovelace", "Jane Austen", "Winston Churchill", "William Shakespeare", "Queen Elizabeth I", "Sun Tzu", "Count Dracula", "Julius Caesar", "Hamlet");
+
 my $GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 0; # remember if we need to print a newline BEFORE we print something else! happens if we are printing the "progress" dots, which don't have a newline after them
 
 use constant JOBNAME_MAX_LEN          => 128; # cut it down to some reasonable size
@@ -53,6 +68,16 @@ use constant QSTAT_STILL_RUNNING_CODE => 0;
 use constant QSTAT_FINISHED_1_CODE    => 35;
 use constant QSTAT_FINISHED_2_CODE    => 8960;
 # another thing to check for: qstat -f :   "job held, too many failed attempts to run"
+
+sub adjustGlobalRefreshRate($) {
+	# After we have run for a while, no need to be constantly updating the console
+	my ($secElapsed) = @_;
+	if ($secElapsed > $SLOW_DOWN_THE_REFRESH_RATE_AFTER) {
+		$REFRESH_FILE_INTERVAL  = max($REFRESH_FILE_INTERVAL , $SLOWER_REFRESH_INTERVAL);
+		$REFRESH_QSTAT_INTERVAL = max($REFRESH_QSTAT_INTERVAL, $SLOWER_REFRESH_INTERVAL);
+		$PRINT_NEW_LINE_INTERVAL  = max($PRINT_NEW_LINE_INTERVAL, $SLOWER_REFRESH_INTERVAL);
+	}
+}
 
 sub trimInMiddle($$$) { # trim a string in the MIDDLE
 	my ($s, $trimToLen, $middleThingToAdd) = @_;
@@ -158,7 +183,7 @@ sub printImportant($) {			# one required argument
 
 sub printProgressWaitNoNewline($$) {			# one required argument
 	my ($msg, $jobID) = @_; chomp($msg);
-	printColorStderr("[PROGRESS REPORT for $jobID]: $msg", "green on_black");
+	printColorStderr("[QUEUE REPORT for $jobID]: $msg", "green on_black");
 	$GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 1; # this does NOT end in a newline!
 }
 
@@ -276,6 +301,15 @@ sub refreshTheFilesystem() {
 	system($refreshCmd); # Make and then delete a fake file in order to refresh the filesystem. This lets us catch immediate problems that lead to output files being generated, without having to wait 60 seconds for the filesystem to update.
 }
 
+sub totalSecondsToHMS($) {
+	# input: a number in seconds. Output three STRINGS: (HH, MM, SS) (always 2+ digits)
+	my ($total) = @_; # <-- total number in SECONDS
+	# each returned value always has at least 2 digits
+	my $h = sprintf("%02d", POSIX::floor( $total/3600)       );
+	my $m = sprintf("%02d", POSIX::floor(($total/60) % 60)   );
+	my $s = sprintf("%02d", $total % 60                      );
+	return($h, $m, $s);
+}
 
 sub verifyAllTerminalOutput($$) {
 	my ($stderrFile, $stdoutFile) = @_;
@@ -467,12 +501,9 @@ sub main() { # Main program
 	#print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
 
 	#printJobTechnicalDetails("Your job will be allowed to use $copt{mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n");
-	my $REFRESH_FILE_INTERVAL = 5; # N seconds between filesystem refreshes
-	my $REFRESH_QSTAT_INTERVAL = 3; # N seconds between qstat calls
-	my $PRINT_NEW_LINE_INTERVAL = 10;
-
 	my $qstatCode = undef;
 	my $qstatText = undef;
+	my $numProgressLinesPrinted = 0;
 	for (my $sec = 0; 1; $sec++) {
 		sleep(1);
 
@@ -489,28 +520,31 @@ sub main() { # Main program
 			verifyAllTerminalOutput($expectedStderr, $expectedStdout); # one last time before we exit, we should make sure the terminal output is OK
 		}
 
-		if (0 == ($sec % $PRINT_NEW_LINE_INTERVAL) and defined($qstatText)) {
+		if ($numProgressLinesPrinted > 10 and (0 == $numProgressLinesPrinted % $REMIND_ME_WHAT_THIS_JOB_WAS_EVERY_N_LINES)) {
+			printProgressWaitNoNewline("[Job reminder: command was]: $cmd   ", $jobID);
+			# Also give a 25% chance of a random queue quote
+			(rand() < 0.25) and printProgressWaitNoNewline("[Random queue quote]: \"" . $queueFunFacts[rand(@queueFunFacts)] . "\" --" . $quoteAuthors[rand(@quoteAuthors)],  $jobID);
+		}
+
+		if (0 == ($sec % $PRINT_NEW_LINE_INTERVAL) and defined($qstatText)) { # Print a FULL LINE update every so often
 			($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = getAllowedTimeFromQstatOutputText($qstatText);
-			# Print a FULL LINE update every so often
-			my $timeLeftString = "";
-			if (defined($pbs_wall_hr)) {
-				my $walltimeInSec = 3600*$pbs_wall_hr + 60*$pbs_wall_min + $pbs_wall_sec;
-				my $remainInSec = $walltimeInSec - $sec;
-				my $hhr = floor($remainInSec / 3600);
-				my $mmr = floor(($remainInSec / 60) / 60);
-				my $ssr = $remainInSec % 60;
-				printProgressWaitNoNewline("[$sec seconds elapsed] [Job will be auto-killed in $hhr:$mmr:$ssr]", $jobID);
-			} else {
-				printProgressWaitNoNewline("[$sec seconds elapsed] ...", $jobID);
-			}
+			my $walltimeInSec = 3600*$pbs_wall_hr + 60*$pbs_wall_min + $pbs_wall_sec;
+			my $elapsedStr    = join(":", totalSecondsToHMS($sec));
+			my $remainStr     = (!defined($pbs_wall_hr)) ? "" : (" [Will be cancelled in " . join(":", totalSecondsToHMS($walltimeInSec - $sec)) . "]");
+			printProgressWaitNoNewline("[$elapsedStr elapsed]${remainStr}", $jobID);
+			$numProgressLinesPrinted++;
 		} else {
 			printProgressDot(); # Otherwise just print a new dot every so often...
 		}
+
+
 
 		if ($shouldBackgroundSubmit and ($sec >= List::Util::max($REFRESH_FILE_INTERVAL, $REFRESH_QSTAT_INTERVAL))) {
 			printImportant("Your job was submitted as ID $jobID. Check on it periodically to see if it has completed.");
 			last; # exit as soon as one round of error checking has finished
 		}
+		
+		adjustGlobalRefreshRate($sec);
 	}
 
 	verifyAllTerminalOutput($expectedStderr, $expectedStdout); # one last time before we exit, we should make sure the terminal output is OK
