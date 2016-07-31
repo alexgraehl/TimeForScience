@@ -307,10 +307,10 @@ sub totalSecondsToHMS($) {
 	# input: a number in seconds. Output three STRINGS: (HH, MM, SS) (always 2+ digits)
 	my ($total) = @_; # <-- total number in SECONDS
 	# each returned value always has at least 2 digits
-	my $h = sprintf("%02d", POSIX::floor( $total/3600)       );
-	my $m = sprintf("%02d", POSIX::floor(($total/60) % 60)   );
-	my $s = sprintf("%02d", $total % 60                      );
-	return($h, $m, $s);
+	my $h = sprintf("%02d", POSIX::floor($total/3600)      );
+	my $m = sprintf("%02d", POSIX::floor(($total/60) % 60) );
+	my $s = sprintf("%02d", $total % 60                    );
+	return($h, $m, $s); # example: "194" , "05", "08" for 194:05:08
 }
 
 sub verifyAllTerminalOutput($$) {
