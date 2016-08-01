@@ -63,7 +63,6 @@ my @queueFunFacts = ( "If you cancel out of this script with 'Ctrl-C', that will
 		      , "It is rumored that the secret command 'tmux' will preserve your terminal sessions even after you log out and can allow multiple simultaneous logins at once."
 		      , "There is some way to use 'qstat -f -x' and 'resources_used.mem' to figure out how much RAM a job ACTUALLY used."
 		      );
-my @quoteAuthors = ("Albert Einstein", "Nikola Tesla", "Mark Twain", "Ada Lovelace", "Jane Austen", "William Shakespeare", "Sun Tzu", "Count Dracula");
 
 my $GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 0; # remember if we need to print a newline BEFORE we print something else! happens if we are printing the "progress" dots, which don't have a newline after them
 
@@ -100,11 +99,44 @@ sub trimInMiddle($$$) { # trim a string in the MIDDLE
 
 sub updateQstatInfo($) {
 	my ($jid) = @_;
-	my $qstatCmd = "$QSTAT_EXE -f $jid  2>&1";  # do not put "X" here or that messes things up. '2>&1' grabs both STDERR and STDOUT, comingled. #debugPrint($qstatCmd);
+	my $qstatCmd = "$QSTAT_EXE -f $jid  2>&1";  # do NOT put "-x" here or that messes things up (and always returns 0!). '2>&1' grabs both STDERR and STDOUT, comingled. #debugPrint($qstatCmd);
 	my $qText   = `$qstatCmd`; chomp($qText);
 	my $qCode = $?;
 	return($qCode, $qText);
 }
+
+sub getQstatCompletedJobExitStatus($) {
+	my ($jid) = @_;
+	my $qstat_x_cmd = qq{$QSTAT_EXE -x -f $jid | perl -ne 'print if m/Exit_status\\s+=\\s+[0-9]+/i;' };
+	my $qText   = `$qstat_x_cmd`; chomp($qText);
+	my $qCode = $?;
+	my $jobExitStatus = undef; # NOT the exit code of the 'qstat' cmomand running! This is a qstat code for the job's completion status. 0 is good, other numbers are... less good? Hard to find documentation anywhere for the various "Exit_status = ..." values, though. There are a lot of different ones.
+	($qCode == 0) or printBadNews("Had a problem running 'qstat -f' to get the job completion status for job <$jid>. Maybe the job ID was invalid? Or the queue server is down?");
+	if ($qText =~ m/Exit_status\s*=\s*([-\d]+)/i) { # note: negative numbers allowed! hence the '-'
+		$jobExitStatus = $1;
+	} else {
+		# Actually this is probably ok and/or means the job is still running... maybe
+		# printBadNews(qq{Had a problem running 'qstat -f'--got a weird value for the queue status text (possibly it was blank?).  The text was this: \"$qText\" });
+	}
+	return($jobExitStatus);
+}
+
+sub reportQstatExitStatusMeaning($$) {
+	my ($jid, $exitStatus) = @_;
+	# failure....
+	if (!defined($exitStatus)) {  # This is OK--job is still running
+		printImportant(qq{Job <$$jid> seems to still be running. You may want to check on it periodically by running 'qstat'.});
+	} elsif (0 == $exitStatus) {  # This is OK--job finished successfully.
+		printImportant(qq{Finished! Job <$$jid> appears to have exited successfully, as the 'Exit_status' reported by 'qstat -f -x $$jid' is 0 (this is normal).});
+	} else {
+		if (271 == $exitStatus) { printBadNews(qq{Job <$jid> appears to have been CANCELLED EARLY by someone running 'qdel' (causing the exit code to be 271).}); }
+		else {                    printBadNews(qq{Job <$jid> probably did not run to completion, as it set the 'Exit_status' to the unknown exit status number '$exitStatus' be 271).}); }
+		printBadNews(qq{The job probably FAILED. You can check the causes by});
+		printBadNews(qq{          1) ...checking the qstat logs with this command:   qstat -f -x $jid | less });
+		printBadNews(qq{          2) ...and checking the STDERR and STDOUT log files.});
+	}
+}
+
 
 sub jobHasFinished($$) {
 	my ($qstatExitCode, $qstatTerminalText) = @_;
@@ -186,8 +218,8 @@ sub printImportant($) {			# one required argument
 }
 
 sub printProgressWaitNoNewline($$) {			# one required argument
-	my ($msg, $jobID) = @_; chomp($msg);
-	printColorStderr("[QUEUE REPORT for $jobID] $msg", "green on_black");
+	my ($msg, $jid) = @_; chomp($msg);
+	printColorStderr("[QUEUE REPORT for $jid] $msg", "green on_black");
 	$GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 1; # this does NOT end in a newline!
 }
 
@@ -397,6 +429,10 @@ sub main() { # Main program
 		   , "b|background|bg!"=> \$shouldBackgroundSubmit # if we should 'background' submit the job, then exit after the job submits, DO NOT stick around to monitor it
 		  ) or printUsageAndQuit();
 
+	if (scalar(@ARGV) == 0 and !defined($pbs_submit_file)) {
+		quitWithUsageError("You need to specify EITHER a simple command (like 'qplz my_command 123') or a script name (like 'qplz myscript.sh') in order to submit a request to the queue.");
+	}
+
 	my $grp = getOurQueueGroup();
 
 	my %optIsAlreadyInFile = (); # remember which $PBS directives were defined in the script
@@ -509,14 +545,11 @@ sub main() { # Main program
 	my $numProgressLinesPrinted = 0;
 	for (my $sec = 0; 1; $sec++) {
 		sleep(1);
-
 		if (!defined($pbs_wall_hr) or (0 == $sec % $REFRESH_QSTAT_INTERVAL)) {
 			($qstatCode, $qstatText) = updateQstatInfo($jobID);
 			if (jobHasFinished($qstatCode, $qstatText)) { # is the job done???
-				printImportant(qq{Looks like your job has probably finished!});
-				last;
+				last; # done! maybe.
 			}
-
 		}
 
 		if (0 == ($sec % $REFRESH_FILE_INTERVAL)) {
@@ -526,8 +559,8 @@ sub main() { # Main program
 		if ($numProgressLinesPrinted > 10 and (0 == $numProgressLinesPrinted % $REMIND_ME_WHAT_THIS_JOB_WAS_EVERY_N_LINES)) {
 			printProgressWaitNoNewline("[Reminder: this job is] $cmd   ", $jobID);
 			# Also give a 50% chance of a random queue quote
-			my $CHANCE_OF_PRINTING_QUOTE = 0.50;
-			(rand() < $CHANCE_OF_PRINTING_QUOTE) and printProgressWaitNoNewline("[Random queue quote] \"" . $queueFunFacts[rand(@queueFunFacts)] . "\" --Attributed to " . $quoteAuthors[rand(@quoteAuthors)],  $jobID);
+			my $CHANCE_OF_PRINTING_QUOTE = 1.0; # 1.0 = always
+			(rand() < $CHANCE_OF_PRINTING_QUOTE) and printProgressWaitNoNewline("[Random queue quote] \"" . $queueFunFacts[rand(@queueFunFacts)] . "\"",  $jobID);
 		}
 
 		if (0 == ($sec % $PRINT_NEW_LINE_INTERVAL) and defined($qstatText)) { # Print a FULL LINE update every so often
@@ -540,8 +573,6 @@ sub main() { # Main program
 		} else {
 			printProgressDot(); # Otherwise just print a new dot every so often...
 		}
-
-
 
 		if ($shouldBackgroundSubmit and ($sec >= List::Util::max($REFRESH_FILE_INTERVAL, $REFRESH_QSTAT_INTERVAL))) {
 			printImportant("Your job was submitted as ID $jobID. Check on it periodically to see if it has completed.");
@@ -563,6 +594,9 @@ sub main() { # Main program
 	# 170
 	# 13
 	# and more...
+	
+	my $exitStatus = getQstatCompletedJobExitStatus($jobID);
+	reportQstatExitStatusMeaning($jobID, $exitStatus);
 
 	verifyAllTerminalOutput($expectedStderr, $expectedStdout); # one last time before we exit, we should make sure the terminal output is OK
 
