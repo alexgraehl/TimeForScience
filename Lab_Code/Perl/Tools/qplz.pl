@@ -551,6 +551,19 @@ sub main() { # Main program
 		adjustGlobalRefreshRate($sec);
 	}
 
+	# check the 'exit_status' in qstat -f -x now! It can be:
+	# 0
+	# 271 (qdel maybe?)
+	# 11 ?
+	# 265
+	# 127
+	# -1
+	# 1
+	# 2
+	# 170
+	# 13
+	# and more...
+
 	verifyAllTerminalOutput($expectedStderr, $expectedStdout); # one last time before we exit, we should make sure the terminal output is OK
 
 	my $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT = 2; # arbitrary, but don't print non-existent text
