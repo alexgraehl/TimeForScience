@@ -30,8 +30,8 @@ my $GLOBAL_WARN_STRING = ""; # record any POSSIBLE problems so that we can print
 my $QSUB_EXE = "qsub";
 my $QSTAT_EXE = "qstat";
 
-my $UNIX_BIOGRP = "bioqueue";
-my $UNIX_GENGRP = "genqueue";
+my $UNIX_BIOGRP = "bioqueue"; # the actual name of the group in UNIX. These are bioinformatics core users.
+my $UNIX_GENGRP = "genqueue"; # the actual name of the group in UNIX. These are general scientific users who aren't in the core.
 
 my %QSETTINGS = ( "unix_gname_to_gid" => {"$UNIX_BIOGRP"   => "35098"
 					  , "$UNIX_GENGRP" => "35099" }
@@ -45,23 +45,25 @@ my %QSETTINGS = ( "unix_gname_to_gid" => {"$UNIX_BIOGRP"   => "35098"
 					   , "$UNIX_GENGRP" => 64 }
 		  , "max_walltime_hours" => {"$UNIX_BIOGRP"   => 335
 					   , "$UNIX_GENGRP" => 335 }
-		  , "pbs_defaults" => { "ncpus" => {"$UNIX_BIOGRP"   => 1
-					   , "$UNIX_GENGRP" => 1 }
-					, "mem" => {"$UNIX_BIOGRP"   => 4
-						    , "$UNIX_GENGRP" => 4 }
+		  , "pbs_defaults" => { "ncpus" =>      {"$UNIX_BIOGRP"   => 1
+							 , "$UNIX_GENGRP" => 1 }
+					, "mem" =>      {"$UNIX_BIOGRP"   => 4
+							 , "$UNIX_GENGRP" => 4 }
 					, "walltime" => {"$UNIX_BIOGRP"   => "23:59:59"
 							 , "$UNIX_GENGRP" => "23:59:59" }
-				 }
+				      }
 	 );
+
+# To do: report the ACTUALLY USED amount of time and RAM of a project, after it is done. Can use 'qstat -f -x' and check 'resources_used.mem' for this.
 
 my @queueFunFacts = ( "If you cancel out of this script with 'Ctrl-C', that will NOT affect your running job in any way! You can still check the job with 'qstat'."
 		      , "Jobs that request less than half an hour (00:29:59 or less) get priority over longer jobs."
 		      , "Programs that take longer than 15 seconds to finish should be run on the head node."
 		      , "Disk access (copying files) to / from the head node slows the system down to a crawl, but it's unavoidable and there's no workaround at the moment."
 		      , "It is rumored that the secret command 'tmux' will preserve your terminal sessions even after you log out and can allow multiple simultaneous logins at once."
-		      , "They say that 'qstat -f -x' and 'resources_used.mem' somehow allow you to figure out how much RAM a job really used, but sadly the secret art of doing this has been lost."
+		      , "There is some way to use 'qstat -f -x' and 'resources_used.mem' to figure out how much RAM a job ACTUALLY used."
 		      );
-my @quoteAuthors = ("Albert Einstein", "Nikola Tesla", "Mark Twain", "Thomas Jefferson", "Ada Lovelace", "Jane Austen", "Winston Churchill", "William Shakespeare", "Queen Elizabeth I", "Sun Tzu", "Count Dracula", "Julius Caesar", "Hamlet");
+my @quoteAuthors = ("Albert Einstein", "Nikola Tesla", "Mark Twain", "Ada Lovelace", "Jane Austen", "William Shakespeare", "Sun Tzu", "Count Dracula");
 
 my $GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 0; # remember if we need to print a newline BEFORE we print something else! happens if we are printing the "progress" dots, which don't have a newline after them
 
@@ -491,7 +493,6 @@ sub main() { # Main program
 		defined($copt{walltime}) and printJobTechnicalDetails("                 MAX TIME: $copt{walltime}\n");
 		(defined($copt{mem}) or defined($copt{walltime})) and printJobTechnicalDetails("Be aware that your job will be instantly cancelled if it exceeds the MAX RAM or MAX TIME specified above.");
 	}
-	printImportant("--> Remember that it's OKAY to cancel the scrolling 'QUEUE REPORT' messages below by typing 'Ctrl-C'. Your job will continue running and can be checked with 'qstat' (see examples below).\n");
 	printGeneralTips("To check your job:\n");
 	printGeneralTips("  Check job status 1:   qstats                (print color list of running jobs\n");
 	printGeneralTips("  Check job status 2:   qstat -a -w           (print monochrome list of jobs\n");
@@ -501,8 +502,7 @@ sub main() { # Main program
 	printGeneralTips("  To delete a job: 1. Find the 'Job id' number with 'qstat' (leftmost column)\n");
 	printGeneralTips("  To delete a job: 2. Then use 'qdel ####' (that same number) to cancel it\n");
 	printGeneralTips("  To delete all your jobs (dangerous!): qselect -u \$USER | xargs qdel  <-- deletes all your jobs\n");
-	#print STDERR "Ok, now you should run 'qstats' and look for your output in these STDERR / STDOUT files...\n";
-
+	printImportant("--> Remember that it's OKAY to cancel the scrolling 'QUEUE REPORT' messages below by typing 'Ctrl-C'. Your job will continue running and can be checked with 'qstat' (see examples below).\n");
 	#printJobTechnicalDetails("Your job will be allowed to use $copt{mem} GB of RAM and run for ${pbs_wall_hr} hours and ${pbs_wall_min} minutes before it is cancelled.\n");
 	my $qstatCode = undef;
 	my $qstatText = undef;
@@ -525,8 +525,9 @@ sub main() { # Main program
 
 		if ($numProgressLinesPrinted > 10 and (0 == $numProgressLinesPrinted % $REMIND_ME_WHAT_THIS_JOB_WAS_EVERY_N_LINES)) {
 			printProgressWaitNoNewline("[Reminder: this job is] $cmd   ", $jobID);
-			# Also give a 25% chance of a random queue quote
-			(rand() < 0.25) and printProgressWaitNoNewline("[Random queue quote] \"" . $queueFunFacts[rand(@queueFunFacts)] . "\" --Attributed to " . $quoteAuthors[rand(@quoteAuthors)],  $jobID);
+			# Also give a 50% chance of a random queue quote
+			my $CHANCE_OF_PRINTING_QUOTE = 0.50;
+			(rand() < $CHANCE_OF_PRINTING_QUOTE) and printProgressWaitNoNewline("[Random queue quote] \"" . $queueFunFacts[rand(@queueFunFacts)] . "\" --Attributed to " . $quoteAuthors[rand(@quoteAuthors)],  $jobID);
 		}
 
 		if (0 == ($sec % $PRINT_NEW_LINE_INTERVAL) and defined($qstatText)) { # Print a FULL LINE update every so often
