@@ -1120,4 +1120,4 @@ current line."
 ;;;; =========== SHORTCUT KEY DEFINED HERE: you can change it from Ctrl-option-L by changing the text below =================
 (global-set-key [(control meta l)] 'sh-send-line-or-region-and-step) ; option-control-l will execute the current line the cursor is on in the shell, OR a whole region if there' a highlighted region
 ;;;;;;;; ========================= SHELL INTEGRATION: allow the user to put their cursor on a line, hit "Control-Option-L" and have that text run in the shell ============
-(put 'upcase-region 'disabled nil)
+(put 'upcase-region 'disabled nil) ; Don't confirm that we want to enable "CTRL-X CTRL-U" to upper-case a region.
