@@ -125,9 +125,9 @@ sub reportQstatExitStatusMeaning($$) {
 	my ($jid, $exitStatus) = @_;
 	# failure....
 	if (!defined($exitStatus)) {  # This is OK--job is still running
-		printImportant(qq{Job <$$jid> seems to still be running. You may want to check on it periodically by running 'qstat'.});
+		printImportant(qq{Job <$jid> seems to still be running. You may want to check on it periodically by running 'qstat'.});
 	} elsif (0 == $exitStatus) {  # This is OK--job finished successfully.
-		printImportant(qq{Finished! Job <$$jid> appears to have exited successfully, as the 'Exit_status' reported by 'qstat -f -x $$jid' is 0 (this is normal).});
+		printImportant(qq{Finished! Job <$jid> appears to have exited successfully, as the 'Exit_status' reported by 'qstat -f -x $jid' is 0 (this is normal).});
 	} else {
 		if (271 == $exitStatus) { printBadNews(qq{Job <$jid> appears to have been CANCELLED EARLY by someone running 'qdel' (causing the exit code to be 271).}); }
 		else {                    printBadNews(qq{Job <$jid> probably did not run to completion, as it set the 'Exit_status' to the unknown exit status number '$exitStatus' be 271).}); }
@@ -183,7 +183,7 @@ sub printColorStderr($;$$) {
 	my ($msg, $col, $neverPrecedingNewline) = @_; # Only prints in color if STDERR is to a terminal, NOT if it is redirected to an output file!
 	if (! -t STDERR) { $col = undef; } # no coloration if this isn't to a terminal
 	if ((not $neverPrecedingNewline) and $GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT) {
-		print STDOUT "\n";
+		print STDERR "\n";
 		$GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 0;
 	}
 	print STDERR safeColor($msg, $col);
