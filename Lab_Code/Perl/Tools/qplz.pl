@@ -18,7 +18,7 @@ $| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buf
 my @RECOGNIZED_PBS_OPTIONS = ("walltime", "mem", "ncpus"); # The ones we handle in this script
 
 my $REFRESH_FILE_INTERVAL   = 10; # N seconds between filesystem refreshes
-my $REFRESH_QSTAT_INTERVAL  = 5; # N seconds between qstat calls
+my $REFRESH_QSTAT_INTERVAL  = 1; # N seconds between qstat calls
 my $PRINT_NEW_LINE_INTERVAL = 15; # N seconds between new lines
 my $REMIND_ME_WHAT_THIS_JOB_WAS_EVERY_N_LINES = 80; # only print a 'what was this job' update every so often
 
@@ -243,9 +243,14 @@ sub printNote($) {			# one required argument
 	printColorStderr("[NOTE] $msg\n", "cyan on_black");
 }
 
-sub printBadNews($) {			# one required argument
+sub printBadNews($) {
 	my ($msg) = @_; chomp($msg);
 	printColorStderr("[ERROR] $msg\n", "white on_red");
+}
+
+sub printBadNewsEmphatic($) {
+	my ($msg) = @_; chomp($msg);
+	printColorStderr("[ERROR] $msg\n", "yellow on_red");
 }
 
 sub explode($) { printBadNews($_[0]); die $_[0]; }
@@ -373,13 +378,18 @@ sub checkTerminalOutput($$) {
 	if ($txt =~ m/\b(Segmentation\s+fault|segfault)/i) {
 		$looksLikeError = 1; printBadNews(qq{Looks like this program doesn't run properly for some reason!});
 	}
-	$txt =~ s/^/[Most recent $numLinesToShow lines of $STDHUH] /;
+	#$txt =~ s/^/[Most recent $numLinesToShow lines of $STDHUH] /;
 	if ($looksLikeError) {
-		printBadNews($txt);
+		my @txtSplit = split(/\n/, $txt);
+		#printBadNews($txt);
 		printBadNews("*"x80);
-		printBadNews("      Your job probably FAILED TO RUN!                              ");
-		printBadNews("      You should check this file for details, as follows:           ");
-		printBadNews("                 cat $expectedFilename");
+		printBadNews(" Your job probably FAILED TO RUN!                              ");
+		printBadNews(" You should check this file for details, as follows:           ");
+		printBadNews("      cat $expectedFilename");
+		printBadNews(" Here is some of the output (maybe it describes the problem?): ");
+		foreach my $line (@txtSplit) {
+			printBadNewsEmphatic("  [$STDHUH] $line");
+		}
 		printBadNews("*"x80);
 		exit(1);	# deadly!
 	}
@@ -530,10 +540,11 @@ sub main() { # Main program
 		(defined($copt{mem}) or defined($copt{walltime})) and printJobTechnicalDetails("Be aware that your job will be instantly cancelled if it exceeds the MAX RAM or MAX TIME specified above.");
 	}
 	printGeneralTips("To check your job:\n");
-	printGeneralTips("  Check job status 1:   qstats                (print color list of running jobs\n");
-	printGeneralTips("  Check job status 2:   qstat -a -w           (print monochrome list of jobs\n");
-	printGeneralTips("  Check job status 3:   qstat -a -w -u \$USER  (print YOUR jobs only)\n");
-	printGeneralTips("  Historical jobs:      qstat -x  | less      (scroll with arrows or space bar/'B')");
+	printGeneralTips("  Check job status 1:        qstats                (print color list of running jobs\n");
+	printGeneralTips("  Check job status 2:        qstat -a -w           (print monochrome list of jobs\n");
+	printGeneralTips("  Check job status 3:        qstat -a -w -u \$USER  (print YOUR jobs only)\n");
+	printGeneralTips("  Check your job in detail:  qstat -f -x '$jobID' | less  (a ridiculous amount of info)\n");
+	printGeneralTips("  Historical jobs:           qstat -x  | less      (scroll with arrows or space bar/'B')");
 	printGeneralTips("If you want to cancel your job (maybe you just realized that it needs more time / RAM):\n");
 	printGeneralTips("  To delete a job: 1. Find the 'Job id' number with 'qstat' (leftmost column)\n");
 	printGeneralTips("  To delete a job: 2. Then use 'qdel ####' (that same number) to cancel it\n");
@@ -556,13 +567,6 @@ sub main() { # Main program
 			verifyAllTerminalOutput($expectedStderr, $expectedStdout); # one last time before we exit, we should make sure the terminal output is OK
 		}
 
-		if ($numProgressLinesPrinted > 10 and (0 == $numProgressLinesPrinted % $REMIND_ME_WHAT_THIS_JOB_WAS_EVERY_N_LINES)) {
-			printProgressWaitNoNewline("[Reminder: this job is] $cmd   ", $jobID);
-			# Also give a 50% chance of a random queue quote
-			my $CHANCE_OF_PRINTING_QUOTE = 1.0; # 1.0 = always
-			(rand() < $CHANCE_OF_PRINTING_QUOTE) and printProgressWaitNoNewline("[Random queue quote] \"" . $queueFunFacts[rand(@queueFunFacts)] . "\"",  $jobID);
-		}
-
 		if (0 == ($sec % $PRINT_NEW_LINE_INTERVAL) and defined($qstatText)) { # Print a FULL LINE update every so often
 			($pbs_wall_hr, $pbs_wall_min, $pbs_wall_sec) = getAllowedTimeFromQstatOutputText($qstatText);
 			my $walltimeInSec = 3600*$pbs_wall_hr + 60*$pbs_wall_min + $pbs_wall_sec;
@@ -570,6 +574,12 @@ sub main() { # Main program
 			my $remainStr     = (!defined($pbs_wall_hr)) ? "" : (" [Job will auto-cancel in " . join(":", totalSecondsToHMS($walltimeInSec - $sec)) . "]");
 			printProgressWaitNoNewline("[$elapsedStr elapsed]${remainStr}", $jobID);
 			$numProgressLinesPrinted++;
+			if ($numProgressLinesPrinted == 1 or (0 == $numProgressLinesPrinted % $REMIND_ME_WHAT_THIS_JOB_WAS_EVERY_N_LINES)) {
+				printProgressWaitNoNewline("Reminder: this job is -->  $cmd   ", $jobID);
+				# Also give a 50% chance of a random queue quote
+				my $CHANCE_OF_PRINTING_QUOTE = 1.0; # 1.0 = always
+				(rand() <= $CHANCE_OF_PRINTING_QUOTE) and printProgressWaitNoNewline("[VERY USEFUL HELP MESSAGE] \"" . $queueFunFacts[rand(@queueFunFacts)] . "\"",  $jobID);
+			}
 		} else {
 			printProgressDot(); # Otherwise just print a new dot every so often...
 		}
