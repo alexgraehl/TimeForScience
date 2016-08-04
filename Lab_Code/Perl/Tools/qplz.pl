@@ -130,7 +130,7 @@ sub reportQstatExitStatusMeaning($$) {
 		printImportant(qq{Finished! Job <$jid> appears to have exited successfully, as the 'Exit_status' reported by 'qstat -f -x $jid' is 0 (this is normal).});
 	} else {
 		if (271 == $exitStatus) { printBadNews(qq{Job <$jid> appears to have been CANCELLED EARLY by someone running 'qdel' (causing the exit code to be 271).}); }
-		else {                    printBadNews(qq{Job <$jid> probably did not run to completion, as it set the 'Exit_status' to the unknown exit status number '$exitStatus' be 271).}); }
+		else {                    printBadNews(qq{Job <$jid> probably did not run to completion, as it set the 'Exit_status' to the unknown exit status number '$exitStatus').}); }
 		printBadNews(qq{The job probably FAILED. You can check the causes by});
 		printBadNews(qq{          1) ...checking the qstat logs with this command:   qstat -f -x $jid | less });
 		printBadNews(qq{          2) ...and checking the STDERR and STDOUT log files.});
