@@ -4,16 +4,10 @@ use POSIX;
 use List::Util qw(max min);
 use Getopt::Long;
 use File::Basename;
-use Carp; # backtrace on errors. Has the "confess" function. Use this instead of "die" if you want useful information!   
+use Carp; # backtrace on errors. Has the "confess" function
 use POSIX; # floor / ceiling
 
-#use File::Basename;
-
 $| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buffer terminal output! Setting this to zero can cause STDERR and STDOUT to be interleaved in weird ways.
-
-#no warnings 'numeric';
-#use Scalar::Util;
-#print Scalar::Util::looks_like_number($string), "\n";
 
 my @RECOGNIZED_PBS_OPTIONS = ("walltime", "mem", "ncpus"); # The ones we handle in this script
 
@@ -84,7 +78,7 @@ sub adjustGlobalRefreshRate($) {
 
 sub trimInMiddle($$$) { # trim a string in the MIDDLE
 	my ($s, $trimToLen, $middleThingToAdd) = @_;
-	# Note: fails totally if trimToLen is something unreasonably short. Not a well-designed f
+	# Note: fails totally if trimToLen is something really short.
 	# example:
 	# String is "AAAAAAAAAAAAABBBBBBBBBBBBBB"
 	# trim to len is 10
@@ -219,13 +213,13 @@ sub printImportant($) {			# one required argument
 
 sub printProgressWaitNoNewline($$) {			# one required argument
 	my ($msg, $jid) = @_; chomp($msg);
-	printColorStderr("[QUEUE REPORT for $jid] $msg", "green on_black");
-	$GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 1; # this does NOT end in a newline!
+	printColorStderr("[Job $jid] $msg", "green on_black");
+	$GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 1; # this does NOT end in a newline! This is so we can print dots after it on the same line
 }
 
 sub printProgressDot() {			# one required argument
 	printColorStderr(".", "green on_black", "never print preceding newline"); # This does NOT end in a newline, nor should it have one before it!
-	$GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 1;
+	$GLOBAL_NEEDS_NEWLINE_BEFORE_NEXT_PRINT = 1; # remember that we will need to print a newline before printing anything ELSE that isn't a dot.
 }
 
 sub printJobTechnicalDetails($) {
@@ -614,11 +608,9 @@ sub main() { # Main program
 	if (defined($qstatText) and (length($qstatText) >= $QSTAT_TEXT_MUST_BE_THIS_LONG_TO_PRINT_IT)) {
 		printImportant($qstatText);
 	}
-
 	printNote("Output text should (eventually) be in these files. Check them as follows:");
 	printNote("         STDOUT:   cat $expectedStdout");
 	printNote("         STDERR:   cat $expectedStderr");
-	#print STDERR $GLOBAL_WARN_STRING . "\n";
 	printColorStderr("===============================\n", "green");
 } # end main()
 
