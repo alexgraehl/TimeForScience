@@ -718,7 +718,6 @@ alias cake="echo   $'\xF0\x9F\x8D\xB0'"  # See http://apps.timwhitlock.info/emoj
 
 function qkiri { # kill all your OWN jobs
     echo ">> If qkiri fails, try running this command: qselect -u YOURNAME | sudo xargs qdel -p"
-    echo "   Note: that command requires 'sudo'"
     qselect -u $USER | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats;
 }
 
