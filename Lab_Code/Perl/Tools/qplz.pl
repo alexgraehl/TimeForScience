@@ -548,7 +548,7 @@ sub main() { # Main program
 	my $qstatCode = undef;
 	my $qstatText = undef;
 	my $numProgressLinesPrinted = 0;
-	for (my $sec = 0; 1; $sec++) {
+	for (my $sec = 0; !$shouldBackgroundSubmit; $sec++) {
 		sleep(1);
 		if (!defined($pbs_wall_hr) or (0 == $sec % $REFRESH_QSTAT_INTERVAL)) {
 			($qstatCode, $qstatText) = updateQstatInfo($jobID);
@@ -577,15 +577,10 @@ sub main() { # Main program
 		} else {
 			printProgressDot(); # Otherwise just print a new dot every so often...
 		}
-
-		if ($shouldBackgroundSubmit and ($sec >= List::Util::max($REFRESH_FILE_INTERVAL, $REFRESH_QSTAT_INTERVAL))) {
-			printImportant("Your job was submitted as ID $jobID. Check on it periodically to see if it has completed.");
-			last; # exit as soon as one round of error checking has finished
-		}
-		
 		adjustGlobalRefreshRate($sec);
 	}
 
+	($shouldBackgroundSubmit) and printImportant("Your job was submitted as ID $jobID. Check on it periodically to see if it has completed.");
 	# check the 'exit_status' in qstat -f -x now! It can be:
 	# 0
 	# 271 (qdel maybe?)
@@ -684,6 +679,13 @@ qplz.pl -t 1 pwd
 
 qplz.pl -t 24 -m 8 -c 2 myscript.pl
   Runs 'myscript.pl' for up to 24 hours and 8 GB of RAM, with 2 CPU cores.
+
+for f in *.bz2; do qplz.pl --background "bzip2 -d -c $f | gzip > ${f/.bz2}.gz" ; done
+  * Above: an example of how to run it on a bunch of files at once
+    * Here, we are converting BZIP2 (.bz2) files to GZIP files:
+    * Note that the '--background' flag is important here---otherwise the loop does not run
+      all at once (we would remain waiting for the first call to 'qplz.pl' to finish, which
+      means only one job will run at once)
 
 CAVEATS:
 
