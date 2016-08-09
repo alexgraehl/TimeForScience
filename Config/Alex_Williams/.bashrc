@@ -101,13 +101,16 @@ export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin ## <-- clear out 
 export PATH=/opt/pbs/default/bin:/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${PATH}
 export PATH="${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Common/Code/Python:${BINF_CORE_WORK_DIR}/Common/Code/alexgw"   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 
+# PATH="$(echo $PATH | perl -e 'print join(":", grep { not $seen{$_}++ } split(/:/, scalar <>))')"  # remove dupes
+
+
 BINFAPPBASE=/data/applications
 BINFVERSION=2015_06
 BINFSWROOT=$BINFAPPBASE/$BINFVERSION
 export BINFBINROOT=$BINFSWROOT/bin
 export PERL5LIB=$BINFSWROOT/libperl/lib/perl5:$HOME/.linuxbrew/lib/perl5/site_perl:$PERL5LIB
 export PERLLIB=$PERL5LIB
-export R_LIBS=$BINFSWROOT/libr:$R_LIBS
+export R_LIBS=$BINFSWROOT/libr
 export PATH=$BINFBINROOT:$PATH
 export LD_LIBRARY_PATH="$HOME/.linuxbrew/lib:$BINFSWROOT/lib:$LD_LIBRARY_PATH"
 export LIBRARY_PATH=$LD_LIBRARY_PATH
