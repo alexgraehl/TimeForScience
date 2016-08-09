@@ -174,8 +174,12 @@ foreach my $md5file (@md5files) {
 			if ($x =~ m/^MD5 [(]([^)]+)[)]\s+=\s+([0-9a-zA-Z]{32})$/i) {
 				@a = ($1, $2); # ok, the regexp matched!
 			}
+			# or maybe we can try just ANY spaces... sometimes it's just a tab
+			if ($x =~ m/^(\S+)[\s]+(\S{32})$/i) {
+				@a = ($1, $2); # ok, the regexp matched (it was just spaces/tabs, no equal sign)
+			}
 		}
-		(scalar(@a) == 2) or confess "[ERROR] Cannot properly parse the (supposedly) MD5 checksum file named <$md5file>---we expect it to have two columns of data, with either TWO SPACES as the delimiter OR possibly ' = ' (equals sign surrounded by a single space) as the delimiter!";
+		(scalar(@a) == 2) or confess "[ERROR] Cannot properly parse the (supposedly) MD5 checksum file named <$md5file>---we expect it to have two columns of data, with either TWO SPACES as the delimiter OR possibly ' = ' (equals sign surrounded by a single space) as the delimiter, or failing that, just whitespace as a delimiter. Whitespace in filenames will probably cause this script to FAIL.";
 		if    (isMd5($a[0])) {  ($md, $fn) = ($a[0], $a[1]); }
 		elsif (isMd5($a[1])) {  ($md, $fn) = ($a[1], $a[0]); } # switch the order
 		else {                  confess "Failure to find an md5 sum on line $lineNum of $md5file..."; }
@@ -246,7 +250,10 @@ mdverify.pl [OPTIONS] <list_of_input_md5_files>
 
 by Alex Williams, 2016
 
-This program calculates 'md5' checksums and verifies them against an input file of expected checksums.
+This program calculates 'md5' checksums and verifies them against input file(s) of expected checksums.
+
+You give it a list of "md5.txt" files, and it tries to find the matching files and see if they have the
+correct md5sum. See the EXAMPLES section below.
 
 OPTIONS:
 -q or --onlybad: Quiet mode. Only report BAD and MISSING files, not OK ones.
@@ -266,7 +273,9 @@ OPTIONS:
 --version or -v or -V: Print the version number and exit.
 
 EXAMPLES:
-  mdverify.pl --color **/*md5*  (check a bunch of subdirectories)
+  mdverify.pl **/*md5*  (check a bunch of subdirectories)
+
+  mdverify.pl --bw **/*md5*  (check a bunch of subdirectories, no color text)
 
   mdverify.pl --onlybad md5.txt (do not report the OK files)
 
