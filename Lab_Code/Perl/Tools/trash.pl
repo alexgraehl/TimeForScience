@@ -235,6 +235,6 @@ foreach my $darg (@ARGV) {
 }
 
 if ($numItemsDeleted > 0) {
-    print STDOUT qq{$pn: Note: the trash directory will be auto-deleted every reboot, without warning.\n};
+    print STDOUT qq{$pn: Note: the trash directory will be auto-deleted every reboot, without notification.\n};
     print STDOUT (qq{-} x 80) . "\n";
 }
