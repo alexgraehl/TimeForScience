@@ -2,18 +2,10 @@
 
 #@COMMENT@ sets.pl handles various input lists / edge lists / sets and allows you to reformat them. Can turn edge lists to matrixes. Probably encompasses the functionality of 'expand.pl' and 'flatten.pl' and 'matrix_from_edges.pl'. Frequency-of-use rating: 6/10.
 
-##############################################################################
-##############################################################################
-##
-## sets.pl
-##
-##############################################################################
+# Originally by Josh Stuart. Modified by Alex Williams.
 ##############################################################################
 ## Written by Josh Stuart in the lab of Stuart Kim, Stanford University.
-## Email address: jstuart@stanford.edu
-## Written: 00/00/02
-## Updated: 00/00/02
-##############################################################################
+## Email address: jstuart@stanford.edu  ## Written: 00/00/02
 ##############################################################################
 
 use lib "$ENV{MYPERLDIR}/lib";
@@ -188,7 +180,6 @@ OPTIONS are:
 -o OUTPUT_TYPE: Same as -i only change the output format.  The default is "V".
       If you want to output pairs from a matrix, make sure to use these options:
            sets.pl  -i m  -o p  -v '\t'  -m .  YOUR_FILENAME
-      or use matrix2pairs.pl
 
 -m VAL: Membership value (default is 1).  If VAL equals "." then any non-empty
         value is considered to be a member. If used in combination
@@ -220,10 +211,8 @@ How to format a "list" file for viewing with a microarray viewer:
       ...
     You can easily turn this into a matrix with the command:
       sets.pl  -i p   -o m   -m 3   -e NONE   -h 0   FILE
+    (or use matrix_from_edge_list.pl)
 
     Conversely, if you want to turn a matrix into a list of pairs, you can use:
       sets.pl -i m  -o p  -v '\t'  -m .  YOURFILE
-
-    or use the program
-      matrix2pairs.pl
 

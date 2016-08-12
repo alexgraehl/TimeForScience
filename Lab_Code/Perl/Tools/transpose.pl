@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+#@COMMENT@ transpose.pl will transpose a tabular data matrix (it flips the rows/columns). This is otherwise surprisingly convoluted to accomplish. Frequency-of-use rating: 10/10.
+
+
 ##############################################################################
 ##############################################################################
 ##
