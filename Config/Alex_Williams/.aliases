@@ -792,14 +792,13 @@ function mvln { # move and then make an ALIAS where the previous file was
     if [[ ! -e $FILE ]] ; then echo "[ERROR] Your source file ($FILE) does not exist!"; return; fi
     LAST=${@: -1}
     if [[ -d $LAST ]]; then # target is a directory
+	LAST=${LAST%/} # remove trailing slash. This is OK even with '/' (root), since we always insert a slash at the end no matter what
 	eval $AGW_IONICE mv "$FILE" "$LAST/"
 	ln -s "$LAST/$FILE" "$FILE"
     else # target is a file
 	eval $AGW_IONICE mv "$FILE" "$LAST"
 	ln -s "$LAST" "$FILE"
     fi
-    #touch $LAST
-    #if [[ ! -e $FILE ]] ; then echo "[ERROR] Your source file ($FILE) does not exist!"; return; fi
 }
 
 function neararchive { # usage: cd /work/projects/your-project  then: "neararchive myproj-1234-rna-mouse"  --> will move things to the nearline storage and symlink them back
