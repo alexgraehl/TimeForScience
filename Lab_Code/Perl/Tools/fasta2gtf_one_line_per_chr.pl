@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+#@COMMENT@ fasta2gtf_one_line_per_chr.pl is a bioinformatics-specific tool that takes a FASTA (genome sequence) file and makes a GTF (annotation) file that spans each chromosome (or other sequence) in the input FASTA file, making a placeholder gene/exon for that chromosome. This is useful if you are inserting plasmids or other elements to a genome and you want to count them. Frequency-of-use rating: 3/10 (bioinformatics use).
+
 # By Alex Williams, 2016
 # Usage: cat "fastaFile.fa" | fasta2gtf_one_line_per_chr.pl > out.gtf
 

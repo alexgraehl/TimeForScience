@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+#@COMMENT@ sheet.py is an interactive terminal-based spreadsheet viewer for tab-delimited files. Frequency-of-use rating: 9/10. See also "sheet.pl" if you want a non-interactive version that behaves similarly to the UNIX "column" tool.
+
 #from __future__ import print_function # lets you do print("...") like python 3
 #from __future__ import division # no more "1/2 == 0"
 

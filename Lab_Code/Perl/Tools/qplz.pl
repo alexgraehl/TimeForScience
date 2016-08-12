@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+#@COMMENT@ qplz.pl is a convenient front-end for submitting jobs to a PBS Pro queue. Tested with PBS Pro version 13 (August 2016). May also work with TORQUE. Frequency-of-use rating: 10/10 (if you have a cluster) or 0/10 (if you do not have a cluster).
+
 use strict;  use warnings;  #use diagnostics;
 use POSIX;
 use List::Util qw(max min);
