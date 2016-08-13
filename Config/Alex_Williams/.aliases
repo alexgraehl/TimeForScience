@@ -384,11 +384,11 @@ stopvpn() {
 ## ("Executing" a folder means you can "ls" it and see what's inside.)
 function showoff {
     if [ "$#" -eq 0 ]; then echo "Usage: 'showoff' requires path argument(s)! Example: 'showoff ./' for the current directory."; return; fi
-    for var in "$@"; do echo "showoff is now running 'chmod -R' to allow ANY USER to browse \"$var\""; chmod -R a+rX "$var" ; done
+    for var in "$@"; do echo "showoff is now running 'chmod -R' to allow ANY USER to browse \"$var\""; chmod -R a+rX "$var"; done
 }
 function sudoshowoff {
     if [ "$#" -eq 0 ]; then echo "Usage: 'sudoshowoff' requires path argument(s)! Example: 'sudoshowoff ./' for the current directory."; return; fi
-    for var in "$@"; do echo "sudoshowoff: Using sudo chmod -R to allow ANY USER to browse \"$var\""; sudo chmod -R a+rX "$var" ; \; ; done
+    for var in "$@"; do echo "sudoshowoff: Using sudo chmod -R to allow ANY USER to browse \"$var\""; sudo chmod -R a+rX "$var"; done
 }
 
 ## Mac-specific commands:
