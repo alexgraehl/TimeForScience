@@ -529,6 +529,9 @@ alias wesx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${WES_IP}'
 alias rig=' ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
 alias rigx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
 
+RIG_SAND_IP=${RIG_IP/./-sandbox.} # add "-sandbox" before the first dot
+alias sand=' ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_SAND_IP}'
+
 alias lig=' ssh ${AGW_SSH_OPTIONS}     ${PL_USERNAME}@${PL_IP}' # <-- LIG = different username!
 alias ligx='ssh ${AGW_SSH_OPTIONS} -Y  ${PL_USERNAME}@${PL_IP}' # <-- LIG = different username!
 
