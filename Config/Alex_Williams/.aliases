@@ -526,8 +526,10 @@ alias busx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${BC_IP}'
 alias wes=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${WES_IP}'
 alias wesx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${WES_IP}'
 
-alias rig=' ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
+alias rig=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${RIG_IP}'
 alias rigx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
+
+alias agwcom='ssh ${AGW_SSH_OPTIONS}   ${AGWCOM_USERNAME}@${AGWCOM_URL}'
 
 RIG_SAND_IP=${RIG_IP/./-sandbox.} # add "-sandbox" before the first dot
 alias sand=' ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_SAND_IP}'
