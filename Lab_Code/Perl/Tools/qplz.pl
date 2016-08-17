@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#@COMMENT@ qplz.pl is a convenient front-end for submitting jobs to a PBS Pro queue. Tested with PBS Pro version 13 (August 2016). May also work with TORQUE. Frequency-of-use rating: 10/10 (if you have a cluster) or 0/10 (if you do not have a cluster).
+#@COMMENT@ qplz.pl is a convenient front-end for submitting jobs to a PBS Pro queue. Tested with PBS Pro version 13 (August 2016). May also work with TORQUE. Frequency-of-use rating: 10/10 (if you have a cluster) or 0/10 (if you do not have a cluster)
 
 use strict;  use warnings;  #use diagnostics;
 use POSIX;
@@ -642,15 +642,18 @@ OPTIONS:
  Default: 00:30:00 = 30 minutes
   Lets your job run for at least this long. It gets auto-killed if this time is exceeded.
   Example of a job that wants to run for 123 hours and 45 minutes:  -t 123:45:00
+  Equivalent to having this in your script:   #PBS -l walltime=123:45:00
 
 --mem=INTEGER or "-m INTEGER"
  Default: 4 (4 gigabytes)  (Example ways to request 4 GB of RAM: "-m 4" or "-m 4gb" or "-m 4g")
   Lets your job use this much memory, in gigabytes. Job will be auto-killed if it tries to use more.
+  Equivalent to having this in your script (for 4 GB of RAM):   #PBS -l mem=4gb
 
 --ncpus=INTEGER or "-c INTEGER"
  Default: 1 (1 core)
   Lets your job use this many cores.
   A job can *try* to use more, but all of its threads will be placed onto this many cores.
+  Equivalent to having this in your script (for 4 CPUs):   #PBS -l ncpus=4
 
   (Note: If hyperthreading is enabled (which it typically is NOT on our server), then this number
   would be the number of *hyperthreaded* cores instead of physical cores.)
