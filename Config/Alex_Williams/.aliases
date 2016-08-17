@@ -974,6 +974,13 @@ function catlogs {
     #find . -maxdepth 1 -type f -exec paste.pl "FILE={}" {} \; | s
 }
 
+function mvlogs {
+    if [[ "$#" == "0" ]] ; then echo "[ERROR] mvlogs needs a destination directory!"; return; fi
+    if [[ ! -d $1 ]] ; then echo "[ERROR] mvlogs needs an EXISTING DIRECTORY as a destination! The specified directory ($1) appears not to exist."; return; fi
+    find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' -print0 | xargs -0 -I{} mv {} $1/
+    echo "[OK] Moved all the logs into the directory $1"
+}
+
 function refresh {
     FAKEFILE=$(mktemp ./tmp.XXXXXX.tmp) ; /bin/rm $FAKEFILE; echo "Refreshing the filesystem..."
 }
