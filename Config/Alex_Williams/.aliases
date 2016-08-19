@@ -874,7 +874,8 @@ function mypylint {
     # Best usage is: mypylint | s for viewing the colorized output!
 }
 
-function mo {
+function mycat {
+    # basically like 'cat' or 'zcat' but fancier
     # Based on file extension, turns something into plain text! Works on mixed files. Only delves one level of compression deep.
     for name in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
 	VC="cat" # This is the default
@@ -883,8 +884,9 @@ function mo {
 	    *.bam)  VC="samtools view -h " ; filetype="BAM_FILE_DETECTED_AGW";;
 	esac
 	case "$filetype" in 
-	    gzip*)  VC="gzip  --decompress --stdout " ;; 
-	    bzip2*) VC="bzip2 --decompress --stdout " ;;
+	    gzip*)  VC="gzip  --decompress --stdout " ;; # zcat
+	    bzip2*) VC="bzip2 --decompress --stdout " ;; # bzcat
+	    [xX][zZ]*) VC="xz --decompress --stdout " ;; # xzcat
 	esac
 	$VC "$name" # <-- actually decompress the file and print it to stdout
     done
