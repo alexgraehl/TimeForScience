@@ -17,7 +17,7 @@ my @RECOGNIZED_PBS_OPTIONS = ("walltime", "mem", "ncpus"); # The ones we handle 
 my $REFRESH_FILE_INTERVAL   = 10; # N seconds between filesystem refreshes
 my $REFRESH_QSTAT_INTERVAL  = 1; # N seconds between qstat calls
 my $PRINT_NEW_LINE_INTERVAL = 15; # N seconds between new lines
-my $REMIND_ME_WHAT_THIS_JOB_WAS_EVERY_N_LINES = 80; # only print a 'what was this job' update every so often
+my $REMIND_ME_WHAT_THIS_JOB_WAS_EVERY_N_LINES = 30; # only print a 'what was this job' update every so often
 
 my $SLOW_DOWN_THE_REFRESH_RATE_AFTER = 10 * 60; # Don't refresh the console as frequently after this long. 10 * 60 = 10 minutes
 my $SLOWER_REFRESH_INTERVAL          = 60; # only update once a minute after the first N minutes
