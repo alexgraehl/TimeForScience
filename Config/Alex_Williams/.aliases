@@ -84,9 +84,7 @@ function witch { # Shows the versions for all on-your-path verisons of software.
 	echo "ERR: You need to specify a program to check the versions of. Example:  witch emacs --version ."
 	return 1;
     fi
-    if [[ "$#" == 1 ]] ; then
-	echo "witch: Using default '--version' to check for program version...";
-    fi
+    if [[ "$#" == 1 ]] ; then echo "witch: Using default '--version' to check for program version..."; fi
     if [[ "$2" != "" ]]; then
 	# $2 was actually defined...
 	VER_STR="$2"
@@ -364,23 +362,6 @@ alias diffdir='diff -rq' ## diff on directories
 #alias tc='randomize_terminal_color.pl -cycle'
 #alias cd='pushd'
 #alias b='popd'
-
-# Stop Junos Pulse from automatically starting: from https://gist.github.com/Andrewpk/7558715
-# "Be sure to change your /Library/LaunchAgents/net.juniper.pulsetray.plist file to reflect the `KeepAlive` key being set to <false/> as well!"
-#alias startvpn2="sudo launchctl load -w /Library/LaunchDaemons/net.juniper.AccessService.plist; open -a '/Applications/Junos Pulse.app/Contents/Plugins/JamUI/PulseTray.app/Contents/MacOS/PulseTray'"
-#alias quitvpn2="osascript -e 'tell application \"PulseTray.app\" to quit';sudo launchctl unload -w /Library/LaunchDaemons/net.juniper.AccessService.plist"
-startvpn() {
-    sudo launchctl load -w /Library/LaunchDaemons/net.juniper.AccessService.plist
-    launchctl load -w /Library/LaunchAgents/net.juniper.pulsetray.plist
-    open -a '/Applications/Junos Pulse.app/Contents/Plugins/JamUI/PulseTray.app/Contents/MacOS/PulseTray'
-
-}
-stopvpn() {
-    osascript -e 'tell application "Junos Pulse" to quit';
-    osascript -e 'tell application \"PulseTray.app\" to quit';
-    launchctl unload -w /Library/LaunchAgents/net.juniper.pulsetray.plist
-    sudo launchctl unload -w /Library/LaunchDaemons/net.juniper.AccessService.plist
-}
 
 ## "showoff" makes it so that everyone can a+rx any directories and a+r any files.
 ## Note that we don't want to make it so everyone can execute *files* necessarily, just folders
@@ -874,7 +855,7 @@ function mypylint {
     # Best usage is: mypylint | s for viewing the colorized output!
 }
 
-function mycat {
+function huh {
     # basically like 'cat' or 'zcat' but fancier
     # Based on file extension, turns something into plain text! Works on mixed files. Only delves one level of compression deep.
     for name in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
@@ -993,3 +974,21 @@ function refresh {
     FAKEFILE=$(mktemp ./tmp.XXXXXX.tmp) ; /bin/rm $FAKEFILE; echo "Refreshing the filesystem..."
 }
 
+function star_make_index {
+    if [[ "$#" != "2" ]] ; then echo "[ERROR] star_make_index needs an input FASTA file and a 'how long are the reads' parameter!"; return; fi
+    FAS=$1
+    LEN=$2
+    CPU_THREADS=6
+    if ! [[ ${FAS^^} =~ \.*[.](FASTA|FA)$ ]]; then echo "Arg1 must be .fasta or .fa file, but it was: $FAS"; return 1; fi
+    if ! [[ ${LEN^^} =~ ^[0-9]+$ ]]; then echo "Arg2 must be a (numeric integer) read length, but it was: $LEN"; return 1; fi
+    OUT=$(basename $FAS | perl -pe 's/[.](fasta|fa)$//i')
+    OUT=$(echo `pwd`/star_output.$OUT)
+    echo "Output file is:  " $OUT
+    echo "About to generate a STAR genome index. Settings are as follows:"
+    echo "        FASTA: $FAS"
+    echo "       LENGTH: $LEN"
+    echo "   OUTPUT DIR: $OUT"
+    echo "       N CPUS: $CPU_THREADS"
+    cmd="mkdir -p \"$OUT\" && STAR --runMode genomeGenerate --genomeDir $OUT --genomeFastaFiles $FAS --runThreadN $CPU_THREADS"
+    echo -e "Here is the command you should now run:\n   $cmd\n   (Copy and paste that command above, or run it with 'qplz')"
+}
