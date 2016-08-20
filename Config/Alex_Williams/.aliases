@@ -680,33 +680,8 @@ function unmini {
     done
 }
 
-# function singlea {
-#     # Requires exactly ONE argument!
-#     if [ -f "$1/.describe" ]; then
-# 	echo -e "\n-------------------------------------------------"
-# 	cat .describe
-# 	echo "-------------------------------------------------"
-#     fi
-#     ls $1
-# }
-
-# function aa {
-#     PREFIX="./"
-#     if [ $# -eq 0 ]
-#     then
-# 	singlea "./"
-#     else
-# 	for arg in "$@"
-# 	do
-# 	    singlea "$arg"
-# 	done
-#     fi
-# }
-
-#function qin { # qstat with colors for job status, automatic piping into "less" --- this is now the "qselect.sh" script
-
-alias snake="echo  $'\xF0\x9F\x90\x8D'"  # See http://apps.timwhitlock.info/emoji/tables/unicode
-alias cake="echo   $'\xF0\x9F\x8D\xB0'"  # See http://apps.timwhitlock.info/emoji/tables/unicode
+alias snake="echo -n $'\xF0\x9F\x90\x8D'' '"  # Emoji snake. See http://apps.timwhitlock.info/emoji/tables/unicode
+alias cake="echo  -n $'\xF0\x9F\x8D\xB0'' '"  # Emoji cake.  See http://apps.timwhitlock.info/emoji/tables/unicode
 
 function qkiri { # kill all your OWN jobs
     echo ">> If qkiri fails, try running this command: qselect -u YOURNAME | sudo xargs qdel -p"
@@ -880,7 +855,7 @@ function brutallycompress {
     # Recursively goes through and compresses (with gzip) any files with the extensions listed below.
     if [[ "$#" == 0 ]] ; then echo "[ERROR in arguments to brutallycompress] You need to pass AT LEAST ONE target directory into this function--it can also be '.' for the current directory!"; return; fi
     RESTRING=".*[._]\(bed\|_tracking\|diff\|bed.count\|moa\|fa\|fasta\|fq\|fastq\|txt\|csv\|tab\)"
-    COMPRESS="gzip --verbose -6"
+    COMPRESS="gzip --verbose -6" # or xv or bzip2
     echo -e "# About to compress ($COMPRESS)\n#     anything in the following locations: $@\n#     that matches this REGULAR EXPRESSION: $RESTRING"
     echo -e "# -----------------------------------------------------------------------------------------------"
     for location in "$@"; do # Sanity check to make sure all inputs are DIRECTORIES to start
@@ -945,36 +920,37 @@ function qsud {
     "${cmd[@]}" # <- Actually execute. See http://unix.stackexchange.com/questions/131766/why-does-my-shell-script-choke-on-whitespace-or-other-special-characters
 }
 
-alias qyep='qsub -q General -W group_list=genqueue'
-
 function hist {
     history | tail -n 100
 }
 
-function clearlogs {
-    echo "Deleting any of those qsub logs, which are files ending with (for example) .e1234 or .o456"
+# ================ QUEUE / QSUB LOG VIEWING AND MOVING ================
+function clearlogs { # Usage:     catlogs (no arguments)
+    echo "Deleting those 'qsub' logs, which are files ending with (for example) .e1234 or .o456"
     find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' -print0 | xargs -0 -I{} trash.pl {}
 }
-
-function catlogs {
-    echo "Trying to 'cat' all the default QSUB logs... (together into one file)"
+function catlogs { # Usage:     catlogs (no arguments)
+    echo "Concatenating all the QSUB logs in this directory into one file, which we will then view with 'less'"
     #cat *.[eo][0-9][0-9]* | s
     find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' -print0 | xargs -0 -I{} paste.pl "FILE={}" {} | s
     #find . -maxdepth 1 -type f -exec paste.pl "FILE={}" {} \; | s
 }
-
-function mvlogs {
+function mvlogs { # Usage:   mvlogs OUTPUT_DIRECTORY
+    # This function moves those annoying qzub logs to the destination directory
     if [[ "$#" == "0" ]] ; then echo "[ERROR] mvlogs needs a destination directory!"; return; fi
     if [[ ! -d $1 ]] ; then echo "[ERROR] mvlogs needs an EXISTING DIRECTORY as a destination! The specified directory ($1) appears not to exist."; return; fi
     find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' -print0 | xargs -0 -I{} mv {} $1/
     echo "[OK] Moved all the logs into the directory $1"
 }
+# ========================================================
 
-function refresh {
-    FAKEFILE=$(mktemp ./tmp.XXXXXX.tmp) ; /bin/rm $FAKEFILE; echo "Refreshing the filesystem..."
+function refresh { # Usage:  refresh (no arguments)
+    FAKEFILE=$(mktemp ./tmp.XXXXXX.tmp) ; /bin/rm $FAKEFILE; echo "Refreshing the filesystem, which is important since the NFS system otherwise takes 60 seconds to update..."
 }
 
 function star_make_index {
+    # This makes an alignment directory for the "STAR" aligner, when given just a fasta file and a length.
+    # The exact length is not critical, but it should ideally be the same length as the reads, if possible (slightly longer is OK too, but not necessary).
     if [[ "$#" != "2" ]] ; then echo "[ERROR] star_make_index needs an input FASTA file and a 'how long are the reads' parameter!"; return; fi
     FAS=$1
     LEN=$2
@@ -989,6 +965,6 @@ function star_make_index {
     echo "       LENGTH: $LEN"
     echo "   OUTPUT DIR: $OUT"
     echo "       N CPUS: $CPU_THREADS"
-    cmd="mkdir -p \"$OUT\" && STAR --runMode genomeGenerate --genomeDir $OUT --genomeFastaFiles $FAS --runThreadN $CPU_THREADS"
-    echo -e "Here is the command you should now run:\n   $cmd\n   (Copy and paste that command above, or run it with 'qplz')"
+    cmd="mkdir -p $OUT && STAR --runMode genomeGenerate --genomeDir $OUT --genomeFastaFiles $FAS --runThreadN $CPU_THREADS"
+    echo -e "Here is the command you should now run:\n   $cmd\n   (Copy and paste that command above, or run it with 'qplz' and double quotes: qplz -t $CPU_THREADS -m 8 \"command\"  )"
 }
