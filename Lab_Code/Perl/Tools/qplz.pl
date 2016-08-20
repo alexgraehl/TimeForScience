@@ -634,7 +634,8 @@ qplz.pl [OPTIONS]  <script_or_command>
 
 "QUEUE PLEASE" (qplz) is a frontend to 'qsub' that makes it easier to submit queue jobs to PBS Pro 13.
 
-Examples: qplz.pl "pwd"   or  qplz.pl my_script.sh
+Example: qplz.pl "pwd | my commands here"   or  qplz.pl my_script.sh
+  * See below for more examples.
 
 OPTIONS:
 
@@ -678,7 +679,14 @@ EXAMPLES:
 qplz.pl ls
   Lists your home directory
 
-qplz.pl -t 1:00:00 pwd
+qplz.pl "echo 'aaaa' | perl -pe 's/a/b/g' "
+  Note that any command involving multiple steps (anything with a '|' or '&&' or ';' between commands)
+  will need to be run in double quotation marks, or else it will not work. Specifically:
+     * qplz.pl  cat MYFILE | sed 's/a/b/'  <-- FAILS: it executes 'qplz.pl cat MYFILE' in the queue,
+                                                     and sed 's/a/b/' locally (NOT in the queue
+     * qplz.pl "cat MYFILE | sed 's/a/b/'"  <-- SUCCEEDS thanks to the ""
+
+qplz.pl -t 1:00:00 "pwd"
 or
 qplz.pl -t 1 pwd
   Prints the current directory, allowing the script one hour to do so.
@@ -692,6 +700,7 @@ for f in *.bz2; do qplz.pl --background "bzip2 -d -c $f | gzip > ${f/.bz2}.gz" ;
     * Note that the '--background' flag is important here---otherwise the loop does not run
       all at once (we would remain waiting for the first call to 'qplz.pl' to finish, which
       means only one job will run at once)
+  * Also note that the quotation marks around the command ("bzip2....gz") are mandatory.
 
 CAVEATS:
 
