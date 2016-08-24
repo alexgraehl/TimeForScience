@@ -925,7 +925,7 @@ function hist {
 }
 
 # ================ QUEUE / QSUB LOG VIEWING AND MOVING ================
-function clearlogs { # Usage:     catlogs (no arguments)
+function rmlogs { # Usage:     catlogs (no arguments)
     echo "Deleting those 'qsub' logs, which are files ending with (for example) .e1234 or .o456"
     find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' -print0 | xargs -0 -I{} trash.pl {}
 }
@@ -945,7 +945,8 @@ function mvlogs { # Usage:   mvlogs OUTPUT_DIRECTORY
 # ========================================================
 
 function refresh { # Usage:  refresh (no arguments)
-    FAKEFILE=$(mktemp ./tmp.XXXXXX.tmp) ; /bin/rm $FAKEFILE; echo "Refreshing the filesystem, which is important since the NFS system otherwise takes 60 seconds to update..."
+    FAKEFILE=$(mktemp ./tmp.XXXXXX.tmp) ; /bin/rm $FAKEFILE;
+    (>&2 echo "Refreshing the filesystem, which is important since the NFS system otherwise takes 60 seconds to update...")
 }
 
 function star_make_index {
@@ -959,12 +960,36 @@ function star_make_index {
     if ! [[ ${LEN^^} =~ ^[0-9]+$ ]]; then echo "Arg2 must be a (numeric integer) read length, but it was: $LEN"; return 1; fi
     OUT=$(basename $FAS | perl -pe 's/[.](fasta|fa)$//i')
     OUT=$(echo `pwd`/star_output.$OUT)
-    echo "Output file is:  " $OUT
-    echo "About to generate a STAR genome index. Settings are as follows:"
-    echo "        FASTA: $FAS"
-    echo "       LENGTH: $LEN"
-    echo "   OUTPUT DIR: $OUT"
-    echo "       N CPUS: $CPU_THREADS"
+    (>&2 echo "Output file is:  " $OUT)
+    (>&2 echo "About to generate a STAR genome index. Settings are as follows:")
+    (>&2 echo "        FASTA: $FAS")
+    (>&2 echo "       LENGTH: $LEN")
+    (>&2 echo "   OUTPUT DIR: $OUT")
+    (>&2 echo "       N CPUS: $CPU_THREADS")
     cmd="mkdir -p $OUT && STAR --runMode genomeGenerate --genomeDir $OUT --genomeFastaFiles $FAS --runThreadN $CPU_THREADS"
-    echo -e "Here is the command you should now run:\n   $cmd\n   (Copy and paste that command above, or run it with 'qplz' and double quotes: qplz -t $CPU_THREADS -m 8 \"command\"  )"
+    (>&2 echo -e "Here is the command you should now run:\n   $cmd\n   (Copy and paste that command above, or run it with 'qplz' and double quotes: qplz -t $CPU_THREADS -m 8 \"command\""  )
 }
+
+function convert_chromosome_to_chr1_for_genome_browser {
+    if [[ "$#" != "2" ]] ; then echo "[ERROR] needs two inputs: 1. a chromosome to turn into 'chr1' and 2. a bam filename to convert"; return; fi
+    FINDCHR=$1
+    IN=$2
+    NEWCHR=chr1
+    TMPSAM=${IN}--TMP.sam
+    if [[ ! -e $IN ]] ; then echo "[ERROR] Your specified input file ($FILE) does not exist!"; return; fi
+
+    FINALBAM=${IN/.bam/--${NEWCHR}_only.bam}
+
+    (>&2 echo "[CONVERSION UPDATE] Fixing the @SQ lines at the top of the file...")
+    samtools view -H $IN | perl -ne "print if (not m/^[@]SQ/ or s/^([@]SQ.*SN:)$FINDCHR(\s)/\$1$NEWCHR\$2/)" >| $TMPSAM
+    samtools view    $IN \
+	| awk "\$3==\"$FINDCHR\" {print;}" \
+	| awk -v OFS='\t' "{\$3=\"$NEWCHR\";print;}" \
+	| cat $TMPSAM - \
+	| samtools view -b -S - \
+	>| $FINALBAM
+    /bin/rm $TMPSAM
+
+    (>&2 echo "<$FINALBAM> generated! Chromosome changed from '$FINDCHR' to 'chr1'. Original input: <$IN>")
+}
+
