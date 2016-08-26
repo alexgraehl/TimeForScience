@@ -217,25 +217,20 @@
 (if (not (boundp 'should-load-ess))
     (setq should-load-ess nil)) ;; <-- if should-load-ess is not already defined, then initialize a new variable if we haven't loaded ess, then this *remains* "nil"
 
-(setq load-path (cons "~/.emacs.d/ess/" load-path))
+(add-to-list 'load-path "/usr/share/emacs/site-lisp")
+(add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
+(add-to-list 'load-path "/Users/alexgw/bin/ESS/lisp/")
+(add-to-list 'load-path "~/.emacs.d/site-lisp")
+(add-to-list 'load-path (concat (getenv "BINFSWROOT") "/share/emacs/site-lisp"))
 
 (if (system-type-is-darwin)
     (progn
-      ;;(setq load-path (cons "/usr/local/share/emacs/site-lisp" load-path))
-      ;;(setq load-path (cons "/usr/local/share/emacs/site-lisp/ess" load-path))
-      (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/")
-      (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/ess/")
-      (add-to-list 'load-path "/Users/alexgw/bin/ESS/lisp/")
       (setq should-load-ess t) ;(setq should-load-ess t) ; damn, it broke again
       ))
 
 (if (system-type-is-gnu)
     (progn
-      (add-to-list 'load-path "/usr/local/share/emacs/site-lisp")
-      (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/ess")
-      (add-to-list 'load-path "/usr/share/emacs/site-lisp/ess")
-      (add-to-list 'load-path "/usr/share/emacs/site-lisp")
-      (setq should-load-ess t)
+      (setq should-load-ess nil) ; I guess don't require ESS??
       (require 'show-wspace nil t) ; show whitespace! (?)
       ))
 
