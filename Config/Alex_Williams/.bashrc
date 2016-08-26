@@ -106,13 +106,16 @@ export PATH="${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/P
 
 BINFAPPBASE=/data/applications
 BINFVERSION=2015_06
+# 'export' added to "BINFSWROOT" on August 25, 2016
 export BINFSWROOT=$BINFAPPBASE/$BINFVERSION
 export BINFBINROOT=$BINFSWROOT/bin
 export PERL5LIB=$BINFSWROOT/libperl/lib/perl5:$HOME/.linuxbrew/lib/perl5/site_perl:$PERL5LIB
 export PERLLIB=$PERL5LIB
-export PYTHONPATH=$BINFSWROOT/libpython
+# PYTHONPATH: ------- UPDATE: Added August 25, 2016
+export BINFPYROOT=$BINFSWROOT/libpython2.7/
+export PYTHONPATH=$PYTHONPATH:$BINFPYROOT:$BINFPYROOT/dist-packages:$BINFPYROOT/lib64/python2.7/site-packages/
 export R_LIBS=$BINFSWROOT/libr
-export PATH=$BINFBINROOT:$PATH
+export PATH=$BINFBINROOT:$PATH:$BINFPYROOT/bin
 export LD_LIBRARY_PATH="$HOME/.linuxbrew/lib:$BINFSWROOT/lib:$LD_LIBRARY_PATH"
 export LIBRARY_PATH=$LD_LIBRARY_PATH
 export CPATH=$BINFSWROOT/include:$CPATH

@@ -154,7 +154,11 @@ alias cheat="echo \
 \">> BASH script header (3 lines): #!/bin/bash -u   set -e   set -o pipefail \" ${NL}\
 \">> BASH: Literal tab: \$'\\t' (example: join -t \$'\\t' to join on tabs) or \\\$(echo -en '\\t') . In MAKE: printf '\\t' \" ${NL}\
 \">> SH  : Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
+\" \" ${NL}\
 \">> PYTHON debug a crashing program: python -m pdb YOURPROG --yourargs . 'c' continues execution, 's' steps. \" ${NL}\
+\">> PYTHON debug a crashing program: Put this in the code verbatim to properly enter the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
+\">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --user PACKAGENAME \" ${NL}\
+\">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --install-option=\\\"--prefix=/data/applications/2015_06/libpython2.7/\\\" PACKAGENAME \" ${NL}\
 \">> PYTHON debug a crashing program: Put this in the code verbatim to properly enter the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
 \" \" ${NL}\
 \">> R: Save copy of figure as pdf: dev.copy2pdf() \" ${NL}\
