@@ -158,7 +158,7 @@ alias cheat="echo \
 \">> PYTHON debug a crashing program: python -m pdb YOURPROG --yourargs . 'c' continues execution, 's' steps. \" ${NL}\
 \">> PYTHON debug a crashing program: Put this in the code verbatim to properly enter the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
 \">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --user PACKAGENAME \" ${NL}\
-\">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --install-option=\\\"--prefix=/data/applications/2015_06/libpython2.7/\\\" PACKAGENAME \" ${NL}\
+\">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --ignore-installed --install-option=\\\"--prefix=/data/applications/2015_06/libpython2.7/\\\" PACKAGENAME \" ${NL}\
 \">> PYTHON debug a crashing program: Put this in the code verbatim to properly enter the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
 \" \" ${NL}\
 \">> R: Save copy of figure as pdf: dev.copy2pdf() \" ${NL}\
