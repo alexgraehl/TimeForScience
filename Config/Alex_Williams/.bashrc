@@ -85,8 +85,8 @@ fi
 # Sets up the aliases whether or not this shell is interactive
 if [[ -f ${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/.aliases ]]; then
     source ${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/.aliases
-elif [[ -f ${BINF_CORE_WORK_DIR}/Common/Code/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
-    source ${BINF_CORE_WORK_DIR}/Common/Code/TimeForScience/Config/Alex_Williams/.aliases
+elif [[ -f ${BINF_CORE_WORK_DIR}/Code/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
+    source ${BINF_CORE_WORK_DIR}/Code/TimeForScience/Config/Alex_Williams/.aliases
 elif [[ -f ${HOME}/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
     source ${HOME}/TimeForScience/Config/Alex_Williams/.aliases
 fi
@@ -95,11 +95,11 @@ fi
 export BOWTIE_INDEXES=${BINF_CORE_WORK_DIR}/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
 
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/
-export R_BINF_CORE=${BINF_CORE_WORK_DIR}/Common/Code/R_Binf_Core
+export R_BINF_CORE=${BINF_CORE_WORK_DIR}/Code/R_Binf_Core
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin ## <-- clear out initial path!!
 export PATH=/opt/pbs/default/bin:/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${PATH}:${HOME}/.local/bin/
-export PATH="${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Common/Code/Python:${BINF_CORE_WORK_DIR}/Common/Code/alexgw"   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
+export PATH="${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Code/Python:${BINF_CORE_WORK_DIR}/Code/alexgw"   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 
 # PATH="$(echo $PATH | perl -e 'print join(":", grep { not $seen{$_}++ } split(/:/, scalar <>))')"  # remove dupes
 
@@ -129,7 +129,7 @@ stty -ixon  # Disable the useless START/STOP output control (the one that pauses
 shopt -s globstar # With globstar set (bash 4.0+), bash recurses all the directories. In other words, enables '**'
 set   -o ignoreeof  # Prevent Ctrl-D from exiting! Still exits if you press it 10 times.
 shopt -s checkwinsize # Check the window size after each command and, if necessary, update the values of LINES and COLUMNS.
-shopt -s cdspell ## Fix common mis-spellings in directories to "cd" to
+shopt -s cdspell ## Fix obvious typeos in directory names when "cd"-ing
 shopt -s cmdhist ## Save multi-line pasted commands into one single history command
 #shopt -s lithist ##
 shopt -s no_empty_cmd_completion ## Don't display ALL commands on an empty-line tab
