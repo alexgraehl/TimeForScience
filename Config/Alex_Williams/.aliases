@@ -303,7 +303,7 @@ alias cheat="echo \
 \">> LINES: REPEATABLE RANDOM subset: perl -e 'srand(123456); while(<>){ print if (rand() < 0.5);}' theFile.txt \" ${NL}\
 \">> LINES: Semi-random FASTA records (2 lines at a time): perl -e 'my \\\$total=0; my \\\$MAX=3; srand(); while(<>){ if (rand()<0.01) { print \\\$_; my \\\$nextLine=<>; print \\\$nextLine; \\\$total++; exit(0) if (\\\$total>=\\\$MAX); } }' \" ${NL}\
 \">> LINES: Range from N to M, inclusive (starts at 1):  sed -n N,Mp INPUTFILE  or  for a HUGE file: sed -n '(N+1)q;N,Mp' <-- quit on line (N+1) \" ${NL}\
-\">> LINES: Every Xth, starting with line Y (starts at 1, not 0): awk 'NR%X==Y' FILE \" ${NL}\
+\">> LINES: Every Xth, starting with line Y (starts at 1, not 0): awk 'NR%X==Y' FILE (FASTQ example: sequences only is 'NR%4==2')\" ${NL}\
 \">> LINES/AWK: Count num columns in file: awk -F '\t' '{print NF}' \" ${NL}\
 \">> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">> LINES Count chars on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
@@ -834,13 +834,13 @@ function mypylint {
     # Best usage is: mypylint | s for viewing the colorized output!
 }
 
-function huh {
+function mycat { # cat2 / mycat
     # basically like 'cat' or 'zcat' but fancier
     # Based on file extension, turns something into plain text! Works on mixed files. Only delves one level of compression deep.
-    for name in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
+    for filename in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
 	VC="cat" # This is the default
-	filetype=$(file --brief "$name")
-	case "$name" in
+	filetype=$(file --brief "$filename")
+	case "$filename" in
 	    *.bam)  VC="samtools view -h " ; filetype="BAM_FILE_DETECTED_AGW";;
 	esac
 	case "$filetype" in 
@@ -848,7 +848,7 @@ function huh {
 	    bzip2*) VC="bzip2 --decompress --stdout " ;; # bzcat
 	    [xX][zZ]*) VC="xz --decompress --stdout " ;; # xzcat
 	esac
-	$VC "$name" # <-- actually decompress the file and print it to stdout
+	$VC "$filename" # <-- actually decompress the file and print it to stdout
     done
 }
 
