@@ -95,7 +95,7 @@ fi
 export BOWTIE_INDEXES=${BINF_CORE_WORK_DIR}/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
 
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/
-export R_BINF_CORE=${BINF_CORE_WORK_DIR}/Code/R_Binf_Core
+export R_BINF_CORE=${BINF_CORE_WORK_DIR}/Code/R
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin ## <-- clear out initial path!!
 export PATH=/opt/pbs/default/bin:/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${PATH}:${HOME}/.local/bin/
