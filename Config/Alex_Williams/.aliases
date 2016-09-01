@@ -819,7 +819,7 @@ function mycat { # cat2 / mycat
     # Based on file extension, turns something into plain text! Works on mixed files. Only delves one level of compression deep.
     for filename in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
 	VC="cat" # This is the default
-	filetype=$(file --brief "$filename")
+	filetype=$(file --dereference --brief "$filename")
 	case "$filename" in
 	    *.bam)  VC="samtools view -h " ; filetype="BAM_FILE_DETECTED_AGW";;
 	esac
