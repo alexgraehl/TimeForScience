@@ -442,7 +442,7 @@ sub main() { # Main program
 	my $index;
 	for ($index = 0; $index < scalar(@ARGV); $index++) {
 		my $item = $ARGV[$index];
-		print "item $index is $item\n";
+		#print "item $index is $item\n";
 		if ($item =~ m/$binary_opts_re/) {
 			if ($item =~ m/$binary_opts_re[=]/) {
 				# if it has an equals sign, then that means the value is ALSO right here in this argument
@@ -456,12 +456,12 @@ sub main() { # Main program
 			next;
 		} else {
 			# Oh, we must have found the first UNRECOGNIZED option, which means the command starts here.
-			print "did not recognize $item...\n";
+			#print "did not recognize $item...\n";
 			last; # last = "break" out of the loop!
 		}
 		# nothing here
 	}
-	print "index is $index, which gets us to element:  <$ARGV[$index]> \n";
+	#print "index is $index, which gets us to element:  <$ARGV[$index]> \n";
 	my @qplzOptions      = @ARGV[0..($index-1)];
 	my @remainingCommand = @ARGV[$index..(scalar(@ARGV)-1)];
 
