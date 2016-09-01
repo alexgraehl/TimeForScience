@@ -5,7 +5,7 @@
 use strict;  use warnings;  #use diagnostics;
 use POSIX;
 use List::Util qw(max min);
-use Getopt::Long;
+use Getopt::Long qw(GetOptionsFromArray); # Do NOT get options from @ARGV directly!
 use File::Basename;
 use Carp; # backtrace on errors. Has the "confess" function
 use POSIX; # floor / ceiling
@@ -24,7 +24,7 @@ my $SLOWER_REFRESH_INTERVAL          = 60; # only update once a minute after the
 
 my $PBS_DIRECTIVE_PREFIX = "#PBS"; # <-- the thing at the top of 'your_submitted_script.sh' that means a PBS directive is coming. Usually "#PBS"
 my $GLOBAL_WARN_STRING = ""; # record any POSSIBLE problems so that we can print them out at the very end where the user can see them in a convenient summarized format
-my $QSUB_EXE = "qsub";
+my $QSUB_EXE  = "qsub";
 my $QSTAT_EXE = "qstat";
 
 my $UNIX_BIOGRP = "bioqueue"; # the actual name of the group in UNIX. These are bioinformatics core users.
@@ -419,7 +419,8 @@ sub craftQsubCommand($$$$$) {
 # ==1==
 sub main() { # Main program
 	my ($decimalPlaces) = 4; # How many decimal places to print, by default
-	$Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
+
+	(scalar(@ARGV) >= 1) or quitWithUsageError("You need to specify some arguemnts, like a command to run. You can specify EITHER a simple command (like 'qplz my_command 123') or a script name (like 'qplz myscript.sh') in order to submit a request to the queue.");
 
 	my %copt = ();  # Command OPTions. Hash of final values
 	foreach my $opt (@RECOGNIZED_PBS_OPTIONS) { $copt{$opt} = undef; }
@@ -427,28 +428,70 @@ sub main() { # Main program
 	my ($pbs_submit_file) = undef;
 	my ($shouldOverridePbsDirectives) = 0;
 	my ($shouldBackgroundSubmit) = 0; # default: CONSTANTLY MONITOR the job
-	GetOptions("h|help|?|man"      => sub { printUsageAndQuit(); }
-		   , "ncpus|ncpu|c=i"  => \$copt{ncpus}
-		   , "mem|m=i"         => \$copt{mem}
-		   , "walltime|t=s"    => \$copt{walltime}
-		   , "f=s"             => \$pbs_submit_file
-		   , "override!"       => \$shouldOverridePbsDirectives
-		   , "b|background|bg!"=> \$shouldBackgroundSubmit # if we should 'background' submit the job, then exit after the job submits, DO NOT stick around to monitor it
-		  ) or printUsageAndQuit();
+	#$Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 
-	if (scalar(@ARGV) == 0 and !defined($pbs_submit_file)) {
-		quitWithUsageError("You need to specify EITHER a simple command (like 'qplz my_command 123') or a script name (like 'qplz myscript.sh') in order to submit a request to the queue.");
+	# ============= FIGURE OUT WHERE THE COMMANDS ACTUALLY START =====================
+	# We need to figure out which arguments are to qplz, and which are to the actual command.
+	# Example:   qplz   -m 10  mycommand -m 10
+	#       By default, GetOptions will CHEW UP the second "-m 10" (so mycommand would not get its arguments!)
+	# Here, we fix it by splitting the command into:
+	#            qplz   -m 10   <-- passed to GetOptions
+	# and                      mycommand -m 10     <-- not passed to GetOptions
+	my $unary_opts_re  = '^[-]{1,2}(h|help|man|b|background|bg|override)\b';
+	my $binary_opts_re = '^[-]{1,2}(ncpus|ncpu|c|mem|m|walltime|t|f)\b';
+	my $index;
+	for ($index = 0; $index < scalar(@ARGV); $index++) {
+		my $item = $ARGV[$index];
+		print "item $index is $item\n";
+		if ($item =~ m/$binary_opts_re/) {
+			if ($item =~ m/$binary_opts_re[=]/) {
+				# if it has an equals sign, then that means the value is ALSO right here in this argument
+			} else {
+				# no equals sign, so the NEXT argument must be a value to this option! Thus, do not parse that next item.
+				$index++; # skip the next argument too, it's a VALUE to an option, not an option itself
+			}
+			next;
+		} elsif ($item =~ m/$unary_opts_re/) {
+			# ok, this one was in the clear, it's a recognized option. Next!
+			next;
+		} else {
+			# Oh, we must have found the first UNRECOGNIZED option, which means the command starts here.
+			print "did not recognize $item...\n";
+			last; # last = "break" out of the loop!
+		}
+		# nothing here
 	}
+	print "index is $index, which gets us to element:  <$ARGV[$index]> \n";
+	my @qplzOptions      = @ARGV[0..($index-1)];
+	my @remainingCommand = @ARGV[$index..(scalar(@ARGV)-1)];
+
+	#print join(" ::: ", @qplzOptions);
+	#print "\n";
+	#print join(" ::: ", @remainingCommand);
+	#print "\n";
+	# ================= DONE FIGURING OUT WHERE THE QPLZ arguments end and the COMMAND begins ===========
+
+	Getopt::Long::GetOptionsFromArray(\@qplzOptions
+					  , "h|help|man"      => sub { printUsageAndQuit(); }
+					  , "ncpus|ncpu|c=i"  => \$copt{ncpus}
+					  , "mem|m=i"         => \$copt{mem}
+					  , "walltime|t=s"    => \$copt{walltime}
+					  , "f=s"             => \$pbs_submit_file
+					  , "override!"       => \$shouldOverridePbsDirectives
+					  , "b|background|bg!"=> \$shouldBackgroundSubmit # if we should 'background' submit the job, then exit after the job submits, DO NOT stick around to monitor it
+			   ) or printUsageAndQuit();
+
+	((scalar(@remainingCommand) >= 1) or defined($pbs_submit_file)) or quitWithUsageError("You need to specify EITHER a simple command (like 'qplz my_command 123') or a script name (like 'qplz myscript.sh') in order to submit a request to the queue.");
+
+	((scalar(@remainingCommand) == 0) or $remainingCommand[0] !~ m/^[-]/) or quitWithUsageError("Seems like a problem occurred: it looks like you supplied an UNRECOGNIZED command line argument to qplz...\n...specifically, this one: \"$remainingCommand[0]\".\nYou should check the usage to see if that is really a valid command.");
 
 	my $grp = getOurQueueGroup();
-
 	my %optIsAlreadyInFile = (); # remember which $PBS directives were defined in the script
 	foreach my $opt (@RECOGNIZED_PBS_OPTIONS) { $optIsAlreadyInFile{opt} = 0; }
-	my $numUnprocessedArgs = scalar(@ARGV);
-
-        my $isRunningAScript = (1 == $numUnprocessedArgs and fileIsProbablySomeScript($ARGV[0]));
+	my $numUnprocessedArgs = scalar(@remainingCommand);
+        my $isRunningAScript = (1 == $numUnprocessedArgs and fileIsProbablySomeScript($remainingCommand[0]));
 	if ($isRunningAScript) {
-		$pbs_submit_file = $ARGV[0]; # See if the unprocessed argument is a FILENAME (a script to submit)
+		$pbs_submit_file = $remainingCommand[0]; # See if the unprocessed argument is a FILENAME (a script to submit)
 		# Let's check the script for #PBS directives... if there ARE any, then do not let us override them!
 		open my $fff, '<', $pbs_submit_file or die "Cannot read <$pbs_submit_file>...";
 		my $lineNum = 0;
@@ -511,12 +554,12 @@ sub main() { # Main program
 		}
 		$jobName = File::Basename::basename($pbs_submit_file); # Job name is the SUBMITTED SCRIPT name (but not the full path)
 	} else {
-		$jobName = join("_", @ARGV);
+		$jobName = join("_", @remainingCommand);
 	}
 	$jobName =~ s/[\W\s]/_/g; # replace any "weird" non-word characters with underscores
 	$jobName = trimInMiddle($jobName, JOBNAME_MAX_LEN, "..."); # Trim very long job names... trim them in the MIDDLE though!
 
-	my $cmd = craftQsubCommand($QSUB_EXE, $jobName, $pbs_submit_file, \@ARGV, \%copt);
+	my $cmd = craftQsubCommand($QSUB_EXE, $jobName, $pbs_submit_file, \@remainingCommand, \%copt);
 	printImportant(qq{[QSUB] ACTUAL JOB IS THIS TEXT -->   $cmd\n});
 	
 	my $exitText = `$cmd`; chomp($exitText);
@@ -638,6 +681,8 @@ Example: qplz.pl "pwd | my commands here"   or  qplz.pl my_script.sh
   * See below for more examples.
 
 OPTIONS:
+
+-h or --help -or --man: Print this help/usage information
 
 --walltime=HH:MM:SS or "-t HH:MM:SS"
  Default: 00:30:00 = 30 minutes
