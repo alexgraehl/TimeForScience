@@ -245,6 +245,7 @@ alias cheat="echo \
 \">> QSUB/QUEUE/PBS: info on the queue: qstat -Qf or qstat -B more details \" ${NL}\
 \">> QSUB/QUEUE/PBS: qrun MULTIPLE jobs in a range: for f in \\\$(seq 119905 119919); do sudo \\\$(which qrun) \\\$f; done \" ${NL}\
 \">> QSUB/QUEUE/PBS: kill all YOUR jobs: qselect -u \\\$USER | xargs qdel ; \" ${NL}\
+\">> QSUB/QUEUE/PBS: see available nodes / available resources:  pbsnodes -a (summary) or pbsnodes -a -v (per 'socket') \" ${NL}\
 \">> UNIX/DPKG/APT-GET: dpkg/apt-get woes? Try manually editing /var/lib/dpkg/info/YOURPACKAGE . Be careful! \" ${NL}\
 \">> UNIX/DPKG/APT-GET: Check the version of an apt-get installed package:   dpkg -s <packagename>  OR   dpkg -l | grep -i <search_string> \" ${NL}\
 \">> UNIX/YUM/RPM install: (this NEVER works, but): rpm -Uvh your.rpm . Does NOT handle dependencies.\" ${NL}\
