@@ -160,15 +160,22 @@ sub readIntoHash($$$$$) {
 		chomp($line);
 		#if(/\S/) { ## if there's some content that's non-spaces-only
 		my @sp1 = split($theDelim, $line, $SPLIT_WITH_TRAILING_DELIMS);
-		my $theKey = $sp1[ ($keyIndexCountingFromOne - 1) ]; # index from ZERO here!
-		if ((0 == length($theKey)) and !$allowEmptyKey) {
-			verboseWarnPrint("Warning: skipping an empty key on line $lineNum of filename <$filename>!");
+
+		my $thisRowHasAKeyColumn = ($keyIndexCountingFromOne-1) < scalar(@sp1);
+		if (!$thisRowHasAKeyColumn) {
+			verboseWarnPrint("Warning: skipping row $lineNum, which does not have a key column AT ALL! This is often seen with comment lines at the top of a file. But it may also inicate an incorrect key column.");
 			next; # next iteration of the loop please!
 		}
-		($theKey !~ /\s/) or verboseWarnPrint("Warning: the key \"$theKey\" on line $lineNum of file 2 ($filename) had whitespace in it. This MAY be unintentional--beware!");
+
+		my $theKey = $sp1[ ($keyIndexCountingFromOne - 1) ]; # index from ZERO here!
+		if (('' eq $theKey) and !$allowEmptyKey) {
+			verboseWarnPrint("Warning: skipping the empty key on line $lineNum of file <$filename>!");
+			next; # next iteration of the loop please!
+		}
+		($theKey !~ /\s/) or verboseWarnPrint("Warning: the key \"$theKey\" on line $lineNum of file <$filename> had *whitespace* in it. This is often unintentional, but is not necessarily a problem!");
 		
 		if (defined($masterHashRef->{$theKey})) {
-			($numDupeKeys < $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: the key <$theKey> appeared more than once in <$filename> (on line $lineNum). We are only keeping the FIRST instance of this key.");
+			($numDupeKeys < $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: on line $lineNum, we saw a duplicate of key <$theKey> (in file <$filename>). We are only keeping the FIRST instance of this key.");
 			($numDupeKeys == $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any future duplicate key warnings.");
 			$numDupeKeys++;
 		} else {
