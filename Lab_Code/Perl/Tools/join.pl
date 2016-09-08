@@ -32,6 +32,8 @@ my $DEFAULT_DELIM = "\t";
 my $SPLIT_WITH_TRAILING_DELIMS = -1; # You MUST specify this constant value of -1, or else split will by default NOT split consecutive trailing delimiters! This is super important and belongs in EVERY SINGLE split call.
 my $MAX_DUPE_KEYS_TO_REPORT          = 10;
 my $MAX_WEIRD_LINE_LENGTHS_TO_REPORT = 10;
+my $MAX_BLANK_LINES_TO_REPORT        = 10;
+my $MAX_MISSING_KEY_COLS_TO_REPORT   = 10;
 
 my $delim1            = $DEFAULT_DELIM; # input deilmiter for file 1
 my $delim2            = $DEFAULT_DELIM; # input delimiter for file 2
@@ -109,6 +111,12 @@ if (defined($stringWhenNoMatch)) { # replace any "\t" with actual tabs! No idea 
 
 ## ================ DONE SANITY-CHECKING A BUNCH OF VARIABLES ==================
 
+sub maybeWarnAboutWeirdness($$$) {
+	my ($weirdCount, $maxWeirdCount, $message) = @_;
+	if ($weirdCount == $maxWeirdCount) { $message .= " (suppressing further warnings about this issue)"; }
+	($weirdCount <= $maxWeirdCount ) and verboseWarnPrint("Warning: $message");
+}
+
 sub closeSmartFilehandle($) { my($handle)=@_; if ($handle ne *STDIN) { close $handle; } }# Don't close STDIN, but close anything else!
 sub openSmartAndGetFilehandle($) {
     # returns a FILEHANDLE. Can be standard in, if the 'filename' was specified as '-'
@@ -175,8 +183,7 @@ sub readIntoHash($$$$$) {
 		($theKey !~ /\s/) or verboseWarnPrint("Warning: the key \"$theKey\" on line $lineNum of file <$filename> had *whitespace* in it. This is often unintentional, but is not necessarily a problem!");
 		
 		if (defined($masterHashRef->{$theKey})) {
-			($numDupeKeys < $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: on line $lineNum, we saw a duplicate of key <$theKey> (in file <$filename>). We are only keeping the FIRST instance of this key.");
-			($numDupeKeys == $MAX_DUPE_KEYS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any future duplicate key warnings.");
+			maybeWarnAboutWeirdness($numDupeKeys, $MAX_DUPE_KEYS_TO_REPORT, "on line $lineNum, we saw a duplicate of key <$theKey> (in file <$filename>). We are only keeping the FIRST instance of this key.");
 			$numDupeKeys++;
 		} else {
 			# Found a UNIQUE new key! ($isDebugging) && print STDERR "Added a line for the key <$theKey>.\n";
@@ -210,6 +217,9 @@ sub arrayOfNonKeyElements(\@$) {
 
 sub joinedUpOutputLine($$$$$$$$) {
 	my ($delim, $mainKey, $array1Ref, $k1col, $array2Ref, $k2col, $shouldNotMoveKey, $rev) = @_;
+
+	if (!defined($mainKey)) { $mainKey = ""; } # if there is no main key (due to the input file having, for example, a TOTALLY BLANK line), we print a blank element here.
+
 	if ($rev) {
 		($k1col, $k2col) = ($k2col, $k1col); # Flip around which is "first" and which is "second"!
 		($array1Ref, $array2Ref) = ($array2Ref, $array1Ref); # Flip around which is "first" and which is "second"!
@@ -319,11 +329,13 @@ if ($multiJoinType) {
 	readIntoHash($file2, $delim2, $keyCol2, \%hash2, $originalCaseHashRef);
 	debugPrint("Read in this many keys: " . scalar(keys(%hash2)) . " from secondary file.\n");
 
-	my $lineNumPrimary  = 0;
-	my $primaryFH       = openSmartAndGetFilehandle($file1);
-	my $prevLineCount1  = undef;
-	my $prevLineCount2  = undef;
-	my $numWeirdLengths = 0;
+	my $lineNumPrimary     = 0;
+	my $primaryFH          = openSmartAndGetFilehandle($file1);
+	my $prevLineCount1     = undef;
+	my $prevLineCount2     = undef;
+	my $numBlankLines      = 0;
+	my $numWeirdLengths    = 0;
+	my $numMissingKeyCols  = 0;
 	foreach my $line (<$primaryFH>) {
 		if ($lineNumPrimary % 2500 == 0) {
 			verboseUpdatePrint("Line $lineNumPrimary...");
@@ -340,28 +352,29 @@ if ($multiJoinType) {
 		#if(/\S/) { ## if there's some content that's non-spaces-only
 		my @sp1 = split($delim1, $line, $SPLIT_WITH_TRAILING_DELIMS); # split-up line
 		if (defined($prevLineCount1) and $prevLineCount1 != scalar(@sp1)) {
-			($numWeirdLengths < $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: the number of elements in file 1 ($file1) is not constant. Line $lineNumPrimary had this many elements: " . scalar(@sp1) . " (previous line had $prevLineCount1)");
-			($numWeirdLengths == $MAX_WEIRD_LINE_LENGTHS_TO_REPORT) and verboseWarnPrint("Warning: suppressing any further non-constant elements-per-line warnings.");
+			maybeWarnAboutWeirdness($numWeirdLengths, $MAX_WEIRD_LINE_LENGTHS_TO_REPORT, "the number of elements in file 1 ($file1) is not constant. Line $lineNumPrimary had this many elements: " . scalar(@sp1) . " (previous line had $prevLineCount1)");
 			$numWeirdLengths++;
 		}
 		$prevLineCount1 = scalar(@sp1);
 
-		if ((($keyCol1-1) >= scalar(@sp1))) {
-			# we're going to SKIP the line entirely if there was no key AT ALL (not even something blank!) at this location
-			verboseWarnPrint("Warning: skipping line $lineNumPrimary---there was no key column on that line. (Key column: $keyCol1, Columns on line: " . scalar(@sp1) . ")");
-			next;	# <-- skip to next iteration of loop!ll
-		}
-		
-		my $thisKey = $sp1[ ($keyCol1-1) ]; # index from ZERO here, that's why we subtract 1 from the key column
-		if ($thisKey =~ /\s/) {
-			verboseWarnPrint("Warning: key \"$thisKey\" on line $lineNumPrimary of file 1 ($file1) had whitespace in it. This is possibly unintentional--beware!");
-		}
-		if (!defined($thisKey)) {
-			verboseWarnPrint("Warning: key at column number $keyCol1 (counting from 1) on line $lineNumPrimary of file 1 ($file1) was UNDEFINED. This is possibly a programming error in join.pl!");
+		my $thisKey;
+		if (scalar(@sp1) == 0) {
+			$thisKey = undef;
+			maybeWarnAboutWeirdness($numBlankLines, $MAX_BLANK_LINES_TO_REPORT, "line $lineNumPrimary was blank, so it had no key.");
+			$numBlankLines++;
+		} elsif (($keyCol1-1) >= scalar(@sp1)) {
+			$thisKey = undef;
+			maybeWarnAboutWeirdness($numMissingKeyCols, $MAX_MISSING_KEY_COLS_TO_REPORT, "line $lineNumPrimary was missing the key column. (Key column: $keyCol1, Columns on line: " . scalar(@sp1) . ").");
+			$numMissingKeyCols++;
+		} else {
+			$thisKey = $sp1[ ($keyCol1-1) ]; # index from ZERO here, that's why we subtract 1 from the key column
+			($thisKey !~ /\s/) or verboseWarnPrint("Warning: key \"$thisKey\" on line $lineNumPrimary of file 1 ($file1) had whitespace in it. This is possibly unintentional--beware!");
 		}
 		
 		my @sp2;	# matching split-up line
-		if ($shouldIgnoreCase) {
+		if (!defined($thisKey)) {
+			@sp2 = (); # undefined key can NEVER match anything
+		} elsif ($shouldIgnoreCase) {
 			my $keyInOrigCase = $originalCaseHash{uc($thisKey)}; # mutate the key so that it's in the SAME CASE as it was in the key we added
 			#print "Found key \"$keyInOrigCase\" from upper-case " . uc($thisKey) . "...\n";
 			if (defined($hash2{$thisKey})) {
@@ -390,26 +403,24 @@ if ($multiJoinType) {
 			}
 		} else {
 			# Ok, there was NO MATCH for this key!
-			debugPrint("WARNING: Hash2 didn't have the key $thisKey\n");
+			defined($thisKey) and debugPrint("WARNING: Hash2 didn't have the key $thisKey\n");
 			if ($shouldNegate) {
 				# We didn't find a match for this key, but because we are NEGATING the output, we'll print this line anyway
 				print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder, $shouldReverse) . "\n";
 			} else {
 				if (defined($stringWhenNoMatch)) {
-				# We print the line ANYWAY, because the user specified an outer join, with the "-o SOMETHING" option.
+					# We print the line ANYWAY, because the user specified an outer join, with the "-o SOMETHING" option.
 					my $suffixWhenNoMatch = (length($stringWhenNoMatch)>0) ? "${outputDelim}${stringWhenNoMatch}" : "$stringWhenNoMatch"; # handle zero-length -ob SPECIALLY
 					print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder, $shouldReverse) . $suffixWhenNoMatch . "\n";
-				#print STDOUT join($outputDelim, $thisKey, arrayOfNonKeyElements(@sp1, $keyCol1)) . $suffixWhenNoMatch . "\n";
+					#print STDOUT join($outputDelim, $thisKey, arrayOfNonKeyElements(@sp1, $keyCol1)) . $suffixWhenNoMatch . "\n";
 				} else {
-				# Omit the line entirely, since there was no match in the secondary file.
+					# Omit the line entirely, since there was no match in the secondary file.
 				}
 			}
 		}
 		#print "$line\n";
 	}
-	if ($file1 ne '-') {
-		close($primaryFH);
-	}	       # close the file we opened in 'openSmartAndGetFilehandle'
+	if ($file1 ne '-') { close($primaryFH); } # close the file we opened in 'openSmartAndGetFilehandle'
 }
 
 
@@ -502,7 +513,7 @@ For multi-joining only:
   the key stays wherever it was (like if it was in column 10, it STAYS in column 10. Regular join would move
   it to column 1).
 
---allow-empty-key or --eok: (Default: do not allow it): Whether to allow an EMPTY key as valid.
+--allow-empty-key or --eok: (Default: do not allow it): Whether to allow an EMPTY key / blank key as valid.
   Note: even when the empty key is NOT allowed for matching, if we do an outer join or
   negation, we will still print items from FILE1 where the key was blank.
 
