@@ -170,6 +170,10 @@ export HISTFILESIZE=100000
 export HISTCONTROL="erasedups:ignoreboth"  # Avoid duplicate entries
 export HISTIGNORE="&:[ ]*:kpk:exit:p:pwd:rr:clear:history:fg:bg" ## Commands that are NOT saved to the history!
 export HISTTIMEFORMAT='%F %T '
+<<<<<<< HEAD
+=======
+
+>>>>>>> 6316c52f0f1511c77e359f6fc893de2642c5290e
 shopt -s histappend # Save terminal history between sessions
 shopt -s cmdhist   # Save multi-line commands as one command
 export PROMPT_COMMAND='history -a' ## save ALL terminal histories

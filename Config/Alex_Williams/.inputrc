@@ -11,7 +11,7 @@ set page-completions off  ## This way we won't get a multi-screen PAGER appearin
 set completion-query-items 1000 ## Don't ask about autocomplete unless there are a TON of possibilities
 set show-all-if-ambiguous on
 set show-all-if-unmodified on
-
+set revert-all-at-newline on # <-- prevents editing of history lines! If this gets turned off, it is SUPER annoying.
 
 #shopt -s cdspell # minor errors in the spelling of a directory component in a cd command will be corrected
 #shopt -s lithist # if the cmdhist option is enabled, multi-line commands are saved to the history with embedded newlines rather than using semicolon separators where possible
