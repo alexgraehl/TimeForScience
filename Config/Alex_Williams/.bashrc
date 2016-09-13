@@ -104,6 +104,24 @@ export PATH="${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/P
 # PATH="$(echo $PATH | perl -e 'print join(":", grep { not $seen{$_}++ } split(/:/, scalar <>))')"  # remove dupes
 
 
+# de-dupe the path
+#if [ -n "$PATH" ]; then
+#  old_PATH=$PATH:; PATH=
+#  while [ -n "$old_PATH" ]; do
+#    x=${old_PATH%%:*}       # the first remaining entry
+#    case $PATH: in
+#      *:"$x":*) ;;         # already there
+#      *) PATH=$PATH:$x;;    # not there yet
+#    esac
+#    old_PATH=${old_PATH#*:}
+#  done
+#  PATH=${PATH#:}
+#  unset old_PATH x
+#fi
+
+
+
+
 BINFAPPBASE=/data/applications
 BINFVERSION=2015_06
 # 'export' added to "BINFSWROOT" on August 25, 2016
