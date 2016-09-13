@@ -155,6 +155,8 @@ shopt -s cmdhist ## Save multi-line pasted commands into one single history comm
 shopt -s no_empty_cmd_completion ## Don't display ALL commands on an empty-line tab
 shopt -s nocaseglob ## Match glob / regexp in case-insensitive fashion
 set -o noclobber    # Prevent file overwrite on stdout redirection. Override with ">|", e.g. echo 'a' >| file_that_exists
+set revert-all-at-newline on # Prevent any editing of your previous commands from DELETING the original command. Instead, both coexist.
+
 
 PROMPT_DIRTRIM=2   # Automatically trim long paths in the prompt (requires Bash 4.x)
 bind 'set mark-directories on'           # show a '/' at the end of a directory name
