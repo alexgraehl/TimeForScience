@@ -123,7 +123,6 @@ export PATH=$(deduped "${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/
 
 # PATH="$(echo $PATH | perl -e 'print join(":", grep { not $seen{$_}++ } split(/:/, scalar <>))')"  # remove dupes
 
-
 BINFAPPBASE=/data/applications
 BINFVERSION=2015_06
 # 'export' added to "BINFSWROOT" on August 25, 2016
@@ -133,7 +132,7 @@ export PERL5LIB=$(deduped $BINFSWROOT/libperl/lib/perl5:$HOME/.linuxbrew/lib/per
 export PERLLIB=$PERL5LIB
 # PYTHONPATH: ------- UPDATE: Added August 25, 2016
 export BINFPYROOT=$(deduped $BINFSWROOT/libpython2.7)
-export PYTHONPATH=$(deduped $BINFPYROOT:$BINFPYROOT/dist-packages:$BINFPYROOT/lib64/python2.7/site-packages:$PYTHONPATH)
+export PYTHONPATH=$(deduped $BINFPYROOT:$BINFPYROOT/lib64/python2.7/site-packages:$BINFPYROOT/lib/python2.7/site-packages:$PYTHONPATH)
 #$BINFPYROOT:$BINFPYROOT/dist-packages:$BINFPYROOT/lib64/python2.7/site-packages:$PYTHONPATH)
 export R_LIBS=$(deduped $BINFSWROOT/libr)
 export PATH=$(deduped $BINFBINROOT:$PATH:$BINFPYROOT/bin)
