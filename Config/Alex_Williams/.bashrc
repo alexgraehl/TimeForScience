@@ -91,6 +91,26 @@ elif [[ -f ${HOME}/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
     source ${HOME}/TimeForScience/Config/Alex_Williams/.aliases
 fi
 
+function deduped() { # input: one string to de-dupe. Usage: PATH=$(deduped $PATH). May break on things with spaces.
+    local X="$1"
+    local new=""
+    local old="$X:"
+    if [ -n "$X" ]; then
+	while [ -n "$old" ]; do
+	    x=${old%%:*}
+	    case "$new": in
+		*:"$x":*) ;; # <-- entry EXISTS already
+		*)new="$new:$x";; # Does not exist already
+	    esac
+	    old=${old#*:}
+	done
+	new=${new#:}
+    fi
+    new=$(echo "$new" | perl -pe 's/^[:+]//' | perl -pe 's/[:+]\$//') # remove leading/trailing ':'
+    # Remove any leading or trailing ':' from the path
+    echo "$new"
+}
+
 # ============================= PATH STUFF ============================
 export BOWTIE_INDEXES=${BINF_CORE_WORK_DIR}/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
 
@@ -99,44 +119,27 @@ export R_BINF_CORE=${BINF_CORE_WORK_DIR}/Code/R
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin ## <-- clear out initial path!!
 export PATH=/opt/pbs/default/bin:/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${PATH}:${HOME}/.local/bin/
-export PATH="${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Code/Python:${BINF_CORE_WORK_DIR}/Code/alexgw"   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
+export PATH=$(deduped "${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Code/Python:${BINF_CORE_WORK_DIR}/Code/alexgw")   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 
 # PATH="$(echo $PATH | perl -e 'print join(":", grep { not $seen{$_}++ } split(/:/, scalar <>))')"  # remove dupes
-
-
-# de-dupe the path
-#if [ -n "$PATH" ]; then
-#  old_PATH=$PATH:; PATH=
-#  while [ -n "$old_PATH" ]; do
-#    x=${old_PATH%%:*}       # the first remaining entry
-#    case $PATH: in
-#      *:"$x":*) ;;         # already there
-#      *) PATH=$PATH:$x;;    # not there yet
-#    esac
-#    old_PATH=${old_PATH#*:}
-#  done
-#  PATH=${PATH#:}
-#  unset old_PATH x
-#fi
-
-
 
 
 BINFAPPBASE=/data/applications
 BINFVERSION=2015_06
 # 'export' added to "BINFSWROOT" on August 25, 2016
-export BINFSWROOT=$BINFAPPBASE/$BINFVERSION
-export BINFBINROOT=$BINFSWROOT/bin
-export PERL5LIB=$BINFSWROOT/libperl/lib/perl5:$HOME/.linuxbrew/lib/perl5/site_perl:$PERL5LIB
+export BINFSWROOT=$(deduped $BINFAPPBASE/$BINFVERSION)
+export BINFBINROOT=$(deduped $BINFSWROOT/bin)
+export PERL5LIB=$(deduped $BINFSWROOT/libperl/lib/perl5:$HOME/.linuxbrew/lib/perl5/site_perl:$PERL5LIB)
 export PERLLIB=$PERL5LIB
 # PYTHONPATH: ------- UPDATE: Added August 25, 2016
-export BINFPYROOT=$BINFSWROOT/libpython2.7/
-export PYTHONPATH=$PYTHONPATH:$BINFPYROOT:$BINFPYROOT/dist-packages:$BINFPYROOT/lib64/python2.7/site-packages/
-export R_LIBS=$BINFSWROOT/libr
-export PATH=$BINFBINROOT:$PATH:$BINFPYROOT/bin
-export LD_LIBRARY_PATH="$HOME/.linuxbrew/lib:$BINFSWROOT/lib:$LD_LIBRARY_PATH"
+export BINFPYROOT=$(deduped $BINFSWROOT/libpython2.7)
+export PYTHONPATH=$(deduped $BINFPYROOT:$BINFPYROOT/dist-packages:$BINFPYROOT/lib64/python2.7/site-packages:$PYTHONPATH)
+#$BINFPYROOT:$BINFPYROOT/dist-packages:$BINFPYROOT/lib64/python2.7/site-packages:$PYTHONPATH)
+export R_LIBS=$(deduped $BINFSWROOT/libr)
+export PATH=$(deduped $BINFBINROOT:$PATH:$BINFPYROOT/bin)
+export LD_LIBRARY_PATH=$(deduped "$HOME/.linuxbrew/lib:$BINFSWROOT/lib:$LD_LIBRARY_PATH")
 export LIBRARY_PATH=$LD_LIBRARY_PATH
-export CPATH=$BINFSWROOT/include:$CPATH
+export CPATH=$(deduped $BINFSWROOT/include:$CPATH)
 
 export CXX=/usr/bin/g++ # The location of the c++ compiler. NOT "cpp"--that is the C preprocessor.
 export LANG="en_US.UTF-8"    # Set the LANG to UTF-8
