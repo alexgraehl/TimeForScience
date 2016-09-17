@@ -106,7 +106,7 @@ function deduped() { # input: one string to de-dupe. Usage: PATH=$(deduped $PATH
 	done
 	new=${new#:}
     fi
-    new=$(echo "$new" | perl -pe 's/^[:+]//' | perl -pe 's/[:+]\$//') # remove leading/trailing ':'
+    new=$(echo "$new" | perl -pe 's/^[:+]//' | perl -pe 's/[:]+/:/g' | perl -pe 's/[:+]\$//') # remove leading/trailing ':'
     # Remove any leading or trailing ':' from the path
     echo "$new"
 }
