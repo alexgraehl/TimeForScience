@@ -16,9 +16,7 @@ by Alex Williams
 Use it like this:   sheet.py  yourFile.tab   or else:    cat someFile | sheet.py
 Example usage: "sheet.py -i ~/T" (tab-delimted file)
 '''
-
 # Docs on how to use curses: http://www.amk.ca/python/howto/curses/curses.html
-
 import sys
 import curses # <-- docs at: http://docs.python.org/library/curses.html
 import curses.ascii   # <-- docs at http://docs.python.org/library/curses.ascii.html
@@ -26,9 +24,7 @@ import curses.textpad
 import curses.wrapper
 import gzip
 import bz2
-
 import re
-
 import pdb #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
 
 try:
@@ -1578,15 +1574,8 @@ BUGS / TO DO:
 #         key = get_key()
 #         d.dispatch(key)
 
-
-
 # Must come at the VERY END!
 if __name__ == "__main__":
     processCommandLineArgs(sys.argv[1:])
     curses.wrapper(mainScreenHandlingLoop)
     pass
-
-
-
-
-

@@ -1120,3 +1120,14 @@ current line."
 (global-set-key [(control meta l)] 'sh-send-line-or-region-and-step) ; option-control-l will execute the current line the cursor is on in the shell, OR a whole region if there' a highlighted region
 ;;;;;;;; ========================= SHELL INTEGRATION: allow the user to put their cursor on a line, hit "Control-Option-L" and have that text run in the shell ============
 (put 'upcase-region 'disabled nil) ; Don't confirm that we want to enable "CTRL-X CTRL-U" to upper-case a region.
+
+(add-hook 'after-init-hook #'global-flycheck-mode)
+; (add-hook 'after-init-hook #'global-flycheck-mode)
+; To enable Flycheck add the following to your init file:
+; 
+;    (add-hook 'after-init-hook #'global-flycheck-mode)
+; 
+; Flycheck will then automatically check buffers in supported languages, as
+; long as all necessary tools are present.  Use `flycheck-verify-setup' to
+; troubleshoot your Flycheck setup.
+
