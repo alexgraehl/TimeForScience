@@ -1121,7 +1121,7 @@ current line."
 ;;;;;;;; ========================= SHELL INTEGRATION: allow the user to put their cursor on a line, hit "Control-Option-L" and have that text run in the shell ============
 (put 'upcase-region 'disabled nil) ; Don't confirm that we want to enable "CTRL-X CTRL-U" to upper-case a region.
 
-(add-hook 'after-init-hook #'global-flycheck-mode)
+; (add-hook 'after-init-hook #'global-flycheck-mode)
 ; (add-hook 'after-init-hook #'global-flycheck-mode)
 ; To enable Flycheck add the following to your init file:
 ; 
