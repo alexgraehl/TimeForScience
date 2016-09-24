@@ -60,7 +60,7 @@ defaults write NSGlobalDomain AppleShowScrollBars -string "Always"
 # (Makes space bar in Chrome jump page-by-page. Critical feature)
 defaults write NSGlobalDomain NSScrollAnimationEnabled -bool false # THIS IS CRITICAL! AGW / Alex
 
-# Increase window resize speed for Cocoa applications
+# Increase window resize speed for Cocoa applications (decrease resize time)
 defaults write NSGlobalDomain NSWindowResizeTime -float 0.001
 
 # Expand save panel by default
@@ -705,7 +705,7 @@ defaults write -g NSDocumentRevisionsWindowTransformAnimation -bool false
 defaults write -g NSToolbarFullScreenAnimationDuration -float 0.001
 
 # scrolling column views
-defaults write -g NSBrowserColumnAnimationSpeedMultiplier -float 0
+defaults write -g NSBrowserColumnAnimationSpeedMultiplier -float 0.0
 
 # DON'T sleep when you push the power button! (Not sure if this works in 10.10+)
 defaults write com.apple.loginwindow PowerButtonSleepsSystem -bool no
