@@ -183,32 +183,19 @@ export PROMPT_COMMAND='history -a' ## save ALL terminal histories
 #PS1="[\D{%e}=\t \h:\W]$ "
 
 highlight_text() { # prints colored text apparently. One argument, which is the color setting. 1 = red, 2 = green... etc
-    if [ -x /usr/bin/tput ]
-    then
-        tput bold
-        tput setaf $1
-    fi
+    if [ -x /usr/bin/tput ]; then tput bold; tput setaf $1; fi
     shift
     printf -- "$@"
-    if [ -x /usr/bin/tput ]
-    then
-       tput sgr0
-    fi
+    if [ -x /usr/bin/tput ]; then tput sgr0 ; fi
 }
 
-print_nonzero_exit_code() {
+print_if_nonzero_exit_code() { # Example of using this in your prompt: PS1='$(highlight_exit_code)...' # <-- note the SINGLE quotes (or put a backslash before '$')
     exit_code=$?
-    if [ $exit_code -eq 130 ];
-    then
-	CTRLC_COLOR=2 # 2 = green
-	highlight_text $CTRLC_COLOR "[Ctrl-C ($exit_code)]\n"
-    elif [ $exit_code -ne 0 ]; # ONLY highlight non-zero exit codes
-    then
-	ERRCOLOR=1 # 1 = red
-        highlight_text $ERRCOLOR "[Exit code $exit_code]\n"
-    fi  #PS1='$(highlight_exit_code)...' # <-- note the SINGLE quotes (or put a backslash before '$')
-}
-
+    CTRLC_COLOR=2 # 2 = green
+    ERR_COLOR=1 # 1 = red
+    if [ $exit_code -eq 130 ]; then highlight_text $CTRLC_COLOR "[Ctrl-C ($exit_code)]\n";
+    elif [ $exit_code -ne 0 ]; then highlight_text $ERR_COLOR   "[Exit code $exit_code]\n"; fi
+} 
 
 case "$COMPYNAME"
     in
@@ -218,7 +205,7 @@ case "$COMPYNAME"
 	export PS1="[COMPUTE_NODE] [\D{%e}~\t~${COMPYNAME:0:3}~\W]$ "
 	;;
     *) ## Otherwise...
-	export PS1="\$(print_nonzero_exit_code)[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
+	export PS1="\$(print_if_nonzero_exit_code)[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
 	;;
 esac
 
