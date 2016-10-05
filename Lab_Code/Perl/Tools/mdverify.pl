@@ -18,6 +18,12 @@ use Digest::MD5;
 use Term::ANSIColor;
 $| = 1;  # Flush output to STDOUT immediately.
 
+
+my $EXIT_CODE_OK                       = 0;
+my $EXIT_CODE_MISSING_BUT_NO_BAD_FILES = 1;
+my $EXIT_CODE_BAD                      = 2;
+my $EXIT_CODE_USAGE                    = 3;
+
 my $verbose = 1;
 my $isDebugging = 0;
 my $useColor    = 1;
@@ -25,9 +31,9 @@ my $onlyPrintFailures = 0; # by default, print ALL file results
 my $shouldRenameBad = 0; # should we rename bad files on the filesystem?
 my $shouldDeleteBad = 0; # should we DELETE bad files on the filesystem? May be more dangerous!
 
-sub quitWithUsageError($)   { print($_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
-sub printUsageAndQuit()     { printUsageAndContinue(); exit(1); }
-sub printUsageAndContinue() {    print STDOUT <DATA>; }
+sub quitWithUsageError($)   { print($_[0] . "\n"); printUsageAndContinue(); print($_[0] . "\n"); exit($EXIT_CODE_USAGE); }
+sub printUsageAndFail()     { printUsageAndContinue(); exit($EXIT_CODE_USAGE); }
+sub printUsageAndContinue() { print STDOUT <DATA>; }
 sub debugPrint($)           { ($isDebugging) and print STDERR $_[0]; }
 sub verboseWarnPrint($)     { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "yellow on_blue"); } }
 sub verboseUpdatePrint($)   { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "black on_green"); } }
@@ -96,11 +102,8 @@ sub md5_of_file($) {
 }
 
 
-
-
-
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
-GetOptions("help|?|man" => sub { printUsageAndQuit(); }
+GetOptions("help|?|man" => sub { printUsageAndContinue(); exit($EXIT_CODE_OK); }
 	   , "q|onlybad" => sub { $onlyPrintFailures = 1; }
 	   , "nc|bw" => sub { $useColor = 0; } # 'no color'
 	   , "c!" => $useColor # default is "yes, use color"
@@ -109,7 +112,7 @@ GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "delete!" => \$shouldDeleteBad
 	   , "vv" => sub { $isDebugging = 1; $verbose = 1; }
 	   , "v|version" => sub { print "$VERSION\n"; exit(0); }
-    ) or printUsageAndQuit();
+    ) or printUsageAndFail();
 
 my $numUnprocessedArgs = scalar(@ARGV);
 ($numUnprocessedArgs >= 1) or quitWithUsageError("[Error] in arguments! You must send at least ONE md5 filepath to this program. It cannot accept STDIN reading currently.");
@@ -233,16 +236,13 @@ foreach my $md5file (@md5files) {
 my $totalFiles = ($G_NOK + $G_NMISSING + $G_NBAD);
 printColorStderr(" TOTAL FILES CHECKED:\t$totalFiles\n", undef);
 printColorStderr("       [CHECKSUM OK]:\t$G_NOK\n", undef);
-printColorStderr("     [CHECKSUM FAIL]:\t$G_NBAD\n", ($G_NBAD > 0 ? $MD5_FAILURE_COLOR : undef));
-printColorStderr("     [MISSING FILES]:\t$G_NMISSING\n", ($G_NMISSING > 0 ? $FILE_MISSING_COLOR : undef));
+printColorStderr("     [CHECKSUM FAIL]:\t$G_NBAD\n", ($G_NBAD > 0 ? $MD5_FAILURE_COLOR : undef)); # prints in RED color if there are > 0 bad files!
+printColorStderr("     [MISSING FILES]:\t$G_NMISSING\n", ($G_NMISSING > 0 ? $FILE_MISSING_COLOR : undef)); # prints in color if there are > 0 bad files!
 
-exit(0); # looks like we were successful
+($G_NBAD > 0)     and exit($EXIT_CODE_BAD);  # bad news! there were BAD files. Exit code 2.
+($G_NMISSING > 0) and exit($EXIT_CODE_MISSING_BUT_NO_BAD_FILES); # we had some MISSING files, but no checksum failures. This could mean a lot of things.
+exit($EXIT_CODE_OK); # Apparently everything was fine
 
-
-# --delete: Dubiously implemented for now. Adds the '.delete_me' suffix to a filename.
-
-
-  
 ################# END MAIN #############################
 
 __DATA__
@@ -254,6 +254,9 @@ This program calculates 'md5' checksums and verifies them against input file(s) 
 
 You give it a list of "md5.txt" files, and it tries to find the matching files and see if they have the
 correct md5sum. See the EXAMPLES section below.
+
+There are a few different formats of checksum files. Some have the checksum first, and others have the filename first.
+mdverify attempts to figure out where the checksum is. It can also handle both tabs and spaces as delimiters.
 
 OPTIONS:
 -q or --onlybad: Quiet mode. Only report BAD and MISSING files, not OK ones.
