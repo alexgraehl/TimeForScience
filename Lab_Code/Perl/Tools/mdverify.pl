@@ -246,17 +246,14 @@ exit($EXIT_CODE_OK); # Apparently everything was fine
 ################# END MAIN #############################
 
 __DATA__
-mdverify.pl [OPTIONS] <list_of_input_md5_files>
-
+mdverify.pl [OPTIONS] md5file.txt [optionally, additional md5_checksum.txt files]
 by Alex Williams, 2016
 
-This program calculates 'md5' checksums and verifies them against input file(s) of expected checksums.
+mdverify.pl calculates 'md5' checksums and verifies them against input file(s) of expected checksums.
 
-You give it a list of "md5.txt" files, and it tries to find the matching files and see if they have the
-correct md5sum. See the EXAMPLES section below.
-
-There are a few different formats of checksum files. Some have the checksum first, and others have the filename first.
-mdverify attempts to figure out where the checksum is. It can also handle both tabs and spaces as delimiters.
+You supply one or more "md5.txt" checksum files, and it tries to find the matching files and see if they have the
+correct md5sum. See the EXAMPLES section below. There are a few different checksum file formats (e.g., checksum
+first / filename first). mdverify tries to find the checksum, and it can handle both tabs and spaces.
 
 OPTIONS:
 -q or --onlybad: Quiet mode. Only report BAD and MISSING files, not OK ones.
