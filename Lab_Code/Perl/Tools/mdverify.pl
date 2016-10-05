@@ -22,7 +22,9 @@ $| = 1;  # Flush output to STDOUT immediately.
 my $EXIT_CODE_OK                       = 0;
 my $EXIT_CODE_MISSING_BUT_NO_BAD_FILES = 1;
 my $EXIT_CODE_BAD                      = 2;
-my $EXIT_CODE_USAGE                    = 3;
+my $EXIT_CODE_MALFORMED_LINES          = 3; # malformed lines in the checksum file
+my $EXIT_CODE_USAGE                    = 31;
+
 
 my $verbose = 1;
 my $isDebugging = 0;
@@ -35,7 +37,7 @@ sub quitWithUsageError($)   { print($_[0] . "\n"); printUsageAndContinue(); prin
 sub printUsageAndFail()     { printUsageAndContinue(); exit($EXIT_CODE_USAGE); }
 sub printUsageAndContinue() { print STDOUT <DATA>; }
 sub debugPrint($)           { ($isDebugging) and print STDERR $_[0]; }
-sub verboseWarnPrint($)     { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "yellow on_blue"); } }
+sub verboseWarnPrint($)     { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "yellow on_red"); } }
 sub verboseUpdatePrint($)   { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "black on_green"); } }
 
 my $RENAME_SUFFIX      = "VERIFICATION_FAILED";
@@ -50,6 +52,7 @@ my %checkedHash = (); # files that have been checked already
 my $G_NOK      = 0;
 my $G_NBAD     = 0;
 my $G_NMISSING = 0;
+my $G_NMALFORMED_LINES = 0;
 
 sub tryToLoadModule($) {
 	my $x = eval("require $_[0]");
@@ -188,7 +191,8 @@ foreach my $md5file (@md5files) {
 		if    (isMd5($a[0])) {  ($md, $fn) = ($a[0], $a[1]); }
 		elsif (isMd5($a[1])) {  ($md, $fn) = ($a[1], $a[0]); } # switch the order
 		else {
-			verboseWarnPrint("[ERROR] Could not find a proper 32-character md5 checksum on line $lineNum of the checksum file '$md5file'! This probably indicates a malformed input file.");
+			verboseWarnPrint("[ERROR on checksum file line $lineNum] Could not find a proper 32-character md5 checksum on line $lineNum of the checksum file '$md5file'! This probably indicates a malformed input file.");
+			$G_NMALFORMED_LINES++; # this was a bad line for sure!
 			next;
 		}
 		
@@ -241,14 +245,16 @@ foreach my $md5file (@md5files) {
 
 #print $G_FILE_STATUS;
 
-my $totalFiles = ($G_NOK + $G_NMISSING + $G_NBAD);
-printColorStderr(" TOTAL FILES CHECKED:\t$totalFiles\n", undef);
-printColorStderr("       [CHECKSUM OK]:\t$G_NOK\n", undef);
-printColorStderr("     [CHECKSUM FAIL]:\t$G_NBAD\n", ($G_NBAD > 0 ? $MD5_FAILURE_COLOR : undef)); # prints in RED color if there are > 0 bad files!
-printColorStderr("     [MISSING FILES]:\t$G_NMISSING\n", ($G_NMISSING > 0 ? $FILE_MISSING_COLOR : undef)); # prints in color if there are > 0 bad files!
+my $totalFiles = ($G_NOK + $G_NMISSING + $G_NBAD + $G_NMALFORMED_LINES);
+printColorStderr("   TOTAL FILES CHECKED:\t$totalFiles\n", undef);
+printColorStderr("         [CHECKSUM OK]:\t$G_NOK\n", undef);
+printColorStderr("       [CHECKSUM FAIL]:\t$G_NBAD\n", ($G_NBAD > 0 ? $MD5_FAILURE_COLOR : undef)); # prints in RED color if there are > 0 bad files!
+printColorStderr("       [MISSING FILES]:\t$G_NMISSING\n", ($G_NMISSING > 0 ? $FILE_MISSING_COLOR : undef)); # prints in color if there are > 0 bad files!
+printColorStderr(" [MALFORMED CHECKSUMS]:\t$G_NMALFORMED_LINES\n", ($G_NMALFORMED_LINES > 0 ? $MD5_FAILURE_COLOR : undef)); # prints in color if there are > 0 malformed lines
 
-($G_NBAD > 0)     and exit($EXIT_CODE_BAD);  # bad news! there were BAD files. Exit code 2.
-($G_NMISSING > 0) and exit($EXIT_CODE_MISSING_BUT_NO_BAD_FILES); # we had some MISSING files, but no checksum failures. This could mean a lot of things.
+($G_NBAD > 0)             and exit($EXIT_CODE_BAD);  # bad news! there were BAD files. Exit code 2.
+($G_NMALFORMED_LINES > 0) and exit($EXIT_CODE_MALFORMED_LINES); # we had some MALFORMED input lines.
+($G_NMISSING > 0)         and exit($EXIT_CODE_MISSING_BUT_NO_BAD_FILES); # we had some MISSING files, but no checksum failures. This could mean a lot of things.
 exit($EXIT_CODE_OK); # Apparently everything was fine
 
 ################# END MAIN #############################
