@@ -45,6 +45,8 @@ my $MD5_FAILURE_COLOR  = "red";
 my $FILE_MISSING_COLOR = "yellow on_black";
 my $VERSION            = "1.00";
 
+my %checkedHash = (); # files that have been checked already
+
 my $G_NOK      = 0;
 my $G_NBAD     = 0;
 my $G_NMISSING = 0;
@@ -185,7 +187,10 @@ foreach my $md5file (@md5files) {
 		(scalar(@a) == 2) or confess "[ERROR] Cannot properly parse the (supposedly) MD5 checksum file named <$md5file>---we expect it to have two columns of data, with either TWO SPACES as the delimiter OR possibly ' = ' (equals sign surrounded by a single space) as the delimiter, or failing that, just whitespace as a delimiter. Whitespace in filenames will probably cause this script to FAIL.";
 		if    (isMd5($a[0])) {  ($md, $fn) = ($a[0], $a[1]); }
 		elsif (isMd5($a[1])) {  ($md, $fn) = ($a[1], $a[0]); } # switch the order
-		else {                  confess "Failure to find an md5 sum on line $lineNum of $md5file..."; }
+		else {
+			verboseWarnPrint("[ERROR] Could not find a proper 32-character md5 checksum on line $lineNum of the checksum file '$md5file'! This probably indicates a malformed input file.");
+			next;
+		}
 		
 		my $filebase       = File::Basename::basename($fn); # hmm, maybe only the BASENAME of this file exists, from the current path? (it could be some path like /other_server/whatever/myfile.txt, where only "myfile.txt" is correct
 		my $filePathOurSystem = undef;
@@ -195,8 +200,11 @@ foreach my $md5file (@md5files) {
 		
 		my $observedMd5;
 		if (not -e $filePathOurSystem) {
-			$observedMd5 = undef; # can't find the file on the filesystem...
+			appendStatus(undef, $md, $filePathOurSystem); # <-- increments 'G_NBAD' and more
+		} elsif (exists($checkedHash{$filePathOurSystem}) && defined($checkedHash{$filePathOurSystem})) {
+			verboseWarnPrint("[SKIPPING] a duplicate checksum entry for the file '$filePathOurSystem', which we have already checked.");
 		} else {
+			$checkedHash{$filePathOurSystem} = 1; # remember that we checked this file, in case there are duplicate entries (which occasionally happens!)
 			$observedMd5 = md5_of_file($filePathOurSystem);
 			if ($observedMd5 ne $md) {
 				# Bad file detected!
@@ -222,9 +230,9 @@ foreach my $md5file (@md5files) {
 					unlink($filePathOurSystem) or verboseWarnPrint("*** [ERROR]: Failed to delete <$filePathOurSystem>");
 				}
 			}
-
+			appendStatus($observedMd5, $md, $filePathOurSystem); # <-- increments 'G_NBAD' and more
 		}
-		appendStatus($observedMd5, $md, $filePathOurSystem);
+		
 		#debugPrint("Observed md5 = $observedMd5 . Expected md5 = $md . For file $filePathOurSystem.\n");
 	}
 	close($fh);
