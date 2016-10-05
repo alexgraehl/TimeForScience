@@ -322,9 +322,13 @@ alias cheat="echo \
 #if [[ "$hasExa" && "$isMac" ]]; then # check for 'exa' -- the 'ls' replacement, but only on the Mac---it's slow on Rigel!
 
 if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then
-    alias ls='exa'
-    alias ll='exa -l -a'
-    alias lmac='exa'
+    # 'exa' is a 'ls' replacement
+    alias ls='exa --color=always'
+    alias ll='exa -l -a --color=always'
+elif agw_cmd_exists "exa" ; then
+    # Not the mac, I guess??
+    alias ls='exa --color=always'
+    alias ll='exa -l -a --color=always'
 else
     if [[ "$color_prompt" && "$isMac" ]]; then
 	AGW_LS_OPT=' -F -G ' #-@ ' ## Mac: Color option is -G. Also, on a Mac, show the extended attributes (-@)
