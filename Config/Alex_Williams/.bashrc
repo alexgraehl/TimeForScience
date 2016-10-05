@@ -182,17 +182,39 @@ export PROMPT_COMMAND='history -a' ## save ALL terminal histories
 
 #PS1="[\D{%e}=\t \h:\W]$ "
 
+highlight_text() { # prints colored text apparently. One argument, which is the color setting. 1 = red, 2 = green... etc
+    if [ -x /usr/bin/tput ]
+    then
+        tput bold
+        tput setaf $1
+    fi
+    shift
+    printf -- "$@"
+    if [ -x /usr/bin/tput ]
+    then
+       tput sgr0
+    fi
+}
+
+print_nonzero_exit_code() {
+    exit_code=$?
+    if [ $exit_code -ne 0 ] # ONLY highlight non-zero exit codes
+    then
+	ERRCOLOR=1
+        highlight_text $ERRCOLOR "[Exit code $exit_code]\n"
+    fi  #PS1='$(highlight_exit_code)...' # <-- note the SINGLE quotes (or put a backslash before '$')
+}
+
+
 case "$COMPYNAME"
     in
     $RIGNODE_IP)
 	a_machine_prompt_main_color="${color_prefix}[44m${color_prefix}[3;36m" # cyan text / blue background
 	#\033[47m\033[3;31m   ## <-- For the second part, where it says [3;31m 1=bold, 2=light, 3=regular
-	iterm_bg=002200 ;# iTerm console window background
-	iterm_top="40 120 40" ; # iTerm window top bar color
 	export PS1="[COMPUTE_NODE] [\D{%e}~\t~${COMPYNAME:0:3}~\W]$ "
 	;;
     *) ## Otherwise...
-	export PS1="[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
+	export PS1="\$(print_nonzero_exit_code)[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
 	;;
 esac
 
@@ -230,7 +252,7 @@ fi
 export CLICOLOR='Yes'
 export LS_OPTIONS='--color=auto'
 export LS_COLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=43;31;03:ex=01;31'  ## LS_COLORS *with* an underscore is for Ubuntu
-export LSCOLORS=FxgxCxDxBxegedabagacad    ## LSCOLORS *without* an underscore is for Mac OS X.
+export LSCOLORS="FxgxCxDxBxegedabagacad"    ## LSCOLORS *without* an underscore is for Mac OS X.
 export HOSTNAME  ## <-- Required for tmux / env to see HOSTNAME as a variable!
 export    CVS_RSH=ssh
 export  CVSEDITOR="emacs -nw"
@@ -249,11 +271,14 @@ bind "\M-K:next-history"
 #bind "\C-r:history-search-backward"
 bind "\C-s:history-search-forward" # This doesn't seem to work for some reason
 
+umask u=rwx,g=rwx,o=rx # <-- give users and groups full access to files I create, and let other users READ and EXECUTE
+
+
+
+
 # Save the local ethernet "en0" MAC address into the variable LOCAL_EN0_MAC. Note the zero.
 # Allows per-machine settinsg.
 #export LOCAL_EN0_MAC=`ifconfig en0 | grep -i ether | sed 's/.*ether //' | sed 's/[ ]*$//'`
-
-umask u=rwx,g=rwx,o=rx # <-- give users and groups full access to files I create, and let other users READ and EXECUTE
 
 ## BETTER DIRECTORY NAVIGATION ##
 # Prepend cd to directory names automatically
@@ -277,3 +302,9 @@ umask u=rwx,g=rwx,o=rx # <-- give users and groups full access to files I create
 # export projects="$HOME/projects"
 # export documents="$HOME/Documents"
 # export dropbox="$HOME/Dropbox"
+
+
+
+
+
+
