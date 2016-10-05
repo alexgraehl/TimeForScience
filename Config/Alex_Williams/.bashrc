@@ -198,9 +198,13 @@ highlight_text() { # prints colored text apparently. One argument, which is the 
 
 print_nonzero_exit_code() {
     exit_code=$?
-    if [ $exit_code -ne 0 ] # ONLY highlight non-zero exit codes
+    if [ $exit_code -eq 130 ];
     then
-	ERRCOLOR=1
+	CTRLC_COLOR=2 # 2 = green
+	highlight_text $CTRLC_COLOR "[Ctrl-C ($exit_code)]\n"
+    elif [ $exit_code -ne 0 ]; # ONLY highlight non-zero exit codes
+    then
+	ERRCOLOR=1 # 1 = red
         highlight_text $ERRCOLOR "[Exit code $exit_code]\n"
     fi  #PS1='$(highlight_exit_code)...' # <-- note the SINGLE quotes (or put a backslash before '$')
 }
