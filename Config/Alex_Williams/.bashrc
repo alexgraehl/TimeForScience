@@ -186,26 +186,28 @@ highlight_text() { # prints colored text apparently. One argument, which is the 
     if [ -x /usr/bin/tput ]; then tput bold; tput setaf $1; fi
     shift
     printf -- "$@"
-    if [ -x /usr/bin/tput ]; then tput sgr0 ; fi
+    if [ -x /usr/bin/tput ]; then tput sgr0 ; fi # sgr0 = "turn off all attributes"
 }
 
 print_if_nonzero_exit_code() { # Example of using this in your prompt: PS1='$(highlight_exit_code)...' # <-- note the SINGLE quotes (or put a backslash before '$')
     exit_code=$?
     CTRLC_COLOR=2 # 2 = green
     ERR_COLOR=1 # 1 = red
-    if [ $exit_code -eq 130 ]; then highlight_text $CTRLC_COLOR "[Ctrl-C ($exit_code)]\n";
-    elif [ $exit_code -ne 0 ]; then highlight_text $ERR_COLOR   "[Exit code $exit_code]\n"; fi
+    if [ $exit_code -eq 0 ]; then return;
+    elif [ $exit_code -eq 130 ]; then highlight_text $CTRLC_COLOR "[Ctrl-C ($exit_code)]";
+    else highlight_text $ERR_COLOR   "[Exit code $exit_code]"; fi
 } 
+
+
+export PS1="\$(print_if_nonzero_exit_code)\n[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
+# Note: requires a "\n" after the "print_if_nonzero" or else Ctrl-A / Ctrl-E gets messed up when pasting
 
 case "$COMPYNAME"
     in
     $RIGNODE_IP)
-	a_machine_prompt_main_color="${color_prefix}[44m${color_prefix}[3;36m" # cyan text / blue background
-	#\033[47m\033[3;31m   ## <-- For the second part, where it says [3;31m 1=bold, 2=light, 3=regular
-	export PS1="[COMPUTE_NODE] [\D{%e}~\t~${COMPYNAME:0:3}~\W]$ "
+	export PS1="[COMPUTE_NODE] $PS1" # prepend "compute node" to it
 	;;
     *) ## Otherwise...
-	export PS1="\$(print_if_nonzero_exit_code)[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
 	;;
 esac
 
