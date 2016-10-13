@@ -42,8 +42,10 @@ cat $FILE | grep -v '^#' | cut -f 1,7- >| $TEMP1
 
 #echo $ONLY_BASENAMES
 
+# | perl -pe 's/[._][sb]am\b//g'
+
 if [[ "$ONLY_BASENAMES" == "1" ]]; then
-    head -n 1 $TEMP1 | perl -e 'use File::Basename; while (<>) { chomp; my @a = split(/\t/, $_); my @z = map { File::Basename::basename($_) } @a; print join("\t", @z) . qq{\n}; }' | perl -pe 's/[._][sb]am\b//g' > $TEMPHEADER
+    head -n 1 $TEMP1 | perl -e 'use File::Basename; while (<>) { chomp; my @a = split(/\t/, $_); my @z = map { File::Basename::basename($_) } @a; print join("\t", @z) . qq{\n}; }' > $TEMPHEADER
 else
     head -n 1 $TEMP1  > $TEMPHEADER
 fi
