@@ -16,7 +16,8 @@ if (!exists("print.agw")) {
 }
 
 # ======================================================================================
-options(stringsAsFactors=F, menu.graphics=F, error=recover) # for top of file
+if (interactive()) { options(error=recover) } else { options(error=traceback) } # useful even non-interactively
+options(stringsAsFactors=F, menu.graphics=F) # for top of file
 # ======================================================================================
 # Common functions
 print0=function(...){print(paste0(...))}; system0=function(...){print0("[SYSTEM CALL]: ",...);system(paste0(...))}
