@@ -323,12 +323,12 @@ alias cheat="echo \
 
 if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then
     # 'exa' is a 'ls' replacement
-    alias ls='exa --color=always'
-    alias ll='exa -l -a --color=always'
+    alias ls='exa --color=auto'
+    alias ll='exa -l -a --color=auto'
 elif agw_cmd_exists "exa" ; then
     # Not the mac, I guess??
-    alias ls='exa --color=always'
-    alias ll='exa -l -a --color=always'
+    alias ls='exa --color=auto'
+    alias ll='exa -l -a --color=auto'
 else
     if [[ "$color_prompt" && "$isMac" ]]; then
 	AGW_LS_OPT=' -F -G ' #-@ ' ## Mac: Color option is -G. Also, on a Mac, show the extended attributes (-@)
