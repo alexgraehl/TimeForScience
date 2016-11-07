@@ -1051,11 +1051,11 @@ current line."
 (add-hook 'sh-mode-hook (lambda () (sh-electric-here-document-mode -1))) ;; Prevent entering '<<<' from also inserting an EOF. Very annoying!
 
 
-
 (add-hook 'python-mode-hook
-  (lambda () (setq indent-tabs-mode nil) (setq electric-indent-mode nil)
-;; turns off electric indent mode because that breaks pasting in code
-)) ;; whatever you do, don't let python use tabs!
+	  (lambda () (setq indent-tabs-mode nil) ;; whatever you do, don't let python use tabs!
+	    (setq electric-indent-mode t) ;; nil = turn off electric indent mode because that breaks pasting in code
+	    (setq python-indent-offset 4)
+	    ))
 
 
 (defun iswitchb-local-keys ()
