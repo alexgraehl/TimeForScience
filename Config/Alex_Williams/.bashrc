@@ -204,8 +204,11 @@ export PS1="\$(print_if_nonzero_exit_code)\n[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " #
 
 case "$COMPYNAME"
     in
-    $RIGNODE_IP)
-	export PS1="[COMPUTE_NODE] $PS1" # prepend "compute node" to it
+    $RIGNODE_HOSTNAME*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1
+	export PS1="${PS1/\$ }[COMPUTE_NODE] $ " # prepend "compute node" to it
+	;;
+    $RIGSAND_HOSTNAME*)
+	export PS1="${PS1/\$ }[SANDBOX] $ " # prepend "compute node" to it
 	;;
     *) ## Otherwise...
 	;;
