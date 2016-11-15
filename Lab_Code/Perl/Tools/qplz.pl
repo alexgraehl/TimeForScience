@@ -680,6 +680,14 @@ qplz.pl [OPTIONS]  <script_or_command>
 Example: qplz.pl "pwd | my commands here"   or  qplz.pl my_script.sh
   * See below for more examples.
 
+Always put QUOTES around a 'quick' command, or else input redirection (">") and pipes ("|") will fail.
+   * Do NOT run a command like this:   qplz cat file1 > file2   <-- WRONG!!!
+   *                        Correct:   qplz "cat file1 > file2" <-- Correct
+Additionally, if you do not put quotes around a command, arguments to the script that are also 'qplz'
+arguments will be "stolen" by qplz and not passed on to that script. So *ALWAYS* put quick commands in quotes.
+
+If
+
 OPTIONS:
 
 -h or --help -or --man: Print this help/usage information
@@ -715,7 +723,11 @@ OPTIONS:
   command line option instead of the PBS directive in the script.
 
 --background or --bg or -b : Instead of monitoring a job for its entire run, only check for immediate failure
-  and then exit after a few seconds. Not recommended.
+  and then exit after a few seconds. Very useful for loops, not recommended otherwise.
+  Example when you would want it:
+   *  for f in files; do qplz --background "wc -l $f > $f.linecount" ; done
+   *  That looping command above would NOT work without "--background", because qplz would stop at the first file
+      and keep monitoring it. "--background" is needed to say "submit all these jobs at once, do not monitor them."
 
 TO DO: add '-o' (STDOUT) and '-e' (STDERR) options
 
@@ -749,14 +761,17 @@ for f in *.bz2; do qplz.pl --background "bzip2 -d -c $f | gzip > ${f/.bz2}.gz" ;
 
 CAVEATS:
 
+ Warning: Always put your qsub command in **QUOTES**. For example:
+          Incorect:  qplz command > file :  FAILS to output to 'file', because "> file" is outside of the qplz command.
+           Correct:  qplz "command > file"   <-- with quotes
+
  Warning: if you try to run a 'quick' command (e.g. qplz.pl pwd), yet there is ALSO a file in the directory
   named 'pwd', we will assume 'pwd' is a script and submit that instead of running the standard UNIX 'pwd'.
  This is likely to occur if you're trying to submit a program with arguments, for example "bowtie arg1" and you
-  are in the same directory as the actual 'bowtie' exectuable. "qplz.pl" will assume 'bowtie' is a PBS-able script and will
-  FAIL, because it then doesn't understand what 'arg1' is supposed to be.
-  This can probably be fixed with more smart detection of files or maybe a 'quick job' flag.
+  are in the same directory as the actual 'bowtie' exectuable. "qplz.pl" will assume 'bowtie' is a script name
+  and will FAIL, because it then doesn't understand what 'arg1' is supposed to be.
 
- -o and -e (STDERR / STDOUT redirection) is not working yet.
+ -o and -e (STDERR / STDOUT redirection) are NOT valid options to this, although they are options to 'qsub'.
   By default, PBS will write to your job submission directory with a bunch of stuff like "STDIN.o1234".
 
  Does not yet support other fancy PBS options like joining STDERR and STDOUT.
