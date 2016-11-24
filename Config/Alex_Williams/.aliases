@@ -144,7 +144,7 @@ alias cheat="echo \
 \">> Image SIPS: PNG -> JPEG: mkdir outjpegs; sips -s format jpeg *.png --out outjpegs \" ${NL}\
 \">> Imagemagick convert multi-page pdf: for a in \\\$(seq 90); do echo \\\"Converting page \\\$a...\\\"; convert -quality 80 your.pdf[\\\$a] OUT_page_\\\$a.jpg ; done   (note: REQUIRES ghostscript (brew install gs) or it will crash) \" ${NL}\
 \">> Imagemagick convert recursive: find ./ -name \\\"*.jp*\\\" -print0 | xargs -0 -I{} convert -resize 1024x768 -quality 85 {} {}  # or resize 50%\" ${NL}\
-\">> Imagemagick convert all PDFs in a dir: for f in *.pdf ; do echo \\\"Converting \\\$f...\\\"; convert -verbose -density 144 \\\$f.pdf +antialias \\\${f/pdf}.png; done \" ${NL}\
+\">> Imagemagick convert all PDFs in a dir: for f in *.pdf ; do echo \\\"Converting \\\$f...\\\"; convert -verbose -density 144 \\\$f +antialias \\\${f/.pdf}.png; done \" ${NL}\
 \">> Imagemagick convert PDF -> PNG w/antialias and downsample: convert -verbose -density 144 in.pdf +antialias out.png   (note: REQUIRES ghostscript (brew install gs) or it will crash)  Note that argument order is very important and may not be correct here. It is also very slow..\" ${NL}\
 \">> MP3: Convert m4a/ogg->mp3 for name in *.ogg; do ffmpeg -i \\\"\\\$name\\\" -ab 256k -map_metadata 0:s:0 \\\"Converted_\\\${name/.ogg/.mp3}\\\"; done; \" ${NL}\
 \" \" ${NL}\
