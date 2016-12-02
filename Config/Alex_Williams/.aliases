@@ -272,7 +272,7 @@ alias cheat="echo \
 \">> BIOINF: Sort a GTF file:  LC_ALL=\\\"C\\\" sort -k 1,1 -k 4,4n YOUR.GTF > SORTED.GTF \" ${NL}\
 \" \" ${NL}\
 \">> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ${NL}\
-\">> XARGS/FIND: find . -name SOMEFILE -print0 | xargs -0 -I {} sh -c \\\"echo {}; thing {} | piped here | wc -l\\\"  \" ${NL}\
+\">> XARGS/FIND multiple commands: find . -name SOMEFILE -print0 | xargs -0 -I {} sh -c \\\"echo {}; thing {} | piped here | wc -l ; \\\"  \" ${NL}\
 \">> XARGS/FIND: bzip all the bed/diff/count files that you can find: find . -type f \( -iname \\\"*.bed\\\" -o -iname \\\"*_tracking\\\" -o -iname \\\"*.diff\\\" -o -iname \\\"*.moa\\\" -o -iname \\\"*.fasta\\\" -o -iname \\\".fa\\\" -o -iname \\\"*.bed.count\\\" \) -print0 | xargs -0 bzip2 \" ${NL}\
 \">> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x   (this is the command 'sudoshowoff')\" ${NL}\
 \">> GNU FIND and DELETE a file (dangerous): find . -name SOMEFILE -delete \" ${NL}\
@@ -803,6 +803,17 @@ function giant { # find giant files
     #IFS=$SAVED_IFS
 }
 
+
+function giantpleb { # find giant files
+    #SAVED_IFS=$IFS; IFS=$(echo -en "\n\b")
+    echo "Calculating all sizes first, then sorting them in ascending order..." >&2 # print to stderr
+    DIRS="$@"
+    du -sc $DIRS | perl -nle 'print if not m/\btotal\b/' | perl -nle "@a = split(/\s+/); if (\$a[0]>0){print ((\$a[0]/1024.0/1024.0).qq{\t}.\$a[1]);} else { };" | sort -k1,1g | perl -e "my \$t = 0; while(<>) { my @a=split; \$t += \$a[0]; print join(qq{\t}, int(\$t/1024.0).qq{T}, int(\$a[0]).qq{G}, \$a[1]).qq{\n} }"
+    #IFS=$SAVED_IFS
+}
+
+
+
 function wholog {
     echo "About to show who logs in and how big their home directories are..." >&2 # print to stderr
     TMP=$(mktemp)
@@ -851,7 +862,6 @@ function brutallycompress {
     # Recursively goes through and compresses (with gzip) any files with the extensions listed below.
     if [[ "$#" == 0 ]] ; then echo "[ERROR in arguments to brutallycompress] You need to pass AT LEAST ONE target directory into this function--it can also be '.' for the current directory!"; return; fi
     RESTRING=".*[._]\(wig\|bed\|_tracking\|diff\|bed.count\|moa\|fa\|fasta\|fq\|fastq\|txt\|csv\|tab\)"
-    COMPRESS="gzip --verbose -6" # or xv or bzip2
     echo -e "# About to compress ($COMPRESS)\n#     anything in the following locations: $@\n#     that matches this REGULAR EXPRESSION: $RESTRING"
     echo -e "# -----------------------------------------------------------------------------------------------"
     for location in "$@"; do # Sanity check to make sure all inputs are DIRECTORIES to start
@@ -859,9 +869,9 @@ function brutallycompress {
     done
     for location in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
 	if [[ ! -d "$location" ]] ; then echo "[ERROR]: input '$location' was not a directory!"; return 1; fi
-	find "$location" -type f -regex "$RESTRING" -print0 | xargs -0 $COMPRESS # <-- do **NOT** put double quotes around $COMPRESS (no "")
+	find "$location" -type f -regex "$RESTRING" -print0 | xargs -0 -I {} sh -c "echo 'Compressing' '{}'; gzip --verbose -6 '{}';" # <-- do **NOT** put double quotes around $COMPRESS (no "")
 	#find "$location" -type f \( -iname "*.bed" -o -iname "*_tracking" -o -iname "*.diff" -o -iname "*.bed.count" -o -iname "*.moa" -o -iname "*.fa" -o -iname "*.fq" -o -iname "*.fasta" -o -iname "*.fastq" -o -iname "*.txt" \) -print0 | xargs -0 $COMPRESS
-    done
+    done #  xargs -I %%% sh -c 'echo %%%; echo %%%;'
 }
 
 function rtag {
