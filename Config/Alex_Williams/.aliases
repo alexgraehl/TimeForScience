@@ -159,7 +159,7 @@ alias cheat="echo \
 \">> PYTHON debug a crashing program: python -m pdb YOURPROG --yourargs . 'c' continues execution, 's' steps. \" ${NL}\
 \">> PYTHON debug a crashing program: Put this in the code verbatim to properly enter the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
 \">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --user PACKAGENAME \" ${NL}\
-\">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --ignore-installed --install-option=\\\"--prefix=/data/applications/2015_06/libpython2.7/\\\" PACKAGENAME \" ${NL}\
+\">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --ignore-installed --install-option=\\\"--prefix=$BINFPYROOT\\\" PACKAGENAME \" ${NL}\
 \">> PYTHON debug a crashing program: Put this in the code verbatim to properly enter the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
 \" \" ${NL}\
 \">> R: Save copy of figure as pdf: dev.copy2pdf() \" ${NL}\
@@ -827,6 +827,13 @@ function qing {
     echo "'qstat -f' has been known to take upwards of 2 minutes to run."
     qstats | grep -v ' COMPLETE '
     qstat -f -Q
+}
+
+function mypip {
+    if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass AT LEAST ONE PYTHON package-to-install into this function!"; return; fi
+    echo "Installing the following python libraries: $@"
+    echo "Installing into 'BINFPYROOT' environment variable at: $BINFPYROOT"
+    pip2.7 install --ignore-installed --install-option="--prefix=$BINFPYROOT" $@
 }
 
 function mypylint {
