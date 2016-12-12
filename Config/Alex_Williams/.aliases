@@ -1007,6 +1007,6 @@ function convert_chromosome_to_chr1_for_genome_browser {
     (>&2 echo "<$FINALBAM> generated! Chromosome changed from '$FINDCHR' to 'chr1'. Original input: <$IN>")
 }
 
-function pngify_pdfs {
-    for f in *.pdf ; do echo "Converting $f..."; convert -verbose -density 72 $f +antialias ${f/.pdf}.png; done
+function pdf2png {
+    for f in "$@" ; do echo "Converting $f..."; convert -verbose -density 72 $f +antialias ${f/.pdf}.png; done
 }
