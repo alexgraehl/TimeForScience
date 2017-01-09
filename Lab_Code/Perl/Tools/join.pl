@@ -245,7 +245,7 @@ sub handleMultiJoin($$) {
 	my %longestLineInFileHash = (); # key = filename, value = how long the longest line in that file is
 	my %keysHash              = (); # key = the keys seen in ALL files, value = (nothing useful)
 	my $filenameHeaderDelim = "::"; # example:  "Filename1::headerCol1   Filename2::headerCol2"
-	my $na = $stringWhenNoMatch;
+	my $na = (defined($stringWhenNoMatch)) ? $stringWhenNoMatch : ""; # use a blank value if (global) $stringWhenNoMatch is not defined
 	my %headHash = ();
 	foreach my $filename (@$filenameArrPtr) {
 		%{$datHash{$filename}} = (); # new hash value is an ARRAY for this
@@ -299,6 +299,7 @@ sub handleMultiJoin($$) {
 		}
 		print(join($outputDelim, @head)."\n");
 	}
+
 	foreach my $k (sort(keys(%keysHash))) {
 		my @L = ($k); # output line. starts with just the key and nothing else
 		foreach my $filename (@$filenameArrPtr) {
@@ -309,7 +310,7 @@ sub handleMultiJoin($$) {
 				push(@L, ($na)x$longestLineInFileHash{$filename});
 			}
 		}
-		print join($outputDelim, @L), "\n";
+		print join($outputDelim, @L), "\n"; # <-- somehow this results in "uninitialized value" warning sometimes...
 	}
 }
 # ========================== MAIN PROGRAM HERE
