@@ -19,7 +19,7 @@ $| = 1;  # Flush output to STDOUT immediately.
 my $isDebugging = 0;
 my $verbose = 1; # use 'q' (quiet) to suppress this
 
-sub quitWithUsageError($) { print($_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
+sub quitWithUsageError($) { print STDOUT ($_[0] . "\n"); printUsageAndContinue(); warn($_[0] . "\n"); exit(1); }
 sub printUsageAndQuit() { printUsageAndContinue(); exit(1); }
 sub printUsageAndContinue() {    print STDOUT <DATA>; }
 sub debugPrint($) {   ($isDebugging) and print STDERR $_[0]; }
@@ -100,8 +100,8 @@ foreach my $ff (@files) {
 }
 
 (!$shouldNegate or !defined($stringWhenNoMatch)) or quitWithUsageError("[Error] in arguments! Cannot specify both --neg AND -o or --ob, because it doesn't make sense to both '--neg (negate)' the join AND ALSO specify '-o' or '--ob' -- the outer join specifies that we should print lines REGARDLESS of match, whereas the --neg specifies that we should ONLY print lines with no match. You cannot specifiy both of these options at the same time.");
-($keyCol1 != 0) or quitWithUsageError("[ERROR]: Key1 (-1 argument) to join.pl CANNOT BE ZERO! These indices are numbered from ONE and not zero!");
-($keyCol2 != 0) or quitWithUsageError("[ERROR]: Key2 (-2 argument) to join.pl CANNOT BE ZERO! These indices are numbered from ONE and not zero!");
+($keyCol1 =~ m/[0-9]+/ && $keyCol1 >= 0) or quitWithUsageError("[ERROR]: Key1 (-1 argument) to join.pl (which was specified as '$keyCol1') CANNOT BE ZERO or less than zero! These indices are numbered from ONE and not zero!");
+($keyCol2 =~ m/[0-9]+/ && $keyCol2 >= 0) or quitWithUsageError("[ERROR]: Key2 (-2 argument) to join.pl (which you specified as '$keyCol2') CANNOT BE ZERO or less than zero! These indices are numbered from ONE and not zero!");
 
 if (defined($stringWhenNoMatch)) { # replace any "\t" with actual tabs! No idea why it doesn't work on the command line otherwise
     $stringWhenNoMatch =~ s/[\\][t]/\t/g; # replace a SINGLE backslash-then-t with a tab
