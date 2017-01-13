@@ -682,7 +682,13 @@ alias cake="echo  -n $'\xF0\x9F\x8D\xB0'' '"  # Emoji cake.  See http://apps.tim
 
 function qkiri { # kill all your OWN jobs
     echo ">> If qkiri fails, try running this command: qselect -u YOURNAME | sudo xargs qdel -p"
-    qselect -u $USER | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats;
+    echo "Do you REALLY REALLY want to completely cancel LITERALLY EVERY SINGLE ONE OF YOUR JOBS? ALL OF THEM???"
+    select yn in "Wrong! Cancel! Keep these jobs!" "Delete--yes, kill ALL of my jobs without regret!"; do
+	case $yn in
+	    Wrong*)  echo "Cancelled!"; break;;
+	    Delete*) qselect -u $USER | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats; break ;;
+	esac
+    done
 }
 
 # grep 'pattern' can also be replaced with: perl -nle "print if m{PATTERN}" # <-- beware of '$1' versus "$1" issues!
@@ -710,8 +716,8 @@ function qsass { # kill all jobs that match this grep... works for usernames, jo
     echo "If you really want to DELETE those jobs, input a '2'."
     select yn in "Wrong! Keep these jobs!" "Delete these jobs from the queue!"; do
 	case $yn in
-	    Delete*) for j in "${DELETE_US[@]}"; do echo "Deleting job ID $j..."; `which qdel` $j ; done; break;;
 	    Wrong*)  echo "Cancelled!"; break;;
+	    Delete*) for j in "${DELETE_US[@]}"; do echo "Deleting job ID $j..."; `which qdel` $j ; done; break;;
 	esac
     done
 }
