@@ -946,8 +946,10 @@ function hist {
 
 # ================ QUEUE / QSUB LOG VIEWING AND MOVING ================
 function rmlogs { # Usage:     catlogs (no arguments)
-    echo "Deleting those 'qsub' logs, which are files ending with (for example) .e1234 or .o456"
-    find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' -print0 | xargs -0 -I{} trash.pl {}
+    NUM_FOUND=$(find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' | wc -l)
+    echo "Deleting $NUM_FOUND 'qsub' logs (the files ending with .e1234 or .o456, etc.)..."
+    find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' -delete
+    echo "[Done] Deleted the $NUM_FOUND log files.."
 }
 function catlogs { # Usage:     catlogs (no arguments)
     echo "Concatenating all the QSUB logs in this directory into one file, which we will then view with 'less'"
