@@ -80,12 +80,16 @@ lesspipe() {
 	       fi ;;
 	###########	*.bam) echo '######\n### Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format ###\n######' ; samtools view -h "$1" | sed 's/A/'"$(printf '\033[1mA\033[0m')"'/g' ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
 	*.sam|*.sam.gz|*.sam.bz2|*.dna.txt|*.rna.txt|*.dna.txt.gz|*.rna.txt.gz|*.seq.gz|*.seq.txt|*.seq.txt.gz|*.seq|*.fasta|*.fasta.gz|*.fasta.bz2|*.fastq|*.fastq.gz|*.fastq.bz2|*.fa|*.fa.gz|*.fa.bz2|*.fq|*.fq.gz|*.fq.bz2) smartdecompress "$1" | basecolor ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
+
 	*.tar) tar tvvf "$1" ;;
 	*.tgz|*.tar.gz|*.tar.[zZ]) tar tzvvf "$1" ;;
 	*.tar.bz2|*.tbz2) bzip2 -dc "$1" | tar tvvf - ;;
-	*.[zZ]|*.gz) gzip -dc -- "$1" ;;
+
 	*.bz2) bzip2 -dc -- "$1" ;;
+	*.gz|*.[zZ]) gzip -dc -- "$1" ;;
+	*.xz)  xz --decompress --stdout "$1" ;;
 	*.zip) zipinfo -- "$1" ;;
+
 	*.rpm) rpm -qpivl --changelog -- "$1" ;;
 	*.cpi|*.cpio) cpio -itv < "$1" ;;
 	*.gif|*.jpeg|*.jpg|*.pcd|*.png|*.tga|*.tiff|*.tif)
