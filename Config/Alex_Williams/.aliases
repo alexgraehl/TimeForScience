@@ -243,7 +243,7 @@ alias cheat="echo \
 \">> UNIX/WGET/TRICKLE: Rate limit any command to 500kbps (-d = down, -u = up): sudo trickle -d 500 -u 500 ncftp 'your_ftp_site_here' \" ${NL}\
 \">> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
 \">> UNIX/TOP/USAGE/HTOP: CPU usage by user: top -b -n 1 -u \\\$USER | awk 'NR>7 { sum += \\\$9; } END { print sum; }' \" ${NL}\
-\">> QSUB/QUEUE/PBS show available resources: pbsnodes -a \" ${NL}\
+\">> QSUB/QUEUE/PBS show available resources: pbsnodes -a , or qstat -Qf (per-queue amounts)\" ${NL}\
 \">> QSUB/QUEUE/PBS submit job: echo 'echo \\\"hello I am a test job\\\"' | qsub -q Bio -W group_list=bioqueue ; sleep 10; cat STDIN*; \" ${NL}\
 \">> QSUB/QUEUE/PBS: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
 \">> QSUB/QUEUE/PBS: restart torque: sudo service pbs_sched stop ; sudo service pbs_mom stop ; sudo service pbs_server stop ; sudo /bin/rm /var/lock/subsys/pbs_server ; sudo service pbs_sched start ; sudo service pbs_mom start ; sudo service pbs_server start ; qstat \" ${NL}\
