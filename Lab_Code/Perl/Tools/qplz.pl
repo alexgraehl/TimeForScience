@@ -580,12 +580,13 @@ sub main() { # Main program
 		(defined($copt{mem}) or defined($copt{walltime})) and printJobTechnicalDetails("Be aware that your job will be instantly cancelled if it exceeds the MAX RAM or MAX TIME specified above.");
 	}
 	printGeneralTips("To check your job:\n");
-	printGeneralTips("  Check job status 1:        qstats                (print color list of running jobs\n");
-	printGeneralTips("  Check job status 2:        qstat -a -w           (print monochrome list of jobs\n");
-	printGeneralTips("  Check job status 3:        qstat -a -w -u \$USER  (print YOUR jobs only)\n");
+	printGeneralTips("  Show available memory and CPUs: pbsnodes -a ('resources_available.mem' and '.ncpus') \n");
+	printGeneralTips("  Check active job status 1:        qstats                 (print color list)\n");
+	printGeneralTips("  Check active job status 2:        qstat -a -w            (print monochrome list)\n");
+	printGeneralTips("  Check active job status 3:        qstat -a -w -u \$USER  (print only YOUR jobs)\n");
 	printGeneralTips("  Check your job in detail:  qstat -f -x '$jobID' | less  (a ridiculous amount of info)\n");
-	printGeneralTips("  Historical jobs:           qstat -x  | less      (scroll with arrows or space bar/'B')");
-	printGeneralTips("If you want to cancel your job (maybe you just realized that it needs more time / RAM):\n");
+	printGeneralTips("  Show completed jobs:       qstat -x  | less      (scroll with arrows or space bar/'B')");
+	printGeneralTips("To cancel your job (maybe you just realized that it needs more time / RAM):\n");
 	printGeneralTips("  To delete a job: 1. Find the 'Job id' number with 'qstat' (leftmost column)\n");
 	printGeneralTips("  To delete a job: 2. Then use 'qdel ####' (that same number) to cancel it\n");
 	printGeneralTips("  To delete all your jobs (dangerous!): qselect -u \$USER | xargs qdel  <-- deletes all your jobs\n");
