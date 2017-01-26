@@ -1018,3 +1018,7 @@ function convert_chromosome_to_chr1_for_genome_browser {
 function pdf2png {
     for f in "$@" ; do echo "Converting $f..."; convert -verbose -density 72 $f +antialias ${f/.pdf}.png; done
 }
+
+function redrop {
+    dropbox.py stop && dropbox.py start && sleep 2 && dropbox.py status;
+}
