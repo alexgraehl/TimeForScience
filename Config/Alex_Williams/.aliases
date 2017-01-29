@@ -1022,3 +1022,7 @@ function pdf2png {
 function redrop {
     dropbox.py stop && dropbox.py start && sleep 2 && dropbox.py status;
 }
+
+
+# count bases per line in a fasta file:
+# cat x.fa | grep -v '^>' | perl -ne 'chomp; my @a=split(//,$_); my %c=(); for my $x (@a) { $c{lc($x)}++; }; for my $k (keys(%c)) { print($k.qq{=}.$c{$k}."\t"); }; print qq{  <-- \n};'
