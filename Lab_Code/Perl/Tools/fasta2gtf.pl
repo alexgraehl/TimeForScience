@@ -94,7 +94,7 @@ exit(0);
 
 __DATA__
 
-fasta2gtf_one_line_per_chr.pl  INPUT.fasta   [ >   output.gtf]
+fasta2gtf.pl  INPUT.fasta   [ >   output.gtf]
    * Writes to STDOUT by default
 
 by Alex Williams, 2016.
@@ -106,26 +106,17 @@ See the examples below for more information.
 
 CAVEATS:
 
-Does not really follow the GTF specs properly, as it does not make a CDS start/end, for example.
+Does not totally follow the GTF specs, as it does not make a CDS start/end, for example.
 
-OPTIONS:
-
-  No options.
+OPTIONS:  (None)
 
 EXAMPLES:
 
-fasta2gtf_one_line_per_chr.pl    my_seqs.fasta    >   out.gtf
+fasta2gtf.pl    my_seqs.fasta    >   out.gtf
 
 KNOWN BUGS:
 
   None known.
 
 --------------
-
-
-
-
-
-
-
 
