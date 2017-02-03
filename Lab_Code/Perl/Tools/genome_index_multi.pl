@@ -45,13 +45,13 @@ GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "n|name=s" => \$name
 	   , "g|gtf=s" => \$gtf
 	   , "f|fa|fasta=s" => \$fasta
-	   , "all|ALL!"  => sub { $shouldMake{STAR}=$shouldMake{BWA}=$shouldMake{BOWTIE2}=$shouldMake{PERCHR}=$shouldMake{FAI}=1; }
-	   , "star|STAR!" => sub { $shouldMake{STAR}=1; }
-	   , "bwa|BWA!"  => sub { $shouldMake{BWA}=1; }
-	   , "tophat|bowtie2|TOPHAT|BOWTIE2!" => sub { $shouldMake{BOWTIE2}=1; }
-	   , "bowtie|BOWTIE!" => sub { die "We cannot currently make the '.ebwt'-format bowtie1 indexes. Specifiy bowtie2 or tophat if you want the '.bt2' format indexes"; }
-	   , "perchr|PERCHR|!" => sub { $shouldMake{PERCHR}=1; die "We cannot currently make the per-chromosome fasta directories like 'chr1.fa, chr2.fa, chrN.fa, etc...'. If for some reason you need those, you will need to DIY it."}
-	   , "santacruz|SANTACRUZ|CRUZ|UCSC|cruz|ucsc!" => \$santaCruzifyChrNames
+	   , "all!"  => sub { $shouldMake{STAR}=$shouldMake{BWA}=$shouldMake{BOWTIE2}=$shouldMake{PERCHR}=$shouldMake{FAI}=1; }
+	   , "star!" => sub { $shouldMake{STAR}=1; }
+	   , "bwa!"  => sub { $shouldMake{BWA}=1; }
+	   , "tophat|bowtie2!" => sub { $shouldMake{BOWTIE2}=1; }
+	   , "bowtie!" => sub { die "We cannot currently make the '.ebwt'-format bowtie1 indexes. Specifiy bowtie2 or tophat if you want the '.bt2' format indexes"; }
+	   , "perchr|!" => sub { $shouldMake{PERCHR}=1; die "We cannot currently make the per-chromosome fasta directories like 'chr1.fa, chr2.fa, chrN.fa, etc...'. If for some reason you need those, you will need to DIY it."}
+	   , "santacruz|cruz|ucsc!" => \$santaCruzifyChrNames
 	   , "threads=i" => \$ncpus
 	   # "refflat"
 	   , "debug!" => \$isDebugging
