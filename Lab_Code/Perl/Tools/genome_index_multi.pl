@@ -37,35 +37,35 @@ my $santaCruzifyChrNames = 0; # should we add 'chr' to numeric chromosome names?
 
 my %shouldMake = ();
 
-my $ncpus = 2;
+my $ncpus = 2; # Default = 2
 
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "q" => sub { $verbose = 0; }
-	   , "name=s" => \$name
-	   , "gtf=s" => \$gtf
-	   , "fa|fasta=s" => \$fasta
-	   , "all!"  => sub { $shouldMake{STAR}=$shouldMake{BWA}=$shouldMake{BOWTIE}=$shouldMake{PERCHR}=$shouldMake{FAI}=1; }
-	   , "star!" => sub { $shouldMake{STAR}=1; }
-	   , "bwa!"  => sub { $shouldMake{BWA}=1; }
-	   , "tophat|bowtie2!" => sub { $shouldMake{BOWTIE2}=1; }
-	   , "bowtie!" => sub { die "We cannot currently make the '.ebwt'-format bowtie1 indexes. Specifiy bowtie2 or tophat if you want the '.bt2' format indexes"; }
-	   , "perchr!" => sub { $shouldMake{PERCHR}=1; die "We cannot currently make the per-chromosome fasta directories like 'chr1.fa, chr2.fa, chrN.fa, etc...'. If for some reason you need those, you will need to DIY it."}
-	   , "santacruz|cruz|ucsc!" => \$santaCruzifyChrNames
+	   , "n|name=s" => \$name
+	   , "g|gtf=s" => \$gtf
+	   , "f|fa|fasta=s" => \$fasta
+	   , "all|ALL!"  => sub { $shouldMake{STAR}=$shouldMake{BWA}=$shouldMake{BOWTIE2}=$shouldMake{PERCHR}=$shouldMake{FAI}=1; }
+	   , "star|STAR!" => sub { $shouldMake{STAR}=1; }
+	   , "bwa|BWA!"  => sub { $shouldMake{BWA}=1; }
+	   , "tophat|bowtie2|TOPHAT|BOWTIE2!" => sub { $shouldMake{BOWTIE2}=1; }
+	   , "bowtie|BOWTIE!" => sub { die "We cannot currently make the '.ebwt'-format bowtie1 indexes. Specifiy bowtie2 or tophat if you want the '.bt2' format indexes"; }
+	   , "perchr|PERCHR|!" => sub { $shouldMake{PERCHR}=1; die "We cannot currently make the per-chromosome fasta directories like 'chr1.fa, chr2.fa, chrN.fa, etc...'. If for some reason you need those, you will need to DIY it."}
+	   , "santacruz|SANTACRUZ|CRUZ|UCSC|cruz|ucsc!" => \$santaCruzifyChrNames
 	   , "threads=i" => \$ncpus
 	   # "refflat"
 	   , "debug!" => \$isDebugging
     ) or printUsageAndQuit();
 
 my $numUnprocessedArgs = scalar(@ARGV);
-($numUnprocessedArgs == 0) or quitWithUsageError("[Error] in arguments! You must have NO additional arguments to this function!");
+($numUnprocessedArgs == 0) or quitWithUsageError("[Error] in arguments! You seem to have some extra text in your command line call (or something else is messed up). You must have NO additional command-line arguments to program!");
 
 my $numStepsToDo = 0;
 for my $k (keys(%shouldMake)) { $numStepsToDo++; }
 
 print $santaCruzifyChrNames . "\n";
 if ($santaCruzifyChrNames) { ($numStepsToDo == 0) or argDie(qq{if you want to "Santa Cruz-ify" the chromosome names (i.e., turn '1' into 'chr1', 'MT' into 'chrM', etc... for compatibility with the UCSC Genome Browser), you cannot ALSO specify any other steps! You must ONLY Santa-cruz-ify the GTF and FASTA files."}); }
-else {                       ($numStepsToDo >= 1) or argDie(qq{missing a required operation--you must specify AT LEAST ONE operation to perform--for example, --star or --tophat or --all !}); }
+else {                       ($numStepsToDo >= 1) or argDie(qq{missing a required operation--you must specify AT LEAST ONE operation to perform--for example, --star or --tophat or --all !\n (This is usually solved by adding '--all' to the end of your command.)\n}); }
 
 my $memgb_for_cellranger = 8;
 
@@ -84,9 +84,12 @@ my $outp                  = "./";
 (-e $fasta) or argDie "the input 'fasta' file must actually exist on the filesystem!";
 (-e $gtf)   or argDie "the input 'gtf' file must actually exist on the filesystem!";
 
-($name =~ m/[-_.A-Za-z0-9]+/) or argDie "The name must be a SIMPLE name with no weird characters or spaces. Hyphens, dots, and underscores are OK.";
-(length($name) < 150)  or argDie "Um... your 'name' for the genome is unreasonably long. Shorten it."
 
+
+my $fastaNoSuffix = $fasta; $fastaNoSuffix =~ s/[.](fa|fas|fasta).*$//; # remove any suffix after .fa or .fasta
+
+($name =~ m/[-_.A-Za-z0-9]+/) or argDie "The name must be a SIMPLE name with no weird characters or spaces. Hyphens, dots, and underscores are OK.";
+(length($name) < 150)  or argDie "Um... your 'name' for the genome is unreasonably long. Shorten it.";
 
 if ($santaCruzifyChrNames) {
 	my $cruzFA  = "${name}.fa";  	#$cruzFA = "${name}.fa #s/[.](fa|fasta)/$SANTA_CRUZ_SUFFIX.$1/i;
@@ -119,7 +122,7 @@ my %DAT = ( STAR=>{cmd=>qq{mkdir -p $starDir && STAR --runThreadN $ncpus --runMo
 #	@echo "CONCLUSION: We should now have generated the followng eight files in the index subdirectory: 1. Genome  2. SA  3. SAindex  4. chrLength.txt  5. chrName.txt  6. chrNameLength.txt  7. chrStart.txt  8. genomeParameters.txt"
 
 	    , BOWTIE2=>{cmd=>qq{bowtie2-build $fasta ${outp}${name} }
-			 , outputs=>["${outp}${name}.bt2"]
+			 , outputs=>["${outp}${name}.1.bt2","${outp}${name}.rev.1.bt2"]
 			 , reqExes=>["bowtie2-build"]
 			}
 	    , CELLRANGER=>{cmd=>qq{cellranger mkref --nthreads=$ncpus --memgb=$memgb_for_cellranger --genome=${outp}${CELLRANGER_PREFIX}${name} --fasta=$fasta --genes=$gtf}
@@ -130,8 +133,8 @@ my %DAT = ( STAR=>{cmd=>qq{mkdir -p $starDir && STAR --runThreadN $ncpus --runMo
 		      , outputs=>["${outp}${BWA_FILE_PREFIX}$name.amb","${outp}${BWA_FILE_PREFIX}$name.ann","${outp}${BWA_FILE_PREFIX}$name.pac"]
 		      , reqExes=>["bwa"]
 		     }
-	    , FAI=>{cmd=>qq{samtools faidx $fasta && mv ${fasta}.fa.fai ${outp}${fasta}.fa.fai && ln -s ${outp}${fasta}.fa.fai ${outp}${fasta}.fai && cut -f 1,2 ${outp}${fasta}.fai | sort -k1,1 > ${outp}chrom.sizes.txt}
-		    , outputs=>["${outp}${fasta}.fa.fai", "${outp}${fasta}.fai","${outp}chrom.sizes.txt"]
+	    , FAI=>{cmd=>qq{samtools faidx $fasta && TTT=`mktemp` && mv -f ${fasta}.fai "\$TTT" && mv "\$TTT" ${outp}${fasta}.fai && ln -f -s ${outp}${fasta}.fai ${outp}${fastaNoSuffix}.fai && cut -f 1,2 ${outp}${fasta}.fai | sort -k1,1 > ${outp}chrom.sizes.txt}
+		    , outputs=>["${outp}${fasta}.fai", "${outp}${fastaNoSuffix}.fai","${outp}chrom.sizes.txt"]
 		    , reqExes=>["samtools", "cut", "sort"]
 		   }
 
@@ -171,18 +174,7 @@ for my $stepName (keys(%shouldMake)) {
 	}
 }
 
-#if ($makeStar) {
-
-
-#}
-
-my $s = 'qq{horse $gtf\n}';
-
-$gtf = "snakes";
-
-print("Yeah...\n");
-print(eval($s));
-print("Huh!");
+print("[DONE]");
 
 
 exit(0); # looks like we were successful
@@ -192,52 +184,51 @@ exit(0); # looks like we were successful
 
 __DATA__
 
-genome_index_multi.pl
+genome_index_multi.pl --name=STRING --gtf=FILE --fasta=FILE   OPERATION
+genome_index_multi.pl     -n STRING    -g FILE      -f FILE   OPERATION
 
 By Alex Williams
 
+Generates the required genome indexes for various program. See below for specifics.
+
 syntax: genome_index_multi.pl --name=MyGenome --gtf=GenomeAnnot.gtf --fasta=Seqs.fasta --all
 
-Examples:
+Two kinds of inputs are required, PARAMETERS and OPERATIONS.
 
-Make ALL indexes (for BWA, Bowtie, STAR, Cellranger), name the final genome "Hippopotamus":
-    genome_index_multi.pl --name=Hippopotamus --gtf=HippoGenes.gtf --fasta=Hipp2017.fasta --all
+PARAMETERS (3 required):
+     You must always supply --name, --gtf (file), and --fasta (file).
+     --name  / -n : Name for output files, like "hippopotamus" or "My_Genome". No spaces or weird characters.
+     --gtf   / -g : Input GTF file. Must exist. Cannot be compressed.
+     --fasta / -f : Input FASTA file. Must exist. Cannot be compressed.
 
-Make ALL indexes (for BWA, Bowtie, STAR, Cellranger), name the final genome "Hippopotamus":
-    genome_index_multi.pl --name=Hippopotamus --gtf=HippoGenes.gtf --fasta=Hipp2017.fasta --all
-
-Make ALL indexes (for BWA, Bowtie, STAR, Cellranger), name the final genome "Hippopotamus":
-    genome_index_multi.pl --name=Hippopotamus --gtf=HippoGenes.gtf --fasta=Hipp2017.fasta --all
-
-Convert an ENSEMBL fasta and gtf file to UCSC format chromosome names (1 -> chr1, etc...):
-    genome_index_multi.pl --name=Hippopotamus --gtf=HippoGenes.gtf --fasta=Hipp2017.fasta --all
-...
-
-DESCRIPTION
-...
-
-CAVEATS
-
-OPTIONS are:
-
---name: Name for output files, like "hippopotamus" or "My_Genome". No spaces or weird characters.
---gtf : Input GTF file. Must exist. Cannot be compressed.
---fasta: Input FASTA file. Must exist. Cannot be compressed.
-
-
+OPERATIONS (specify which indexes you want generated, or '--all' for all of them)
+  --all: Generate ALL the various index files described above! Recommended option.
+Or you can only do a subset to generate indexes just for a particular program:
   --star: Generates STAR indexes
   --cellranger: Generates CELLRANGER indexes, which are STAR indexes plus some metadata.
   --bwa: Generates indexes for the BWA aligner.
   --tophat / --bowtie2: Generates a bowtie2-format set of indexes (the ones ending in .bt2).
   --bowtie (version 1): NOT SUPPORTED right now. 
 
-  --all: Generate ALL the various index files described above! Recommended option.
+Examples:
 
-  --perchr: NOT SUPPORTED YET. Would generate individual files for each chromosome
+Make ALL indexes (for BWA, Bowtie, STAR, Cellranger), name the final genome "Hippopotamus":
+    genome_index_multi.pl --name=Hippopotamus --gtf=HippoGenes.gtf --fasta=Hipp2017.fasta --all
 
---threads
+Make ONLY the 'STAR' aliger indexes:
+    genome_index_multi.pl -n HippoSTAR  -g HGenes.gtf  -f Hip10.fa  --star
 
---debug
+Convert an ENSEMBL fasta and gtf file to UCSC format chromosome names (1 -> chr1, etc...):
+    genome_index_multi.pl --name=Hippopotamus --gtf=HippoGenes.gtf --fasta=Hipp2017.fasta --santacruz
+
+
+Other options:
+
+  --perchr: NOT SUPPORTED YET. Would generate individual files for each chromosome.
+
+  --threads: Specify number of processors/CPUs to use. Default = 2.
+
+  --debug: Unused
 
 --santacruz: Reformat the input FASTA and GTF files to have 'UCSC Genome Browser'-compatible names.
   Turns '1' -> 'chr1', '2' -> 'chr2', ... 'MT' -> 'chrM'. It just adds 'chr' to any only-numeric chromosome
@@ -248,74 +239,9 @@ OPTIONS are:
   Will generate exactly two new files:
          NewUCSC.FA and NewUCSC.GTF
   Requires that the new files do not already exist--will not overwrite existing files.
-...
 
-EXAMPLES
+Bugs / To-do:
 
+None known at the moment.
 
-
-#
-## This makefile takes the ENSEMBL iGenome data, which has chromosomes named 1, 2, 3, 4, ... X, Y, MT  ...
-## and changes those names to the "chr"-prefixed format that we are familiar with, and that work with the UCSC Genome Browser,
-## which look like: chr1, chr2, chr3, ... chrX, chrY, chrM . Note that it is chrM and not chrMT!
-#
-## SPECIAL NOTE:
-## If you just have the .fa and .gtf, and you want to make indexes and do NOTHING ELSE,
-## you can just run "make create_indexes_only". You still have to set the 'binf_species_name_for_makefile.txt' though,
-## and it will actually still require "INPUT_ENSEMBL.gtf" and "INPUT_ENSEMBL.fa"
-#
-## **************** IMPORTANT NOTE: You, the user, must create a file in this directory *********************
-## NOTE: REQUIRES you to make a file 'binf_species_name_for_makefile.txt'--the first line of that must be your (new) species name, like "hg19" or "hg19_ucsc" or "hg19_updated" or whatever you want to call it.
-## So the entire file would look like:
-##         hg19_ucsc
-## or:
-##         hg19_chr
-## or even just:
-##         hg19
-## We only use the first line from this file, so you can also put comments in it.
-## ********************************************************************************
-#
-## Requires that you have access to Alex Williams's "join.pl" (from TimeForScience "github" repository) and not just the regular UNIX "join", which is not sufficient.
-#
-## Note 'SPECIES' is read from a file. We use this SAME Makefile for many different species!
-#SPECIES=$(shell cat binf_species_for_makefile.txt | head -n 1)
-#
-#manually_generated=INPUT_ENSEMBL.gtf INPUT_ENSEMBL.fa INPUT_REFFLAT.txt.gz INPUT_PER_CHROM_FASTA_DIR binf_species_for_makefile.txt
-#
-#targets=$(SPECIES).fa $(SPECIES).fai $(SPECIES).fa.fai $(SPECIES)_chromosome_fastas/makefile_ran_successfully.touch.txt \
-#		$(SPECIES).gtf \
-#		$(SPECIES).chrom.sizes.txt chrom.sizes.txt \
-#		$(SPECIES).1.bt2 \
-#		$(SPECIES).refflat.txt \
-#		$(SPECIES).id.mapping.txt transcript.len.txt exon.len.txt \
-#		STAR_index_$(SPECIES)/genomeParameters.txt \
-#		bwa.$(SPECIES).amb bwa.$(SPECIES).ann bwa.$(SPECIES).pac \
-#		cellranger_reference.$(SPECIES)
-#
-## Disabled for now:  $(SPECIES).refflat.MERGED.txt
-#
-## CellRanger is a program for the 10xGenomics single-cell sequencing (dropseq) pipeline. It needs its own reference.
-## Details: http://support.10xgenomics.com/single-cell/software/pipelines/latest/what-is-cell-ranger
-#CELLRANGER_EXE=/data/applications/2015_06/bin/cellranger
-#
-#
-#all: $(targets) $(manually_generated)
-#
-## =========== Below: THESE MUST EXIST (you should create them). They should be SYMLINKS the the ENSEMBL-format iGenome data =============
-#INPUT_ENSEMBL.gtf:
-#	$(error "MISSING A SYMLINK: This symlink ($@), which was expected to already exist and be a symlink to the ENSEMBL-format (where chromosomes are like '1' and '2' and 'MT' instead of 'chr1' and 'chr2' and 'chrM') GTF file, could not be found! Add it!")
-#
-#INPUT_ENSEMBL.fa:
-#	$(error "MISSING A SYMLINK: This symlink ($@), which was expected to already exist and be a symlink to the ENSEMBL-format FASTA whole-genome file, could not be found! Add it!")
-#
-#INPUT_REFFLAT.txt.gz:
-#	$(error "MISSING A SYMLINK: This symlink ($@), which was expected to already exist and be a symlink to the ENSEMBL-format 'refflat.txt.gz file, could not be found! Add it!")
-#
-#INPUT_PER_CHROM_FASTA_DIR:
-#	$(error "MISSING A SYMLINK: This symlink ($@), which was expected to already exist and be a symlink to the ENSEMBL-format directory of INDIVIDUAL CHROMOSOME FASTA files, could not be found! Add it!")
-#
-#binf_species_for_makefile.txt:
-#	$(error "This file ($@) is expected to already exist. The first line must be the 'short' species name (like 'hg19' or 'mm9' or 'galGal4' plus any modifiers you really want to put on it like 'hg19.ucsc.chr' or whatever. Subsequent lines are ignored).")
-#
-## =========== Above: THESE MUST ALREADY EXIST. They should be SYMLINKS the the ENSEMBL-format iGenome data =============
-#
+================
