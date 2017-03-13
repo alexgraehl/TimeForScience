@@ -62,7 +62,7 @@ fi
 
 AGW_BASH_MAJOR_VERSION=$(echo "$BASH_VERSION" | perl -pe "s/(\d+).*/\1/; chomp;")
 
-if (( $AGW_BASH_MAJOR_VERSION >= 4 ]]; then
+if (( $AGW_BASH_MAJOR_VERSION >= 4 )); then
 	echo "[OK] globstar should be supported on bash version $AGW_BASH_MAJOR_VERSION"
 else
 	echo "[GOTTA FIX] globstar is NOT supported on bash version $AGW_BASH_MAJOR_VERSION, so let's add a new bash"
