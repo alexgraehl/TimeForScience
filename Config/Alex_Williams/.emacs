@@ -229,12 +229,12 @@
 
 (if (system-type-is-darwin)
     (progn
-      (setq should-load-ess t)
+      (setq should-load-ess nil) ; don't load R syntax highlighting
       ))
 
 (if (system-type-is-gnu)
     (progn
-      (setq should-load-ess t)
+      (setq should-load-ess nil) ; don't load R syntax highlighting
       (require 'show-wspace nil t) ; show whitespace! (?)
       ))
 
