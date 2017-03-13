@@ -191,6 +191,9 @@ defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
 # Set a blazingly fast keyboard repeat rate
 defaults write NSGlobalDomain KeyRepeat -float 0.000000000001
 
+# not sure if this line below is important... see https://github.com/mathiasbynens/dotfiles/issues/687
+defaults write NSGlobalDomain InitialKeyRepeat -int 10
+
 # Set language and text formats
 # Note: if you’re in the US, replace `EUR` with `USD`, `Centimeters` with
 # `Inches`, `en_GB` with `en_US`, and `true` with `false`.
@@ -203,7 +206,7 @@ defaults write NSGlobalDomain KeyRepeat -float 0.000000000001
 #sudo systemsetup -settimezone "Europe/Brussels" > /dev/null
 
 # Disable auto-correct
-#defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
+defaults write NSGlobalDomain NSAutomaticSpellingCorrectionEnabled -bool false
 
 # Stop iTunes from responding to the keyboard media keys
 #launchctl unload -w /System/Library/LaunchAgents/com.apple.rcd.plist 2> /dev/null
@@ -212,9 +215,9 @@ defaults write NSGlobalDomain KeyRepeat -float 0.000000000001
 # Screen                                                                      #
 ###############################################################################
 
-# Require password immediately after sleep or screen saver begins
-#defaults write com.apple.screensaver askForPassword -int 1
-#defaults write com.apple.screensaver askForPasswordDelay -int 0
+# Require password 5 seconds after sleep or screen saver begins
+defaults write com.apple.screensaver askForPassword -int 1
+defaults write com.apple.screensaver askForPasswordDelay -int 5
 
 # Save screenshots to the desktop
 defaults write com.apple.screencapture location -string "${HOME}/Desktop"
