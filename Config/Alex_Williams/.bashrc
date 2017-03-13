@@ -60,8 +60,8 @@ if [[ -d "$HOME/work" ]]; then
 elif [[ -d "/work" ]]; then
     export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
 else
-    echo "[WARNING in .bashrc: WORK directory not found]"
-    export BINF_CORE_WORK_DIR="WORK_DIR_NOT_FOUND"
+    #echo "[WARNING in .bashrc: WORK directory not found]"
+    export BINF_CORE_WORK_DIR="NO_BIOINFORMATICS_CORE_WORK_DIR_FOUND"
 fi
 
 if [[ -d "$HOME/TimeForScience" ]]; then ## If this is in the home directory, then set it no matter what.
@@ -112,14 +112,12 @@ function deduped() { # input: one string to de-dupe. Usage: PATH=$(deduped $PATH
 }
 
 # ============================= PATH STUFF ============================
-export BOWTIE_INDEXES=${BINF_CORE_WORK_DIR}/Apps/Bio/bowtie/current-bowtie/indexes/ ## <-- MUST have a trailing "/" after it!
-
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/
 export R_BINF_CORE=${BINF_CORE_WORK_DIR}/Code/R
 
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin ## <-- clear out initial path!!
 export PATH=/opt/pbs/default/bin:/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${PATH}:${HOME}/.local/bin
-export PATH=$(deduped "${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Code/Python:${BINF_CORE_WORK_DIR}/Code/alexgw")   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
+export PATH=$(deduped "${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Code/Python")   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 
 # PATH="$(echo $PATH | perl -e 'print join(":", grep { not $seen{$_}++ } split(/:/, scalar <>))')"  # remove dupes
 
@@ -202,6 +200,8 @@ print_if_nonzero_exit_code() { # Example of using this in your prompt: PS1='$(hi
 export PS1="\$(print_if_nonzero_exit_code)\n[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
 # Note: requires a "\n" after the "print_if_nonzero" or else Ctrl-A / Ctrl-E gets messed up when pasting
 
+RIGNODE_HOSTNAME=${RIGNODE_HOSTNAME:-no_rignode_hostname} # bash, assign a DEFAULT value if the argument is not defined
+RIGSAND_HOSTNAME=${RIGSAND_HOSTNAME:-no_sandbox_hostname} # bash, assign a DEFAULT value if the argument is not defined
 case "$COMPYNAME"
     in
     $RIGNODE_HOSTNAME*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1

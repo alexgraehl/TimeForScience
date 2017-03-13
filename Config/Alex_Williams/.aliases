@@ -9,7 +9,7 @@ if [ -f ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config ]; then
     source ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config
 elif [ -f ~/.aliases-server-config ]; then
     source ~/.aliases-server-config # for machines that do not have the /work repository, you can just manually transfer the file over like so!
-    echo "Note: loading the .aliases-server-config MANUALLY from the home directory."
+    #echo "Note: loading the .aliases-server-config MANUALLY from the home directory."
 else
     echo "Note: no .aliases-server-config was found. SSH commands and tmux coloring may fail. You may want to MANUALLY copy this file over from another machine. Copy the other machine's ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config to this local machine's ~/.aliases-server-config ."
 fi
