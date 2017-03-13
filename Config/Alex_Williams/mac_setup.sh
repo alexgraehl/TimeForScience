@@ -49,6 +49,12 @@ echo "brew install bash git emacs vim imagemagick wget htop"
 
 echo "make some files invisible"
 
+if [[ "homebrew" == "yep do it" ]]; then
+    brew tap homebrew/science
+    brew tap homebrew/versions
+    brew install bamutil bash bedtools blast boost cairo clustal-w dialog emacs ess ffmpeg fontconfig fqzcomp freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htslib imagemagick isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle openssl pcre pixman pkg-config poretools pv qemu readline samtools sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
+fi
+
 AGW_BASH_MAJOR_VERSION=$(echo "$BASH_VERSION" | perl -pe "s/(\d+).*/\1/; chomp;")
 
 if (( $AGW_BASH_MAJOR_VERSION >= 4 ]]; then
