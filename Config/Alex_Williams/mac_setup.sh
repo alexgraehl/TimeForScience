@@ -35,24 +35,12 @@ else
     chmod    go-rwx ~/.ssh/id_rsa
 fi
 
-
-echo "wget some common applications if they aren't present"
-echo "get evernote"
-echo "get omnigraffle"
-echo "tell the user to download slack and divvy from the app store"
-
-echo "symlink the .whateverrc files"
-
-echo "get iterm2"
-echo "symlink the settings for iTerm2"
-
-echo "brew install whatever"
-
-echo "installing new bash since old one does not use globstar"
-
-
-
-echo "install clipmenu"
+echo "install Slack and Divvy from the Mac App Store"
+echo "install iTerm2 from ____________"
+echo "Sync the iTerm2 preferences from my config folder on github"
+echo "install OmniGraffle from ____________"
+echo "install Evernote from ____________"
+echo "install Clipy from https://clipy-app.com/"
 
 # ==============================================================================
 #                         Homebrew
