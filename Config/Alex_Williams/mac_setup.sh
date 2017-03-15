@@ -11,11 +11,11 @@ if [[ ! -e "$TIME_FOR_SCIENCE_DIR/README.md" ]]; then echo "[ERROR: the TIME_FOR
 cd "$HOME"
 
 
+# ==============================================================================
+#            Create symlinks to standard config files
+# ==============================================================================
 if [[ $(dirname $TIME_FOR_SCIENCE_DIR) == "$HOME" ]]; then echo "use relative links"; else echo "do not use relative links. Exiting here, as we cannot deal with this."; exit 1; fi
-
-
 cd $HOME
-
 HOMEDIR_CONFIG_FILES_TO_SYMLINK=(.aliases .bash_profile .bashrc .emacs .inputrc .screenrc .tmux.conf)
 for FILE in ${HOMEDIR_CONFIG_FILES_TO_SYMLINK[@]}; do
 	TIME_FOR_SCIENCE_BASENAME=$(basename $TIME_FOR_SCIENCE_DIR)
@@ -25,6 +25,7 @@ for FILE in ${HOMEDIR_CONFIG_FILES_TO_SYMLINK[@]}; do
 	if [[ ! -e $CFG ]]; then echo "[ERROR] The config file that we expected to exist, specifically, '$CFG', did not exist."; exit 1; else echo "[OK] Linking $CFG to the home directory (via relative path)"; fi
 	ln -s $CFG ./
 done
+# ==============================================================================
 
 if [[ -e "$HOME/.ssh/config" ]]; then
     echo "[SKIPPING] The ssh config file at .ssh/config ALREADY exists, so we are not overwriting it."
@@ -48,17 +49,23 @@ echo "symlink the settings for iTerm2"
 echo "brew install whatever"
 
 echo "installing new bash since old one does not use globstar"
-echo "brew install bash git emacs vim imagemagick wget htop"
 
-echo "make some files invisible"
 
+
+echo "install clipmenu"
+
+# ==============================================================================
+#                         Homebrew
+# ==============================================================================
 if [[ 1 == 1 || "homebrew" == "yep do it" ]]; then
     brew tap homebrew/science
     brew tap homebrew/versions
     brew update
     brew cask install java # required for gradle and more
-    brew install bamutil bash bedtools blast boost cairo clustal-w dialog emacs ess ffmpeg fontconfig fqzcomp freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htslib imagemagick isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle openssl pcre pixman pkg-config poretools pv qemu readline samtools sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
+    brew install bamutil bash bedtools blast boost cairo dialog emacs ess ffmpeg fontconfig fqzcomp freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htslib imagemagick isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle openssl pcre pixman pkg-config poretools pv qemu readline samtools sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
 fi
+
+# ==============================================================================
 
 AGW_BASH_MAJOR_VERSION=$(echo "$BASH_VERSION" | perl -pe "s/(\d+).*/\1/; chomp;")
 
@@ -76,9 +83,10 @@ if [[ 'some bash thing' == "yep" ]]; then
     #sudo bash -c 'echo "/usr/local/bin/bash" >> /etc/shells'
 fi
 
-echo "Making a bunch of useless files hidden in the Finder..."
-
+# ==============================================================================
+echo "Making a bunch of uninteresting files/folders hidden in the default Finder view..."
 FILES_TO_INVISIFY=("$HOME/Movies" "$HOME/Music" "$HOME/Public" "$HOME/TimeForScience" "$HOME/bin")
 for FILE in ${FILES_TO_INVISIFY[@]}; do
     chflags -h hidden $FILE
 done
+# ==============================================================================
