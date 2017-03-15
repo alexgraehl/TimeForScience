@@ -35,12 +35,13 @@ else
     chmod    go-rwx ~/.ssh/id_rsa
 fi
 
-echo "install Slack and Divvy from the Mac App Store"
+echo "install from the Mac App store: Slack Divvy Pixelmator"
 echo "install iTerm2 from ____________"
 echo "Sync the iTerm2 preferences from my config folder on github"
 echo "install OmniGraffle from ____________"
 echo "install Evernote from ____________"
-echo "install Clipy from https://clipy-app.com/"
+echo "install Hermes (Pandora) from ____________"
+echo "install Clipy from https://clipy-app.com/ (successor to ClipMenu)"
 
 # ==============================================================================
 #                         Homebrew
