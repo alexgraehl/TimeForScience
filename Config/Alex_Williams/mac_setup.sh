@@ -79,3 +79,10 @@ for FILE in ${FILES_TO_INVISIFY[@]}; do
     chflags -h hidden $FILE
 done
 # ==============================================================================
+
+echo "Install the amazon command line tools (via python's pip)"
+pip install awscli
+echo "[Installed] the 'aws' tool"
+
+
+
