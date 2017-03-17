@@ -40,18 +40,23 @@ echo "install iTerm2 from ____________"
 echo "Sync the iTerm2 preferences from my config folder on github"
 echo "install OmniGraffle from ____________"
 echo "install Evernote from ____________"
+echo "install Sourcetree (git/mercurial) from ____________"
 echo "install Hermes (Pandora) from ____________"
 echo "install Clipy from https://clipy-app.com/ (successor to ClipMenu)"
 
 # ==============================================================================
 #                         Homebrew
 # ==============================================================================
+
+
 if [[ 1 == 1 || "homebrew" == "yep do it" ]]; then
     brew tap homebrew/science
     brew tap homebrew/versions
     brew update
     brew cask install java # required for gradle and more
-    brew install bamutil bash bedtools blast boost cairo dialog emacs ess ffmpeg fontconfig fqzcomp freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htslib imagemagick isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle openssl pcre pixman pkg-config poretools pv qemu readline samtools sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
+    brew install bamutil bash bcftools bedtools blast boost cairo dialog emacs ess fastqc ffmpeg fontconfig fqzcomp freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htslib imagemagick isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mercurial mono mpfr nettle openssl pcre pixman pkg-config poretools pv qemu readline samtools sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
+    brew install Caskroom/cask/gpgtools
+    brew install homebrew/dupes/unzip htop-osx
 fi
 
 # ==============================================================================
