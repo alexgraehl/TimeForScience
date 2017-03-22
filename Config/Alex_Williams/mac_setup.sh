@@ -11,10 +11,12 @@ if [[ ! -e "$TIME_FOR_SCIENCE_DIR/README.md" ]]; then echo "[ERROR: the TIME_FOR
 cd "$HOME"
 
 
+SHOULD_HOMEBREW=1
+
 # ==============================================================================
 #            Create symlinks to standard config files
 # ==============================================================================
-if [[ $(dirname $TIME_FOR_SCIENCE_DIR) == "$HOME" ]]; then echo "use relative links"; else echo "do not use relative links. Exiting here, as we cannot deal with this."; exit 1; fi
+if [[ $(dirname $TIME_FOR_SCIENCE_DIR) == "$HOME" ]]; then echo "use relative links"; else echo "do not use relative links--apparently the TimeForScience directory is NOT located immediately in your home directory2. Exiting here, as we cannot deal with this."; exit 1; fi
 cd $HOME
 HOMEDIR_CONFIG_FILES_TO_SYMLINK=(.aliases .bash_profile .bashrc .emacs .inputrc .screenrc .tmux.conf)
 for FILE in ${HOMEDIR_CONFIG_FILES_TO_SYMLINK[@]}; do
@@ -38,7 +40,8 @@ fi
 echo "install from the Mac App store: Slack Divvy Pixelmator"
 echo "install iTerm2 from ____________"
 echo "Sync the iTerm2 preferences from my config folder on github"
-echo "install OmniGraffle from ____________"
+echo "install OmniGraffle (Paid!) from ____________"
+echo "install Transmit (Paid!) (File transfer) from ____________"
 echo "install Evernote from ____________"
 echo "install Sourcetree (git/mercurial) from ____________"
 echo "install Hermes (Pandora) from ____________"
@@ -49,12 +52,13 @@ echo "install Clipy from https://clipy-app.com/ (successor to ClipMenu)"
 # ==============================================================================
 
 
-if [[ 1 == 1 || "homebrew" == "yep do it" ]]; then
+if [[ 1 == $SHOULD_HOMEBREW ]]; then
     brew tap homebrew/science
     brew tap homebrew/versions
     brew update
     brew cask install java # required for gradle and more
     brew install bamutil bash bcftools bedtools blast boost cairo dialog emacs ess fastqc ffmpeg fontconfig fqzcomp freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htslib imagemagick isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mercurial mono mpfr nettle openssl pcre pixman pkg-config poretools pv qemu readline samtools sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
+    brew install docker
     brew install Caskroom/cask/gpgtools
     brew install homebrew/dupes/unzip htop-osx
 fi
