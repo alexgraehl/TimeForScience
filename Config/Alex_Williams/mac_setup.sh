@@ -47,6 +47,12 @@ echo "install Sourcetree (git/mercurial) from ____________"
 echo "install Hermes (Pandora) from ____________"
 echo "install Clipy from https://clipy-app.com/ (successor to ClipMenu)"
 
+echo "Install XCode"
+echo "Run XCode to let it install its weird components"
+echo "maybe something like this: sudo /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild  -license accept"
+#sudo installer -pkg /Applications/Xcode-beta.app/Contents/Resources/Packages/MobileDevice.pkg -target /
+#sudo installer -pkg /Applications/Xcode-beta.app/Contents/Resources/Packages/MobileDeviceDevelopment.pkg -target /
+
 # ==============================================================================
 #                         Homebrew
 # ==============================================================================
