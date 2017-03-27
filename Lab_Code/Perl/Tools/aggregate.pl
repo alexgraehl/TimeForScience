@@ -38,10 +38,6 @@ my $file     = $args{'--file'};
 
 my $sprintf_ctrl = '%.' . $sigs . 'f';
 
-if ($function ne 'mean' && $function ne 'median') {
-	die "ERROR in aggregate.pl: You must specify a function ( -f  FUNCTION_NAME ). The supported functions are mean and median.\n";
-}
-
 # my ($ids, $rows) = &readIds($file, $col, $delim);
 # my $data = &readDataMatrix($file, $col, $delim, \$max_cols);
 my ($data, $ids, $rows, $max_cols) = &readDataAndIds($file, $col, $delim);
@@ -51,10 +47,13 @@ for(my $i = 0; $i < scalar(@{$rows}) and $i < $headers; $i++) {
 }
 
 for(my $i = $headers; $i < scalar(@{$rows}); $i++) {
-   my $id = $$ids[$i];
-   my $useMedian = ($function eq 'median');
-   my $useMean   = ($function eq 'mean');
-   if ($useMean && $useMedian) { die "Error in arguments to aggregate.pl: You cannot specify both *mean* AND *median* at the same time! (We would be overwriting the storage variable!) You will have to run the program twice, once with each option.\n"; }
+	my $id = $$ids[$i];
+	$function = lc($function);
+	my $useMedian = ($function eq 'median');
+	my $useMean   = ($function eq 'mean');
+	my $useSum = 0;
+	#my $useSum    = ($function eq 'sum');
+	if ($useMean + $useMedian + $useSum != 1) { die "Error in arguments to aggregate.pl: You must specify only one of *sum* or *mean* or *median* at the same time!\n"; }
    
    my @sum;
    my @count;

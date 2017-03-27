@@ -5,6 +5,9 @@ Note: we use the 'optparse' module to parse command line arguments, becuase the 
 A python program.
 '''
 
+#from __future__ import print_function
+from __future__ import division
+
 import sys
 import optparse
 import pdb; #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
@@ -14,6 +17,9 @@ import textwrap
 
 globalOptions = None
 globalArgs    = None
+
+def argErrorAndExit(msg="(No additional information given)"):
+    raise SystemExit("[ERROR] in arguments to this script: " + msg)
 
 def handleCommandLineOptions():
     global globalArgs    ## must have this here in order to ASSIGN globally!

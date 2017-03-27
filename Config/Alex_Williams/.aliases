@@ -216,6 +216,7 @@ alias cheat="echo \
 \">> GIT fix an HTTP repo to SSH: git remote set-url origin git@github.com:RepoNameHere/ProjName.git \" ${NL}\
 \">> GIT see old version of file (example: ~4 = 4 revisons ago): git show HEAD~4:./some_file.txt \" ${NL}\
 \">> GIT delete a REMOTE branch: git push origin --delete BRANCHNAME (not delete, surprisingly) \" ${NL}\
+\">> GIT list files in a branch: git ls-tree -r -l BRANCHNAME \" ${NL}\
 \">> TERM: Get terminal width/height: tput cols  or  tput lines \" ${NL}\
 \">> BACKUPS: Check for changed files of a certain name: grep -E '>f.' /it/backup/log/*.log | grep YOURNAME \" ${NL}\
 \">> UNIX/FILE: Add filename to top of (copy of) files. for f in FILES*; do echo \\\$f | cat - $f > NEW_\\\$f ; done \" ${NL}\
