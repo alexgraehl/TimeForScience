@@ -115,6 +115,7 @@ function vncstart {
 
 BRACKET_OPEN='{'
 PAREN_OPEN='('
+TAB='	'
 NL="\$'\\n'" # newline!
 alias cheat="echo \
 \">> Echo emoji to terminal: example: a snake is echo $'\xF0\x9F\x90\x8D' (See http://apps.timwhitlock.info/emoji/tables/unicode) \" ${NL}\
@@ -219,6 +220,8 @@ alias cheat="echo \
 \">> GIT list files in a branch: git ls-tree -r -l BRANCHNAME \" ${NL}\
 \">> GIT what changed between branches?: git diff --summary BRANCH1 BRANCH2 \" ${NL}\
 \">> GIT GUI and 'when was a branch made from master': gitk --all --select-commit=\\\$(git merge-base YOURBRANCH master)  \" ${NL}\
+\">> GIT when branch was last used (MINIMAL): for BRANCH in \\\$(git branch -r | grep -v 'HEAD'); do echo -e \\\$(git show --format='%ci %cr' \\\$BRANCH | head -n 1) \\\\\\\\t\\\$BRANCH; done | sort -r \" ${NL}\
+\">> GIT when branch was last used AND last commit (fancy): git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \" ${NL}\
 \">> TERM: Get terminal width/height: tput cols  or  tput lines \" ${NL}\
 \">> BACKUPS: Check for changed files of a certain name: grep -E '>f.' /it/backup/log/*.log | grep YOURNAME \" ${NL}\
 \">> UNIX/FILE: Add filename to top of (copy of) files. for f in FILES*; do echo \\\$f | cat - $f > NEW_\\\$f ; done \" ${NL}\
