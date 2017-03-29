@@ -203,7 +203,10 @@ export PS1="\$(print_if_nonzero_exit_code)\n[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " #
 RIGNODE_HOSTNAME=${RIGNODE_HOSTNAME:-no_rignode_hostname} # bash, assign a DEFAULT value if the argument is not defined
 RIGSAND_HOSTNAME=${RIGSAND_HOSTNAME:-no_sandbox_hostname} # bash, assign a DEFAULT value if the argument is not defined
 case "$COMPYNAME"
-    in
+in
+    mac*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1
+	export PS1="${PS1/\$ }[LOCAL_MAC] $ " # prepend "compute node" to it
+	;;
     $RIGNODE_HOSTNAME*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1
 	export PS1="${PS1/\$ }[COMPUTE_NODE] $ " # prepend "compute node" to it
 	;;
