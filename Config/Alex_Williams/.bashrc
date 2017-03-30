@@ -196,8 +196,13 @@ print_if_nonzero_exit_code() { # Example of using this in your prompt: PS1='$(hi
     else highlight_text $ERR_COLOR   "[Exit code $exit_code]"; fi
 } 
 
+parse_git_branch() { # Shows the current 'git' branch if you're in a git-controlled directory
+     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+}
 
-export PS1="\$(print_if_nonzero_exit_code)\n[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
+#export PS1="\u@\h \[\033[32m\]\w\[\033[33m\]\$(parse_git_branch)\[\033[00m\] $ "
+export PS1="${COMPYNAME:0:3} \[\033[32m\]\w\[\033[33m\]\$(parse_git_branch)\[\033[00m\] $ "
+#export PS1="\$(print_if_nonzero_exit_code)\n[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
 # Note: requires a "\n" after the "print_if_nonzero" or else Ctrl-A / Ctrl-E gets messed up when pasting
 
 RIGNODE_HOSTNAME=${RIGNODE_HOSTNAME:-no_rignode_hostname} # bash, assign a DEFAULT value if the argument is not defined
