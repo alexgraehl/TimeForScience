@@ -99,5 +99,10 @@ echo "Install the amazon command line tools (via python's pip)"
 pip install awscli
 echo "[Installed] the 'aws' tool"
 
+echo "Installing pylint for Python 2.x"
+pip2 install pylint
+
+echo "[DONE]"
+
 
 
