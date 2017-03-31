@@ -95,12 +95,21 @@ for FILE in ${FILES_TO_INVISIFY[@]}; do
 done
 # ==============================================================================
 
-echo "Install the amazon command line tools (via python's pip)"
-pip install awscli
-echo "[Installed] the 'aws' tool"
+# ==============================================================================
+echo "A bunch of things that should be installed via pip (2 vs 3?)"
+PIP2_PACKAGES=("awscli", "pylint", "matplotlib", "numpy")
+for PACKAGE in ${PIP2_PACKAGES[@]}; do
+    print "Installing the package $PACKAGE via pip..."
+    pip2 install $PACKAGE
+done
+# ==============================================================================
 
-echo "Installing pylint for Python 2.x"
-pip2 install pylint
+#echo "Install the amazon command line tools (via python's pip)"
+#pip install awscli
+#echo "[Installed] the 'aws' tool"
+
+#echo "Installing pylint for Python 2.x"
+#pip2 install pylint
 
 echo "[DONE]"
 
