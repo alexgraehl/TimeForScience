@@ -45,9 +45,10 @@ GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "n|name=s" => \$name
 	   , "g|gtf=s" => \$gtf
 	   , "f|fa|fasta=s" => \$fasta
-	   , "all!"  => sub { $shouldMake{STAR}=$shouldMake{BWA}=$shouldMake{BOWTIE2}=$shouldMake{PERCHR}=$shouldMake{FAI}=1; }
+	   , "all!"  => sub { $shouldMake{STAR}=$shouldMake{BWA}=$shouldMake{BOWTIE2}=$shouldMake{PERCHR}=$shouldMake{FAI}=$shouldMake{CELLRANGER}=1; }
 	   , "star!" => sub { $shouldMake{STAR}=1; }
 	   , "bwa!"  => sub { $shouldMake{BWA}=1; }
+	   , "cellranger!"  => sub { $shouldMake{CELLRANGER}=1; }
 	   , "tophat|bowtie2!" => sub { $shouldMake{BOWTIE2}=1; }
 	   , "bowtie!" => sub { die "We cannot currently make the '.ebwt'-format bowtie1 indexes. Specifiy bowtie2 or tophat if you want the '.bt2' format indexes"; }
 	   , "perchr|!" => sub { $shouldMake{PERCHR}=1; die "We cannot currently make the per-chromosome fasta directories like 'chr1.fa, chr2.fa, chrN.fa, etc...'. If for some reason you need those, you will need to DIY it."}
@@ -58,7 +59,7 @@ GetOptions("help|?|man" => sub { printUsageAndQuit(); }
     ) or printUsageAndQuit();
 
 my $numUnprocessedArgs = scalar(@ARGV);
-($numUnprocessedArgs == 0) or quitWithUsageError("[Error] in arguments! You seem to have some extra text in your command line call (or something else is messed up). You must have NO additional command-line arguments to program!");
+($numUnprocessedArgs == 0) or quitWithUsageError("[Error] in arguments! You seem to have some extra text / unrecognized parameters in your command line call (or something else is messed up). You must have NO additional command-line arguments to the program! The unrecognized arguments (which may be misspelled, perhaps?) are the following: " . join(" ", @ARGV) . "\n");
 
 my $numStepsToDo = 0;
 for my $k (keys(%shouldMake)) { $numStepsToDo++; }

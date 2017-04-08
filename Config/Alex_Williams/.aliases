@@ -118,6 +118,7 @@ PAREN_OPEN='('
 TAB='	'
 NL="\$'\\n'" # newline!
 alias cheat="echo \
+\">> Attach to a docker container: docker exec -it IMAGENAMEHERE bash \" ${NL}\
 \">> Echo emoji to terminal: example: a snake is echo $'\xF0\x9F\x90\x8D' (See http://apps.timwhitlock.info/emoji/tables/unicode) \" ${NL}\
 \">> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
 \">> Unzip files into SUBDIRECTORIES always: ls *.zip|awk -F'.zip' '{print \\\"unzip \\\"\\\$0\\\" -d \\\"\\\$1}'|sh  \" ${NL}\
