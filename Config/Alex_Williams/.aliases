@@ -5,16 +5,15 @@
 # set -euo pipefail
 # IFS=$'\n\t'
 # ---------------------
-if [ -f ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config ]; then
-    source ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config
-elif [ -f ~/.aliases-server-config ]; then
-    source ~/.aliases-server-config # for machines that do not have the /work repository, you can just manually transfer the file over like so!
-    #echo "Note: loading the .aliases-server-config MANUALLY from the home directory."
+#if [ -f ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config ]; then
+#    source ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config
+if [ -f ~/.local-config-no-git ]; then
+    source ~/.local-config-no-git
 else
-    echo "Note: no .aliases-server-config was found. SSH commands and tmux coloring may fail. You may want to MANUALLY copy this file over from another machine. Copy the other machine's ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config to this local machine's ~/.aliases-server-config ."
+    echo "Note: no .local-config-no-git was found. SSH commands, server shortcuts, and tmux coloring may fail. You may want to MANUALLY copy this file over from another machine."
 fi
 
-if [[ "$USER" == "alexgw" ]] || [[ "$USER" == "awilliams" ]]; then
+if [[ "$USER" == "alexgw" ]] || [[ "$USER" == "awilliams" ]] || [[ "$USER" == "alexwilliams" ]]; then
     ## SAFER 'rm' COMMANDS --only applies to the user(s) above.
     ## Below: aliases the command "rm" to actually run the script "trash.pl," which moves files to a trash directory in /tmp.
     ## They can be recovered by just copying them back.
@@ -97,20 +96,6 @@ function witch { # Shows the versions for all on-your-path verisons of software.
 function delve {
     ## Finds, in any subdirectories, any files that have a name that matches the input text. Sort of like a poor man's "locate"
     find ./ -iname "*$@*"
-}
-
-function vncnau { # Forwards the ports from this machine to the localhost
-    echo "Now forwarding port 590$* from $BN_HOSTNAME... you should launch your VNC client now and connect to localhost:$*"
-    ssh -L 590$*:localhost:590$* -p 22 alexgw@${BN_IP} -N
-}
-
-function vnccat { # Forwards the ports from this machine to the localhost
-    echo "Now forwarding port 590$* from $BC_HOSTNAME ... you should launch your VNC client now and connect to localhost:$*"
-    ssh -L 590$*:localhost:590$* -p 22 alexgw@${BC_IP} -N
-}
-
-function vncstart {
-    vncserver -geometry 1600x1000 -depth 16
 }
 
 BRACKET_OPEN='{'
@@ -1037,6 +1022,13 @@ function redrop {
     dropbox.py stop && dropbox.py start && sleep 2 && dropbox.py status;
 }
 
+function aws_ls_fastq {
+    if [[ -z ${EPI_S3_FASTQ_SEQ_BUCKET+x} ]]; then echo "EPI_S3_FASTQ_SEQ_BUCKET is unset! Set it in the .local-config-no-git file."; exit 1; fi
+    # Note that the buckets are defined in .local-config-no-git
+    (>&2 echo "Performing the equivalent of an 'ls -1' on the sequencing data bucket. You probably want to redirect this to a text file.")
+    aws s3 ls s3://${EPI_S3_FASTQ_SEQ_BUCKET}/Fastq_Files_per_run/ --recursive | awk '{print $4 }'
+    (>^2 echo "[Done] listing the directory on ${EPI_S3_FASTQ_SEQ_BUCKET}!")
+}
 
 # count bases per line in a fasta file:
 # cat x.fa | grep -v '^>' | perl -ne 'chomp; my @a=split(//,$_); my %c=(); for my $x (@a) { $c{lc($x)}++; }; for my $k (keys(%c)) { print($k.qq{=}.$c{$k}."\t"); }; print qq{  <-- \n};'
