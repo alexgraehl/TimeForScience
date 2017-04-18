@@ -149,6 +149,7 @@ alias cheat="echo \
 \">> PYTHON debug a crashing program: Put this in the code verbatim to properly enter the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
 \" \" ${NL}\
 \">> R: Save copy of figure as pdf: dev.copy2pdf() \" ${NL}\
+\">> R: Convert columns of a dataframe to factors (from char): fact.df   <- char.df; fact.df[] <- lapply(char.df[], as.factor) \" ${NL}\
 \">> R: Prevent blank page in PDF: pdf(..., onefile=FALSE) \" ${NL}\
 \">> R: Aggregate rows / average rows with same name (mean): mAGG <- t(sapply(by(MAT,rownames(MAT),colMeans),identity)) \" ${NL}\
 \">> R: Read bzip/gz file:  x <- read.table(bzfile(\\\"name.bz2\\\") or gzfile(...) \" ${NL}\
