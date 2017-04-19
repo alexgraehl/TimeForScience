@@ -496,6 +496,7 @@ function scienceup {
 
 function science {
     echo 'TimeForScience (GitHub):' ; scienceup ${TIME_FOR_SCIENCE_DIR} ; sciencecom ${TIME_FOR_SCIENCE_DIR}
+    echo '~/Epi (GitHub):' ; scienceup ~/epi ; sciencecom ~/epi
     #echo 'Bioinformatics (Git on Westway):' ; scienceup ${BINF_CORE_WORK_DIR} ; sciencecom ${BINF_CORE_WORK_DIR}
     echo -e '\nFinished updating on' `date`
 }
