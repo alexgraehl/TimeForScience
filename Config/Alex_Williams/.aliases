@@ -1033,9 +1033,10 @@ function aws_ls_fastq {
     (>^2 echo "[Done] listing the directory on ${EPI_S3_FASTQ_SEQ_BUCKET}!")
 }
 
-function docker_begone {
+function docker-begone {
     echo "Stopping and removing ALL DOCKER CONTAINERS. ALL OF THEM!"
     docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q)
+    echo "Not even one docker container was spared."
 }
 
 # count bases per line in a fasta file:
