@@ -315,4 +315,11 @@ If you give an invalid Perl expression you'll get a syntax error.
 The original C<rename> did not check for the existence of target filenames,
 so had to be used with care.  I hope I've fixed that (Robin Barker).
 
+Note: are you trying to rename files in a directory to match a LIST of new names?
+      Although that is not part of this script, here is a shell one-liner that will do it:
+      (Requires a 1-column file named "NEW_FILENAME_LIST.txt" of new filesnames, in the same
+      order that "ls -1" uses. Probably breaks on special characters, so beware.)
+>>>>>> while read -u 9 SRC; do read -u 8 DEST; echo mv "$SRC" "$DEST"; done \
+             9<<<"$(ls -1 * | grep -v NEW_FILENAME_LIST.txt)" 8< NEW_FILENAME_LIST.txt && echo "[DONE]"
+
 =cut
