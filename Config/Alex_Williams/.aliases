@@ -285,7 +285,8 @@ alias cheat="echo \
 \">> EMACS: show variable: describe-variable \" ${NL}\
 \" \" ${NL}\
 \">> Convert SAM to BAM with QPLZ:  for SSS in **/*.sam; do qplz --background \\\"samtools view -bS \\\$SSS > \\\${SSS/.sam}.bam\\\" ; done \" ${NL}\
-\">> RNASEQ: bcl2fastq: NCPU=4; bcl2fastq --fastq-compression-level 5 --barcode-mismatches 1 --no-lane-splitting -r $NCPU -d $NCPU -p $NCPU -w $NCPU --sample-sheet 'THIS_MUST_BE_VALID_NOT_MAC_FORMAT.csv'  --runfolder-dir=WEIRDLY_NAMED_160_NB01415_ABCDQBXX   (output goes to Data/Intensities/BaseCalls/*.fastq.gz) \" ${NL}\
+\">> SEQ: fastq2fasta (fq2fa, fastq -> fasta): zcat FQ.fq.gz | awk '{if(NR%4==1) {printf(\\\">%s\n\\\",substr(\\\$0,2));} else if(NR%4==2) print;}' > FASTA.fa \" ${NL}\
+\">> SEQ: bcl2fastq: NCPU=4; bcl2fastq --fastq-compression-level 5 --barcode-mismatches 1 --no-lane-splitting -r $NCPU -d $NCPU -p $NCPU -w $NCPU --sample-sheet 'THIS_MUST_BE_VALID_NOT_MAC_FORMAT.csv'  --runfolder-dir=WEIRDLY_NAMED_160_NB01415_ABCDQBXX   (output goes to Data/Intensities/BaseCalls/*.fastq.gz) \" ${NL}\
 \">> RNASEQ SAM --> BAM:  samtools view -bS in.sam > out.bam \" ${NL}\
 \">> RNASEQ BAM --> SAM:  samtools view -h  in.bam > out.sam \" ${NL}\
 \">> RNASEQ samtools view first read of pair only:  samtools view -f  64 file.bam \" ${NL}\
