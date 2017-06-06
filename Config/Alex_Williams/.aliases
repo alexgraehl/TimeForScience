@@ -149,6 +149,7 @@ alias cheat="echo \
 \">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --ignore-installed --install-option=\\\"--prefix=$BINFPYROOT\\\" PACKAGENAME \" ${NL}\
 \">> PYTHON debug a crashing program: Put this in the code verbatim to properly enter the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
 \" \" ${NL}\
+\">> BIOM format: biom convert -i INPUT.biom -o TABDELIM.txt --to-tsv \" ${NL}\
 \">> R: Save copy of figure as pdf: dev.copy2pdf() \" ${NL}\
 \">> R: Convert columns of a dataframe to factors (from char): fact.df   <- char.df; fact.df[] <- lapply(char.df[], as.factor) \" ${NL}\
 \">> R: Prevent blank page in PDF: pdf(..., onefile=FALSE) \" ${NL}\
