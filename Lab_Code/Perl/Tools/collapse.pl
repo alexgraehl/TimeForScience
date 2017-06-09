@@ -25,79 +25,73 @@ my @flags   = (
                 , [   '-do', 'scalar',   ",", undef]
                 , [    '-f', 'scalar', undef, undef]
                 , ['--file', 'scalar',   '-', undef]
-	        , [    '-h', 'scalar',     0, undef]
+	       , [    '-h', 'scalar',     0, undef]
+	       , [    '-dot', 'scalar',     1, undef]
+	       , [    '--dot', 'scalar',     1, undef]
               );
 
-my %args = %{&parseArgs(\@ARGV, \@flags)};
+my %args = %{&parseArgs(\@ARGV, \@flags)}; # parseargs is from libfile
 
-if(exists($args{'--help'}))
-{
+if(exists($args{'--help'})) {
    print STDOUT <DATA>;
    exit(0);
+}
+
+my $delim_out  = ",";
+
+if(exists($args{'-dot'}) or exists($args{'--dot'})) { # if the output was set to be a tab
+	$delim_out = "\t";
+} else {
+	$delim_out = $args{'-do'};
 }
 
 my $verbose    = not($args{'-q'});
 my $col        = int($args{'-k'}) - 1;
 my $delim_in   = $args{'-di'};
-my $delim_out  = $args{'-do'};
+
 my $function   = $args{'-f'};
 my $file       = $args{'--file'};
 my $headers    = int($args{'-h'});
 
 my @order;
-
 my %data;
 my $filep;
-open($filep, $file) or die("Could not open file '$file' for reading");
+
+open($filep, $file) or die("[ERROR in collapse.pl]: Could not open file '$file' for reading");
 
 while($headers-- > 0) { $_ = <$filep>; print;}
 
-while(<$filep>)
-{
+while(<$filep>) {
    my @tuple = split($delim_in, $_);
    chomp($tuple[$#tuple]);
    my $key = splice(@tuple, $col, 1);
 
-   if(not(exists($data{$key})))
-   {
+   if(not(exists($data{$key}))) {
       $data{$key} = \@tuple;
-
       push(@order, $key);
-   }
-   else
-   {
+   } else {
       my $list = $data{$key};
-
       my $n = scalar(@{$list});
-
       my $m = scalar(@tuple);
-
       my $min = ($n < $m) ? $n : $m;
-
-      for(my $i = 0; $i < $min; $i++)
-      {
+      for(my $i = 0; $i < $min; $i++) {
          $$list[$i] .= $delim_out . $tuple[$i];
       }
 
-      for(my $i = $m; $i < $n; $i++)
-      {
+      for(my $i = $m; $i < $n; $i++) {
          $$list[$i] .= $delim_out;
       }
    }
 }
 close($filep);
 
-foreach my $key (@order)
-{
+foreach my $key (@order) {
    my $list = $data{$key};
-
-   if(defined($function))
-   {
+   if(defined($function)) {
       my @tuple;
-      foreach my $field (@{$list})
-      {
+      foreach my $field (@{$list}) {
          my @vector = split($delim_out, $field);
-         my $val    = &vec_eval(\@vector, $function);
+         my $val    = &vec_eval(\@vector, $function); # <-- from libstats
          push(@tuple, defined($val) ? $val : '');
       }
       $list = \@tuple;
@@ -119,9 +113,10 @@ OPTIONS are:
 -di DELIM: The fields in the input file are seperated by DELIM (default is tab).
 
 -do DELIM: Use this to seperate within a field when duplicates are found (default is comma).
-
+  -dot: Causes the output to be a TAB.
+  
 -f FUNCTION: Instead of concatenating entries, apply the function
-             FUNCTION to the vector.  Possible values for 
+             FUNCTION to the vector.  Possible values for
              FUNCTION are:
 
      mean    - Compute the mean
