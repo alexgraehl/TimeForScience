@@ -1045,6 +1045,13 @@ function docker-begone {
     echo "Stopping and removing ALL DOCKER CONTAINERS. ALL OF THEM!"
     docker stop $(docker ps -a -q) && docker rm $(docker ps -a -q)
     echo "Not even one docker container was spared."
+
+    echo "Clearing out space also..."
+    docker rm $(docker ps -q -f 'status=exited')
+
+    echo "Clearing out space for any 'dangling' docker items (probably there are none)..."
+    docker rmi $(docker images -q -f "dangling=true")
+    
 }
 
 # count bases per line in a fasta file:
