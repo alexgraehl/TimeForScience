@@ -697,6 +697,8 @@ sub mat_mean (\@)
 #---------------------------------------------------------
 # vec_eval - Evaluate a function using the vector for
 #            the function's arguments.
+# E.g. vec_eval([1,2,3], "mean") would return 2
+#   or vec_eval([1,2,3], "max")  would return 3
 #---------------------------------------------------------
 sub vec_eval {
 	my ($vec, $func) = @_;
@@ -711,11 +713,11 @@ sub vec_eval {
 	} elsif ($func eq 'count') {
 		my ($n, $s) = &vec_sum($vec);
 		return $n;
-	} elsif ($func eq 'std') {
+	} elsif ($func eq 'std' or $func eq 'sd' or $func eq 'stdev') {
 		return &vec_std($vec);
 	} elsif ($func eq 'var') {
-		my $s   = &vec_std($vec);
-		if (defined($s) and $s ne "" and $s =~ /\d/) {  return $s*$s; }
+		my $s = &vec_std($vec);
+		if (defined($s) and $s ne "" and $s =~ /\d/) {  return $s*$s; } # stdev squared
 		else {                                          return undef; }
 	} elsif ($func eq 'entropy') {
 		return &shannon_entropy($vec);
@@ -724,7 +726,7 @@ sub vec_eval {
 	} elsif ($func eq 'max') {
 		return &vec_max($vec);
 	} else {
-		die "Unrecognized function to vec_eval in libstats.pl: the function was <$func>";
+		die "An unrecognized function was passed into 'vec_eval(...)' in 'libstats.pl': the bad function was \"$func\"";
 	}
 	return undef; # should never get here!
 }
