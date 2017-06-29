@@ -1049,6 +1049,11 @@ function docker-begone {
     echo "Clearing out space also..."
     docker rm $(docker ps -q -f 'status=exited')
 
+    echo "You may also have to, with RUNNING YOUR CONTAINERS, run this: docker system prune -a"
+    So, with docker UP and my containers RUNNING, execute docker system prune -a
+    echo "The file that should be small now is:"
+    ls -lah $HOME/Library/Containers/com.docker.docker/Data/com.docker.driver.*/*.qcow2
+    
     echo "Clearing out space for any 'dangling' docker items (probably there are none)..."
     docker rmi $(docker images -q -f "dangling=true")
     
