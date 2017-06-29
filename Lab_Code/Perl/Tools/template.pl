@@ -13,7 +13,7 @@ use strict;  use warnings;  use diagnostics;
 use POSIX      qw(ceil floor);
 use List::Util qw(max min);
 use Getopt::Long;
-use Carp; # backtrace on errors. Has the "confess" function. Use this instead of "die" if you want useful information!   
+use Carp; # backtrace on errors. Has the "confess" function. Use this instead of "die" if you want useful information!
 
 #use File::Basename;
 
@@ -75,13 +75,10 @@ sub notify($) { # one required argument
 }
 
 sub main();
-sub quitWithUsageError($) { print($_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
-sub printUsageAndQuit() { printUsage(); exit(1); }
 
-sub printUsage() {
-    print STDOUT <DATA>;
-    exit(0);
-}
+sub printUsage()        { print STDOUT <DATA>; }
+sub printUsageAndQuit() { printUsage(); exit(1); }
+sub quitWithUsageError($) { print($_[0] . "\n"); printUsageAndQuit(); print($_[0] . "\n"); }
 
 # ==1==
 sub main() { # Main program

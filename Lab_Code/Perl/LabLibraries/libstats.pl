@@ -7,7 +7,6 @@ use List::Util qw(max min);
 use strict;
 #use warnings;
 #use diagnostics;
-
 my $MAXDOUBLE = 100000000000000000000000000;
 my $LOG10     = log(10);
 
@@ -15,24 +14,18 @@ my $LOG10     = log(10);
 sub __OVERFLOW_TO_INF {
     my $n = 5000;
     my $v = 2;
-    while (--$n)
-    {
+    while (--$n) {
         $v *= 2;
     }
     return($v)
-	}
+}
 my $INFINITY = &__OVERFLOW_TO_INF();
-
-
-
 
 #-----------------------------------------------------------------------------
 #
 #-----------------------------------------------------------------------------
-sub ComputeBinomial
-{
+sub ComputeBinomial {
 	my ($p, $n, $r) = @_;
-
 	my $binom = -$MAXDOUBLE;
 	for (my $i = $r; $i <= $n; $i++)
 	{
@@ -46,17 +39,12 @@ sub ComputeBinomial
 #-----------------------------------------------------------------------------
 #
 #-----------------------------------------------------------------------------
-sub ComputeLog10HyperDensity
-{
+sub ComputeLog10HyperDensity {
     my ($k, $n, $K, $N) = @_;
-    
-    if ($N == 0 or $n == 0 or ($k > $n) or ($K > $N))
-    {
+    if ($N == 0 or $n == 0 or ($k > $n) or ($K > $N)) {
         return undef;
     }
-    
     my $pvalue = &lchoose($k, $K) + &lchoose($n - $k, $N - $K) - &lchoose($n, $N);
-    
     return $pvalue / $LOG10;
 }
 
@@ -75,11 +63,9 @@ sub ComputeLog10HyperDistOverDensity {
     #
     #     x * (NR + NB) <= n * NR
     my ($k, $n, $K, $N) = @_;
-    
     if ($k == 13066 && $n == 13077 && $K == 13857 && $N == 13867) {
         warn "this is that weird case that messes up the pdhyper";
     }
-    
     # this is for double values... 2^-52
     my $DBL_EPSILON = 2.220446049250313e-16;
     
@@ -96,60 +82,52 @@ sub ComputeLog10HyperDistOverDensity {
     }
 
     $sum = $sum < 0 ? 0 : $sum;
-
     return log(1 + $sum) / $LOG10;
 }
 
 #-----------------------------------------------------------------------------
 #
 #-----------------------------------------------------------------------------
-sub ComputeLog10HyperPValue
-{
+sub ComputeLog10HyperPValue {
     my ($k, $n, $K, $N) = @_;
     my $swapped = 0;
     
     if ($k <= 0) { return 0; }
     if ($k > $n) { return -$INFINITY; }
-    if ($n-$k > $N-$K)
-    {
-	print STDERR "more failures than black balls in urn:k=$k n=$n K=$K N=$N";
-		return 0;
+    if ($n-$k > $N-$K)    {
+	    print STDERR "more failures than black balls in urn:k=$k n=$n K=$K N=$N";
+	    return 0;
     }
-    if ($k > $K)
-    {
-		print STDERR "more successes than white balls in urn:k=$k n=$n K=$K N=$N";
-		return 0;
+    if ($k > $K)    {
+	    print STDERR "more successes than white balls in urn:k=$k n=$n K=$K N=$N";
+	    return 0;
     }
-    if ($K > $N)
-    {
-		print STDERR "more trials than balls in urn:k=$k n=$n K=$K N=$N";
-		return 0;
+    if ($K > $N)    {
+	    print STDERR "more trials than balls in urn:k=$k n=$n K=$K N=$N";
+	    return 0;
     }
-
+    
     # swap tails, if necessary to calculate the phyper(...) / dhyper(...)
-    if (($k * $N) > ($n * $K))
-    {
-		$K = $N - $K;
-		$k = $n - $k;
-		$swapped = 1;
+    if (($k * $N) > ($n * $K)) {
+	    $K = $N - $K;
+	    $k = $n - $k;
+	    $swapped = 1;
     }
-
+    
     if ($k < 0) { return 0; }
-
+    
     my $pd = &ComputeLog10HyperDistOverDensity($k, $n, $K, $N);
     my $d  = &ComputeLog10HyperDensity($k, $n, $K, $N);
-
+    
     my $lpvalue = ($k == 0) ? $d : $pd + $d;
     # my $lpvalue = ($k == 0) ? $d : log(10^$pd + 10^$d);
-
-    if ($lpvalue >= 0)
-    {
-		# warn "pvlaue >= 1: k=$k n=$n K=$K N=$N";
-		return 0;
+    
+    if ($lpvalue >= 0) {
+	    # warn "pvlaue >= 1: k=$k n=$n K=$K N=$N";
+	    return 0;
     }
-    unless ($swapped)
-    {
-		$lpvalue = log(1-exp($lpvalue*$LOG10))/$LOG10;
+    if (not $swapped) {
+	    $lpvalue = log(1-exp($lpvalue*$LOG10))/$LOG10;
     }
     return $lpvalue;
 }
@@ -720,93 +698,62 @@ sub mat_mean (\@)
 # vec_eval - Evaluate a function using the vector for
 #            the function's arguments.
 #---------------------------------------------------------
-sub vec_eval
-{
+sub vec_eval {
 	my ($vec, $func) = @_;
-
-	my $result = undef;
-
-	if($func eq 'mean' or $func eq 'ave')
-	{
-		$result = &vec_mean($vec);
-	}
-	elsif($func eq 'median')
-	{
-		$result = &vec_median($vec);
-	}
-	elsif($func eq 'sum')
-	{
+	$func = lc($func); # lower-case it!
+	if ($func eq 'mean'  or  $func eq 'ave') {
+		return &vec_mean($vec);
+	} elsif ($func eq 'median') {
+		return &vec_median($vec);
+	} elsif ($func eq 'sum') {
 		my ($n, $s) = &vec_sum($vec);
-		$result     = $s;
-	}
-	elsif($func eq 'count')
-	{
+		return $s;
+	} elsif ($func eq 'count') {
 		my ($n, $s) = &vec_sum($vec);
-		$result     = $n;
-	}
-	elsif($func eq 'std')
-	{
-		$result = &vec_std($vec);
-	}
-	elsif($func eq 'var')
-	{
+		return $n;
+	} elsif ($func eq 'std') {
+		return &vec_std($vec);
+	} elsif ($func eq 'var') {
 		my $s   = &vec_std($vec);
-		$result = (defined($s) and $s =~ /\d/) ? $s*$s : undef;
+		if (defined($s) and $s ne "" and $s =~ /\d/) {  return $s*$s; }
+		else {                                          return undef; }
+	} elsif ($func eq 'entropy') {
+		return &shannon_entropy($vec);
+	} elsif ($func eq 'min') {
+		return &vec_min($vec);
+	} elsif ($func eq 'max') {
+		return &vec_max($vec);
+	} else {
+		die "Unrecognized function to vec_eval in libstats.pl: the function was <$func>";
 	}
-	elsif($func eq 'entropy')
-	{
-		$result = &shannon_entropy($vec);
-	}
-	elsif($func eq 'min')
-	{
-		$result = &vec_min($vec);
-	}
-	elsif($func eq 'max')
-	{
-		$result = &vec_max($vec);
-	}
-
-	return $result;
+	return undef; # should never get here!
 }
 
 #---------------------------------------------------------
 # vec_std
 #---------------------------------------------------------
-sub vec_std
-{
+sub vec_std {
 	my ($vec) = @_;
-
 	my ($n, $Sx, $Sxx) = &vec_suff_stats($vec);
-
 	my $std = $n > 0 ?
 		$Sxx / $n - (($Sx / $n) * ($Sx / $n)) : "";
-
-	return sqrt($std);
+	return sqrt($std); # can return an empty string if n = 0!
 }
 
 #---------------------------------------------------------
 # shannon_entropy - returns the entropy in bits.
 #---------------------------------------------------------
-sub shannon_entropy
-{
+sub shannon_entropy {
 	my ($buckets) = @_;
-
 	my ($num, $total) = &vec_sum($buckets);
-
 	# The entropy, cross entropy, and K-L divergence
 	my ($entropy, $cross, $kl) = (-1, -1, -1);
-
-	if($total > 0)
-	{
+	if($total > 0) {
 		($entropy, $cross, $kl) = (0, 0, 0);
-
 		# Assume the background distribution is uniform.
 		my $q = 1 / $num;
-
 		my $log2 = log(2);
-
-		foreach my $p (@{$buckets})
-		{
+		foreach my $p (@{$buckets}) {
 			if(defined($p) and $p > 0)
 			{
 				$p /= $total;
@@ -1447,8 +1394,7 @@ sub mi (\$\$\%)
             $P_j_l = $l_count/$numCommonExp;
             $P_ij_kl = $kl_count/$numCommonExp;
             # make sure none of the probabilites are zero (in which case we would be adding zero, but perl would freak out about taking the log of zero).
-            unless ($P_ij_kl == 0)
-            {
+            if ($P_ij_kl != 0) {
                 $mi += $P_ij_kl*(log($P_ij_kl/($P_i_k*$P_j_l))/log(2)); 
             }
         }
@@ -1566,7 +1512,6 @@ sub binUsingShimazakiShinomoto {
 sub getShimazakiShinomotoJitter {
 	my ($counts, $delta) = @_;
 	my ($n,$mean,$stdev) = &vec_stats($counts);
-
 	if ($delta == 0.0) {
 	    print STDERR "libstats.pl: STDERR: Warning: 'getShimazakiShinomotoJitter(<N=$n, MEAN=$mean, STDEV=$stdev>, DELTA=$delta)' tried to use a delta of 0. This is not allowed---delta was set to 1.0 instead.\n";
 	    $delta = 1.0; # Don't allow division by zero, please!
@@ -1590,15 +1535,12 @@ sub getFreqsFromCounts {
 
 sub histogram {
 	my ($sorted_data, $bin_centers) = @_;
-
 	my $num_data = scalar(@{$sorted_data});
 	my $num_bins = scalar(@{$bin_centers});
-
 	my @counts;
 	for(my $i = 0; $i < $num_bins; $i++) {
 		$counts[$i] = 0;
 	}
-
 	# The index b denotes the current bin.
 	my $b = 0;
 	for (my $i = 0; $i < $num_data; $i++) {
@@ -1613,14 +1555,6 @@ sub histogram {
 	return \@counts;
 }
 
-sub getAbsDifference {
-	# why would anyone ever use this function?
-	die "Are you actually using getAbsDifference in libstats.pl? If so, you can remove this line. Although I would say you should just use abs(x - y). Otherwise this function is deprecated! --Alex \n";
-	my ($x, $y) = @_;
-	my $distance = abs($x-$y);
-	return $distance;
-}
-
 sub getEqualWidthBinCenters {
 	my ($sorted_data,$n) = @_;
 
@@ -1629,9 +1563,7 @@ sub getEqualWidthBinCenters {
 	my $width = ($max - $min) / $n;
 
 	my @bin_centers;
-
 	$bin_centers[0] = $min + ($width * 0.5);
-
 	for(my $i = 1; $i < $n; $i++) {
 		$bin_centers[$i] = $bin_centers[$i-1] + $width; 
 	}
