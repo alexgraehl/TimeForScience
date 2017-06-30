@@ -634,6 +634,15 @@ function maczip {
     fi
 }
 
+
+function xztar {
+    # Tar and xzip in one place so you don't have to remember the syntax. Yeah, or you could just remember the syntax!
+    if [[ "$#" != 1 ]]; then echo "xztar can only accept ONE argument! One directory or file to tar/xz."; exit 1; fi
+    OUTNAME=$(basename $1).tar.xz
+    echo "Note that xztar is incredibly slow! So be prepared for it to take forever. Creating this archive: $OUTNAME"
+    time tar --xz -cvf "$OUTNAME" "$1"
+}
+
 ## Mini is a function that creates a .bz2 archive of whatever you pass into it.
 ## It works in a manner similar to right-clicking and zipping a file on the Mac.
 ## If you just pass it in ONE file named FILE, then the output filename is "FILE.tar.bz2" .
