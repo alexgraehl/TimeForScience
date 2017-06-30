@@ -142,7 +142,7 @@ alias cheat="echo \
 \">> Find all .R files in a directory:   find ./ -name \\\"*.R\\\" -exec ls \'{}\' \\\; \" ${NL}\
 \">> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
 \" \" ${NL}\
-\">> BASH script header (4 lines): #!/bin/bash -u   __NEWLINE__   set -e    __NEWLINE__   set -o pipefail  __NEWLINE__ set -o xtrace \" ${NL}\
+\">> BASH script header (5 lines): #!/bin/bash -u __NEWLINE__ set -e __NEWLINE__ set -o pipefail __NEWLINE__ set -o xtrace __NEWLINE__ shopt -s nullglob \" ${NL}\
 \">> BASH: Literal tab: \$'\\t' (example: join -t \$'\\t' to join on tabs) or \\\$(echo -en '\\t') . In MAKE: printf '\\t' \" ${NL}\
 \">> SH  : Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
 \" \" ${NL}\
