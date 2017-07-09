@@ -307,7 +307,8 @@ alias cheat="echo \
 \">> RNASEQ TOPHAT/rename TEST: for f in *; do echo \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
 \">> RNASEQ TOPHAT/rename RUN : for f in *; do   mv \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
 \">> RNASEQ: Truncate a fastq file to length 19 without using fastx-trimmer: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
-\">> DNA pair-wise similarity for all sequences in a fasta file:   makeblastdb -in REF.fa -db nucl  &&  blastn -outfmt 6 -db REF.fa -query REF.fa -out results.out \" ${NL}\
+\">> BLAST: DNA pair-wise similarity for all sequences in a fasta file:   makeblastdb -in REF.fa -db nucl  &&  blastn -outfmt 6 -db REF.fa -query REF.fa -out results.out \" ${NL}\
+\">> BLAST: extract DATABASE sequences back to FASTA: In the directory with database files starting with the prefix 'nt_your_prefix_whatever', blastdbcmd -db nt_your_prefix_whatever -entry all -out - | gzip > all_sequences.fasta  \" ${NL}\
 \">> DNA reverse-complement: perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
 \">> APACHE error log: sudo less -S /var/log/apache2/error.log \" ${NL}\
 \">> MacOS DNS woes: sudo dscacheutil -flushcache \" ${NL}\
