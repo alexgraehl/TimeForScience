@@ -182,7 +182,7 @@ export PROMPT_COMMAND='history -a' ## save ALL terminal histories
 #    debian_chroot=$(cat /etc/debian_chroot)
 #fi
 
-#PS1="[\D{%e}=\t \h:\W]$ "
+
 
 highlight_text() { # prints colored text apparently. One argument, which is the color setting. 1 = red, 2 = green... etc
     if [ -x /usr/bin/tput ]; then tput bold; tput setaf $1; fi
@@ -201,11 +201,15 @@ print_if_nonzero_exit_code() { # Example of using this in your prompt: PS1='$(hi
 } 
 
 parse_git_branch() { # Shows the current 'git' branch if you're in a git-controlled directory
-     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/[\1]/'
 }
 
+#PS1="[\D{%e}=\t \h:\W]$ "
+
 #export PS1="\u@\h \[\033[32m\]\w\[\033[33m\]\$(parse_git_branch)\[\033[00m\] $ "
-export PS1="${COMPYNAME:0:3}\[\033[32m\]\w\[\033[33m\]\$(parse_git_branch)\[\033[00m\] $ "
+#export PS1="\t ${COMPYNAME:0:3}\[\033[32m\]\w\[\033[33m\]\$(parse_git_branch)\[\033[00m\] $ "
+#export PS1="\t\[\033[32m\]\[\033[33m\]\$(parse_git_branch)\[\033[00m\]"
+export PS1="\033[34m\]\t\[\033[32m\]\[\033[33m\]\$(parse_git_branch)\[\033[00m\]"
 #export PS1="\$(print_if_nonzero_exit_code)\n[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
 # Note: requires a "\n" after the "print_if_nonzero" or else Ctrl-A / Ctrl-E gets messed up when pasting
 
@@ -214,7 +218,7 @@ RIGSAND_HOSTNAME=${RIGSAND_HOSTNAME:-no_sandbox_hostname} # bash, assign a DEFAU
 case "$COMPYNAME"
 in
     mac*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1
-	export PS1="${PS1/\$ }[LOCAL_MAC] $ " # prepend "compute node" to it
+	export PS1="${PS1/\$ }\033[36m\]*mac$\033[00m\] " # prepend "compute node" to it
 	;;
     $RIGNODE_HOSTNAME*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1
 	export PS1="${PS1/\$ }[COMPUTE_NODE] $ " # prepend "compute node" to it
@@ -223,6 +227,7 @@ in
 	export PS1="${PS1/\$ }[SANDBOX] $ " # prepend "compute node" to it
 	;;
     *) ## Otherwise...
+	export PS1="${PS1/\$ }[$COMPYNAME] $ " # prepend "compute node" to it
 	;;
 esac
 
