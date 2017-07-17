@@ -154,7 +154,7 @@ shopt -s checkwinsize # Check the window size after each command and, if necessa
 shopt -s cdspell ## Fix obvious typeos in directory names when "cd"-ing
 shopt -s cmdhist ## Save multi-line pasted commands into one single history command
 #shopt -s lithist ##
-shopt -s no_empty_cmd_completion ## Don't display ALL commands on an empty-line tab
+#shopt -s no_empty_cmd_completion ## Don't display ALL commands on an empty-line tab
 shopt -s nocaseglob ## Match glob / regexp in case-insensitive fashion
 set   -o noclobber    # Prevent file overwrite on stdout redirection. Override with ">|", e.g. echo 'a' >| file_that_exists
 shopt -s histappend # Save terminal history between sessions

@@ -78,9 +78,7 @@ my $numUnprocessedArgs = scalar(@ARGV);
 my @files = @ARGV;
 my ($file1,$file2) = ($files[0], $files[1]);
 
-if ($numUnprocessedArgs >= 3) {
-	(defined($multiJoinType) and lc($multiJoinType) =~ m/^(u)/) or quitWithUsageError("[ERROR]: If you want to join up three or more files, you currently have to specify '--multi' on the command line. This is because the semantics and output are DIFFERENT for multi-joining! You must specify --multi==union (or '--multi=u'). Intersection may be supported in the future, but is not currently supported.");
-}
+if ($numUnprocessedArgs >= 3) { (defined($multiJoinType) and $multiJoinType =~ m/(u|i|int?e?r?s?e?c?t?i?o?n?|union)/i) or quitWithUsageError("[ERROR]: If you want to join up three or more files, you currently have to specify '--multi' on the command line. This is because the semantics and output are DIFFERENT for multi-joining! You must specify --multi='union' (or '--multi=u'). You instead specified: --multi=$multiJoinType."); }
 
 ## ================ SET SOME DEFAULT VALUES ============================
 if (defined($delimBoth)) { # If "delimBoth" was specified, then set both of the input delimiters accordingly.
@@ -238,16 +236,23 @@ sub joinedUpOutputLine($$$$$$$$) {
 	}
 }
 
-sub handleMultiJoin($$) {
-	my ($keycol, $filenameArrPtr) = @_;
+sub handleMultiJoin($$$) {
+	my ($keycol, $filenameArrPtr, $mergeType) = @_;
 	($keycol != 0) or die "Keycol can't be 0 -- it's indexed with ONE as the first element.";
 	my %datHash               = (); # this stores all the lines, and gets very large. Key = filename, value = hash with a second key = line key, value = array of data on that line
 	my %longestLineInFileHash = (); # key = filename, value = how long the longest line in that file is
 	my %keysHash              = (); # key = the keys seen in ALL files, value = (nothing useful)
+	($mergeType =~ m/(union|intersect)/i) or die "Programming error: multi-intersection type must be 'intersect' or 'union'! But it was this: $mergeType";
 	my $filenameHeaderDelim = "::"; # example:  "Filename1::headerCol1   Filename2::headerCol2"
 	my $na = (defined($stringWhenNoMatch)) ? $stringWhenNoMatch : ""; # use a blank value if (global) $stringWhenNoMatch is not defined
 	my %headHash = ();
+
+	my $is_intersection = ($mergeType eq 'intersect');
+	my %numFilesWithKeyHash = (); # Counts the number of files that we saw this line in. Only used if this is an intersection and not a union
+	my $numFilesOpened = 0;
 	foreach my $filename (@$filenameArrPtr) {
+		$numFilesOpened++; # ok, remember that we read a file
+		#my %keysSeenAlreadyInThisFile = ();
 		%{$datHash{$filename}} = (); # new hash value is an ARRAY for this
 		@{$headHash{$filename}} = (()x$numHeaderLines); # it's one array element per line
 		$longestLineInFileHash{$filename} = 0; # longest line is length 0 to start...
@@ -262,16 +267,35 @@ sub handleMultiJoin($$) {
 			chomp($line);
 			my @s = split($delim1, $line, $SPLIT_WITH_TRAILING_DELIMS); # split up the line
 			my $key;
+
+			# ========= Get the key and the rest of the line =======
 			my @valArr;
 			if (scalar(@s) < $keycol) {
 				$key = "";  # totally blank line maybe? Or at least, no key.
 				@valArr = ();
 			} else {
-				$key = $s[($keycol-1)];
-				my ($lo, $hi) = ($keycol, scalar(@s)-1);
+				$key = $s[($keycol-1)];  # get the correct key, since it might not be the first column, I guess!
+				my ($lo, $hi) = ($keycol, scalar(@s)-1); # hmmmm
 				#print "Lo = $lo, hi = $hi\n";
-				if ($lo <= $hi) { @valArr = @s[$lo..$hi] } else { @valArr = (); }
+				if ($lo <= $hi) { @valArr = @s[$lo..$hi] } else { @valArr = (); } # no clue what this does anymore
 			}
+			
+			# ========= Code specifically for dealing with INTERSECTION ==========
+			#if ($is_intersection) {
+			#	if ($numFilesOpened == 1) {
+			#		# This is the FIRST FILE, so anything in it is legitimate
+			#		$numFilesWithKeyHash{$key} = 1; # remember that we saw this key in the first file -- it's OK so far!
+			#	} else {
+			#		if (exists($numFilesWithKeyHash{$key})) {
+			#			if (exists($keysSeenAlreadyInThisFile{$key})) { die "Unfortunately, intersection cannot elegantly cope with DUPLICATE keys in a single file! We saw this key multiple times in one file: $key"; }
+			#			$keysSeenAlreadyInThisFile{$key} = 1;
+			#			$numFilesWithKeyHash{$key}++; # ok, this line was seen in the first file, so keep incrementing it...
+			#		} else {
+			#			# This key wasn't seen in this file, so DO NOT save it! Next line please!
+			#			next; # next line please!
+			#		}
+			#	}
+			#}
 
 			# Note: line length does NOT include the key as an element. So it can be zero!
 			if (scalar(@valArr)>$longestLineInFileHash{$filename}) { $longestLineInFileHash{$filename} = scalar(@valArr); }
@@ -301,16 +325,31 @@ sub handleMultiJoin($$) {
 	}
 
 	foreach my $k (sort(keys(%keysHash))) {
-		my @L = ($k); # output line. starts with just the key and nothing else
+
+		# ========== See if the key is in EVERY SINGLE file, but only if we are computing an intersection! ======
+		if ($is_intersection) {
+			my $numFilesWithKey = 0;
+			foreach my $filename (@$filenameArrPtr) {
+				if (exists($datHash{$filename}{$k})) { # see if this filename/key combination exists!
+					$numFilesWithKey++;
+				}
+			}
+			if ($numFilesWithKey != $numFilesOpened) {
+				#print "Skipping key <$k>: it was only in $numFilesWithKey files of $numFilesOpened, so we are skipping it for the intersection.\n";
+				next;
+			}
+		}
+
+		my @outLine = ($k); # output line. starts with just the key and nothing else
 		foreach my $filename (@$filenameArrPtr) {
 			if (exists($datHash{$filename}{$k})) {
 				my $numElemsToPad = $longestLineInFileHash{$filename} - scalar(@{$datHash{$filename}{$k}});
-				push(@L, @{$datHash{$filename}{$k}}, ($na)x$numElemsToPad);
+				push(@outLine, @{$datHash{$filename}{$k}}, ($na)x$numElemsToPad);
 			} else {
-				push(@L, ($na)x$longestLineInFileHash{$filename});
+				push(@outLine, ($na)x$longestLineInFileHash{$filename});
 			}
 		}
-		print join($outputDelim, @L), "\n"; # <-- somehow this results in "uninitialized value" warning sometimes...
+		print join($outputDelim, @outLine), "\n"; # <-- somehow this results in "uninitialized value" warning sometimes...
 	}
 }
 # ========================== MAIN PROGRAM HERE
@@ -322,7 +361,9 @@ if ($multiJoinType) {
 	(not $shouldReverse) or quitWithUsageError("For multi-joining, reversal of output order is not supported. Remove --rev from the command line!");
 	(not $shouldNegate) or quitWithUsageError("For multi-joining, negation is not supported. Remove --neg / -v from the command line!");
 	(not $preserveKeyOrder) or quitWithUsageError("For multi-joining, preserving key order is not supported. Remove --no-reorder-key (--nrk) from the command line!");
-	handleMultiJoin($keyCol1, \@files);
+	if ($multiJoinType =~ /^i/) {	 handleMultiJoin($keyCol1, \@files, 'intersect'); }
+	elsif ($multiJoinType =~ /^u/) { handleMultiJoin($keyCol1, \@files, 'union'); }
+	else { die "Invalid multi-join type."; }
 } else {
 	my %hash2 = ();
 	my %originalCaseHash = (); # Hash: key = UPPER CASE version of key, value = ORIGINAL version of key
@@ -493,6 +534,8 @@ For multi-joining only:
 
   --multi=union:  Run a multi-file join. Different engine and behaviors from 2-files-only joining. Beware!
 
+  --multi=intersect: Run a multi-file join and ONLY report the intersection.
+  
   
 -neg: Negate output -- print keys that are in FILE1 but not in FILE2.
         These keys are the same ones that would be left out of the join,
