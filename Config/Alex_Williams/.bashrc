@@ -222,7 +222,7 @@ UNDERLINE=$(tput smul)
 
 #PS1="[\D{%e}=\t \h:\W]$ "
 # Note: all color sequence escapes must be surrounded by \[ ... \]. So all instances of \e must have \[ before them, or line wrap will break. See this: https://stackoverflow.com/questions/342093/ps1-line-wrapping-with-colours-problem . More specifically: "terminal escapes should be surrounded by \[ \] in order for bash to be able to correctly count printing characters to the beginning of the line. "
-export PS1="${BRIGHT}${BLUE}\t${MAGENTA}\$(parse_git_branch)${NORMAL}"
+export PS1="\[${BRIGHT}\]\[${BLUE}\]\t\[${MAGENTA}\]\$(parse_git_branch)\[${NORMAL}\]"
 #export PS1="\$(print_if_nonzero_exit_code)\n[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
 # Note: requires a "\n" after the "print_if_nonzero" or else Ctrl-A / Ctrl-E gets messed up when pasting
 
@@ -231,7 +231,7 @@ RIGSAND_HOSTNAME=${RIGSAND_HOSTNAME:-no_sandbox_hostname} # bash, assign a DEFAU
 case "$COMPYNAME"
 in
     mac*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1, if any
-	export PS1="${PS1}${POWDER_BLUE}.mac\$${NORMAL} " # we are on a mac laptop probably
+	export PS1="${PS1}\[${POWDER_BLUE}\].mac\$\[${NORMAL}\] " # we are on a mac laptop probably
 	;;
     $RIGNODE_HOSTNAME*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1
 	export PS1="${PS1/\$ }[COMPUTE_NODE] $ " # prepend "compute node" to it
