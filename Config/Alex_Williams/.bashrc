@@ -205,11 +205,8 @@ parse_git_branch() { # Shows the current 'git' branch if you're in a git-control
 }
 
 #PS1="[\D{%e}=\t \h:\W]$ "
-
-#export PS1="\u@\h \[\033[32m\]\w\[\033[33m\]\$(parse_git_branch)\[\033[00m\] $ "
-#export PS1="\t ${COMPYNAME:0:3}\[\033[32m\]\w\[\033[33m\]\$(parse_git_branch)\[\033[00m\] $ "
-#export PS1="\t\[\033[32m\]\[\033[33m\]\$(parse_git_branch)\[\033[00m\]"
-export PS1="\033[34m\]\t\[\033[32m\]\[\033[33m\]\$(parse_git_branch)\[\033[00m\]"
+# Note: all color sequence escapes must be surrounded by \[ ... \]. So all instances of \e must have \[ before them, or line wrap will break. See this: https://stackoverflow.com/questions/342093/ps1-line-wrapping-with-colours-problem . More specifically: "terminal escapes should be surrounded by \[ \] in order for bash to be able to correctly count printing characters to the beginning of the line. "
+export PS1="\[\e[34m\]\t\[\e[33m\]\$(parse_git_branch)\[\e[00m\]"
 #export PS1="\$(print_if_nonzero_exit_code)\n[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
 # Note: requires a "\n" after the "print_if_nonzero" or else Ctrl-A / Ctrl-E gets messed up when pasting
 
@@ -217,8 +214,8 @@ RIGNODE_HOSTNAME=${RIGNODE_HOSTNAME:-no_rignode_hostname} # bash, assign a DEFAU
 RIGSAND_HOSTNAME=${RIGSAND_HOSTNAME:-no_sandbox_hostname} # bash, assign a DEFAULT value if the argument is not defined
 case "$COMPYNAME"
 in
-    mac*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1
-	export PS1="${PS1/\$ }\033[36m\]*mac$\033[00m\] " # prepend "compute node" to it
+    mac*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1, if any
+	export PS1="${PS1}\[\e[36m\].mac$\[\e[00m\] " # we are on a mac laptop probably
 	;;
     $RIGNODE_HOSTNAME*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1
 	export PS1="${PS1/\$ }[COMPUTE_NODE] $ " # prepend "compute node" to it
