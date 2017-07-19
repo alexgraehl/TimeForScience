@@ -5,8 +5,12 @@
 # set -euo pipefail
 # IFS=$'\n\t'
 # ---------------------
-#if [ -f ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config ]; then
-#    source ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config
+if [ -f ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config ]; then
+    source ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config
+elif [ -f ~/.aliases-server-config ]; then
+    source ~/.aliases-server-config
+fi
+
 if [ -f ~/.local-config-no-git ]; then
     source ~/.local-config-no-git
 else
