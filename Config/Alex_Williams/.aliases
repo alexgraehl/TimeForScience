@@ -528,6 +528,8 @@ alias wesx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${WES_IP}'
 alias rig=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${RIG_IP}'
 alias rigx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
 
+alias beef='ssh ${AGW_SSH_OPTIONS} -i ${BEEFY_PEM} ${BEEFY_U}@${BEEFY_IP}'
+
 alias agwcom='ssh ${AGW_SSH_OPTIONS}   ${AGWCOM_USERNAME}@${AGWCOM_URL}'
 
 RIG_SAND_IP=${RIG_IP/./-sandbox.} # add "-sandbox" before the first dot
