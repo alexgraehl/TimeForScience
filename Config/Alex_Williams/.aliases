@@ -1,5 +1,7 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
+alias narwhal="ssh -i ~/Documents/amazon/UN_Ultimate_Narwhal_2017_07.pem ubuntu@ec2-54-89-39-205.compute-1.amazonaws.com"
+
 # ---------------------
 # "Unofficial bash strict mode: " #!/bin/bash
 # set -euo pipefail
