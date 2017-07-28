@@ -82,27 +82,32 @@ my $tab = " " x length("$pn: "); # "tab" is just the number of spaces in the pro
 sub printComplaintAboutFile($$$) {
     my ($aboutWhat, $why, $color) = @_;
     chomp($why);
-    if ($outputIsColorTerminal) { print STDOUT color($color); }
-    print STDOUT ("$pn: Not deleting \"$aboutWhat\": " . $why . "\n");
-    if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+    if ($outputIsColorTerminal) { print STDERR color($color); }
+    print STDERR ("$pn: Not deleting \"$aboutWhat\": " . $why . "\n");
+    if ($outputIsColorTerminal) { print STDERR color("reset"); }
 }
 
 sub fatalExit($$)   { printComplaintAboutFile($_[0], $_[1], "red"); exit(1); }
 sub complainAboutFile($$) { return(printComplaintAboutFile($_[0], $_[1], "yellow")); }
+sub complain($) {
+	if ($outputIsColorTerminal) { print STDERR color("yellow"); }
+	print STDERR $_[0];
+	if ($outputIsColorTerminal) { print STDERR color("reset"); }
+}
 
 sub printInfo($) {
     my ($info) = @_;
     chomp($info);
-    if ($outputIsColorTerminal) { print STDOUT color("green"); }
-    print STDOUT ("$pn: $info\n");
-    if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+    if ($outputIsColorTerminal) { print STDERR color("green"); }
+    print STDERR ("$pn: $info\n");
+    if ($outputIsColorTerminal) { print STDERR color("reset"); }
 }
 
 # ========================================================================
 
 (scalar(@ARGV) > 0) or die "$pn needs at least one argument--the file(s) to delete. It works in a similar fashion to *rm*.\nUsage: $pn file1 file2 file3 ...\n\n";
 
-print STDOUT (qq{-} x 80) . "\n";
+print STDERR (qq{-} x 80) . "\n";
 
 if (not (-d ${TRASH_ROOT})) {
     printInfo(qq{Making new trash directory: \"${TRASH_ROOT}\"});
@@ -124,10 +129,9 @@ foreach my $itemToCheck (@ARGV) {
 	or ($itemToCheck =~ /^[.\/]*$HOME[.\/]+System.*/i) ## protect *any* subdirectory of these
 	or ($itemToCheck =~ /^[.\/]*$HOME[.\/]+(Desktop|Library|Documents)[.\/]*$/i)
 	or ($itemToCheck =~ /^[.\/]*(Applications|sbin|bin|boot|dev|etc|lib|mnt|opt|sys|usr|var)[.\/]*$/i)
-	or ($itemToCheck =~ /^[-]*(fr|rf|r|f)$/i) ## assume that r / f in either combination, with our without the hyphen(s) is a mistake since trash.pl doesn't take -rf operators.
 	) {
-	fatalExit($itemToCheck, "removing this file seems potentially unsafe! $pn will not peform this operation! You can use /bin/rm if you REALLY want to remove it. Quitting.");
-    }    
+	    fatalExit($itemToCheck, "removing this file seems potentially unsafe! $pn will not peform this operation! You can use /bin/rm if you REALLY want to remove it. Quitting.");
+    }
     if (($itemToCheck =~ /^[.\/\\]+$/)) { ## any combination of just dots or slashes/backslashes, and nothing else
 	fatalExit($itemToCheck, "removing a file that is the current directory or is directly above the current directory is not something that $pn thinks is safe! $pn will not peform this operation! You can use /bin/rm if you REALLY want to remove it. Quitting.");
     }
@@ -143,6 +147,10 @@ foreach my $darg (@ARGV) {
     $darg =~ s|/+$||; # Remove any extraneous trailing slash(es) on any item to delete. Solves the problem of us deleting directories by following a symlink! Important; otherwise "rm SYMLINK/" removes the real directory instead of the symlink!
     my $isSymlink = (-l $darg);
 
+    if ($darg =~ m/^-[rf]/ && !$isSymlink && !(-e $darg)) { # If the argument starts with a hyphen AND it isn't a file or symlink, it's probably a mistaken attempt at a command line argument.
+	    complain("(Note that the -r and -f operators are not valid for trash.pl, so we are ignoring them.)\n");
+	    next;
+    }
     if ($darg =~ m/^-/ && !$isSymlink && !(-e $darg)) { # If the argument starts with a hyphen AND it isn't a file or symlink, it's probably a mistaken attempt at a command line argument.
 	complainAboutFile($darg, "it was not a filename, and it appears to have been intended as a command line switch, which $pn does not make any use of.");
 	next;
@@ -194,13 +202,13 @@ foreach my $darg (@ARGV) {
 	    ($index < $MAX_DUPE_FILENAMES) or fatalExit($delPath, "Error trying to rename this file to avoid overwriting an existing file with the same name that is already in the trash (there are too many files with the same name).\nYou should probably empty the trash.");
 	}
 
-	if ($outputIsColorTerminal) { print STDOUT color("yellow"); }
-	print STDOUT "$pn: There was already a file in the trash named\n";
-	print STDOUT qq{${tab}${failedMoveAttempt}\n};
-	print STDOUT qq{${tab}so \"};
-	print STDOUT qq{${trashDupeSuffix}.${index}};
-	print STDOUT qq{\" was appended to this filename before it was trashed.\n};
-	if ($outputIsColorTerminal) { print STDOUT color("reset"); }
+	if ($outputIsColorTerminal) { print STDERR color("yellow"); }
+	print STDERR "$pn: There was already a file in the trash named\n";
+	print STDERR qq{${tab}${failedMoveAttempt}\n};
+	print STDERR qq{${tab}so \"};
+	print STDERR qq{${trashDupeSuffix}.${index}};
+	print STDERR qq{\" was appended to this filename before it was trashed.\n};
+	if ($outputIsColorTerminal) { print STDERR color("reset"); }
     }
 
 
@@ -235,6 +243,6 @@ foreach my $darg (@ARGV) {
 }
 
 if ($numItemsDeleted > 0) {
-    print STDOUT qq{$pn: Note: the trash directory will be auto-deleted every reboot, without notification.\n};
-    print STDOUT (qq{-} x 80) . "\n";
+    print STDERR qq{$pn: Note: the trash directory will be auto-deleted every reboot, without notification.\n};
+    print STDERR (qq{-} x 80) . "\n";
 }
