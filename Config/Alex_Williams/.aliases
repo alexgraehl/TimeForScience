@@ -298,6 +298,7 @@ alias cheat="echo \
 \">> Convert SAM to BAM with QPLZ:  for SSS in **/*.sam; do qplz --background \\\"samtools view -bS \\\$SSS > \\\${SSS/.sam}.bam\\\" ; done \" ${NL}\
 \">> SEQ: fastq2fasta (fq2fa, fastq -> fasta): zcat FQ.fq.gz | awk '{if(NR%4==1) {printf(\\\">%s\n\\\",substr(\\\$0,2));} else if(NR%4==2) print;}' > FASTA.fa \" ${NL}\
 \">> SEQ: bcl2fastq: NCPU=4; bcl2fastq --fastq-compression-level 5 --barcode-mismatches 1 --no-lane-splitting -r $NCPU -d $NCPU -p $NCPU -w $NCPU --sample-sheet 'THIS_MUST_BE_VALID_NOT_MAC_FORMAT.csv'  --runfolder-dir=WEIRDLY_NAMED_160_NB01415_ABCDQBXX   (output goes to Data/Intensities/BaseCalls/*.fastq.gz) \" ${NL}\
+\">> FASTQ/FASTA subsample 500 reads randomly. Use -s1234 (random seed) so you can get the same reads in paired-end situations: seqtk sample -s1234 read1.fq.gz 500 | gzip > sub1.fq.gz \" ${NL}\
 \">> RNASEQ SAM --> BAM:  samtools view -bS in.sam > out.bam \" ${NL}\
 \">> RNASEQ BAM --> SAM:  samtools view -h  in.bam > out.sam \" ${NL}\
 \">> RNASEQ samtools view first read of pair only:  samtools view -f  64 file.bam \" ${NL}\
