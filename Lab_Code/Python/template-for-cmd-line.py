@@ -5,7 +5,7 @@ Note: we use the 'optparse' module to parse command line arguments, becuase the 
 A python program.
 '''
 
-#from __future__ import print_function
+from __future__ import print_function
 from __future__ import division
 
 import sys
@@ -32,14 +32,14 @@ def handleCommandLineOptions():
     (globalOptions, globalArgs) = parser.parse_args()
 
     #pdb.set_trace()
-    print "There were this many named command line arguments (including DEFAULT values that were not specified by the user): " + str(len(globalOptions.__dict__))
+    print("There were this many named command line arguments (including DEFAULT values that were not specified by the user): " + str(len(globalOptions.__dict__)))
     for attr, value in globalOptions.__dict__.iteritems():
-        print "   Argument <" + attr + "> = " + str(value)
+        print("   Argument <" + attr + "> = " + str(value))
         pass
 
-    print "There were also this many un-parsed command line arguments: " + str(len(globalArgs))
+    print("There were also this many un-parsed command line arguments: " + str(len(globalArgs)))
     for item in globalArgs:
-        print "   Un-parsed command line argument: " + item
+        print("   Un-parsed command line argument: " + item)
         pass
 
 
@@ -55,25 +55,26 @@ def handleCommandLineOptions():
 
 # Must come at the VERY END!
 if __name__ == "__main__":
-    print "Getting ready to handle command line arguments..."
+    print("Getting ready to handle command line arguments...")
     handleCommandLineOptions()
-    print "Handled the command line arguments!"
-    print("Here is the value for globalOptions.filename: " + globalOptions.filename)
+    print("Handled the command line arguments!")
+    print("Here is the value for globalOptions.filename: " + str(globalOptions.filename))
     print("Note that that the global variable containing that attribute CANNOT BE MODIFIED unless you set 'global globalOptions' or 'global globalArgs' in the code below.")
     lineNum = 0
     try:
-        fff = open('some_file', 'r')
+        with open('some_file', 'r') as fff:
+            for line in fff:
+                lineNum += 1
+                ldelim = line.split("\t")
+                if (lineNum % 100 == 0):
+                    print("Writing every 100th line...")
+                    pass
+                pass # end 'for'
+            pass # end 'with'
     except:
-        raise
+        print("Failed to open the example test file. Normally we should re-raise this exception, probably.")
+        pass  #raise
 
-    for line in fff:
-        lineNum += 1
-        ldelim = line.split("\t")
-        if (lineNum % 1000 == 0):
-            print("Writing every 1000th line...")
-            pass
-        pass
-    fff.close()
     pass
 
 
