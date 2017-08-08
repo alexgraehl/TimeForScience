@@ -19,7 +19,7 @@ smartdecompress() {
 	*.bz2)	DECOMPRESSOR="bunzip2 -c" ;;
 	*)	DECOMPRESSOR="cat" ;;
     esac
-    $DECOMPRESSOR $1; # <-- this is what we pass into the relevant "smart" function below
+    $DECOMPRESSOR "$1"; # <-- this is what we pass into the relevant "smart" function below. Note that the quotes ("$1") are crucial for handling files with spaces.
 }
 
 #STO="\033[1m" # start color... not useful?
@@ -34,9 +34,9 @@ basecolor() {
     ## Assumes that you pass something INTO it via a pipe -- otherwise it fails
     ## Example:  cat myfile | sed 's/1/2/' | basecolor 
     #sed -e 's/\(AA*\)/\1'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
-    perl ${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_extra_bamfile_coloration.pl
+    perl "${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_extra_bamfile_coloration.pl"
     #sed -e 's/A/'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
-
+    # todo: replace me
     # Colorize based on entire blocks of identical characters. Turns out not to be any faster, unfortunately!
     #sed -e 's/\(AA*\)/'"$(printf $STA)"'\1'"$(printf $RES)"'/g' -e 's/\(CC*\)/'"$(printf $STC)"'\1'"$(printf $RES)"'/g' -e 's/\(GG*\)/'"$(printf $STG)"'\1'"$(printf $RES)"'/g' -e 's/\(TT*\)/'"$(printf $STT)"'\1'"$(printf $RES)"'/g' -e 's/\(NN*\)/'"$(printf $STN)"'\1'"$(printf $RES)"'/g'
 }
