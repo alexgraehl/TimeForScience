@@ -184,7 +184,7 @@ foreach my $darg (@ARGV) {
     ($isSymlink or ((-e $delPath) and (-r $delPath))) or fatalExit($delPath, "it was not possible to get the full path to this file, as it appears not to exist (or possibly is unreadable). For non-symlinks, we REQUIRE that the file exists and is readable if we are going to try to throw it away.");
 
     #                vvvv This list below is of the SAFE characters. \w is alphanumeric "word" characters.
-    ($delPath =~ m/^[-\/\\\w .,;:\!\@\#\&\(\)\{\}\[\]=]+$/) or fatalExit($delPath, "it had certain 'unsafe' characters that we did not know how to handle. That might be bad news, so we are just going to abort. Try using the real version of 'rm' in /bin/rm in this case.\n");
+    ($delPath =~ m/^[-~\/\\\w .,;:\!\@\#\&\(\)\{\}\[\]=]+$/) or fatalExit($delPath, "it had certain 'unsafe' characters that we did not know how to handle. That might be bad news, so we are just going to abort. Try using the real version of 'rm' in /bin/rm in this case.\n");
 
     my $index = 1;
     my $trashDupeSuffix = qq{.trash_dupe};
