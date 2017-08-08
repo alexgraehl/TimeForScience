@@ -42,22 +42,23 @@ basecolor() {
 }
 
 lesspipe() {
-    case "$1" in
-	*.[1-9n]|*.man|*.[1-9n].bz2|*.man.bz2|*.[1-9].gz|*.[1-9]x.gz|*.[1-9].man.gz) ## <--- For viewing multi-part archives!
-	    case "$1" in
-		*.gz)	DECOMPRESSOR="gzip  -dc" ;;
-		*.bz2)	DECOMPRESSOR="bzip2 -dc" ;;
-		*)	DECOMPRESSOR="cat" ;;
-	    esac
-	    if $DECOMPRESSOR -- "$1" | file - | grep -q troff; then
-		if echo "$1" | grep -q ^/; then	# absolute path
-		    man -- "$1" | cat -s
-		else
-		    man -- "./$1" | cat -s
-		fi
-	    else
-		$DECOMPRESSOR -- "$1"
-	    fi ;; ## <-- Done with the "multi-part archive" part
+    case "$1" in # this handles MULTI-PART ARCHIVES, which are basically never seen ever, but here we are
+#	*.[1-9n]|*.man|*.[1-9n].bz2|*.man.bz2|*.[1-9].gz|*.[1-9]x.gz|*.[1-9].man.gz) ## <--- For viewing multi-part archives!
+#	    case "$1" in
+#		*.gz|*.gzip) DECOMPRESSOR="gzip  -dc" ;;
+#		*.bz2)	     DECOMPRESSOR="bzip2 -dc" ;;
+#		*.xz)	     DECOMPRESSOR="xz    --decompress --stdout" ;;
+#		*)	     DECOMPRESSOR="cat" ;;
+#	    esac
+#	    if $DECOMPRESSOR -- "$1" | file - | grep -q troff; then
+#		if echo "$1" | grep -q ^/; then	# absolute path
+#		    man -- "$1" | cat -s
+#		else
+#		    man -- "./$1" | cat -s
+#		fi
+#	    else
+#		$DECOMPRESSOR -- "$1"
+#	    fi ;; ## <-- Done with the "multi-part archive" part
   # Alex: CHANGED from default lesspipe: Now we load any files ending in
   # .tab or .matrix (including gzipped files) and run them through
   # "sheet.pl", which will format them as a quasi-spreadsheet with
@@ -65,7 +66,7 @@ lesspipe() {
   # by just changing the delimiter used by sheet.pl
   # For a faster but less feature-filled
   #  UNIX-tool-only version of this, instead of "sheet.pl", use "column -t -s '	'"
-	*.tab.gz|*.matrix.gz) gunzip -c "$1" | sheet.pl --notify --color="always" ;;
+	*.tab.gz|*.matrix.gz) smartdecompress "$1" | sheet.pl --notify --color="always" ;;
 	*.tab|*.matrix) sheet.pl --notify --color="always" "$1" ;; # Maybe should use sheet.py instead?
 	
 	*.bai) echo "******** NOT THE ACTUAL CONTENTS OF THE FILE *********" ;
@@ -79,8 +80,16 @@ lesspipe() {
 		   echo -e "ERROR: LESSPIPE_ADVANCED CANNOT VIEW THIS FILE, BECAUSE 'samtools' IS NOT INSTALLED or CANNOT BE FOUND.\nPlease install samtools (or make sure it is on your path and can be executed) and try again!"
 	       fi ;;
 	###########	*.bam) echo '######\n### Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format ###\n######' ; samtools view -h "$1" | sed 's/A/'"$(printf '\033[1mA\033[0m')"'/g' ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
-	*.sam|*.sam.gz|*.sam.bz2|*.dna.txt|*.rna.txt|*.dna.txt.gz|*.rna.txt.gz|*.seq.gz|*.seq.txt|*.seq.txt.gz|*.seq|*.fasta|*.fasta.gz|*.fasta.bz2|*.fastq|*.fastq.gz|*.fastq.bz2|*.fa|*.fa.gz|*.fa.bz2|*.fq|*.fq.gz|*.fq.bz2) smartdecompress "$1" | basecolor ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
-
+	*.f[aq].gz\
+|*.f[aq].bz2\
+|*.f[aq].xz\
+|*.fast[aq].gz\
+|*.fast[aq].bz2\
+|*.fast[aq].xz\
+|.sam|*.sam.gz|*.sam.bz2|*.sam.xz\
+|*.seq|*.seq.gz|*.seq.bz2|*.seq.xz\
+|*.seq.txt|*.seq.txt.gz|*.seq.txt.bz2\
+) smartdecompress "$1" | basecolor ;; ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
 	*.tar) tar tvvf "$1" ;;
 	*.tgz|*.tar.gz|*.tar.[zZ]) tar tzvvf "$1" ;;
 	*.tar.bz2|*.tbz2) bzip2 -dc "$1" | tar tvvf - ;;
