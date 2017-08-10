@@ -33,6 +33,7 @@ my $SPLIT_WITH_TRAILING_DELIMS = -1; # You MUST specify this constant value of -
 my $MAX_DUPE_KEYS_TO_REPORT          = 10;
 my $MAX_WEIRD_LINE_LENGTHS_TO_REPORT = 10;
 my $MAX_BLANK_LINES_TO_REPORT        = 10;
+my $MAX_WHITESPACE_KEYS_TO_REPORT    = 50;
 my $MAX_MISSING_KEY_COLS_TO_REPORT   = 10;
 
 my $delim1            = $DEFAULT_DELIM; # input deilmiter for file 1
@@ -145,7 +146,8 @@ sub openSmartAndGetFilehandle($) {
 sub readIntoHash($$$$$) {
 	my ($filename, $theDelim, $keyIndexCountingFromOne, $masterHashRef, $origCaseHashRef) = @_;
 	my $numDupeKeys = 0;
-	my $lineNum = 1;
+	my $numWhitespaceKeysThisFileOnly = 0;
+	my $lineNum = 0;
 	#my $fileStr = smartSlurpFileIntoString($filename); # Yeah, load it all into one file. This is so we can handle the annoying mac-style '\r' files. Should probably have handled this with a unix pre-processing... oh well.
 	#($fileStr =~ m/\r/) and verboseWarnPrint("WARNING: The file <$filename> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNum)!\n         We are automatically REMOVING this malevolent character from the line, but be aware of this!");
 	#my @lines = split(/(?:\r\n|\r|\n)/, $fileStr); # Split over any kind of line ending: \n, \r, or \r\n (Windows).
@@ -178,11 +180,11 @@ sub readIntoHash($$$$$) {
 			verboseWarnPrint("Warning: skipping the empty key on line $lineNum of file <$filename>!");
 			next; # next iteration of the loop please!
 		}
-		($theKey !~ /\s/) or verboseWarnPrint("Warning: the key \"$theKey\" on line $lineNum of file <$filename> had *whitespace* in it. This is often unintentional, but is not necessarily a problem!");
+
+		($theKey !~ /\s/) or maybeWarnAboutWeirdness($numWhitespaceKeysThisFileOnly++, $MAX_WHITESPACE_KEYS_TO_REPORT, "on line $lineNum in file <$filename>, the key <$theKey> had *whitespace* in it. This is often unintentional, but is not necessarily a problem!");
 		
 		if (defined($masterHashRef->{$theKey})) {
-			maybeWarnAboutWeirdness($numDupeKeys, $MAX_DUPE_KEYS_TO_REPORT, "on line $lineNum, we saw a duplicate of key <$theKey> (in file <$filename>). We are only keeping the FIRST instance of this key.");
-			$numDupeKeys++;
+			maybeWarnAboutWeirdness($numDupeKeys++, $MAX_DUPE_KEYS_TO_REPORT, "on line $lineNum, we saw a duplicate of key <$theKey> (in file <$filename>). We are only keeping the FIRST instance of this key.");
 		} else {
 			# Found a UNIQUE new key! ($isDebugging) && print STDERR "Added a line for the key <$theKey>.\n";
 			# Key was valid, OR we are allowing empty keys!
@@ -354,6 +356,7 @@ sub handleMultiJoin($$$) {
 }
 # ========================== MAIN PROGRAM HERE
 
+
 if ($multiJoinType) {
 	# Ok, we are doing MULTI-joining. Otherwise, just the regular (full-featured) two-file joining
 	($keyCol1 == 1)     or quitWithUsageError("For multi-joining, you CANNOT use any key columns except -k 1 (or -1 1). The key must be the first column.");
@@ -370,7 +373,6 @@ if ($multiJoinType) {
 	my $originalCaseHashRef = ($shouldIgnoreCase) ? \%originalCaseHash : undef; # UNDEFINED if we aren't ignoring case
 	readIntoHash($file2, $delim2, $keyCol2, \%hash2, $originalCaseHashRef);
 	debugPrint("Read in this many keys: " . scalar(keys(%hash2)) . " from secondary file.\n");
-
 	my $lineNumPrimary     = 0;
 	my $primaryFH          = openSmartAndGetFilehandle($file1);
 	my $prevLineCount1     = undef;
@@ -378,6 +380,7 @@ if ($multiJoinType) {
 	my $numBlankLines      = 0;
 	my $numWeirdLengths    = 0;
 	my $numMissingKeyCols  = 0;
+	my $numWhitespaceKeys  = 0;
 	foreach my $line (<$primaryFH>) {
 		if ($lineNumPrimary % 2500 == 0) {
 			verboseUpdatePrint("Line $lineNumPrimary...");
@@ -393,24 +396,19 @@ if ($multiJoinType) {
 		}
 		#if(/\S/) { ## if there's some content that's non-spaces-only
 		my @sp1 = split($delim1, $line, $SPLIT_WITH_TRAILING_DELIMS); # split-up line
-		if (defined($prevLineCount1) and $prevLineCount1 != scalar(@sp1)) {
-			maybeWarnAboutWeirdness($numWeirdLengths, $MAX_WEIRD_LINE_LENGTHS_TO_REPORT, "the number of elements in file 1 ($file1) is not constant. Line $lineNumPrimary had this many elements: " . scalar(@sp1) . " (previous line had $prevLineCount1)");
-			$numWeirdLengths++;
-		}
+		(!defined($prevLineCount1) or $prevLineCount1==scalar(@sp1)) or maybeWarnAboutWeirdness($numWeirdLengths++, $MAX_WEIRD_LINE_LENGTHS_TO_REPORT, "the number of elements in file 1 ($file1) is not constant. Line $lineNumPrimary had this many elements: " . scalar(@sp1) . " (previous line had $prevLineCount1)");
 		$prevLineCount1 = scalar(@sp1);
 
 		my $thisKey;
 		if (scalar(@sp1) == 0) {
 			$thisKey = undef;
-			maybeWarnAboutWeirdness($numBlankLines, $MAX_BLANK_LINES_TO_REPORT, "line $lineNumPrimary was blank, so it had no key.");
-			$numBlankLines++;
+			maybeWarnAboutWeirdness($numBlankLines++, $MAX_BLANK_LINES_TO_REPORT, "line $lineNumPrimary was blank, so it had no key.");
 		} elsif (($keyCol1-1) >= scalar(@sp1)) {
 			$thisKey = undef;
-			maybeWarnAboutWeirdness($numMissingKeyCols, $MAX_MISSING_KEY_COLS_TO_REPORT, "line $lineNumPrimary was missing the key column. (Key column: $keyCol1, Columns on line: " . scalar(@sp1) . ").");
-			$numMissingKeyCols++;
+			maybeWarnAboutWeirdness($numMissingKeyCols++, $MAX_MISSING_KEY_COLS_TO_REPORT, "line $lineNumPrimary was missing the key column. (Key column: $keyCol1, Columns on line: " . scalar(@sp1) . ").");
 		} else {
 			$thisKey = $sp1[ ($keyCol1-1) ]; # index from ZERO here, that's why we subtract 1 from the key column
-			($thisKey !~ /\s/) or verboseWarnPrint("Warning: key \"$thisKey\" on line $lineNumPrimary of file 1 ($file1) had whitespace in it. This is possibly unintentional--beware!");
+			($thisKey !~ /\s/) or maybeWarnAboutWeirdness($numWhitespaceKeys++, $MAX_WHITESPACE_KEYS_TO_REPORT, "on line $lineNumPrimary in file <$file1>, the key <$thisKey> had *whitespace* in it. This is often unintentional, but is not necessarily a problem!");
 		}
 		
 		my @sp2;	# matching split-up line
