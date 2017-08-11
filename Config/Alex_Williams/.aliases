@@ -297,6 +297,7 @@ alias cheat="echo \
 \">> EMACS: show variable: describe-variable \" ${NL}\
 \" \" ${NL}\
 \">> Convert SAM to BAM with QPLZ:  for SSS in **/*.sam; do qplz --background \\\"samtools view -bS \\\$SSS > \\\${SSS/.sam}.bam\\\" ; done \" ${NL}\
+\">> FASTA remove linebreaks from sequence: cat file.fasta | awk '!/^>/{printf \\\"%s\\\", \\\$0; n=\\\"\n\\\"} /^>/{print n \\\$0; n=\\\"\\\"} END {printf\\\"%s\\\",n}' > out.fa \" ${NL}\
 \">> SEQ: fastq2fasta (fq2fa, fastq -> fasta): zcat FQ.fq.gz | awk '{if(NR%4==1) {printf(\\\">%s\n\\\",substr(\\\$0,2));} else if(NR%4==2) print;}' > FASTA.fa \" ${NL}\
 \">> SEQ: bcl2fastq: NCPU=4; bcl2fastq --fastq-compression-level 5 --barcode-mismatches 1 --no-lane-splitting -r $NCPU -d $NCPU -p $NCPU -w $NCPU --sample-sheet 'THIS_MUST_BE_VALID_NOT_MAC_FORMAT.csv'  --runfolder-dir=WEIRDLY_NAMED_160_NB01415_ABCDQBXX   (output goes to Data/Intensities/BaseCalls/*.fastq.gz) \" ${NL}\
 \">> FASTQ/FASTA subsample 500 reads randomly. Use -s1234 (random seed) so you can get the same reads in paired-end situations: seqtk sample -s1234 read1.fq.gz 500 | gzip > sub1.fq.gz \" ${NL}\
