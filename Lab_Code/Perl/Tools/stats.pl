@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+#@COMMENT@ stats.pl gives you count, sum, mean, and stdev for a column of data. If you want data organized by keys in column 1, use aggregate.pl instead. Frequency-of-use rating: 4/10.
+
 my $delim = "\t";
 my $col   = 1;
 my $fin   = \*STDIN;
@@ -56,6 +58,7 @@ if($num_x > 0.0)
     { $std_x = sqrt($var_x); }
 }
 
+print "COUNT\tSUM\tMEAN\tSTDEV\n";
 print "$num_x\t$sum_x\t$mean_x\t$std_x\n";
 
 exit(0);

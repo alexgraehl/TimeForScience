@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#@COMMENT@ aggregate.pl combines (mean/median) multiple numbers together in lines with the same key. Frequency-of-use rating: 4/10.
+#@COMMENT@ aggregate.pl for each column, combines (mean/median) multiple numbers together for lines with the same key in column 1. If you don't care about keys (i.e. you just want the sum of items in a file) use stats.pl instead. Frequency-of-use rating: 2/10.
 
 ## Originally written in 2002 by Josh Stuart in the lab of Stuart Kim, Stanford University.
 ## Support for MEDIAN calculation added by Alex Williams, 2007
@@ -48,57 +48,56 @@ for(my $i = 0; $i < scalar(@{$rows}) and $i < $headers; $i++) {
 
 for(my $i = $headers; $i < scalar(@{$rows}); $i++) {
 	my $id = $$ids[$i];
-	$function = lc($function);
-	my $useMedian = ($function eq 'median');
-	my $useMean   = ($function eq 'mean');
-	my $useSum = 0;
-	#my $useSum    = ($function eq 'sum');
-	if ($useMean + $useMedian + $useSum != 1) { die "Error in arguments to aggregate.pl: You must specify only one of *sum* or *mean* or *median* at the same time!\n"; }
-   
-   my @sum;
-   my @count;
-   my @medianCalcArray; # this is actually just a list of all the items in the column for each key
-   # Note: medianCalcArray is an array of ARRAYS.
-
-   for(my $j = 0; $j < $max_cols; $j++) {
-      $sum[$j] = 0;
-      $count[$j] = 0;
-   }
-   #my @r = @{$$rows[$i]};
-   for(my $k = 0; $k < scalar(@{$$rows[$i]}); $k++) {
-	   my $row = $$rows[$i][$k];
-	   #print "Row is $row\n";
-	   for(my $j = 0; $j < $max_cols; $j++) {
-		   my $thisEntry = $$data[$row][$j];
-		   if(defined($thisEntry)) {
-			   if($thisEntry =~ /^\s*[\d+\.eE-]+\s*$/) {
-				   $count[$j]++;
-				   $sum[$j] += $thisEntry;
-				   if ($useMedian) {
-					   if (!defined($medianCalcArray[$j])) {
-						   @{$medianCalcArray[$j]} = ();
-					   }
-					   push(@{$medianCalcArray[$j]}, $thisEntry);
-					   #print "$j: $k: $row: ";
-					   #print @{$medianCalcArray[$j]};
-					   #print "\n";
-				   }
-			   }
-		   }
-	   }
-   }
-   my @agg = (${emptyVal}) x $max_cols;
-   for(my $j = 0; $j < $max_cols; $j++) {
-	   if ($useMean) {
-		   $agg[$j] = ($count[$j] > 0) ? sprintf($sprintf_ctrl, ($sum[$j] / $count[$j])) : ${emptyVal};
-	   } elsif ($useMedian) {
-		   # Only calculate the median if we actually specifically want it... otherwise it slows us down
-		   if (defined($medianCalcArray[$j]) && (scalar(@{$medianCalcArray[$j]}) > 0) ) {
-			   $agg[$j] = vec_median(\@{$medianCalcArray[$j]}); # <-- vec_median is in libstats.pl
-		   }
-	   }
-   }
-   print STDOUT $id, (($max_cols > 0) ? ($delim . join($delim, @agg)) : ""), "\n";
+	my $useMedian = (lc($function) eq 'median');
+	my $useMean   = (lc($function) eq 'mean');
+	my $useSum    = (lc($function) eq 'sum');
+	if ($useMean + $useMedian + $useSum != 1) {
+		die "Error in arguments to aggregate.pl: You must specify only one of *sum* or *mean* or *median* at the same time!\n";
+	}
+	my @sum;
+	my @count;
+	my @medianCalcArray; # this is actually just a list of all the items in the column for each key
+	# Note: medianCalcArray is an array of ARRAYS.
+	for (my $j = 0; $j < $max_cols; $j++) {
+		$sum[$j] = 0;
+		$count[$j] = 0;
+	}
+	#my @r = @{$$rows[$i]};
+	for (my $k = 0; $k < scalar(@{$$rows[$i]}); $k++) {
+		my $row = $$rows[$i][$k];
+		#print "Row is $row\n";
+		for (my $j = 0; $j < $max_cols; $j++) {
+			my $thisEntry = $$data[$row][$j];
+			if (defined($thisEntry)) {
+				if ($thisEntry =~ /^\s*[\d+\.eE-]+\s*$/) {
+					$count[$j]++;
+					$sum[$j] += $thisEntry;
+					if ($useMedian) {
+						if (!defined($medianCalcArray[$j])) {
+							@{$medianCalcArray[$j]} = ();
+						}
+						push(@{$medianCalcArray[$j]}, $thisEntry);
+						#print "$j: $k: $row: ";
+						#print @{$medianCalcArray[$j]};
+						#print "\n";
+					}
+				}
+			}
+		}
+	}
+	my @agg = (${emptyVal}) x $max_cols;
+	print STDERR "Num columns is: $max_cols\n";
+	for (my $j = 0; $j < $max_cols; $j++) {
+		if ($useSum) {
+			$agg[$j] = ($count[$j]==0) ? ${emptyVal} : sprintf($sprintf_ctrl,  $sum[$j]);
+		} elsif ($useMean) {
+			$agg[$j] = ($count[$j]==0) ? ${emptyVal} : sprintf($sprintf_ctrl, ($sum[$j] / $count[$j]));
+		} elsif ($useMedian) {
+			my $hasMedian = defined($medianCalcArray[$j]) && (scalar(@{$medianCalcArray[$j]}) > 0);
+			$agg[$j] = (!$hasMedian) ? ${emptyVal} : vec_median(\@{$medianCalcArray[$j]}); # <-- vec_median is in libstats.pl
+		}
+	}
+	print STDOUT ($id . "\t" . (($max_cols > 0) ? ($delim . join($delim, @agg)) : "") . "\n");
 }
 exit(0);
 
@@ -117,6 +116,7 @@ OPTIONS are:
 -k COL: Use the column COL as the key column. The script uses the entries found
         on each line of this column as keys. Duplicates are merged by applying
         an aggregation function for each value in their records.
+        The special value -k "ALL" means we just sum up everything, regardless of (unspecified) key.
 
 -d DELIM: Set the field delimiter to DELIM (default is tab).
 
@@ -163,6 +163,7 @@ has data for the last column (column 4), so 77 is the mean. The output is always
 a matrix (although it could be a single-column matrix). Empty values are padded
 with NaN (although you can change this with --emptyval).
 
+If you just want the stats / sum for EVERYTHING in a file, try "stats.pl"
 
 TO DO / FUTURE WORK:
 
