@@ -75,6 +75,7 @@ my $starDir = "STAR_index_${name}";
 my $SANTA_CRUZ_SUFFIX     = ".chr"; # we add '.chr' to indicate that these files now have a CHROMOSOME name appended
 my $BWA_FILE_PREFIX       = "bwa.";
 my $CELLRANGER_PREFIX     = "cellranger_reference.";
+my $CELLRANGER_TEMPDIR_NAME = "CELLRANGER_TMP_".int(rand()*1e10); # random number
 my $outp                  = "./";
 
 (defined($name) && length($name) >= 1) or argDie "missing the required 'name' input!";
@@ -82,10 +83,10 @@ my $outp                  = "./";
 (defined($gtf))   or argDie "the input 'gtf' annotation file must be specified!";
 ($fasta !~ /[.](gzip|gz|zip|bzip2|bz2|Z|xz|tar)$/i) or argDie("The fasta file CANNOT be compressed! It must be an uncompressed plain text file.");
 ($gtf   !~ /[.](gzip|gz|zip|bzip2|bz2|Z|xz|tar)$/i) or argDie("The gtf file CANNOT be compressed! It must be an uncompressed plain text file.");
-(-e $fasta) or argDie "the input 'fasta' file must actually exist on the filesystem!";
-(-e $gtf)   or argDie "the input 'gtf' file must actually exist on the filesystem!";
+(-e $fasta) or argDie "the input 'fasta' file must actually exist on the filesystem! We failed to find it at: <$fasta>";
+(-e $gtf)   or argDie "the input 'gtf' file must actually exist on the filesystem! We failed to find it at: <$gtf>";
 
-
+use Cwd 'abs_path';
 
 my $fastaNoSuffix = $fasta; $fastaNoSuffix =~ s/[.](fa|fas|fasta).*$//; # remove any suffix after .fa or .fasta
 
@@ -98,15 +99,21 @@ if ($santaCruzifyChrNames) {
 	(not -e $cruzFA)  or die "ERROR: File already exists--We are REFUSING to overwrite the file '$cruzFA'!  Exiting early. Delete this file if you want to remake it.";
 	(not -e $cruzGTF) or die "ERROR: File already exists--we are REFUSING to overwrite the file '$cruzGTF'! Exiting early. Delete this file if you want to remake it.";
 	# for a FASTA file
-	my $ucscifyFA  = qq{cat $fasta | perl -pe 's/^>\(MT|[MWXYZ]|[0-9]+\)\\b/>chr\$1/' | perl -pe 's/^>chrMT\\b/>chrM/' > $cruzFA};
+	my $ucscifyFA  = qq{cat "$fasta" | perl -pe 's/^>\(MT|[MWXYZ]|[0-9]+\)\\b/>chr\$1/' | perl -pe 's/^>chrMT\\b/>chrM/' > $cruzFA};
 	systemZero($ucscifyFA);         (-e $cruzFA) or die "Failed to generate the santa-cruz-ified FASTA file.";
 	# For a GTF, add "chr" and fix the 'MT' issue
-	my $ucscifyGTF = qq{cat $gtf   | perl -pe 's/^\(MT|[MWXYZ]|[0-9]+\)\\b/chr\$1/'   | perl -pe 's/^chrMT\\b/chrM/'   > $cruzGTF};
+	my $ucscifyGTF = qq{cat "$gtf"   | perl -pe 's/^\(MT|[MWXYZ]|[0-9]+\)\\b/chr\$1/'   | perl -pe 's/^chrMT\\b/chrM/'   > $cruzGTF};
 	systemZero($ucscifyGTF);        (-e $cruzGTF) or die "Failed to generate the santa-cruz-ified GTF file.";
 	print STDOUT "Looks like we SUCCESSFULLY created the 'Santa Cruz format' output files '$cruzFA' and '$cruzGTF'.\n";
 	print STDOUT "Quitting now that this operation has completed...\n[DONE]\n";
 	exit(0);
 }
+
+
+my $cellranger_full_path_fasta = abs_path($fasta); # get the ABSOLUTE FULL PATH. This way it will still work if we have to change directories (ugh)
+my $cellranger_full_path_gtf   = abs_path($gtf);
+(-e $cellranger_full_path_fasta) or die "the input 'fasta' file must actually exist on the filesystem!";
+(-e $cellranger_full_path_gtf)   or die "the input 'gtf' file must actually exist on the filesystem!";
 
 my %DAT = ( STAR=>{cmd=>qq{mkdir -p $starDir && STAR --runThreadN $ncpus --runMode genomeGenerate   --genomeDir $starDir   --sjdbGTFfile ${gtf}   --genomeFastaFiles ${fasta}  --sjdbOverhang 100}
 		   , outputs=>[qq{${starDir}/genomeParameters.txt}]
@@ -126,8 +133,8 @@ my %DAT = ( STAR=>{cmd=>qq{mkdir -p $starDir && STAR --runThreadN $ncpus --runMo
 			 , outputs=>["${outp}${name}.1.bt2","${outp}${name}.rev.1.bt2"]
 			 , reqExes=>["bowtie2-build"]
 			}
-	    , CELLRANGER=>{cmd=>qq{cellranger mkref --nthreads=$ncpus --memgb=$memgb_for_cellranger --genome="${CELLRANGER_PREFIX}${name}" --fasta="$fasta" --genes="$gtf"}
-			     , outputs=>["${outp}${CELLRANGER_PREFIX}/reference.json"]
+	    , CELLRANGER=>{cmd=>qq{mkdir -p "${CELLRANGER_TEMPDIR_NAME}" && cd "${CELLRANGER_TEMPDIR_NAME}" && cellranger mkref --nthreads=$ncpus --memgb=$memgb_for_cellranger --genome="${name}" --fasta="$cellranger_full_path_fasta" --genes="$cellranger_full_path_gtf" && cd ../ && mv "${CELLRANGER_TEMPDIR_NAME}" "${outp}${CELLRANGER_PREFIX}${name}"}
+			     , outputs=>["${outp}{CELLRANGER_PREFIX}${name}/reference.json"]
 			     , reqExes=>["cellranger"]
 			    }
 	    , BWA=>{cmd=>qq{bwa index -p ${outp}${BWA_FILE_PREFIX}${name}  $fasta }
