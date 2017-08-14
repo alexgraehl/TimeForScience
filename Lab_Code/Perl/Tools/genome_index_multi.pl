@@ -122,11 +122,11 @@ my %DAT = ( STAR=>{cmd=>qq{mkdir -p $starDir && STAR --runThreadN $ncpus --runMo
 #	@echo "Note from Alex about STAR parameters: From https://www.biostars.org/p/93883/:  On the other hand, --alignSJDBoverhangMin is used at the mapping step to define the minimum allowed overhang over splice junctions. For example, the default value of 3 would prohibit overhangs of 1b or 2b."
 #	@echo "CONCLUSION: We should now have generated the followng eight files in the index subdirectory: 1. Genome  2. SA  3. SAindex  4. chrLength.txt  5. chrName.txt  6. chrNameLength.txt  7. chrStart.txt  8. genomeParameters.txt"
 
-	    , BOWTIE2=>{cmd=>qq{bowtie2-build $fasta ${outp}${name} }
+	    , BOWTIE2=>{cmd=>qq{bowtie2-build "$fasta" "${outp}${name}" }
 			 , outputs=>["${outp}${name}.1.bt2","${outp}${name}.rev.1.bt2"]
 			 , reqExes=>["bowtie2-build"]
 			}
-	    , CELLRANGER=>{cmd=>qq{cellranger mkref --nthreads=$ncpus --memgb=$memgb_for_cellranger --genome=${outp}${CELLRANGER_PREFIX}${name} --fasta=$fasta --genes=$gtf}
+	    , CELLRANGER=>{cmd=>qq{cellranger mkref --nthreads=$ncpus --memgb=$memgb_for_cellranger --genome="${CELLRANGER_PREFIX}${name}" --fasta="$fasta" --genes="$gtf"}
 			     , outputs=>["${outp}${CELLRANGER_PREFIX}/reference.json"]
 			     , reqExes=>["cellranger"]
 			    }
