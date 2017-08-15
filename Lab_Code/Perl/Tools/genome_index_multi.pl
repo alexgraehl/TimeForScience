@@ -133,19 +133,25 @@ my %DAT = ( STAR=>{cmd=>qq{mkdir -p $starDir && STAR --runThreadN $ncpus --runMo
 			 , outputs=>["${outp}${name}.1.bt2","${outp}${name}.rev.1.bt2"]
 			 , reqExes=>["bowtie2-build"]
 			}
-	    , CELLRANGER=>{cmd=>qq{mkdir -p "${CELLRANGER_TEMPDIR_NAME}" && cd "${CELLRANGER_TEMPDIR_NAME}" && cellranger mkref --nthreads=$ncpus --memgb=$memgb_for_cellranger --genome="${name}" --fasta="$cellranger_full_path_fasta" --genes="$cellranger_full_path_gtf" && cd ../ && mv "${CELLRANGER_TEMPDIR_NAME}" "${outp}${CELLRANGER_PREFIX}${name}"}
-			     , outputs=>["${outp}{CELLRANGER_PREFIX}${name}/reference.json"]
-			     , reqExes=>["cellranger"]
-			    }
+	    , CELLRANGER=>{cmd=>(qq{mkdir -p "${CELLRANGER_TEMPDIR_NAME}" && cd "${CELLRANGER_TEMPDIR_NAME}" }
+				 . qq{ && }
+				 . qq{ cellranger mkref --nthreads=$ncpus --memgb=$memgb_for_cellranger --genome="${name}" --fasta="$cellranger_full_path_fasta" --genes="$cellranger_full_path_gtf" }
+				 . qq{ && } . qq{ cd ../ }
+				 . qq{ && } . qq{ mv "${CELLRANGER_TEMPDIR_NAME}/${CELLRANGER_PREFIX}${name}" "${outp}${CELLRANGER_PREFIX}${name}" }
+				 . qq{ && } . qq{ mv "${CELLRANGER_TEMPDIR_NAME}/Log.out"                     "${outp}${CELLRANGER_PREFIX}${name}/Log.out" }
+				 . qq{ && } . qq{ rmdir "${CELLRANGER_TEMPDIR_NAME}" }
+				 . qq{ })
+			   , outputs=>["${outp}{CELLRANGER_PREFIX}${name}/reference.json"]
+			   , reqExes=>["cellranger"]}
 	    , BWA=>{cmd=>qq{bwa index -p ${outp}${BWA_FILE_PREFIX}${name}  $fasta }
-		      , outputs=>["${outp}${BWA_FILE_PREFIX}$name.amb","${outp}${BWA_FILE_PREFIX}$name.ann","${outp}${BWA_FILE_PREFIX}$name.pac"]
-		      , reqExes=>["bwa"]
-		     }
+		    , outputs=>["${outp}${BWA_FILE_PREFIX}$name.amb","${outp}${BWA_FILE_PREFIX}$name.ann","${outp}${BWA_FILE_PREFIX}$name.pac"]
+		    , reqExes=>["bwa"]
+		   }
 	    , FAI=>{cmd=>qq{samtools faidx $fasta && TTT=`mktemp` && mv -f ${fasta}.fai "\$TTT" && mv "\$TTT" ${outp}${fasta}.fai && ln -f -s ${outp}${fasta}.fai ${outp}${fastaNoSuffix}.fai && cut -f 1,2 ${outp}${fasta}.fai | sort -k1,1 > ${outp}chrom.sizes.txt}
 		    , outputs=>["${outp}${fasta}.fai", "${outp}${fastaNoSuffix}.fai","${outp}chrom.sizes.txt"]
 		    , reqExes=>["samtools", "cut", "sort"]
 		   }
-
+	    
 ## Generates the split-up 'chr1.fa, chr2.fa... etc...' files instead of just 'genome.fa' in one single file.
 #$(SPECIES)_chromosome_fastas/makefile_ran_successfully.touch.txt: INPUT_PER_CHROM_FASTA_DIR
 #	mkdir -p $(dir $@)
