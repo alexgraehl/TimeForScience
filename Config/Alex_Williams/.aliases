@@ -516,8 +516,8 @@ function science {
     if [[ -e "${TIME_FOR_SCIENCE_DIR}" ]]; then
        echo 'TimeForScience (GitHub):' ; scienceup ${TIME_FOR_SCIENCE_DIR} ; sciencecom ${TIME_FOR_SCIENCE_DIR}
     fi
-    if [[ -e "~/epi" ]]; then
-	echo '~/Epi (GitHub):' ; scienceup ~/epi ; sciencecom ~/epi
+    if [[ -e "${HOME}/epi" ]]; then
+	echo '~/Epi (GitHub):' ; scienceup ${HOME}/epi ; sciencecom ${HOME}/epi
     fi
     #echo 'Bioinformatics (Git on Westway):' ; scienceup ${BINF_CORE_WORK_DIR} ; sciencecom ${BINF_CORE_WORK_DIR}
     echo -e '\nFinished updating on' `date`
