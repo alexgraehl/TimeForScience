@@ -513,7 +513,7 @@ function scienceup {
 }
 
 function science {
-    if [[ -e "${TIME_FOR_SCIENCE_DIR}" ]] then;
+    if [[ -e "${TIME_FOR_SCIENCE_DIR}" ]]; then
        echo 'TimeForScience (GitHub):' ; scienceup ${TIME_FOR_SCIENCE_DIR} ; sciencecom ${TIME_FOR_SCIENCE_DIR}
     fi
     if [[ -e "~/epi" ]]; then
