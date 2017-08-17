@@ -23,14 +23,14 @@ Try it out:
 from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
-import future        # pip install future
-import future.utils  # (installed with above)    #from future.utils import iteritems
-import builtins      # pip install future
-import past          # pip install future
+import future          # pip install future
+import future.utils    # (installed with above)    #from future.utils import iteritems
+import future.builtins # pip install future
+from   future.builtins import range # example: mylist = list(range(5))     assert mylist == [0, 1, 2, 3, 4]
+import past     # pip install future
 
 import six           # pip install six
 
-from builtins import range # example: mylist = list(range(5))     assert mylist == [0, 1, 2, 3, 4]
 # ================ Below are the NORMAL modules that you'd want for regular programming ====================
 
 import argparse
