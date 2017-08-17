@@ -115,12 +115,11 @@ function deduped() { # input: one string to de-dupe. Usage: PATH=$(deduped $PATH
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/
 export R_BINF_CORE=${BINF_CORE_WORK_DIR}/Code/R
 
-MINICONDA_BIN=${HOME}/miniconda3/bin
+MINICONDA_BIN="${HOME}/miniconda3/bin"
+EPIGIT="$HOME/epi"
 
-export EPIGIT=$HOME/epi
-
-export PATH=/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin ## <-- clear out initial path!!
-export PATH=/opt/pbs/default/bin:/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${PATH}:${HOME}/.local/bin
+export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin" ## <-- clear out initial path!!
+export PATH="/opt/pbs/default/bin:/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${HOME}/.local/bin:${PATH}"
 export PATH=$(deduped "${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Code/Python:${EPIGIT}/users/alexgw/perl:${EPIGIT}/users/alexgw/python:${EPIGIT}/genomics:${MINICONDA_BIN}")   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 
 # PATH="$(echo $PATH | perl -e 'print join(":", grep { not $seen{$_}++ } split(/:/, scalar <>))')"  # remove dupes

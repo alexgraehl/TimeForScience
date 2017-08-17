@@ -48,10 +48,10 @@ def main():
     parser = argparse.ArgumentParser(description="%(prog)s: template for python 2 and python 3.",
                                      epilog='''Example usage: python %(prog)s (no example yet)\n(some examples go here)\n(More examples go here)''',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-f", "--file",  dest="filename", type=str,             default=None, metavar="FILE", help="Minimum x (length) value.")
-    parser.add_argument("-N", "--name",  dest="username", type=str,             default="Dave",               help="specify a username to run as")
-    parser.add_argument("-p", "--port",  dest="portnum",  type=int,             default=80,                   help="port number to run on")
-    parser.add_argument("-q", "--quiet", dest="verbose",  action="store_false",                               help="don't print status messages to stdout")
+    parser.add_argument("-f", "--file",  dest="filename", type=str,             default=None, metavar="FILE", required=False, help="Minimum x (length) value.")
+    parser.add_argument("-N", "--name",  dest="username", type=str,             default="Dave",               required=False, help="specify a username to run as")
+    parser.add_argument("-p", "--port",  dest="portnum",  type=int,             default=80,                                   help="port number to run on")
+    parser.add_argument("-q", "--quiet", dest="verbose",  action="store_false",                                               help="don't print status messages to stdout")
     parser.add_argument("remainder", nargs=argparse.REMAINDER) # get the REMAINING un-parsed arguments (for example, a bunch of filenames)
     args = parser.parse_args()
 
