@@ -1,80 +1,113 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+'''
+This script should work on both python2
+                            AND python3 directly,
+    as long as you have the 'future' module installed! (e.g.: "pip install future")
+See here for details on making a python 2/3 script: http://python-future.org/compatible_idioms.html
+
+Requires at least python 2.7+ due to 'argparse' (which is not in python 2.6).
+
+As a programmer, the main thing to watch out for is that you must use
+            "future.utils.iteritems( mydictionary )" to iterate over a dictionary
+            instead of "mydictionary.iteritems()"
+            (You can make this shorter with 'from future.utils import iteritems as YOUR_NAME_HERE')
+
+Almost everything else "just works."
+
+Try it out:
+        python2 ./template.py some_filename x y z
+        python3 ./template.py some_filename x y z
 
 '''
-Note: we use the 'optparse' module to parse command line arguments, becuase the 'argparse' requires Python 2.7 (which is not present in older distributions, like Ubuntu 10.x) http://docs.python.org/release/2.5.2/lib/module-optparse.html
-A python program.
-'''
-
+# =================== These are part of the modules that handle python 2/3 compatibility ==================
 from __future__ import print_function
 from __future__ import division
+from __future__ import unicode_literals
+import future        # pip install future
+import future.utils  # (installed with above)    #from future.utils import iteritems
+import builtins      # pip install future
+import past          # pip install future
 
+import six           # pip install six
+
+from builtins import range # example: mylist = list(range(5))     assert mylist == [0, 1, 2, 3, 4]
+# ================ Below are the NORMAL modules that you'd want for regular programming ====================
+
+import argparse
+import os
 import sys
-import optparse
-import pdb; #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
+import pdb   #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
 import textwrap
-#import time # we just want "sleep"
-#import os.path
-
-globalOptions = None
-globalArgs    = None
+#import time # we usually just want the "sleep" function
 
 def argErrorAndExit(msg="(No additional information given)"):
     raise SystemExit("[ERROR] in arguments to this script: " + msg)
 
-def handleCommandLineOptions():
-    global globalArgs    ## must have this here in order to ASSIGN globally!
-    global globalOptions ## must have this here in order to ASSIGN globally!
-    parser = optparse.OptionParser("usage: %prog [options]", version='%prog version 1.0')
-    parser.add_option("-f", "--file", dest="filename", help="write report to FILE", metavar="FILE")
-    parser.add_option("-N", "--name", dest="username", default="John Doe", type="string", help="specify a username to run as")
-    parser.add_option("-p", "--port", dest="portnum", default=80, type="int", help="port number to run on")
-    parser.add_option("-q", "--quiet", action="store_false", dest="verbose", default=True, help="don't print status messages to stdout")
-    (globalOptions, globalArgs) = parser.parse_args()
+def main():
+    print("Getting ready to handle command line arguments...")
+    parser = argparse.ArgumentParser(description="%(prog)s: template for python 2 and python 3.",
+                                     epilog='''Example usage: python %(prog)s (no example yet)\n(some examples go here)\n(More examples go here)''',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("-f", "--file",  dest="filename", type=str,             default=None, metavar="FILE", help="Minimum x (length) value.")
+    parser.add_argument("-N", "--name",  dest="username", type=str,             default="Dave",               help="specify a username to run as")
+    parser.add_argument("-p", "--port",  dest="portnum",  type=int,             default=80,                   help="port number to run on")
+    parser.add_argument("-q", "--quiet", dest="verbose",  action="store_false",                               help="don't print status messages to stdout")
+    parser.add_argument("remainder", nargs=argparse.REMAINDER) # get the REMAINING un-parsed arguments (for example, a bunch of filenames)
+    args = parser.parse_args()
+
+    if not len(args.remainder) >= 1:
+        print("You should really specify at least one file to this script, but oh well!")
+        pass
+
+    print("There were also this many un-parsed command line arguments: " + str(len(args.remainder)))
+    for i,extra_argument in enumerate(args.remainder):
+        print("The extra argument number " + str(i) + " was: " + extra_argument)
+        filename = extra_argument
+        if os.path.isfile(filename):
+            try:
+                with open(filename, str("r")) as fff:
+                    for linenum,line in enumerate(fff):
+                        ldelim = line.split("\t")
+                        if (linenum % 10 == 0):
+                            print("Writing every 10th line...")
+                            pass
+                        if linenum > 100:
+                            print("After 100 lines, we stop reading this file.")
+                            break
+
+                        pass  # end 'for'
+                    pass  # end 'with'
+            except Exception as e:
+                print("Failed to open the example test file. Normally we should re-raise this exception, probably. Exception: " + str(e))
+                #raise #future.utils.raise_with_traceback(e)
+                pass  # raise
+            pass
+        pass
+
+    for x in range(10):
+        sys.stdout.write(str(x)+"\t")
+        pass
+    print("")
+
+    for a,b in zip([1,2,3],[10,20,30,40]): # note that the 40 is ***OMITTED***!!!
+        print("{a}, {b}".format(a=str(a), b=str(b)))
+        pass
 
     #pdb.set_trace()
-    print("There were this many named command line arguments (including DEFAULT values that were not specified by the user): " + str(len(globalOptions.__dict__)))
-    for attr, value in globalOptions.__dict__.iteritems():
-        print("   Argument <" + attr + "> = " + str(value))
+    d = dict()
+    for k,v in future.utils.iteritems(d): # <-- python 2/3-compatible version of 'iteritems'
+        print(str(k) + str(v))
         pass
 
-    print("There were also this many un-parsed command line arguments: " + str(len(globalArgs)))
-    for item in globalArgs:
-        print("   Un-parsed command line argument: " + item)
-        pass
+    byte_str = b'This is a BYTE string, not a unicode one! We rarely want to use this feature.'
 
-
-    if len(globalArgs) == 1:
-        print("Probaly you want the first un-parsed input on the command line to be a filename that the user specified. So this is just globalArgs[0]. You can use this in the main function below.")
-        pass
-
-    if len(globalArgs) != 1:
-        parser.error("Args needs to be 1 for some reason: incorrect number of arguments. In other words, you didn't specify a filename (or some additional parameter) at the end of the command line invocation.")
-        pass
-
-    return
+    #
+    print("Handled the command line arguments!")
+    return # end of 'main'
 
 # Must come at the VERY END!
 if __name__ == "__main__":
-    print("Getting ready to handle command line arguments...")
-    handleCommandLineOptions()
-    print("Handled the command line arguments!")
-    print("Here is the value for globalOptions.filename: " + str(globalOptions.filename))
-    print("Note that that the global variable containing that attribute CANNOT BE MODIFIED unless you set 'global globalOptions' or 'global globalArgs' in the code below.")
-    lineNum = 0
-    try:
-        with open('some_file', 'r') as fff:
-            for line in fff:
-                lineNum += 1
-                ldelim = line.split("\t")
-                if (lineNum % 100 == 0):
-                    print("Writing every 100th line...")
-                    pass
-                pass # end 'for'
-            pass # end 'with'
-    except:
-        print("Failed to open the example test file. Normally we should re-raise this exception, probably.")
-        pass  #raise
-
+    main()
     pass
 
 
