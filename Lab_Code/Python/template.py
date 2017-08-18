@@ -28,8 +28,9 @@ import future.utils    # (installed with above)    #from future.utils import ite
 import future.builtins # pip install future
 from   future.builtins import range # example: mylist = list(range(5))     assert mylist == [0, 1, 2, 3, 4]
 import past     # pip install future
-#import six           # pip install six
-
+#import six           # pip install six  Useful for: if isinstance(value, six.string_types):
+try:   basestring
+except NameError:   basestring = str  # useful for 'isinstance(value, basestring)'
 # ================ Below are the NORMAL modules that you'd want for regular programming ====================
 
 # import ipdb; ipdb.set_trace()
@@ -101,6 +102,8 @@ def main():
 
     byte_str = b'This is a BYTE string, not a unicode one! We rarely want to use this feature.'
 
+    assert isinstance("mystring", basestring), "Uh oh, something went wrong if this gets triggered"
+    
     #
     print("Handled the command line arguments!")
     return # end of 'main'
