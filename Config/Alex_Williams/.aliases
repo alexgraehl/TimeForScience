@@ -1066,6 +1066,18 @@ function aws_ls_fastq {
     (>^2 echo "[Done] listing the directory on ${EPI_S3_FASTQ_SEQ_BUCKET}!")
 }
 
+function pybug {
+    #echo "$1"       # First argument
+    #echo "2 ${@:2}" # Arguments 2 and beyond
+    if [[ ! -e "$1" ]]; then
+	echo "Looks like your (required!) python script <$1> could not be found!"
+	exit
+    fi
+    echo "Running [ipython]..."
+    ipython --pdb "$1"         -- "${@:2}"
+    #             SCRIPT NAME     ARGUMENTS
+}
+
 function docker-begone {
     echo "Stopping and removing ALL DOCKER CONTAINERS. ALL OF THEM!"
     docker stop $(docker ps -a -q)
