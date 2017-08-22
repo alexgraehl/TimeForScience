@@ -133,7 +133,7 @@ export PERL5LIB=$(deduped $BINFSWROOT/libperl/lib/perl5:$HOME/.linuxbrew/lib/per
 export PERLLIB=$PERL5LIB
 # PYTHONPATH: ------- UPDATE: Added August 25, 2016
 export BINFPYROOT=$(deduped $BINFSWROOT/libpython2.7)
-export PYTHONPATH=$(deduped $BINFPYROOT:$BINFPYROOT/lib64/python2.7/site-packages:$BINFPYROOT/lib/python2.7/site-packages:$PYTHONPATH)
+export PYTHONPATH=$(deduped $BINFPYROOT:$BINFPYROOT/lib64/python2.7/site-packages:$BINFPYROOT/lib/python2.7/site-packages:$HOME/epi/users/alexgw:$PYTHONPATH)
 #$BINFPYROOT:$BINFPYROOT/dist-packages:$BINFPYROOT/lib64/python2.7/site-packages:$PYTHONPATH)
 export R_LIBS=$(deduped $BINFSWROOT/libr)
 export PATH=$(deduped $BINFBINROOT:$PATH:$BINFPYROOT/bin)

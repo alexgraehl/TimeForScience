@@ -152,8 +152,9 @@ alias cheat="echo \
 \">> SH  : Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
 \" \" ${NL}\
 \">> PYTHON: iPython auto-reload a module before each run: %load_ext autoreload (newline)  %autoreload 2  from foo import some_function (<-- the import is only needed ONE time now!) \" ${NL}\
-\">> PYTHON debug a crashing program: python -m pdb YOURPROG --yourargs . 'c' continues execution, 's' steps. \" ${NL}\
-\">> PYTHON debug a crashing program: Put this in the code verbatim to properly enter the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
+\">> PYTHON debug a crashing program (worse):  python -m pdb YOURPROG -some -args -here . 'c' continues execution, 's' steps. \" ${NL}\
+\">> PYTHON debug a crashing program (better): ipython --pdb YOURPROG --  -more -args -here  'c' continues execution, 's' steps. \" ${NL}\
+\">> PYTHON debug a crashing program by enterint the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
 \">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --user PACKAGENAME \" ${NL}\
 \">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --ignore-installed --install-option=\\\"--prefix=$BINFPYROOT\\\" PACKAGENAME \" ${NL}\
 \">> PYTHON debug a crashing program: Put this in the code verbatim to properly enter the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
