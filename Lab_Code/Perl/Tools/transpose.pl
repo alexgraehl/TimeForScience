@@ -1,44 +1,36 @@
-#!/usr/bin/perl
-
+#!/usr/bin/perl -w
 #@COMMENT@ transpose.pl transposes a table of data (flips the rows/columns). Example:  cat myfile.txt | transpose.pl > flipped.txt. Frequency-of-use rating: 10/10.
 use strict; use warnings; use Getopt::Long;
-my $verbose = 0;
-my $delim   = "\t";
+my ($verbose, $delim) = (0, "\t");
+#echo -e "\n\n\na\nb\n1,2,3,4,5,6\na,b,c,d,e,f\ng,h,i\n,,z"
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 GetOptions("help|?|man"   => sub { print STDOUT <DATA>;exit(0); }
 	   , "delim|d=s"  => \$delim
 	   , "v|verbose!" => \$verbose
 	  ) or do { print STDOUT <DATA>;exit(1); };
-my $ncols = -1;
-my @x;
 #sub max($$) { $_[0] > $_[1] ? $_[0] : $_[1]; } # return max
-my $r     = 0; # save this outside the loop below!!!
-foreach my $line (<>) { # <-- read from STDOUT or from a passed-in file
-    my @row = split($delim, $line);
-    chomp($row[$#row]);
-    my $c = 0;
-    for ($c = 0; scalar(@row) > 0; $c++) {
-	    $x[$r][$c] = shift(@row);
-    }
-    if ($c > $ncols) { $ncols = $c; }
-    $r++;
+my @final; # final output, this will be a two-dimensional table
+my ($ncols, $nrows) = (-1, 0); # save this outside the loop below!!!
+foreach my $line (<>) { # <-- read STDIN or a passed-in file
+	chomp($line);
+	my @row = split($delim, $line, -1); # -1 is important! otherwise we don't split on things where a column is entirely empty
+	@{$final[$nrows]} = @row; # there's probably some way to do this with 'push'
+	if (scalar(@row) > $ncols) { $ncols = scalar(@row); }
+	$nrows++;
 }
-my $nrows = $r;
-$verbose and print STDERR " done ($nrows by $ncols)!\n";
-$verbose and print STDERR "Transposing to $ncols by $nrows...\n";
-for(my $cc = 0; $cc < $ncols; $cc++) {
-    for(my $rr = 0; $rr < $nrows; $rr++) {
-	my $x = defined($x[$rr][$cc]) ? $x[$rr][$cc] : '';
-	print "$x";
-	if ($r < $nrows - 1) { print $delim; }
-    }
-    print "\n";
+#my $nrows = scalar(@final);
+$verbose and print STDERR "Transposing $nrows ROWS by $ncols COLUMNS...\n";
+for (my $cc = 0; $cc < $ncols; $cc++) {
+	for (my $rr = 0; $rr < $nrows; $rr++) {
+		($rr > 0) and print STDOUT "$delim";
+		print STDOUT defined($final[$rr][$cc]) ? $final[$rr][$cc] : '';
+	}
+	print STDOUT "\n";
 }
 exit(0);
 __DATA__
-----------------------------------------------------------------
 transpose.pl [-d DELIM] [FILE | < FILE]
-----------------------------------------------------------------
+
 Transposes a table -- flips the rows and columns.
 The original file is assumed to have rows delimited by newlines
 and columns delimited by tabs.
