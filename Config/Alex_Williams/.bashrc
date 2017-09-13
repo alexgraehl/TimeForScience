@@ -151,14 +151,12 @@ shopt -s globstar # With globstar set (bash 4.0+), bash recurses all the directo
 set   -o ignoreeof  # Prevent Ctrl-D from exiting! Still exits if you press it 10 times.
 shopt -s checkwinsize # Check the window size after each command and, if necessary, update the values of LINES and COLUMNS.
 shopt -s cdspell ## Fix obvious typeos in directory names when "cd"-ing
-shopt -s cmdhist ## Save multi-line pasted commands into one single history command
 #shopt -s lithist ##
 #shopt -s no_empty_cmd_completion ## Don't display ALL commands on an empty-line tab
 shopt -s nocaseglob ## Match glob / regexp in case-insensitive fashion
 set   -o noclobber  # Prevent file overwrite on stdout redirection. Override with ">|", e.g. echo 'a' >| file_that_exists
-shopt -s histappend # Save terminal history between sessions
 
-PROMPT_DIRTRIM=2   # Automatically trim long paths in the prompt (requires Bash 4.x)
+export PROMPT_DIRTRIM=2   # Automatically trim long paths in the prompt (requires Bash 4.x)
 bind 'set mark-directories on'           # show a '/' at the end of a directory name
 bind 'set mark-symlinked-directories on'
 bind "set completion-ignore-case on"     # Perform file completion in a case insensitive fashion
@@ -171,7 +169,11 @@ export HISTFILESIZE=500000 # num lines ON DISK
 export HISTCONTROL="erasedups:ignoreboth"  # Avoid duplicate entries
 #export HISTIGNORE="&:[ ]*:kpk:exit:p:pwd:rr:clear:history:fg:bg" ## Commands that are NOT saved to the history!
 export HISTTIMEFORMAT='%F %T '
-export PROMPT_COMMAND='history -a' ## save ALL terminal histories
+#export PROMPT_COMMAND='history -a' ## save ALL terminal histories
+shopt -s histappend # Save terminal history between sessions
+shopt -s cmdhist ## Save multi-line pasted commands into one single history command
+# Save and reload the history after each command finishes
+export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 # =========================== TERMINAL HISTORY =========================
 
 # set variable identifying the chroot you work in (used in the prompt below)
