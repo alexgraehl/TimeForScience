@@ -155,9 +155,8 @@ shopt -s cmdhist ## Save multi-line pasted commands into one single history comm
 #shopt -s lithist ##
 #shopt -s no_empty_cmd_completion ## Don't display ALL commands on an empty-line tab
 shopt -s nocaseglob ## Match glob / regexp in case-insensitive fashion
-set   -o noclobber    # Prevent file overwrite on stdout redirection. Override with ">|", e.g. echo 'a' >| file_that_exists
+set   -o noclobber  # Prevent file overwrite on stdout redirection. Override with ">|", e.g. echo 'a' >| file_that_exists
 shopt -s histappend # Save terminal history between sessions
-shopt -s cmdhist   # Save multi-line commands as one command
 
 PROMPT_DIRTRIM=2   # Automatically trim long paths in the prompt (requires Bash 4.x)
 bind 'set mark-directories on'           # show a '/' at the end of a directory name
@@ -167,10 +166,10 @@ bind "set completion-map-case on"        # Treat hyphens and underscores as equi
 bind "set show-all-if-ambiguous on"      # Display matches for ambiguous patterns at first tab press
 
 # =========================== TERMINAL HISTORY =========================
-export HISTSIZE=500000
-export HISTFILESIZE=100000
+export HISTSIZE=500000 # num lines WHEN READING A NEW SESSION
+export HISTFILESIZE=500000 # num lines ON DISK
 export HISTCONTROL="erasedups:ignoreboth"  # Avoid duplicate entries
-export HISTIGNORE="&:[ ]*:kpk:exit:p:pwd:rr:clear:history:fg:bg" ## Commands that are NOT saved to the history!
+#export HISTIGNORE="&:[ ]*:kpk:exit:p:pwd:rr:clear:history:fg:bg" ## Commands that are NOT saved to the history!
 export HISTTIMEFORMAT='%F %T '
 export PROMPT_COMMAND='history -a' ## save ALL terminal histories
 # =========================== TERMINAL HISTORY =========================
