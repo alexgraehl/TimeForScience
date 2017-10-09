@@ -110,7 +110,8 @@ alias cheat="echo \
 \">> Rscript/R read STDIN: One-liner R and perl extravaganza for plotting contig lengths:  cat contigs.fasta  | perl -ne 'next if not m/^>/; chomp; m/>NODE_(\d+).*length_([\d.]+).*cov_([\d.]+)/; print join(qq{\t}, \\\$1, \\\$2, \\\$3).qq{\n};' | Rscript --vanilla -e 'ddd=read.table(file(\\\"stdin\\\"),header=F,row.names=1); pdf(\\\"a.pdf\\\"); plot(ddd[,1], ddd[,2]); dev.off();' \" ${NL}\
 \">> Docker list even EXITED containers: docker ps -a \" ${NL}\
 \">> Docker connect interactively no matter what: docker run --name prokka -v '/:/MacRoot/' -i -t --entrypoint '/bin/bash' YOURIMAGE \" ${NL}\
-\">> Docker start a container: docker run --name NEWNAME --rm -i -t IMGNAME bash \" ${NL}\
+\">> Docker start a container from an image 1: docker run --name NEWNAME --rm -i -t IMGNAME bash \" ${NL}\
+\">> Docker start a container from an image 2: docker run -it 0134abd1356  <-- check 'docker images' for a list of images \" ${NL}\
 \">> Docker attach to container: docker exec -it CONTAINERNAME bash \" ${NL}\
 \">> Echo emoji to terminal: example: a snake is echo $'\xF0\x9F\x90\x8D' (See http://apps.timwhitlock.info/emoji/tables/unicode) \" ${NL}\
 \">> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
