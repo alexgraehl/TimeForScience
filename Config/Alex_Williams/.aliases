@@ -107,7 +107,7 @@ PAREN_OPEN='('
 TAB='	'
 NL="\$'\\n'" # newline!
 alias cheat="echo \
-\">> Phageomancy on one dir: f=p000z_k00c3_s0037~p000z_S4_L001 && phageomancy_pipeline.py --mode=ALL --name=$f --fqguess --phacts-dir=\\\$HOME/PHAGEOMANCY/PH_PHACTS_EXE/PHACTS/ --spades-n=5 \" ${NL}\
+\">> Phageomancy on one dir: f=p000z_k00c3_s0037~p000z_S4_L001 && phageomancy_pipeline.py --mode=ALL --name=\\\$f --fqguess --phacts-dir=\\\$HOME/PHAGEOMANCY/PH_PHACTS_EXE/PHACTS/ --spades-n=5 \" ${NL}\
 \">> Rscript/R read STDIN: One-liner R and perl extravaganza for plotting contig lengths:  cat contigs.fasta  | perl -ne 'next if not m/^>/; chomp; m/>NODE_(\d+).*length_([\d.]+).*cov_([\d.]+)/; print join(qq{\t}, \\\$1, \\\$2, \\\$3).qq{\n};' | Rscript --vanilla -e 'ddd=read.table(file(\\\"stdin\\\"),header=F,row.names=1); pdf(\\\"a.pdf\\\"); plot(ddd[,1], ddd[,2]); dev.off();' \" ${NL}\
 \">> Docker list even EXITED containers: docker ps -a \" ${NL}\
 \">> Docker connect interactively no matter what: docker run --name prokka -v '/:/MacRoot/' -i -t --entrypoint '/bin/bash' YOURIMAGE \" ${NL}\
