@@ -438,7 +438,7 @@ function dos2unix { # Convert a Windows-style line-ending file to a UNIX one. Us
 alias rr='tmux attach || tmux new' #"screen -xR -U" ## Reconnect to the previous screen, or make a new one if there isn't one already
 alias sc='tmux new-window' #'screen' ## Make a new screen session
 
-alias wcl='wc -l'
+alias wcl='grep -c ""' # actually gives you the NUMBER and not the filename
 alias sortt='sort -t "	"' # sort with tab as separator
 alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
 
