@@ -97,6 +97,23 @@ function witch { # Shows the versions for all on-your-path verisons of software.
     for f in $(which -a "$1"); do echo -en "\n${a_echo_color}$f${a_end_color} --> "; eval "$f $VER_STR" | head -n 2; done; echo ""
 }
 
+function phageomancy-all {
+    PREFIXES=$(ls -1 p*.gz | grep -E '(fastq|fq).gz$' | perl -pe 's/_R.*//' | sort -u)
+    for f in $PREFIXES; do
+	echo "Handling $f ..."
+	PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
+	RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
+	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="ALL" --name="${f}" --fqguess --resources="${RESOURCE_DIR}"
+    done
+}
+
+function phageomancy-one {
+    echo "Handling ${1} ..."
+    PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
+    RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
+    ipython --pdb ${PHAGEOMANCY_PY} -- --mode="ALL" --name="${1}" --fqguess --resources="${RESOURCE_DIR}"
+}
+
 function delve {
     ## Finds, in any subdirectories, any files that have a name that matches the input text. Sort of like a poor man's "locate"
     find ./ -iname "*$@*"
