@@ -86,7 +86,7 @@ for(my $i = $headers; $i < scalar(@{$rows}); $i++) {
 		}
 	}
 	my @agg = (${emptyVal}) x $max_cols;
-	print STDERR "Num columns is: $max_cols\n";
+	#print STDERR "Num columns is: $max_cols\n";
 	for (my $j = 0; $j < $max_cols; $j++) {
 		if ($useSum) {
 			$agg[$j] = ($count[$j]==0) ? ${emptyVal} : sprintf($sprintf_ctrl,  $sum[$j]);
@@ -126,6 +126,7 @@ OPTIONS are:
              possible values are:
              mean: The mean of the values (default)  (-f mean)
              median: The median of the values.  (-f median)
+             sum: (-f sum)
 
 --emptyval VALUE: Sets the "empty"/"no data" values to VALUE. (default is NaN)
              If an output value has no input data, then this will be the output.
