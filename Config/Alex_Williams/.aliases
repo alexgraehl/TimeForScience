@@ -114,6 +114,13 @@ function phageomancy-one {
     ipython --pdb ${PHAGEOMANCY_PY} -- --mode="ALL" --name="${1}" --fqguess --resources="${RESOURCE_DIR}"
 }
 
+function phageomancy-just {
+    echo "Handling ${1} with mode ${2}..."
+    PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
+    RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
+    ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --name="${1}" --fqguess --resources="${RESOURCE_DIR}"
+}
+
 function delve {
     ## Finds, in any subdirectories, any files that have a name that matches the input text. Sort of like a poor man's "locate"
     find ./ -iname "*$@*"

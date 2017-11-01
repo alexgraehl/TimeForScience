@@ -83,6 +83,8 @@ lesspipe() {
 	*.f[aq].gz\
 |*.f[aq].bz2\
 |*.f[aq].xz\
+|*.fast[aq]\
+|*.f[aq]\
 |*.fast[aq].gz\
 |*.fast[aq].bz2\
 |*.fast[aq].xz\
