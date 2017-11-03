@@ -283,7 +283,7 @@ alias cheat="echo \
 \">> UNIX/TOP/USAGE/HTOP: CPU usage by user: top -b -n 1 -u \\\$USER | awk 'NR>7 { sum += \\\$9; } END { print sum; }' \" ${NL}\
 \">> QSUB/QUEUE/PBS show available resources: pbsnodes -a , or qstat -Qf (per-queue amounts)\" ${NL}\
 \">> QSUB/QUEUE/PBS submit job: echo 'echo \\\"hello I am a test job\\\"' | qsub -q Bio -W group_list=bioqueue ; sleep 10; cat STDIN*; \" ${NL}\
-\">> QSUB/QUEUE/PBS: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
+\">> QSUB/QUEUE/PBS: Delete all your jobs one by one: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
 \">> QSUB/QUEUE/PBS: restart torque: sudo service pbs_sched stop ; sudo service pbs_mom stop ; sudo service pbs_server stop ; sudo /bin/rm /var/lock/subsys/pbs_server ; sudo service pbs_sched start ; sudo service pbs_mom start ; sudo service pbs_server start ; qstat \" ${NL}\
 \">> QSUB/QUEUE/PBS: info on the queue: qstat -Qf or qstat -B more details \" ${NL}\
 \">> QSUB/QUEUE/PBS: qrun MULTIPLE jobs in a range: for f in \\\$(seq 119905 119919); do sudo \\\$(which qrun) \\\$f; done \" ${NL}\
