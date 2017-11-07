@@ -28,6 +28,8 @@ sub verboseUpdatePrint($) { if ($verbose) { print STDERR Term::ANSIColor::colore
 my $keyCol1 = 1; # indexed from ONE rather than 0!
 my $keyCol2 = 1; # indexed from ONE rather than 0!
 
+
+my $numDupeKeysMultiJoin = 0;
 my $DEFAULT_DELIM = "\t";
 my $SPLIT_WITH_TRAILING_DELIMS = -1; # You MUST specify this constant value of -1, or else split will by default NOT split consecutive trailing delimiters! This is super important and belongs in EVERY SINGLE split call.
 my $MAX_DUPE_KEYS_TO_REPORT          = 10;
@@ -53,13 +55,15 @@ my $shouldReverse     = 0; # Should we print KEY FILE2 FILE1? Default is KEY FIL
 
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 GetOptions("help|?|man" => sub { printUsageAndQuit(); }
-	   , "q" => sub { $verbose = 0; }
+	   , "k=i" => sub { die "-k is not an option to this script! If you want to specify keys, use -1 and -2.\n"; }
+	   , "f=i" => sub { die "-f is not an option to this script! If you want to specify field separators, use -d (delim). If you want to specify keys, use -1 and -2 to pick the key columns.\n"; }
+	   , "q" => sub { $verbose = 0; } # q = quiet
 	   , "1=s" => \$keyCol1
 	   , "2=s" => \$keyCol2
 	   , "d1=s" => \$delim1
 	   , "d2=s" => \$delim2
 	   , "t|d|delim=s" => \$delimBoth # -t is the regular UNIX join name for this option
-	   , "o=s"  => \$stringWhenNoMatch
+	   , "o=s"  => \$stringWhenNoMatch # -o "0.00" would be "print 0.00 for missing values"
 	   , "ob!"  => sub { $stringWhenNoMatch = ''; } # shortcut for just a blank when there's no match. Default is to OMIT lines with no match.
 	   , "do=s" => \$outputDelim
 	   , "v|neg!" => \$shouldNegate
@@ -248,15 +252,19 @@ sub handleMultiJoin($$$) {
 	my $filenameHeaderDelim = "::"; # example:  "Filename1::headerCol1   Filename2::headerCol2"
 	my $na = (defined($stringWhenNoMatch)) ? $stringWhenNoMatch : ""; # use a blank value if (global) $stringWhenNoMatch is not defined
 	my %headHash = ();
-
-	my $is_intersection = ($mergeType eq 'intersect');
+	my $is_intersection     = ($mergeType eq 'intersect');
+	my $is_union            = ($mergeType eq 'union');
 	my %numFilesWithKeyHash = (); # Counts the number of files that we saw this line in. Only used if this is an intersection and not a union
-	my $numFilesOpened = 0;
+	my $numFilesOpened      = 0;
 	foreach my $filename (@$filenameArrPtr) {
 		$numFilesOpened++; # ok, remember that we read a file
 		#my %keysSeenAlreadyInThisFile = ();
 		%{$datHash{$filename}} = (); # new hash value is an ARRAY for this
-		@{$headHash{$filename}} = (()x$numHeaderLines); # it's one array element per line
+		if ($numHeaderLines == 0 and $includeFilenameInHeader) {
+			@{$headHash{$filename}} = ( () ); # zero header lines, but in this case we'll initialize the header anyway
+		} else {
+			@{$headHash{$filename}} = (()x$numHeaderLines); # it's one array element per line
+		}
 		$longestLineInFileHash{$filename} = 0; # longest line is length 0 to start...
 		#print STDERR "Handling file named $filename ...\n";
 		($filename ne '-') or die "If you are multi-joining, you CANNOT read input from STDIN. Sorry.";
@@ -269,8 +277,7 @@ sub handleMultiJoin($$$) {
 			chomp($line);
 			my @s = split($delim1, $line, $SPLIT_WITH_TRAILING_DELIMS); # split up the line
 			my $key;
-
-			# ========= Get the key and the rest of the line =======
+			# ------------ Get the key and the rest of the line ---------
 			my @valArr;
 			if (scalar(@s) < $keycol) {
 				$key = "";  # totally blank line maybe? Or at least, no key.
@@ -281,7 +288,6 @@ sub handleMultiJoin($$$) {
 				#print "Lo = $lo, hi = $hi\n";
 				if ($lo <= $hi) { @valArr = @s[$lo..$hi] } else { @valArr = (); } # no clue what this does anymore
 			}
-			
 			# ========= Code specifically for dealing with INTERSECTION ==========
 			#if ($is_intersection) {
 			#	if ($numFilesOpened == 1) {
@@ -300,14 +306,26 @@ sub handleMultiJoin($$$) {
 			#}
 
 			# Note: line length does NOT include the key as an element. So it can be zero!
-			if (scalar(@valArr)>$longestLineInFileHash{$filename}) { $longestLineInFileHash{$filename} = scalar(@valArr); }
-			
-			if ($lnum <= $numHeaderLines) { # This is STILL a header line
+			if (scalar(@valArr) > $longestLineInFileHash{$filename}) { $longestLineInFileHash{$filename} = scalar(@valArr); }
+
+			my $this_is_a_header_line = ($lnum <= $numHeaderLines);
+			if ($this_is_a_header_line) {
 				@{${$headHash{$filename}}[$lnum-1]} = ($includeFilenameInHeader) ? map{"${filename}${filenameHeaderDelim}$_"}@valArr : @valArr; # It is ok if @valArry has zero elements.
 			} else {
+				if ($lnum == 1 and $numHeaderLines == 0 and $includeFilenameInHeader) {
+					# Bonus weird thing if it's the first line
+					#die "ARGUMENT ERROR: Currently we do not support --fnh if there are 0 header lines. Please change your options to either add a header line (-h 1) or remove --fnh.\n";
+					# Include the filename in the 'header', even though there isn't a header line per se---we create a new one.
+					#print join("* ", map{"${filename}"}@valArr) . "\n";
+					@{${$headHash{$filename}}[$lnum-1]} = map{"${filename}"}@valArr;
+				}
+				
 				if ((0 == length($key)) and !$allowEmptyKey) {
 					verboseWarnPrint("Warning: skipping an empty (blank) key on line $lnum of file <$filename>!");
-				} else { #print "Added this key: $filename / $key ...\n";
+				} elsif (exists($datHash{$filename}{$key})) {
+					maybeWarnAboutWeirdness($numDupeKeysMultiJoin++, $MAX_DUPE_KEYS_TO_REPORT, "on line $lnum, we saw a duplicate of key <$key> (in file <$filename>). We are only keeping the FIRST instance of this key.");
+				} else {
+					#print "Added this key: $filename / $key ...\n";
 					@{$datHash{$filename}{$key}} = @valArr; # save this key with the value being the rest of the array
 					$keysHash{$key} = 1;
 				}
@@ -316,7 +334,10 @@ sub handleMultiJoin($$$) {
 		closeSmartFilehandle($fh);
 	}
 
-	for (my $hi = 0; $hi < $numHeaderLines; $hi++) {
+
+	my $nHeaderLinesAccountingForFNH = ($includeFilenameInHeader and $numHeaderLines == 0) ? 1 : $numHeaderLines;  # basically, if include-filename-in-header is here, BUT we don't have any other header lines, then this value should be at least one!
+	
+	for (my $hi = 0; $hi < $nHeaderLinesAccountingForFNH; $hi++) {
 		my @head = ("KEY"); # the key is always named KEY no matter what
 		for my $filename (@$filenameArrPtr) {
 			my $thisHeadArrPtr = \@{${$headHash{$filename}}[$hi]};
@@ -325,35 +346,33 @@ sub handleMultiJoin($$$) {
 		}
 		print(join($outputDelim, @head)."\n");
 	}
-
+	
 	foreach my $k (sort(keys(%keysHash))) {
-
 		# ========== See if the key is in EVERY SINGLE file, but only if we are computing an intersection! ======
+		my $key_is_in_every_file = 0;
 		if ($is_intersection) {
 			my $numFilesWithKey = 0;
 			foreach my $filename (@$filenameArrPtr) {
-				if (exists($datHash{$filename}{$k})) { # see if this filename/key combination exists!
-					$numFilesWithKey++;
+				if (exists($datHash{$filename}{$k})) { $numFilesWithKey++; } # see if this filename/key combination exists!
+			}
+			if ($numFilesWithKey != $numFilesOpened) { $key_is_in_every_file = 0; }
+			#print "Skipping key <$k>: it was only in $numFilesWithKey files of $numFilesOpened, so we are skipping it for the intersection.\n";
+		}
+		my $key_is_in_enough_files = ($is_union || ($is_intersection && $key_is_in_every_file));
+		if ($key_is_in_enough_files) {
+			my @outLine = ($k); # output line. starts with just the key and nothing else
+			foreach my $filename (@$filenameArrPtr) {
+				if (exists($datHash{$filename}{$k})) {
+					my $numElemsToPad = $longestLineInFileHash{$filename} - scalar(@{$datHash{$filename}{$k}});
+					push(@outLine, @{$datHash{$filename}{$k}}, ($na)x$numElemsToPad);
+				} else {
+					push(@outLine, ($na)x$longestLineInFileHash{$filename});
 				}
 			}
-			if ($numFilesWithKey != $numFilesOpened) {
-				#print "Skipping key <$k>: it was only in $numFilesWithKey files of $numFilesOpened, so we are skipping it for the intersection.\n";
-				next;
-			}
+			print join($outputDelim, @outLine), "\n"; # <-- somehow this results in "uninitialized value" warning sometimes...
 		}
-
-		my @outLine = ($k); # output line. starts with just the key and nothing else
-		foreach my $filename (@$filenameArrPtr) {
-			if (exists($datHash{$filename}{$k})) {
-				my $numElemsToPad = $longestLineInFileHash{$filename} - scalar(@{$datHash{$filename}{$k}});
-				push(@outLine, @{$datHash{$filename}{$k}}, ($na)x$numElemsToPad);
-			} else {
-				push(@outLine, ($na)x$longestLineInFileHash{$filename});
-			}
-		}
-		print join($outputDelim, @outLine), "\n"; # <-- somehow this results in "uninitialized value" warning sometimes...
 	}
-}
+} # end of handleMultiJoin(...)
 # ========================== MAIN PROGRAM HERE
 
 
@@ -367,6 +386,7 @@ if ($multiJoinType) {
 	if ($multiJoinType =~ /^i/) {	 handleMultiJoin($keyCol1, \@files, 'intersect'); }
 	elsif ($multiJoinType =~ /^u/) { handleMultiJoin($keyCol1, \@files, 'union'); }
 	else { die "Invalid multi-join type."; }
+	($numDupeKeysMultiJoin > 0) and verboseWarnPrint("Warning: $numDupeKeysMultiJoin duplicate keys were skipped in the multi-joining.");
 } else {
 	my %hash2 = ();
 	my %originalCaseHash = (); # Hash: key = UPPER CASE version of key, value = ORIGINAL version of key
@@ -425,7 +445,7 @@ if ($multiJoinType) {
 		} else {
 			@sp2 = (defined($hash2{$thisKey})) ? @{$hash2{$thisKey}} : (); # () <-- empty list/array is the result of "didn't find anything"
 		}
-    
+		
 		if (@sp2) {
 			# Got a match for the key in question!
 			if (defined($prevLineCount2) and $prevLineCount2 != scalar(@sp2)) {
@@ -434,8 +454,8 @@ if ($multiJoinType) {
 				$numWeirdLengths++;
 			}
 			$prevLineCount2 = scalar(@sp2);
-	
-			if ($shouldNegate) { 
+			
+			if ($shouldNegate) {
 				# Since we are NEGATING this, don't print the match when it's found (only when it isn't...)
 			} else {
 				# Great, the OTHER file had a valid entry for this key as well! So print it... UNLESS we are negating.
@@ -575,7 +595,8 @@ join.pl -o "NO_MATCH_HERE_I_SEE" -1 4 -2 1 file_with_key_in_fourth_col.compresse
 join.pl --multi=union   file1.txt   file2.txt   file3.txt
   Join MORE than two files. Has different behaviors from joining exactly two files. Some options do not work
   with multi-file joining (example: --neg does not work).
-  
+  Be aware of --fnh (filename in header), which can help a lot when multi-joining files with otherwise-identical keys!
+
 cat myfile.txt | join.pl - b.txt | less -S
   Read from STDIN (use a '-' instead of a filename!), and pipe into the program "less".
 
@@ -617,8 +638,12 @@ Results in:
 Note that if you switch the order of File1 and File2 for an outer join...
 ...you get a different result (the first file specifies the keys)!
 
-join.pl -o "NOPE!" File2 File1
-Results in:
+'--fnh' is "filename in header," which is a convenient way of labeling all of the
+columns in the likely instance that multiple files have the same column headers.
+
+join.pl --fnh -o "NOPE!" File2 File1
+  Results in:
+           KEY       File1     File2
     AAA    111       avar      aard
     BBB    222       beta      bead       been
     CCC    333       NOPE!
@@ -630,10 +655,15 @@ join.pl on the input FILE1 and FILE2 given below:
 FILE1: (tab-delimited)
 Alpha   1   2
 Alpha   3   4
-
+p
 FILE2: (tab-delimited)
 Alpha   a   first
 Alpha   b   middle
 Alpha   c   last
 
 ----------
+
+CURRENT BUGS: --fnh only labels the FIRST key with the file name. So if you have a file with like, 5 columns, only the first
+  column will be labeled "File1::Column1". The subsequent ones will just be "Column2" etc. (Nov 2017)
+
+  
