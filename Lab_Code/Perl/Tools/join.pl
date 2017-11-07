@@ -53,6 +53,8 @@ my $includeFilenameInHeader = 0;
 
 my $shouldReverse     = 0; # Should we print KEY FILE2 FILE1? Default is KEY FILE1 FILE2.
 
+my $sumDuplicates  = 0; # if multiple keys are seen in ONE FILE, try to SUM them.
+
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "k=i" => sub { die "-k is not an option to this script! If you want to specify keys, use -1 and -2.\n"; }
@@ -67,6 +69,7 @@ GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "ob!"  => sub { $stringWhenNoMatch = ''; } # shortcut for just a blank when there's no match. Default is to OMIT lines with no match.
 	   , "do=s" => \$outputDelim
 	   , "v|neg!" => \$shouldNegate
+	   , "sum|sum-duplicates!" => \$sumDuplicates # for numeric values, we can also SUM the duplicate values on a per-file basis instead of just overwriting them
 	   , "h|header|headers=i" => \$numHeaderLines
 	   , "fnh|filename-in-header" => \$includeFilenameInHeader # only for multi-join
 	   , "nrk|no-reorder-key!"  => \$preserveKeyOrder
@@ -128,10 +131,11 @@ sub openSmartAndGetFilehandle($) {
     my ($filename) = @_;
     if ($filename eq '-') { return(*STDIN); } # <-- RETURN!!!
     my $reader;
-    if    ($filename =~ /[.]gz$/)  { $reader = "gzip --stdout $filename |"; }     # Un-gzip a file and send it to STDOUT.
-    elsif ($filename =~ /[.]bz2$/) { $reader = "bzcat $filename |"; }    # Un-bz2 a file and send it to STDOUT
-    elsif ($filename =~ /[.]zip$/) { $reader = "unzip -p $filename |"; } # Un-regular-zip a file and send it to STDOUT with "-p": which is DIFFERENT from -c (-c is NOT what you want here). See 'man unzip'
-    else                           { $reader = "$filename"; }  # Default: just read a file normally
+    if    ($filename =~ /[.](gz|gzip)$/i)  { $reader = "gzip  -d --stdout $filename |"; }    # Un-gzip a file and send it to STDOUT.
+    elsif ($filename =~ /[.]bz2$/i) { $reader = "bzip2 -d -c       $filename |"; }    # Un-bz2 a file and send it to STDOUT
+    elsif ($filename =~ /[.]xz$/i)  { $reader = "xz -d -c       $filename |"; }    # Un-xz a file and send it to STDOUT
+    elsif ($filename =~ /[.]zip$/i) { $reader = "unzip -p $filename |"; } # Un-regular-zip a file and send it to STDOUT with "-p": which is DIFFERENT from -c (-c is NOT what you want here). See 'man unzip'
+    else                            { $reader = "$filename"; }  # Default: just read a file normally
     my $fh;
     open($fh, "$reader") or die("Couldn't read from <$filename>: $!");
     return $fh;
@@ -655,7 +659,7 @@ join.pl on the input FILE1 and FILE2 given below:
 FILE1: (tab-delimited)
 Alpha   1   2
 Alpha   3   4
-p
+
 FILE2: (tab-delimited)
 Alpha   a   first
 Alpha   b   middle
