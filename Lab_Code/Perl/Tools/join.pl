@@ -25,11 +25,9 @@ sub printUsageAndContinue() {    print STDOUT <DATA>; }
 sub debugPrint($) {   ($isDebugging) and print STDERR $_[0]; }
 sub verboseWarnPrint($) { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "yellow on_blue"); } }
 sub verboseUpdatePrint($) { if ($verbose) { print STDERR Term::ANSIColor::colored($_[0] . "\n", "black on_green"); } }
-my $keyCol1 = 1; # indexed from ONE rather than 0!
-my $keyCol2 = 1; # indexed from ONE rather than 0!
+my $keyCol1 = undef; # indexed from ONE rather than 0!
+my $keyCol2 = undef; # indexed from ONE rather than 0!
 
-
-my $numDupeKeysMultiJoin = 0;
 my $DEFAULT_DELIM = "\t";
 my $SPLIT_WITH_TRAILING_DELIMS = -1; # You MUST specify this constant value of -1, or else split will by default NOT split consecutive trailing delimiters! This is super important and belongs in EVERY SINGLE split call.
 my $MAX_DUPE_KEYS_TO_REPORT          = 10;
@@ -38,27 +36,40 @@ my $MAX_BLANK_LINES_TO_REPORT        = 10;
 my $MAX_WHITESPACE_KEYS_TO_REPORT    = 50;
 my $MAX_MISSING_KEY_COLS_TO_REPORT   = 10;
 
+my $UNION_STR     = "union";
+my $INTERSECT_STR = "intersect";
+
+# Global I guess
+my $numDupeKeysMultiJoin   = 0;
+my $numBlankLines          = 0;
+my $numWeirdLengths        = 0;
+my $numMissingKeyCols      = 0;
+my $numWhitespaceKeys      = 0;
+my $numWeirdLineLengths    = 0;
+
 my $delim1            = $DEFAULT_DELIM; # input deilmiter for file 1
 my $delim2            = $DEFAULT_DELIM; # input delimiter for file 2
 my $delimBoth         = undef; # input delimiter
-my $outputDelim       = undef;
+my $outDelim       = undef;
 my $shouldNegate      = 0; # whether we should NEGATE the output
 my $shouldIgnoreCase  = 0; # by default, case-sensitive
 my $stringWhenNoMatch = undef;
 my $allowEmptyKey     = 0; # whether we allow a TOTALLY EMPTY value to be a key (default: no)
-my $preserveKeyOrder = 0; # whether we should KEEP the key in whatever column it was found in, instead of moving it to the front of the line.
+my $preserveKeyOrder  = 0; # whether we should KEEP the key in whatever column it was found in, instead of moving it to the front of the line.
 my $numHeaderLines    = 0;
-my $multiJoinType     = 0;
+my $multiJoinType     = undef;
 my $includeFilenameInHeader = 0;
 
 my $shouldReverse     = 0; # Should we print KEY FILE2 FILE1? Default is KEY FILE1 FILE2.
 
 my $sumDuplicates  = 0; # if multiple keys are seen in ONE FILE, try to SUM them.
 
+my $keyBoth = undef;
+
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 GetOptions("help|?|man" => sub { printUsageAndQuit(); }
-	   , "k=i" => sub { die "-k is not an option to this script! If you want to specify keys, use -1 and -2.\n"; }
-	   , "f=i" => sub { die "-f is not an option to this script! If you want to specify field separators, use -d (delim). If you want to specify keys, use -1 and -2 to pick the key columns.\n"; }
+	   , "k=i" => \$keyBoth
+	   , "f=i" => sub { quitWithUsageError("-f is not an option to this script! If you want to specify field separators, use -d (delim). If you want to specify keys, use -1 and -2 to pick the key columns.\n"); }
 	   , "q" => sub { $verbose = 0; } # q = quiet
 	   , "1=s" => \$keyCol1
 	   , "2=s" => \$keyCol2
@@ -67,7 +78,7 @@ GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 	   , "t|d|delim=s" => \$delimBoth # -t is the regular UNIX join name for this option
 	   , "o=s"  => \$stringWhenNoMatch # -o "0.00" would be "print 0.00 for missing values"
 	   , "ob!"  => sub { $stringWhenNoMatch = ''; } # shortcut for just a blank when there's no match. Default is to OMIT lines with no match.
-	   , "do=s" => \$outputDelim
+	   , "do=s" => \$outDelim
 	   , "v|neg!" => \$shouldNegate
 	   , "sum|sum-duplicates!" => \$sumDuplicates # for numeric values, we can also SUM the duplicate values on a per-file basis instead of just overwriting them
 	   , "h|header|headers=i" => \$numHeaderLines
@@ -88,15 +99,23 @@ my ($file1,$file2) = ($files[0], $files[1]);
 
 if ($numUnprocessedArgs >= 3) { (defined($multiJoinType) and $multiJoinType =~ m/(u|i|int?e?r?s?e?c?t?i?o?n?|union)/i) or quitWithUsageError("[ERROR]: If you want to join up three or more files, you currently have to specify '--multi' on the command line. This is because the semantics and output are DIFFERENT for multi-joining! You must specify --multi='union' (or '--multi=u'). You instead specified: --multi=$multiJoinType."); }
 
+if (defined($keyBoth)) {
+	(!defined($keyCol1) and !defined($keyCol2)) or quitWithUsageError("You cannot specify both -k (key) AND ALSO -1 (key for file 1) or -2 (key for file 2). -k sets both -1 and -2. Pick one or the other!");
+	$keyCol1 = $keyBoth; $keyCol2 = $keyBoth;
+} else {
+	$keyCol1 = (defined($keyCol1)) ? $keyCol1 : 1; # default value is 1
+	$keyCol2 = (defined($keyCol2)) ? $keyCol2 : 1; # default value is 1
+}
+
 ## ================ SET SOME DEFAULT VALUES ============================
 if (defined($delimBoth)) { # If "delimBoth" was specified, then set both of the input delimiters accordingly.
 	$delim1 = $delimBoth; $delim2 = $delimBoth;
 }
 
-if (!defined($outputDelim)) { # Figure out what the output delimiter should be, if it wasn't explicitly specified.
-    if (defined($delimBoth)) { $outputDelim = $delimBoth; } # default: set the output delim to whatever the input delim was
-    elsif ($delim1 eq $delim2) { $outputDelim = $delim1; } # or we can set it to the manually-specified delimiters, if they are the SAME only
-    else { $outputDelim = $DEFAULT_DELIM; } # otherwise, set it to the default delimiter
+if (!defined($outDelim)) { # Figure out what the output delimiter should be, if it wasn't explicitly specified.
+    if (defined($delimBoth)) { $outDelim = $delimBoth; } # default: set the output delim to whatever the input delim was
+    elsif ($delim1 eq $delim2) { $outDelim = $delim1; } # or we can set it to the manually-specified delimiters, if they are the SAME only
+    else { $outDelim = $DEFAULT_DELIM; } # otherwise, set it to the default delimiter
 }
 ## ================ DONE SETTING SOME DEFAULT VALUES ====================
 
@@ -117,7 +136,7 @@ if (defined($stringWhenNoMatch)) { # replace any "\t" with actual tabs! No idea 
 
 ## ================ DONE SANITY-CHECKING A BUNCH OF VARIABLES ==================
 
-sub maybeWarnAboutWeirdness($$$) {
+sub maybeWarn($$$) {
 	my ($weirdCount, $maxWeirdCount, $message) = @_;
 	if ($weirdCount == $maxWeirdCount) { $message .= " (suppressing further warnings about this issue)"; }
 	($weirdCount <= $maxWeirdCount ) and verboseWarnPrint("Warning: $message");
@@ -140,34 +159,12 @@ sub openSmartAndGetFilehandle($) {
     open($fh, "$reader") or die("Couldn't read from <$filename>: $!");
     return $fh;
 }
-
-#sub smartSlurpFileIntoString($) {
-#	my ($filename) = @_;
-#	my $fh = openSmartAndGetFilehandle($filename);
-#	my $s = (*STDIN eq $fh) # Ternary switch... see below for options
-#	  ?   do { local $/; <STDIN> } # if it IS stdin, then read it...
-#	  :   File::Slurp::read_file($fh); # This is a way to handle '\r' files, which Perl CANNOT loop over normally!
-#	closeSmartFilehandle($fh);
-#	return $s;
-#}
 	
 sub readIntoHash($$$$$) {
 	my ($filename, $theDelim, $keyIndexCountingFromOne, $masterHashRef, $origCaseHashRef) = @_;
 	my $numDupeKeys = 0;
 	my $numWhitespaceKeysThisFileOnly = 0;
 	my $lineNum = 0;
-	#my $fileStr = smartSlurpFileIntoString($filename); # Yeah, load it all into one file. This is so we can handle the annoying mac-style '\r' files. Should probably have handled this with a unix pre-processing... oh well.
-	#($fileStr =~ m/\r/) and verboseWarnPrint("WARNING: The file <$filename> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNum)!\n         We are automatically REMOVING this malevolent character from the line, but be aware of this!");
-	#my @lines = split(/(?:\r\n|\r|\n)/, $fileStr); # Split over any kind of line ending: \n, \r, or \r\n (Windows).
-
-	# NOTE: beware of using a CAPTURING () instead of non-capturing (?: ) --- warning regarding 'split': "If the PATTERN contains capturing groups, then for each separator, an additional field is produced for each substring captured by a group"
-	#foreach my $line ( @lines ) { #<$theFileHandle> ) {
-	#	print STDERR $line . "\n";
-	#}
-	#print STDERR " it was this long: " . scalar(@lines) . "\n";
-	#die" yep";
-	
-	#foreach my $line ( @lines ) { #<$theFileHandle> ) {
 	my $theFileHandle = openSmartAndGetFilehandle($filename);
 	foreach my $line ( <$theFileHandle> ) {
 		$lineNum++;
@@ -189,10 +186,10 @@ sub readIntoHash($$$$$) {
 			next; # next iteration of the loop please!
 		}
 
-		($theKey !~ /\s/) or maybeWarnAboutWeirdness($numWhitespaceKeysThisFileOnly++, $MAX_WHITESPACE_KEYS_TO_REPORT, "on line $lineNum in file <$filename>, the key <$theKey> had *whitespace* in it. This is often unintentional, but is not necessarily a problem!");
+		($theKey !~ /\s/) or maybeWarn($numWhitespaceKeysThisFileOnly++, $MAX_WHITESPACE_KEYS_TO_REPORT, "on line $lineNum in file <$filename>, the key <$theKey> had *whitespace* in it. This is often unintentional, but is not necessarily a problem!");
 		
 		if (defined($masterHashRef->{$theKey})) {
-			maybeWarnAboutWeirdness($numDupeKeys++, $MAX_DUPE_KEYS_TO_REPORT, "on line $lineNum, we saw a duplicate of key <$theKey> (in file <$filename>). We are only keeping the FIRST instance of this key.");
+			maybeWarn($numDupeKeys++, $MAX_DUPE_KEYS_TO_REPORT, "on line $lineNum, we saw a duplicate of key <$theKey> (in file <$filename>). We are only keeping the FIRST instance of this key.");
 		} else {
 			# Found a UNIQUE new key! ($isDebugging) && print STDERR "Added a line for the key <$theKey>.\n";
 			# Key was valid, OR we are allowing empty keys!
@@ -246,21 +243,49 @@ sub joinedUpOutputLine($$$$$$$$) {
 	}
 }
 
-sub handleMultiJoin($$$) {
-	my ($keycol, $filenameArrPtr, $mergeType) = @_;
-	($keycol != 0) or die "Keycol can't be 0 -- it's indexed with ONE as the first element.";
+sub quitIfNonUnixLineEndings($$$) {
+	my ($filename, $lineToCheck, $lineNum) = @_;
+	($lineToCheck !~ m/\r/) or die "ERROR: Exiting! The file <$filename> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNum).\nThis behavior is often seen when files are saved by Excel. You will need to manually convert the line endings from Mac / Win format to UNIX. Search online for a way to do this. We cannot handle this character automatically at this point in time, and are QUITTING.\n";
+	return 1;
+}
+
+sub is_line_array_too_weird_to_use(\@$$$) {
+	my ($lineArrPtr, $lnum, $filename, $keyColIndexedFromOne) = @_;
+	if (0 == scalar(@$lineArrPtr)) {
+		maybeWarn($numBlankLines++, $MAX_BLANK_LINES_TO_REPORT, "on line $lnum in file <$filename> was blank. Skipping it.");
+		return 1; # Disqualify this line, since it is TOTALLY EMPTY
+	} elsif (scalar(@$lineArrPtr) < $keyColIndexedFromOne) { # The line was SHORTER than the demanded key column! $keycol is indexed from 1, not 0;
+		maybeWarn($numMissingKeyCols++, $MAX_MISSING_KEY_COLS_TO_REPORT, "line $lnum was missing the key column in file <$filename>. (Key column: $keyColIndexedFromOne, Columns on line: " . scalar(@$lineArrPtr) . ").");
+		# Disqualify this line, since it has no key!
+		#$key = "";  # totally blank line maybe? Or at least, no key.
+		#@valArr = ();
+		return 1; # too weird
+	} else {
+		return 0; # not too weird
+	}
+}
+
+
+
+sub handleMultiJoin($$$$$$) {
+	my ($k1, $k2, $filenameArrPtr, $mergeType, $d1, $d2) = @_;
+	
 	my %datHash               = (); # this stores all the lines, and gets very large. Key = filename, value = hash with a second key = line key, value = array of data on that line
 	my %longestLineInFileHash = (); # key = filename, value = how long the longest line in that file is
 	my %keysHash              = (); # key = the keys seen in ALL files, value = (nothing useful)
-	($mergeType =~ m/(union|intersect)/i) or die "Programming error: multi-intersection type must be 'intersect' or 'union'! But it was this: $mergeType";
+	
+	($mergeType =~ m/^(${UNION_STR}|${INTERSECT_STR})$/i) or die "Programming error: multi-intersection type must be '$INTERSECT_STR' or '$UNION_STR'! But it was this: $mergeType";
 	my $filenameHeaderDelim = "::"; # example:  "Filename1::headerCol1   Filename2::headerCol2"
 	my $na = (defined($stringWhenNoMatch)) ? $stringWhenNoMatch : ""; # use a blank value if (global) $stringWhenNoMatch is not defined
 	my %headHash = ();
-	my $is_intersection     = ($mergeType eq 'intersect');
-	my $is_union            = ($mergeType eq 'union');
+	my $is_intersection     = ($mergeType =~ m/^${INTERSECT_STR}$/i);
+	my $is_union            = ($mergeType =~     m/^${UNION_STR}$/i);
 	my %numFilesWithKeyHash = (); # Counts the number of files that we saw this line in. Only used if this is an intersection and not a union
 	my $numFilesOpened      = 0;
+	my $numFilesExpected    = scalar(@$filenameArrPtr);
+	my $totalLinesReadAcrossAllFiles = 0;
 	foreach my $filename (@$filenameArrPtr) {
+		my $numItemsOnFirstLine = undef;
 		$numFilesOpened++; # ok, remember that we read a file
 		#my %keysSeenAlreadyInThisFile = ();
 		%{$datHash{$filename}} = (); # new hash value is an ARRAY for this
@@ -275,62 +300,48 @@ sub handleMultiJoin($$$) {
 		(-e $filename) or die "Cannot read input file $filename.";
 		my $fh = openSmartAndGetFilehandle($filename);
 		my $lnum = 0;
+
+		my $delim  = ($numFilesExpected == 2 && $numFilesOpened == 2 && defined($d2)) ? $d2 : $d1; # If there are EXACTLY TWO input files, then we allow delim1 and delim2 to be separately specified
+		my $keycol = ($numFilesExpected == 2 && $numFilesOpened == 2 && defined($k2)) ? $k2 : $k1; # If there are EXACTLY TWO input files, then we allow key1 and key2 to be separately specified
+		($keycol != 0 and defined($keycol)) or die "Keycol can't be 0 or undefined -- it's indexed with ONE as the first element.";
+		(defined($delim))                   or die "delim can't be undefined.";
 		foreach my $line (<$fh>) {
 			$lnum++;
-			($line !~ m/\r/) or die "ERROR: Exiting! Line $lnum of file <$filename> has a '\\r' 'carriage return' character in it---this means it uses either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character). This behavior is often seen when files are saved by Excel. You will need to manually convert the line endings from Mac / Win format to UNIX. Search online for a way to do this. We cannot handle this character automatically at this point in time, and are QUITTING.";
+			$totalLinesReadAcrossAllFiles++;
+			quitIfNonUnixLineEndings($filename, $line, $lnum);
 			chomp($line);
-			my @s = split($delim1, $line, $SPLIT_WITH_TRAILING_DELIMS); # split up the line
-			my $key;
-			# ------------ Get the key and the rest of the line ---------
-			my @valArr;
-			if (scalar(@s) < $keycol) {
-				$key = "";  # totally blank line maybe? Or at least, no key.
-				@valArr = ();
-			} else {
-				$key = $s[($keycol-1)];  # get the correct key, since it might not be the first column, I guess!
-				my ($lo, $hi) = ($keycol, scalar(@s)-1); # hmmmm
-				#print "Lo = $lo, hi = $hi\n";
-				if ($lo <= $hi) { @valArr = @s[$lo..$hi] } else { @valArr = (); } # no clue what this does anymore
+			my @vals = split($delim, $line, $SPLIT_WITH_TRAILING_DELIMS); # split up the line
+			if (is_line_array_too_weird_to_use(@vals, $lnum, $filename, $keycol)) {
+				next; # line is too weird for us, maybe it's missing a key or something.
 			}
-			# ========= Code specifically for dealing with INTERSECTION ==========
-			#if ($is_intersection) {
-			#	if ($numFilesOpened == 1) {
-			#		# This is the FIRST FILE, so anything in it is legitimate
-			#		$numFilesWithKeyHash{$key} = 1; # remember that we saw this key in the first file -- it's OK so far!
-			#	} else {
-			#		if (exists($numFilesWithKeyHash{$key})) {
-			#			if (exists($keysSeenAlreadyInThisFile{$key})) { die "Unfortunately, intersection cannot elegantly cope with DUPLICATE keys in a single file! We saw this key multiple times in one file: $key"; }
-			#			$keysSeenAlreadyInThisFile{$key} = 1;
-			#			$numFilesWithKeyHash{$key}++; # ok, this line was seen in the first file, so keep incrementing it...
-			#		} else {
-			#			# This key wasn't seen in this file, so DO NOT save it! Next line please!
-			#			next; # next line please!
-			#		}
-			#	}
-			#}
+			if (!defined($numItemsOnFirstLine)) { $numItemsOnFirstLine = scalar(@vals); }
+			($numItemsOnFirstLine == scalar(@vals)) or maybeWarn($numWeirdLineLengths++, $MAX_WEIRD_LINE_LENGTHS_TO_REPORT, "Warning: the number of elements on each line of this file was NOT CONSTANT. The first line had $numItemsOnFirstLine columns, but line number $lnum in file <$filename> had " . scalar(@vals) . " instead. Continuing anyway.");
 
+			my $key = $vals[($keycol-1)];  # get the correct key, since it might not be the first column, I guess!
+			splice(@vals, ($keycol-1), 1); # <-- Delete the key column from the array! Splice MODIFIES the array---it REMOVES the key column, keep everything else!
+			# ==========================================
+			# Check for a certain (non-fatal) warning issues.
+			($key !~ /\s/) or maybeWarn($numWhitespaceKeys++, $MAX_WHITESPACE_KEYS_TO_REPORT, "on line $lnum in file <$filename>, the key <$key> had *whitespace* in it. This is often unintentional, but is not necessarily a problem!");
+			# ==========================================
+			
 			# Note: line length does NOT include the key as an element. So it can be zero!
-			if (scalar(@valArr) > $longestLineInFileHash{$filename}) { $longestLineInFileHash{$filename} = scalar(@valArr); }
-
+			if ($longestLineInFileHash{$filename} < scalar(@vals)) { $longestLineInFileHash{$filename} = scalar(@vals); }
 			my $this_is_a_header_line = ($lnum <= $numHeaderLines);
 			if ($this_is_a_header_line) {
-				@{${$headHash{$filename}}[$lnum-1]} = ($includeFilenameInHeader) ? map{"${filename}${filenameHeaderDelim}$_"}@valArr : @valArr; # It is ok if @valArry has zero elements.
+				@{${$headHash{$filename}}[$lnum-1]} = ($includeFilenameInHeader) ? map{"${filename}${filenameHeaderDelim}$_"}@vals : @vals; # It is ok if @valsy has zero elements.
 			} else {
 				if ($lnum == 1 and $numHeaderLines == 0 and $includeFilenameInHeader) {
 					# Bonus weird thing if it's the first line
-					#die "ARGUMENT ERROR: Currently we do not support --fnh if there are 0 header lines. Please change your options to either add a header line (-h 1) or remove --fnh.\n";
 					# Include the filename in the 'header', even though there isn't a header line per se---we create a new one.
-					#print join("* ", map{"${filename}"}@valArr) . "\n";
-					@{${$headHash{$filename}}[$lnum-1]} = map{"${filename}"}@valArr;
+					@{${$headHash{$filename}}[$lnum-1]} = map{"${filename}"}@vals;
 				}
-				
-				if ((0 == length($key)) and !$allowEmptyKey) {
+				if (!$allowEmptyKey and $key eq "") {
 					verboseWarnPrint("Warning: skipping an empty (blank) key on line $lnum of file <$filename>!");
 				} elsif (exists($datHash{$filename}{$key})) {
-					maybeWarnAboutWeirdness($numDupeKeysMultiJoin++, $MAX_DUPE_KEYS_TO_REPORT, "on line $lnum, we saw a duplicate of key <$key> (in file <$filename>). We are only keeping the FIRST instance of this key.");
+					maybeWarn($numDupeKeysMultiJoin++, $MAX_DUPE_KEYS_TO_REPORT, "on line $lnum, we saw a duplicate of key <$key> (in file <$filename>). We are only keeping the FIRST instance of this key.");
 				} else {
 					#print "Added this key: $filename / $key ...\n";
-					@{$datHash{$filename}{$key}} = @valArr; # save this key with the value being the rest of the array
+					@{$datHash{$filename}{$key}} = @vals; # save this key with the value being the rest of the array
 					$keysHash{$key} = 1;
 				}
 			}
@@ -338,17 +349,16 @@ sub handleMultiJoin($$$) {
 		closeSmartFilehandle($fh);
 	}
 
-
 	my $nHeaderLinesAccountingForFNH = ($includeFilenameInHeader and $numHeaderLines == 0) ? 1 : $numHeaderLines;  # basically, if include-filename-in-header is here, BUT we don't have any other header lines, then this value should be at least one!
 	
-	for (my $hi = 0; $hi < $nHeaderLinesAccountingForFNH; $hi++) {
+	for (my $headerIndex = 0; $headerIndex < $nHeaderLinesAccountingForFNH; $headerIndex++) {
 		my @head = ("KEY"); # the key is always named KEY no matter what
 		for my $filename (@$filenameArrPtr) {
-			my $thisHeadArrPtr = \@{${$headHash{$filename}}[$hi]};
+			my $thisHeadArrPtr = \@{${$headHash{$filename}}[$headerIndex]};
 			my $numElemsToPad = $longestLineInFileHash{$filename} - scalar(@$thisHeadArrPtr);
 			push(@head, @$thisHeadArrPtr, ($na)x$numElemsToPad);
 		}
-		print(join($outputDelim, @head)."\n");
+		print(join($outDelim, @head)."\n");
 	}
 	
 	foreach my $k (sort(keys(%keysHash))) {
@@ -359,7 +369,7 @@ sub handleMultiJoin($$$) {
 			foreach my $filename (@$filenameArrPtr) {
 				if (exists($datHash{$filename}{$k})) { $numFilesWithKey++; } # see if this filename/key combination exists!
 			}
-			if ($numFilesWithKey != $numFilesOpened) { $key_is_in_every_file = 0; }
+			$key_is_in_every_file = ($numFilesWithKey == $numFilesOpened);
 			#print "Skipping key <$k>: it was only in $numFilesWithKey files of $numFilesOpened, so we are skipping it for the intersection.\n";
 		}
 		my $key_is_in_enough_files = ($is_union || ($is_intersection && $key_is_in_every_file));
@@ -373,23 +383,31 @@ sub handleMultiJoin($$$) {
 					push(@outLine, ($na)x$longestLineInFileHash{$filename});
 				}
 			}
-			print join($outputDelim, @outLine), "\n"; # <-- somehow this results in "uninitialized value" warning sometimes...
+			print join($outDelim, @outLine), "\n"; # <-- somehow this results in "uninitialized value" warning sometimes...
 		}
 	}
 } # end of handleMultiJoin(...)
 # ========================== MAIN PROGRAM HERE
 
-
-if ($multiJoinType) {
+if (1) { #defined($multiJoinType)) {
 	# Ok, we are doing MULTI-joining. Otherwise, just the regular (full-featured) two-file joining
-	($keyCol1 == 1)     or quitWithUsageError("For multi-joining, you CANNOT use any key columns except -k 1 (or -1 1). The key must be the first column.");
-	($keyCol2 == 1)     or quitWithUsageError("For multi-joining, keyCol 2 is not used. Do not specify -2 = (something) on the command line!");
-	(not $shouldReverse) or quitWithUsageError("For multi-joining, reversal of output order is not supported. Remove --rev from the command line!");
-	(not $shouldNegate) or quitWithUsageError("For multi-joining, negation is not supported. Remove --neg / -v from the command line!");
-	(not $preserveKeyOrder) or quitWithUsageError("For multi-joining, preserving key order is not supported. Remove --no-reorder-key (--nrk) from the command line!");
-	if ($multiJoinType =~ /^i/) {	 handleMultiJoin($keyCol1, \@files, 'intersect'); }
-	elsif ($multiJoinType =~ /^u/) { handleMultiJoin($keyCol1, \@files, 'union'); }
-	else { die "Invalid multi-join type."; }
+	if (defined($multiJoinType) and ($multiJoinType eq $INTERSECT_STR) and defined($stringWhenNoMatch)) { quitWithUsageError("You cannot specify a 'string when there is no match' value when you are doing an INTERSECTION. This value would never be used. Remove the '-o' or '--ob' arguments!"); }
+	
+	my $numFilesToJoin = scalar(@files);
+	if ($numFilesToJoin == 2) {
+		# You can do a few different things if there are EXACTLY two files!
+		if (!defined($multiJoinType)) { $multiJoinType = defined($stringWhenNoMatch) ? $UNION_STR : $INTERSECT_STR; } # guess what intersection type we are doing. If the user specifies an '-o WHATEVER' value, then it's a union.
+		handleMultiJoin($keyCol1, $keyCol2, \@files, $multiJoinType, $delim1, $delim2);
+	} else {
+		(not $shouldReverse) or quitWithUsageError("For multi-joining, reversal of output order is not supported. Remove --rev from the command line!");
+		(not $shouldNegate) or quitWithUsageError("For multi-joining, negation is not supported. Remove --neg / -v from the command line!");
+		(not $preserveKeyOrder) or quitWithUsageError("For multi-joining, preserving key order is not supported. Remove --no-reorder-key (--nrk) from the command line!");
+		# 3+ files, so we really are using the 'multi-join' functionality
+		if (!defined($multiJoinType)) { quitWithUsageError("Since you specified three or more files to join, you MUST also specify an intersection type! Use --multi=union or --multi=intersect."); }
+		elsif ($multiJoinType =~ /^i/) { handleMultiJoin($keyCol1, undef, \@files, 'intersect', $delim1, undef); }
+		elsif ($multiJoinType =~ /^u/) { handleMultiJoin($keyCol1, undef, \@files, 'union'    , $delim1, undef); }
+		else { die "Invalid multi-join type."; }
+	}
 	($numDupeKeysMultiJoin > 0) and verboseWarnPrint("Warning: $numDupeKeysMultiJoin duplicate keys were skipped in the multi-joining.");
 } else {
 	my %hash2 = ();
@@ -401,16 +419,12 @@ if ($multiJoinType) {
 	my $primaryFH          = openSmartAndGetFilehandle($file1);
 	my $prevLineCount1     = undef;
 	my $prevLineCount2     = undef;
-	my $numBlankLines      = 0;
-	my $numWeirdLengths    = 0;
-	my $numMissingKeyCols  = 0;
-	my $numWhitespaceKeys  = 0;
 	foreach my $line (<$primaryFH>) {
 		if ($lineNumPrimary % 2500 == 0) {
 			verboseUpdatePrint("Line $lineNumPrimary...");
 		}
 		$lineNumPrimary++; # Start it at ONE during the first iteration of the loop! (Was initialized to zero before!)
-		($line !~ m/\r/) or die "ERROR: Exiting! The file <$file1> appears to have either WINDOWS-STYLE line endings or MAC-STYLE line endings ( with an '\\r' character) (as seen on line $lineNumPrimary).\n         We cannot handle this character automatically at this point in time, and are QUITTING.";
+		quitIfNonUnixLineEndings($file1, $line, $lineNumPrimary);
 		#$line =~ s/\r\n?/\n/g; # Actually it TOTALLY FAILS on mac line endings! You cannot loop over them. Should work on PC line endings though. Turn PC-style \r\n, or Mac-style just-plain-\r into UNIX \n
 		chomp($line); # Chomp each line of line endings no matter what. Even the header line!
 		if ($lineNumPrimary <= $numHeaderLines) { # This is still a HEADER line, also: lineNumPrimary starts at 1, so this should be '<=' and not '<' to work properly!
@@ -420,19 +434,19 @@ if ($multiJoinType) {
 		}
 		#if(/\S/) { ## if there's some content that's non-spaces-only
 		my @sp1 = split($delim1, $line, $SPLIT_WITH_TRAILING_DELIMS); # split-up line
-		(!defined($prevLineCount1) or $prevLineCount1==scalar(@sp1)) or maybeWarnAboutWeirdness($numWeirdLengths++, $MAX_WEIRD_LINE_LENGTHS_TO_REPORT, "the number of elements in file 1 ($file1) is not constant. Line $lineNumPrimary had this many elements: " . scalar(@sp1) . " (previous line had $prevLineCount1)");
+		(!defined($prevLineCount1) or $prevLineCount1==scalar(@sp1)) or maybeWarn($numWeirdLengths++, $MAX_WEIRD_LINE_LENGTHS_TO_REPORT, "the number of elements in file 1 ($file1) is not constant. Line $lineNumPrimary had this many elements: " . scalar(@sp1) . " (previous line had $prevLineCount1)");
 		$prevLineCount1 = scalar(@sp1);
 
 		my $thisKey;
 		if (scalar(@sp1) == 0) {
 			$thisKey = undef;
-			maybeWarnAboutWeirdness($numBlankLines++, $MAX_BLANK_LINES_TO_REPORT, "line $lineNumPrimary was blank, so it had no key.");
+			maybeWarn($numBlankLines++, $MAX_BLANK_LINES_TO_REPORT, "line $lineNumPrimary was blank, so it had no key.");
 		} elsif (($keyCol1-1) >= scalar(@sp1)) {
 			$thisKey = undef;
-			maybeWarnAboutWeirdness($numMissingKeyCols++, $MAX_MISSING_KEY_COLS_TO_REPORT, "line $lineNumPrimary was missing the key column. (Key column: $keyCol1, Columns on line: " . scalar(@sp1) . ").");
+			maybeWarn($numMissingKeyCols++, $MAX_MISSING_KEY_COLS_TO_REPORT, "line $lineNumPrimary was missing the key column. (Key column: $keyCol1, Columns on line: " . scalar(@sp1) . ").");
 		} else {
 			$thisKey = $sp1[ ($keyCol1-1) ]; # index from ZERO here, that's why we subtract 1 from the key column
-			($thisKey !~ /\s/) or maybeWarnAboutWeirdness($numWhitespaceKeys++, $MAX_WHITESPACE_KEYS_TO_REPORT, "on line $lineNumPrimary in file <$file1>, the key <$thisKey> had *whitespace* in it. This is often unintentional, but is not necessarily a problem!");
+			($thisKey !~ /\s/) or maybeWarn($numWhitespaceKeys++, $MAX_WHITESPACE_KEYS_TO_REPORT, "on line $lineNumPrimary in file <$file1>, the key <$thisKey> had *whitespace* in it. This is often unintentional, but is not necessarily a problem!");
 		}
 		
 		my @sp2;	# matching split-up line
@@ -463,20 +477,19 @@ if ($multiJoinType) {
 				# Since we are NEGATING this, don't print the match when it's found (only when it isn't...)
 			} else {
 				# Great, the OTHER file had a valid entry for this key as well! So print it... UNLESS we are negating.
-				print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder, $shouldReverse) . "\n";
+				print STDOUT joinedUpOutputLine($outDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder, $shouldReverse) . "\n";
 			}
 		} else {
 			# Ok, there was NO MATCH for this key!
 			defined($thisKey) and debugPrint("WARNING: Hash2 didn't have the key $thisKey\n");
 			if ($shouldNegate) {
 				# We didn't find a match for this key, but because we are NEGATING the output, we'll print this line anyway
-				print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder, $shouldReverse) . "\n";
+				print STDOUT joinedUpOutputLine($outDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder, $shouldReverse) . "\n";
 			} else {
 				if (defined($stringWhenNoMatch)) {
 					# We print the line ANYWAY, because the user specified an outer join, with the "-o SOMETHING" option.
-					my $suffixWhenNoMatch = (length($stringWhenNoMatch)>0) ? "${outputDelim}${stringWhenNoMatch}" : "$stringWhenNoMatch"; # handle zero-length -ob SPECIALLY
-					print STDOUT joinedUpOutputLine($outputDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder, $shouldReverse) . $suffixWhenNoMatch . "\n";
-					#print STDOUT join($outputDelim, $thisKey, arrayOfNonKeyElements(@sp1, $keyCol1)) . $suffixWhenNoMatch . "\n";
+					my $suffixWhenNoMatch = (length($stringWhenNoMatch)>0) ? "${outDelim}${stringWhenNoMatch}" : "$stringWhenNoMatch"; # handle zero-length -ob SPECIALLY
+					print STDOUT joinedUpOutputLine($outDelim, $thisKey, \@sp1, $keyCol1, \@sp2, $keyCol2, $preserveKeyOrder, $shouldReverse) . $suffixWhenNoMatch . "\n";
 				} else {
 					# Omit the line entirely, since there was no match in the secondary file.
 				}
@@ -643,11 +656,11 @@ Note that if you switch the order of File1 and File2 for an outer join...
 ...you get a different result (the first file specifies the keys)!
 
 '--fnh' is "filename in header," which is a convenient way of labeling all of the
-columns in the likely instance that multiple files have the same column headers.
+columns in the (common) case where many files have identical column headers.
 
-join.pl --fnh -o "NOPE!" File2 File1
+join.pl --fnh -o "NOPE!" File2.txt File1.txt
   Results in:
-           KEY       File1     File2
+    KEY    File1.txt File2.txt
     AAA    111       avar      aard
     BBB    222       beta      bead       been
     CCC    333       NOPE!
@@ -667,7 +680,3 @@ Alpha   c   last
 
 ----------
 
-CURRENT BUGS: --fnh only labels the FIRST key with the file name. So if you have a file with like, 5 columns, only the first
-  column will be labeled "File1::Column1". The subsequent ones will just be "Column2" etc. (Nov 2017)
-
-  
