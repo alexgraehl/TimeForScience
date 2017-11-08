@@ -353,7 +353,10 @@ sub handleMultiJoin($$$$$$) {
 		foreach my $line (<$fh>) {
 			$lnum++;
 			$totalLinesReadAcrossAllFiles++;
-			quitIfNonUnixLineEndings($filename, $line, $lnum);
+
+			($totalLinesReadAcrossAllFiles % 25000 == 0) and verboseUpdatePrint("[STATUS UPDATE] Read $totalLinesReadAcrossAllFiles lines across $numFilesOpened files...");
+			
+			if ($lnum == 0) { quitIfNonUnixLineEndings($filename, $line, $lnum); }
 			chomp($line);
 			my @vals = split($delim, $line, $SPLIT_WITH_TRAILING_DELIMS); # split up the line
 			if (is_line_array_too_weird_to_use(@vals, $lnum, $filename, $keycol)) {

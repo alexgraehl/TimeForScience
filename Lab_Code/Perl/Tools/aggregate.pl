@@ -97,7 +97,9 @@ for(my $i = $headers; $i < scalar(@{$rows}); $i++) {
 			$agg[$j] = (!$hasMedian) ? ${emptyVal} : vec_median(\@{$medianCalcArray[$j]}); # <-- vec_median is in libstats.pl
 		}
 	}
-	print STDOUT ($id . "\t" . (($max_cols > 0) ? ($delim . join($delim, @agg)) : "") . "\n");
+	#if ($max_cols == 0) {   print STDOUT "${id}\n";                    } # <-- can this ever happen?
+	#else {
+	print STDOUT (join($delim, ($id, @agg)) . "\n");
 }
 exit(0);
 
@@ -169,6 +171,8 @@ If you just want the stats / sum for EVERYTHING in a file, try "stats.pl"
 TO DO / FUTURE WORK:
 
 Future possibility (NOT IMPLEMENTED YET): smean: Standardized mean (mean/stddev).
+
+2017-11: Fixed a bug that was causing an extra tab to be output, regardless of the delimiter.
 
 KNOWN BUGS / ISSUES:
 
