@@ -14,7 +14,7 @@ As a programmer, the main thing to watch out for is that you must use
 
 Almost everything else "just works."
 
-Try it out:
+Try it out with both versions of python:
         python2 ./template.py some_filename x y z
         python3 ./template.py some_filename x y z
 
