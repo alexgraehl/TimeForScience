@@ -181,8 +181,6 @@ sub handleMultiJoin($$$$$$) {
 		}
 		$longestLineInFileHash{$filename} = 0; # longest line is length 0 to start...
 		#print STDERR "Handling file named $filename ...\n";
-		($filename ne '-') or die "If you are multi-joining, you CANNOT read input from STDIN. Sorry.";
-		(-e $filename) or die "Cannot read input file $filename.";
 		my $fh = openSmartAndGetFilehandle($filename);
 		my $lnum = 0;
 
@@ -306,6 +304,27 @@ sub handleMultiJoin($$$$$$) {
 } # end of handleMultiJoin(...)
 # ========================== MAIN PROGRAM HERE
 
+sub sanitized_version_of_no_match_string($) {
+	my ($na) = @_;
+	if (defined($na)) { # replace any "\t" with actual tabs! Lets the user specify a delimiter as -d '\t'
+		$na =~ s/[\\][t]/\t/g; # replace a backslash-then-t with a tab
+		$na =~ s/[\\][n]/\n/g; # replace a backslash-then-n with a newline
+		$na =~ s/[\\][r]/\r/g; # replace a backslash-then-r with a CR return. Why would you do this, I wonder!
+	}
+	return $na;
+}
+
+sub check_for_valid_input_files(\@) {
+	my ($filesArrPtr) = @_;
+	my $numStdins = 0; # number of times we tried to read from '-' (STDIN)
+	foreach my $ff (@$filesArrPtr) {
+		if ($ff eq '-') { $numStdins++; }
+		($ff eq '-' || ((-f $ff) && (-r $ff))) or die "[ERROR]: join.pl cannot find the specified input file '$ff'--either it did not exist, or it could not be read!\n"; # Specified files must be either - (for stdin) or a real, valid, existing filename)
+	}
+	($numStdins <= 1) or die "[ERROR]: You specified reading from STDIN (using the '-' character) more than once. You can ONLY specify a single '-' input!\n";
+	return 1; # looks good
+}
+
 sub main() { # Main program
 	$Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 	GetOptions("help|?|man" => sub { printUsageAndQuit(); }
@@ -359,18 +378,8 @@ sub main() { # Main program
 		else { $outDelim = $DEFAULT_DELIM; } # otherwise, set it to the default delimiter
 	}
 	## ================ DONE SETTING SOME DEFAULT VALUES ====================
-
-	## ================ SANITY-CHECK A BUNCH OF VARIABLES ==================
-	foreach my $ff (@files) {
-		((-f $ff) && (-r $ff)) or die "[ERROR]: join.pl cannot join these two files, because the file '$ff' did not exist or could not be read!"; # Specified files must be either - (for stdin) or a real, valid, existing filename)
-	}
-
-	if (defined($stringWhenNoMatch)) { # replace any "\t" with actual tabs! Lets the user specify a delimiter as -d '\t'
-		$stringWhenNoMatch =~ s/[\\][t]/\t/g; # replace a backslash-then-t with a tab
-		$stringWhenNoMatch =~ s/[\\][n]/\n/g; # replace a backslash-then-n with a newline
-		$stringWhenNoMatch =~ s/[\\][r]/\r/g; # replace a backslash-then-r with a CR return. Why would you do this, I wonder!
-	}
-	
+	check_for_valid_input_files(@files) or die "[ERROR] in reading input files.";
+	$stringWhenNoMatch = sanitized_version_of_no_match_string($stringWhenNoMatch);
 	handleMultiJoin($keyCol1, $keyCol2, \@files, $multiJoinType, $delim1, $delim2);
 	($numDupeKeysMultiJoin > 0) and verboseWarnPrint("$numDupeKeysMultiJoin duplicate keys were skipped in the multi-joining.");
 }
@@ -385,16 +394,20 @@ exit(0);
 ################# END MAIN #############################
 
 __DATA__
-syntax: join.pl [OPTIONS] LOOKUP_FILE  HUGE_DICTIONARY_FILE
+syntax: join.pl [OPTIONS] FILE1 FILE2 ... FILEN
 
-This script takes two (or more) plain text files as input and
-produces a new table that is a join of FILE1 and FILE2 (and perhaps additional files).
+* This script takes two (or more) text files (or COMPRESSED files) as input and
+  produces a new table that is a join of FILE1 and FILE2 (and FILE3... etc).
 
-In other words, it does a database join on the inputs.
+* Unlike UNIX "join"...
+  * join.pl works on unsorted inputs
+  * and works on compressed files (.gz, .bz2, .xz)
+  * Does NOT create a cross product! NOT THE SAME OUTPUT AS UNIX JOIN.
+  * *IGNORES* duplicate keys after the first one in each file. (Reports a warning.)
 
-By default, files are assumed to be tab-delimited with the keys in the first column.
+* A FILE can read from STDIN using the special filename '-'
 
-Unlike the UNIX "join", join.pl does NOT require sorted keys.
+* By default, files are assumed to be tab-delimited with the keys in the first column.
 
 CAVEATS:
 
@@ -406,6 +419,9 @@ CAVEATS:
 
 * join.pl reads the ENTIRE contents of each file into memory!
   It may be unsuitable for joining very large (> 1000 MB) files.
+
+* Currently does not support the '-' reading from STDIN anymore.
+  It would be good to re-implement this.
 
 OPTIONS:
 -1 COLNUM: Find the key in this column from FILE1. Default 1. Indexed from 1.
@@ -445,13 +461,18 @@ join.pl -1 1 -2 2 file1--key_in_first_col.txt  file2--key_in_second_col.compress
   Print lines from file1 that are ALSO in file2, and append the data from file2 in the output.
   This is the most standard-plain-vanilla join, and should be similar to the unix "join" results.
 
-join.pl -o "NO_MATCH_HERE_I_SEE" -1 4 -2 1 file_with_key_in_fourth_col.compressed.bz2  file2.gz > join.with.unmatched.rows.txt
-  Also print the un-matching lines from the first file (lines with no match will say "NO_MATCH_HERE_I_SEE")
+join.pl -o "NO_FILE2_MATCH" -1 4 -2 1 file_with_key_in_fourth_col.compressed.bz2  file2.gz > joined.txt
+  Also print the un-matching lines from the first file
+  (lines with no match will say "NO_FILE2_MATCH")
+  Note that compression is read transprently.
 
-join.pl --multi=union   file1.txt   file2.txt   file3.txt
-  Join MORE than two files. Has different behaviors from joining exactly two files. Some options do not work
-  with multi-file joining (example: --neg does not work).
-  Be aware of --fnh (filename in header), which can help a lot when multi-joining files with otherwise-identical keys!
+join.pl --fnh --multi=union   file1.txt   file2.txt   file3.txt
+  Join THREE files.
+  Some options are not valid with multi-file joins (e.g: --neg / -v requires exactly 2 files).
+  Use --fnh (filename in header), if you want meaningful header names.
+
+zcat file1.txt.gz | join.pl --multi=union - file2.txt.gz file3.txt.gz
+  Same as above, but with file1 read from STDIN.
 
 cat myfile.txt | join.pl - b.txt | less -S
   Read from STDIN (use a '-' instead of a filename!), and pipe into the program "less".
