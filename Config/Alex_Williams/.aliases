@@ -527,6 +527,11 @@ function sciencecom {
 	echo "No $1 git repository exists on this machine."
 	return 1;
     fi
+
+    if [[ -d $HOME/epi ]]; then
+	rsync -avz --links $HOME/epi /Volumes/GoogleDrive/My\ Drive/
+    fi
+    
 }
 
 function scienceup {
