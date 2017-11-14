@@ -1128,6 +1128,15 @@ function docker-begone {
     
 }
 
+function homebrew-everything {
+    echo "Installing a ton of stuff via homebrew, which you should already have installed..."
+    sleep 1
+    echo "(Starting in 4 seconds...)"
+    sleep 4
+    brew tap homebrew/science
+    brew install ipython samtools bedtools fastqc emacs docker bash bedtools blast blat bamtools wget scipy numpy ncurses pigz parallel hdf5 htop git tmux
+}
+
 # count bases per line in a fasta file:
 # cat x.fa | grep -v '^>' | perl -ne 'chomp; my @a=split(//,$_); my %c=(); for my $x (@a) { $c{lc($x)}++; }; for my $k (keys(%c)) { print($k.qq{=}.$c{$k}."\t"); }; print qq{  <-- \n};'
 
