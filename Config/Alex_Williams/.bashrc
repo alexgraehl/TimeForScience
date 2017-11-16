@@ -4,11 +4,8 @@
 # do anything. Printing any output breaks ssh and various things.
 # This is why this line is important at the very top!
 
-# .bashrc: Loaded when the shell is non-interactively started up
-
-# ~/.bashrc: executed by bash(1) for non-login shells.
-# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
-# for examples
+# ~/.bashrc: executed by bash(1) for non-login shells (Loaded when the shell is non-interactively started up)
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc) for examples
 
 # This site also has some useful commands: https://github.com/mrzool/bash-sensible/blob/master/sensible.bash
 
@@ -22,7 +19,6 @@ function agw_cmd_exists() { # Check if a command exists
 if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
 
 # If we're in TMUX, then change the screen type to "screen-256color" and export the TERM
-
 export TERM=xterm-256color # override the defaults and always assume 256 colors
 case "$TERM" in
     xterm-color|xterm-256color|screen-256color)	color_prompt=1 ;;
@@ -227,7 +223,6 @@ export PS1="\[${BRIGHT}\]\[${BLUE}\]\t\[${MAGENTA}\]\$(parse_git_branch)\[${NORM
 # Note: requires a "\n" after the "print_if_nonzero" or else Ctrl-A / Ctrl-E gets messed up when pasting
 
 RIGNODE_HOSTNAME=${RIGNODE_HOSTNAME:-no_rignode_hostname} # bash, assign a DEFAULT value if the argument is not defined
-RIGSAND_HOSTNAME=${RIGSAND_HOSTNAME:-no_sandbox_hostname} # bash, assign a DEFAULT value if the argument is not defined
 case "$COMPYNAME"
 in
     mac*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1, if any
@@ -235,9 +230,6 @@ in
 	;;
     $RIGNODE_HOSTNAME*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1
 	export PS1="${PS1/\$ }[COMPUTE_NODE] $ " # prepend "compute node" to it
-	;;
-    $RIGSAND_HOSTNAME*)
-	export PS1="${PS1/\$ }[SANDBOX] $ " # prepend "compute node" to it
 	;;
     *) ## Otherwise...
 	export PS1="${PS1/\$ }[$COMPYNAME] $ " # prepend "compute node" to it
@@ -267,11 +259,11 @@ else
 fi
 
 # enable color support of ls
-[[ -x /usr/bin/dircolors ]] && eval "`dircolors -b`"
+[[ -x "/usr/bin/dircolors" ]] && eval "`dircolors -b`"
 
 # Enable programmable completion features. May already be enabled in
 # /etc/bash.bashrc or /etc/profile, in which case this would not be necessary.
-if [[ -f /etc/bash_completion ]]; then
+if [[ -f "/etc/bash_completion" ]]; then
     . /etc/bash_completion
 fi
 
@@ -280,7 +272,7 @@ export LS_OPTIONS='--color=auto'
 export LS_COLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=43;31;03:ex=01;31'  ## LS_COLORS *with* an underscore is for Ubuntu
 export LSCOLORS="FxgxCxDxBxegedabagacad"    ## LSCOLORS *without* an underscore is for Mac OS X.
 export HOSTNAME  ## <-- Required for tmux / env to see HOSTNAME as a variable!
-export    CVS_RSH=ssh
+export    CVS_RSH="ssh"
 export  CVSEDITOR="emacs -nw"
 export SVN_EDITOR="emacs -nw"
 export     EDITOR="emacs -nw"
@@ -298,9 +290,6 @@ bind "\M-K:next-history"
 bind "\C-s:history-search-forward" # This doesn't seem to work for some reason
 
 umask u=rwx,g=rwx,o=rx # <-- give users and groups full access to files I create, and let other users READ and EXECUTE
-
-
-
 
 # Save the local ethernet "en0" MAC address into the variable LOCAL_EN0_MAC. Note the zero.
 # Allows per-machine settinsg.
@@ -328,9 +317,4 @@ umask u=rwx,g=rwx,o=rx # <-- give users and groups full access to files I create
 # export projects="$HOME/projects"
 # export documents="$HOME/Documents"
 # export dropbox="$HOME/Dropbox"
-
-
-
-
-
 
