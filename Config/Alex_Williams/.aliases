@@ -528,11 +528,6 @@ function sciencecom {
 	echo "No $1 git repository exists on this machine."
 	return 1;
     fi
-
-    if [[ -d $HOME/epi ]]; then
-	rsync -avz --links $HOME/epi /Volumes/GoogleDrive/My\ Drive/
-    fi
-    
 }
 
 function scienceup {
@@ -555,6 +550,11 @@ function science {
     if [[ -e "${HOME}/epi" ]]; then
 	echo '~/Epi (GitHub):' ; scienceup ${HOME}/epi && sciencecom ${HOME}/epi
     fi
+
+    #if [[ -d "${HOME}/epi" ]]; then
+    #  rsync -avz --links "${HOME}/epi"   /Volumes/GoogleDrive/My\ Drive/
+    #fi
+	
     #echo 'Bioinformatics (Git on Westway):' ; scienceup ${BINF_CORE_WORK_DIR} ; sciencecom ${BINF_CORE_WORK_DIR}
     echo -e '\nFinished updating on' `date`
 }
