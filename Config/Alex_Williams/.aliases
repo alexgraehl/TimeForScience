@@ -237,10 +237,6 @@ alias cheat="echo \
 \">> MD5 verify: md5sum -c md5*.txt. Checksum must be 1st col, then 2 spaces, then filename. If checksum is 2nd: cat md5*.txt | awk '{print \\\$2\\\"  \\\"\\\$1}' | md5sum -c \" ${NL}\
 \">> HEX HEXDUMP: View individual bytes of a file in hex form: hexdump -C FILENAME \" ${NL}\
 \">> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
-\">> HG: Mercurial: restore accidentally-locally-deleted file from repo: hg revert FILENAME \" ${NL}\
-\">> HG: Mercurial: revert to previous version: hg revert FILENAME -r-2 (or -r-3 for two versions ago, etc) \" ${NL}\
-\">> HG: Mercurial: show diff from last version: hg diff -c -1 (or -2, -3, etc.) \" ${NL}\
-\">> HG: Mercurial: <push creates new remote heads> is fixed by doing hg pull first! \" ${NL}\
 \">> GIT only get the last 1 revision (faster): git clone --depth=1 https://your-site-here/something.git \" ${NL}\
 \">> GIT discard ALL local changes: git reset --hard origin/master \" ${NL}\
 \">> GIT fix an HTTP repo to SSH: git remote set-url origin git@github.com:RepoNameHere/ProjName.git \" ${NL}\
@@ -503,19 +499,6 @@ alias commit="cvs commit -m 'AGW CVS Commit'"
 alias gitcom="git commit -a -m 'Changes committed by alexgw'"
 alias gitstat="git ls-files --modified --deleted"
 alias gitdiff="git difftool"
-
-alias hgcom="hg commit -u '${USER}' -m 'Changes committed by ${USER}' && echo '[Done] committing changes locally with Mercurial.'"
-alias hgpush="hg commit -u '${USER}' -m 'Changes committed by ${USER}' && hg push && echo '[Done] pushing changes to the remote server with Mercurial.'"
-alias hgpull="hg pull ; hg update && echo '[Done] pulling remote changes and updating the local Mercurial repository.'"
-alias hgup="hg update -v && echo '[Done] updating local changes in Mercurial'"
-alias hgs="echo '[hg status]:'; hg status; echo '[hg status --rev .:tip]:'; hg status --rev .:tip ; echo 'Note: to see every little detail, type \"hg log --patch -r .:tip\"' "
-
-function hglog {
-    hg status
-    if [[ $? == "0" ]] ; then  ## <-- only check the log if there is actually a mercurial repo here!
-	hg log -p --color=always "$@" | s
-    fi
-}
 
 function sciencecom {
     if [[ -d "$1/.git" ]] ; then
