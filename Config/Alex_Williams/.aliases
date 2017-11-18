@@ -533,6 +533,9 @@ function science {
     if [[ -e "${HOME}/epi" ]]; then
 	echo '~/Epi (GitHub):' ; scienceup ${HOME}/epi && sciencecom ${HOME}/epi
     fi
+    if [[ -e "${HOME}/pyswarm" ]]; then
+	echo '~/pyswarm (GitHub):' ; scienceup ${HOME}/pyswarm && sciencecom ${HOME}/pyswarm
+    fi
 
     #if [[ -d "${HOME}/epi" ]]; then
     #  rsync -avz --links "${HOME}/epi"   /Volumes/GoogleDrive/My\ Drive/
