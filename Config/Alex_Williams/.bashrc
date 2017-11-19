@@ -162,7 +162,7 @@ bind "set show-all-if-ambiguous on"      # Display matches for ambiguous pattern
 # =========================== TERMINAL HISTORY =========================
 export HISTSIZE=500000 # num lines WHEN READING A NEW SESSION
 export HISTFILESIZE=500000 # num lines ON DISK
-export HISTCONTROL="erasedups:ignoreboth"  # Avoid duplicate entries
+export HISTCONTROL="ignoredups" # do not put 'erasedups' in unless you like annoyance
 #export HISTIGNORE="&:[ ]*:kpk:exit:p:pwd:rr:clear:history:fg:bg" ## Commands that are NOT saved to the history!
 export HISTTIMEFORMAT='%F %T '
 #export PROMPT_COMMAND='history -a' ## save ALL terminal histories
