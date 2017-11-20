@@ -218,23 +218,83 @@ UNDERLINE=$(tput smul)
 
 #PS1="[\D{%e}=\t \h:\W]$ "
 # Note: all color sequence escapes must be surrounded by \[ ... \]. So all instances of \e must have \[ before them, or line wrap will break. See this: https://stackoverflow.com/questions/342093/ps1-line-wrapping-with-colours-problem . More specifically: "terminal escapes should be surrounded by \[ \] in order for bash to be able to correctly count printing characters to the beginning of the line. "
-export PS1="\[${BRIGHT}\]\[${BLUE}\]\t\[${MAGENTA}\]\$(parse_git_branch)\[${NORMAL}\]"
+PRE_PS1="\[${BRIGHT}\]\[${BLUE}\]\t\[${MAGENTA}\]\$(parse_git_branch)\[${NORMAL}\]"
 #export PS1="\$(print_if_nonzero_exit_code)\n[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
 # Note: requires a "\n" after the "print_if_nonzero" or else Ctrl-A / Ctrl-E gets messed up when pasting
 
 RIGNODE_HOSTNAME=${RIGNODE_HOSTNAME:-no_rignode_hostname} # bash, assign a DEFAULT value if the argument is not defined
 case "$COMPYNAME"
 in
-    mac*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1, if any
-	export PS1="${PS1}\[${POWDER_BLUE}\].mac\$\[${NORMAL}\] " # we are on a mac laptop probably
-	;;
-    $RIGNODE_HOSTNAME*)  # note: ${PS1/\$ } is to remove the trailing "$ " from the PS1
-	export PS1="${PS1/\$ }[COMPUTE_NODE] $ " # prepend "compute node" to it
+    zzz*)
+	export PS1="${PRE_PS1}\[${POWDER_BLUE}\].mac\$\[${NORMAL}\] " # we are on a mac laptop probably
 	;;
     *) ## Otherwise...
-	export PS1="${PS1/\$ }[$COMPYNAME] $ " # prepend "compute node" to it
+	export PS1="${PRE_PS1/\$ }[$COMPYNAME] $ " # prepend "compute node" to it
 	;;
 esac
+
+
+
+# ============ Start of code block from http://ezprompt.net/ =====
+# ===================================
+function nonzero_return() {
+    RETVAL=$?
+    #echo "hello $? $RETVAL ${?#0}"
+    [ $RETVAL -ne 0 ] && echo "$RETVAL"
+}
+
+# get current branch in git repo
+function parse_git_branch() {
+	BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
+	if [ ! "${BRANCH}" == "" ]
+	then
+		STAT=`parse_git_dirty`
+		echo "[${BRANCH}${STAT}]"
+	else
+		echo ""
+	fi
+}
+
+# get current status of git repo
+function parse_git_dirty {
+	status=`git status 2>&1 | tee`
+	dirty=`echo -n "${status}" 2> /dev/null | grep "modified:" &> /dev/null; echo "$?"`
+	untracked=`echo -n "${status}" 2> /dev/null | grep "Untracked files" &> /dev/null; echo "$?"`
+	ahead=`echo -n "${status}" 2> /dev/null | grep "Your branch is ahead of" &> /dev/null; echo "$?"`
+	newfile=`echo -n "${status}" 2> /dev/null | grep "new file:" &> /dev/null; echo "$?"`
+	renamed=`echo -n "${status}" 2> /dev/null | grep "renamed:" &> /dev/null; echo "$?"`
+	deleted=`echo -n "${status}" 2> /dev/null | grep "deleted:" &> /dev/null; echo "$?"`
+	bits=''
+	if [ "${renamed}" == "0" ]; then
+		bits=">${bits}"
+	fi
+	if [ "${ahead}" == "0" ]; then
+		bits="*${bits}"
+	fi
+	if [ "${newfile}" == "0" ]; then
+		bits="+${bits}"
+	fi
+	if [ "${untracked}" == "0" ]; then
+		bits="?${bits}"
+	fi
+	if [ "${deleted}" == "0" ]; then
+		bits="x${bits}"
+	fi
+	if [ "${dirty}" == "0" ]; then
+		bits="!${bits}"
+	fi
+	if [ ! "${bits}" == "" ]; then
+		echo " ${bits}"
+	else
+		echo ""
+	fi
+}
+
+export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;42m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]\h\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] "
+
+# ============ End of code block from http://ezprompt.net/ =====
+
+
 
 #if [[ -n "$color_prompt" ]] ; then
 #    if [[ -z "$is_sshing" ]] ; then
