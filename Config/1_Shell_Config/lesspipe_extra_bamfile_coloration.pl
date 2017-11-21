@@ -48,6 +48,7 @@ my %colors = ( 'A' => $STA
 	       , 'C' => $STC
 	       , 'c' => $STC
 	       , 'N' => $STN
+	       , 'n' => $STN
 	       , '-' => $RES # Hyphen does not get colored--reset it to the terminal default!
 	       
 );
