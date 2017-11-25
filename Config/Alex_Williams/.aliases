@@ -539,6 +539,10 @@ function science {
     fi
 	
     #echo 'Bioinformatics (Git on Westway):' ; scienceup ${BINF_CORE_WORK_DIR} ; sciencecom ${BINF_CORE_WORK_DIR}
+    echo -e "Updating (wait 20 more seconds)..."
+    sleep 5;
+    echo -e "Updating (wait 15 more seconds)..."
+    sleep 15;
     echo -e '\nFinished updating on' `date`
 }
 
