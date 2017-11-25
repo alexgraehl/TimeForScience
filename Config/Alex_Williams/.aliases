@@ -528,18 +528,15 @@ function scienceup {
 
 function science {
     if [[ -e "${TIME_FOR_SCIENCE_DIR}" ]]; then
-       echo 'TimeForScience (GitHub):' ; scienceup ${TIME_FOR_SCIENCE_DIR} && sciencecom ${TIME_FOR_SCIENCE_DIR}
+       (echo 'TimeForScience (GitHub):' ; scienceup ${TIME_FOR_SCIENCE_DIR} && sciencecom ${TIME_FOR_SCIENCE_DIR}) &
     fi
     if [[ -e "${HOME}/epi" ]]; then
-	echo '~/Epi (GitHub):' ; scienceup ${HOME}/epi && sciencecom ${HOME}/epi
+	(echo '~/Epi (GitHub):' ; scienceup ${HOME}/epi && sciencecom ${HOME}/epi) &
+	#  rsync -avz --links "${HOME}/epi"   /Volumes/GoogleDrive/My\ Drive/
     fi
     if [[ -e "${HOME}/pyswarm" ]]; then
-	echo '~/pyswarm (GitHub):' ; scienceup ${HOME}/pyswarm && sciencecom ${HOME}/pyswarm
+	(echo '~/pyswarm (GitHub):' ; scienceup ${HOME}/pyswarm && sciencecom ${HOME}/pyswarm) &
     fi
-
-    #if [[ -d "${HOME}/epi" ]]; then
-    #  rsync -avz --links "${HOME}/epi"   /Volumes/GoogleDrive/My\ Drive/
-    #fi
 	
     #echo 'Bioinformatics (Git on Westway):' ; scienceup ${BINF_CORE_WORK_DIR} ; sciencecom ${BINF_CORE_WORK_DIR}
     echo -e '\nFinished updating on' `date`
