@@ -337,6 +337,8 @@ export  CVSEDITOR="emacs -nw"
 export SVN_EDITOR="emacs -nw"
 export     EDITOR="emacs -nw"
 
+export EPI_PHAGEOMANCY_RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
+
 # Keybindings: Add IJKL navigation to supplement/replace the arrow keys
 bind "\M-J:backward-word"
 bind "\M-L:forward-word"
@@ -350,6 +352,7 @@ bind "\M-K:next-history"
 bind "\C-s:history-search-forward" # This doesn't seem to work for some reason
 
 umask u=rwx,g=rwx,o=rx # <-- give users and groups full access to files I create, and let other users READ and EXECUTE
+
 
 # Save the local ethernet "en0" MAC address into the variable LOCAL_EN0_MAC. Note the zero.
 # Allows per-machine settinsg.
