@@ -382,9 +382,9 @@ if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then
     # 'exa' is a 'ls' replacement
     function ls {
 	echo -e "${a_banner_color}>>>>" $(pwd -P) "${a_end_color}"
-	if [[ -e ".banner" ]]; then
+	if [[ -e ".readme" ]]; then
 	    echo -e -n "${a_dirinfo_color}"
-	    cat ".banner" | fold -s -w 80 | sed -e "s/^/$(echo -ne '${SNEK}')  /"
+	    cat ".readme" | fold -s -w 80 | sed -e "s/^/$(echo -ne ${SNEK})  /"
 	    echo -e -n "${a_end_color}"
 	    #printf "\xF0\x9F\x90\x8D" # a snake
 	fi
