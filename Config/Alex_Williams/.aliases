@@ -380,7 +380,7 @@ alias cheat="echo \
 SNEK="\xF0\x9F\x90\x8D"
 if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then
     # 'exa' is a 'ls' replacement
-    function ls {
+    function lsw {
 	echo -e "${a_banner_color}>>>>" $(pwd -P) "${a_end_color}"
 	if [[ -e ".readme" ]]; then
 	    echo -e -n "${a_dirinfo_color}"
@@ -390,6 +390,7 @@ if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then
 	fi
 	exa --color=auto
     }
+    alias ls='exa --color=auto'
     alias ll='exa -l -a --color=auto'
     
 elif agw_cmd_exists "exa" ; then
