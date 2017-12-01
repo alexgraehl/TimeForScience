@@ -35,11 +35,31 @@ if [[ "0" == $? ]] && [[ $(scutil --get ComputerName) == "Slithereens" ]]; then
     COMPYNAME="Slithereens"
 fi
 
+BLACK=$(tput setaf 0)
+RED=$(tput setaf 1)
+GREEN=$(tput setaf 2)
+LIME_YELLOW=$(tput setaf 190)
+YELLOW=$(tput setaf 3)
+POWDER_BLUE=$(tput setaf 153)
+BLUE=$(tput setaf 4)
+MAGENTA=$(tput setaf 5)
+CYAN=$(tput setaf 6)
+WHITE=$(tput setaf 7)
+BRIGHT=$(tput bold)
+NORMAL=$(tput sgr0)
+BLINK=$(tput blink)
+REVERSE=$(tput smso)
+UNDERLINE=$(tput smul)
+
+
 if [[ -n "$color_prompt" ]] ; then
     color_prefix="\033" ## <-- \033 works everywhere. \e works on Linux
     a_echo_color="${color_prefix}[1;32m" ## green  ## can also be: 1;33 ## was [3;40m before
     a_status_color="${color_prefix}[1;33m"
     a_warning_color="${color_prefix}[1;31m"
+
+    a_banner_color="${color_prefix}[1;45m"
+    a_dirinfo_color="${color_prefix}${POWDER_BLUE}"
     a_end_color="${color_prefix}[m"
 else
     color_prefix='' # Sadly, we do not have color on this terminal.
@@ -200,21 +220,6 @@ parse_git_branch() { # Shows the current 'git' branch if you're in a git-control
      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/[\1]/'
 }
 
-BLACK=$(tput setaf 0)
-RED=$(tput setaf 1)
-GREEN=$(tput setaf 2)
-LIME_YELLOW=$(tput setaf 190)
-YELLOW=$(tput setaf 3)
-POWDER_BLUE=$(tput setaf 153)
-BLUE=$(tput setaf 4)
-MAGENTA=$(tput setaf 5)
-CYAN=$(tput setaf 6)
-WHITE=$(tput setaf 7)
-BRIGHT=$(tput bold)
-NORMAL=$(tput sgr0)
-BLINK=$(tput blink)
-REVERSE=$(tput smso)
-UNDERLINE=$(tput smul)
 
 #PS1="[\D{%e}=\t \h:\W]$ "
 # Note: all color sequence escapes must be surrounded by \[ ... \]. So all instances of \e must have \[ before them, or line wrap will break. See this: https://stackoverflow.com/questions/342093/ps1-line-wrapping-with-colours-problem . More specifically: "terminal escapes should be surrounded by \[ \] in order for bash to be able to correctly count printing characters to the beginning of the line. "
