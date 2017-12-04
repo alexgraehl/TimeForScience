@@ -103,7 +103,7 @@ function phageomancy-all {
 	echo "Handling $f ..."
 	PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
 	RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
-	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="ALL" --name="${f}" --fqguess --resources="${RESOURCE_DIR}"
+	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="ALL" --name="${f}" --resources="${RESOURCE_DIR}"
     done
 }
 
@@ -111,14 +111,14 @@ function phageomancy-one {
     echo "Handling ${1} ..."
     PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
     RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
-    ipython --pdb ${PHAGEOMANCY_PY} -- --mode="ALL" --name="${1}" --fqguess --resources="${RESOURCE_DIR}"
+    ipython --pdb ${PHAGEOMANCY_PY} -- --mode="ALL" --name="${1}" --resources="${RESOURCE_DIR}"
 }
 
 function phageomancy-just {
     echo "Handling ${1} with mode ${2}..."
     PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
     RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
-    ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --name="${1}" --fqguess --resources="${RESOURCE_DIR}"
+    ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --name="${1}" --resources="${RESOURCE_DIR}"
 }
 
 function delve {
