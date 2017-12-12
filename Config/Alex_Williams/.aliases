@@ -683,7 +683,7 @@ function maczip {
 	if [[ "$#" -gt 1 ]] ; then echo "Adding a total of $# files to the new zip archive, which OMITS Mac-specific files (e.g. .DS_Store)." ; fi
 	for var in "$@"; do echo " * Archiving $var --> ${theCompressedBasename}.zip" ; done
 	echo "[ZIP] command running now..." ;
-	zip -9 -r -X --symlinks --exclude "*.DS_Store" --exclude="*~*" --exclude="*\$*" "${theCompressedBasename}.zip"  $@;
+	zip -9 -r -X --symlinks --exclude "*.DS_Store" --exclude="*~" --exclude="\$*" "${theCompressedBasename}.zip"  $@;
 	echo "[Done]" ;
     fi
 }
