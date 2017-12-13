@@ -240,6 +240,7 @@ alias cheat="echo \
 \">> MD5 verify: md5sum -c md5*.txt. Checksum must be 1st col, then 2 spaces, then filename. If checksum is 2nd: cat md5*.txt | awk '{print \\\$2\\\"  \\\"\\\$1}' | md5sum -c \" ${NL}\
 \">> HEX HEXDUMP: View individual bytes of a file in hex form: hexdump -C FILENAME \" ${NL}\
 \">> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
+\">> GIT do not download huge LFS files when git lfs is enabled: GIT_LFS_SKIP_SMUDGE=1 git clone YOUR_REPO \" ${NL}\
 \">> GIT only get the last 1 revision (faster): git clone --depth=1 https://your-site-here/something.git \" ${NL}\
 \">> GIT discard ALL local changes: git reset --hard origin/master \" ${NL}\
 \">> GIT fix an HTTP repo to SSH: git remote set-url origin git@github.com:RepoNameHere/ProjName.git \" ${NL}\
