@@ -121,10 +121,11 @@ function phageomancy-just {
     ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --name="${1}" --resources="${RESOURCE_DIR}"
 }
 
-function delve {
+function delve { # or 'dv'
     ## Finds, in any subdirectories, any files that have a name that matches the input text. Sort of like a poor man's "locate"
-    find ./ -iname "*$@*"
+    find . -iname "*$@*"
 }
+alias dv='delve'
 
 BRACKET_OPEN='{'
 PAREN_OPEN='('
