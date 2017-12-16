@@ -344,6 +344,8 @@ export     EDITOR="emacs -nw"
 
 export EPI_PHAGEOMANCY_RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
 
+export HUE_BASE_IP="192.168.1.222"
+
 # Keybindings: Add IJKL navigation to supplement/replace the arrow keys
 bind "\M-J:backward-word"
 bind "\M-L:forward-word"
