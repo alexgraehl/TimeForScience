@@ -1095,6 +1095,10 @@ function pdf2png {
     for f in "$@" ; do echo "Converting $f..."; convert -verbose -density 72 $f +antialias ${f/.pdf}.png; done
 }
 
+function zwcl {
+    for f in "$@" ; do echo -e -n "$f\t"; zless $f | wc -l; done
+}
+
 function redrop {
     dropbox.py stop && dropbox.py start && sleep 2 && dropbox.py status;
 }
