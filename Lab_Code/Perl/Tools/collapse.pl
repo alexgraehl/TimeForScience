@@ -2,8 +2,9 @@
 
 ##############################################################################
 ##############################################################################
-## collapse.pl: the opposite of 'expand.pl'. Makes a single convenient table
-## out of a mega-list of pairs
+## collapse.pl: related to 'expand.pl'. Makes a single convenient table out of a mega-list of pairs
+# NOTE : not the same as 'expand.pl', which is the opposite of 'flatten.pl'
+
 ##############################################################################
 ##############################################################################
 ## Based on original version by Josh Stuart.
@@ -82,11 +83,11 @@ sub main() {
 main();
 
 __DATA__
-syntax: collapse.pl [OPTIONS]
+syntax: collapse.pl [OPTIONS]  < INPUT_FILE.pairs.txt
 
 Turns a list of pairs into a more convenient table.
-Is the exact opposite of 'expand.pl'.
-
+# NOTE : not the same as 'expand.pl', which is the opposite of 'flatten.pl'
+  
 For example, if we have this input in a file:
 A  1
 A  2
@@ -98,6 +99,10 @@ B  3,4
 
 Note: the --function option is VERY USEFUL and lets you easily summarize your data (mean, etc.)
 So make sure to check that out.
+
+EXAMPLE:
+
+cat myfile.pairs.txt | collapse.pl --dot > out.txt
 
 OPTIONS:
 

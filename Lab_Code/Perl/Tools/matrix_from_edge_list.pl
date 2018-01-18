@@ -4,28 +4,19 @@
 
 ##############################################################################
 ##############################################################################
-##
 ## matrix_from_edge_list.pl or edges2matrix.pl
-##
 ##############################################################################
 ##############################################################################
-##
 ## Written by Josh Stuart in the lab of Stuart Kim, Stanford University.
-##  Email address: jstuart@stanford.edu
-##
 ##############################################################################
 ##############################################################################
-##
 ## Written: 00/00/02
 ## Updated: 00/00/02
 ## Updated by AGW: Feb 10 2015
-##
 ##############################################################################
 ##############################################################################
 
 use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
-#use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libset.pl";
-
 use strict;
 use warnings;
 
@@ -38,8 +29,6 @@ use warnings;
 # If you feed this program THREE columns, it gives you a matrix with the cell value being whatever was in the third column.
 # For example, if you have a list of gene interactions of some kind,
 # it prints out "1" when the interaction is in the list, and "0" otherwise.
-
-
 
 # Flush output to STDOUT immediately.
 #$| = 1;
@@ -57,28 +46,20 @@ my @flags   = (
               );
 
 my %args = %{&parseArgs(\@ARGV, \@flags)};
-
-if(exists($args{'--help'}))
-{
+if (exists($args{'--help'})) {
    print STDOUT <DATA>;
    exit(0);
 }
-
 my $verbose   = not($args{'-q'});
-
-my $missingVal = $args{'--missing'};
-
 my $key_col1  = $args{'-k1'}; # Note: these are numbered from ONE and not zero!
 my $key_col2  = $args{'-k2'}; # Note: these are numbered from ONE and not zero!
 my $val_col   = $args{'-v'};  # Note: these are numbered from ONE and not zero!
-
 my $should_output_binary_options = $args{'-b'};
+my $missingVal = ($should_output_binary_options) ? 0 : $args{'--missing'};
 my $delim     = $args{'-d'};
 my $symmetric = $args{'-s'};
 my $file      = $args{'--file'};
-
 my %sets;
-
 my $filep;
 open($filep, $file) or die("Could not open file '$file' for reading");
 
@@ -131,7 +112,6 @@ while(my $line = <$filep>) {
 
     $numItemsSeenBefore = $numItems;
 }
-close($filep);
 
 # &setsPrint(\%sets, \*STDOUT, 0, 1);
 
@@ -160,7 +140,10 @@ foreach my $k1 (@sortedKeys1) {
 exit(0); # Done
 
 __DATA__
-syntax: edges2matrix.pl [OPTIONS]
+syntax: matrix_from_edge_list.pl [OPTIONS]
+
+Note: related in some ways to 'flatten.pl' and 'expand.pl'--those may be useful
+  for getting a list of edges into the right format.
 
 Runs in two modes: TWO COLUMN mode and THREE COLUMN mode:
 # Give it TWO columns,:
@@ -184,6 +167,8 @@ Runs in two modes: TWO COLUMN mode and THREE COLUMN mode:
 
 OPTIONS are:
 
+-b: Print 1 or 0 (present/absent) rather than trying to print a third column.
+ 
 -q: Quiet mode (default is verbose)
 
 -k1 COL: Set the column of item 1 to COL (default is 1).
@@ -200,7 +185,7 @@ VALUE options (default is -v 3):
 
 -s: Symmetric.  Assume edges are undirected so add symmetric relationships.
 
---missing STRING (Default: (blank))
+--missing STRING (Default: (NA))
         * Sets the value for "not found." Examples: --missing 'NA' or --missing NONE.
         * Note: Do not put an equal sign between <missing> and the string!
 
@@ -212,6 +197,6 @@ matrix_from_edge_list.pl --missing NA  INPUTFILE.txt
 matrix_from_edge_list.pl --missing NONE  -k1 2  -k2 3  -v 4 INPUTFILE.txt
   * Output column 4 values based on keys in columns 2 and 3.
 
-matrix_from_edge_list.pl --missing NONE  -k1 1  -k2 2  -b   INPUTFILE.txt
+matrix_from_edge_list.pl -b   --missing NONE  -k1 1  -k2 2   INPUTFILE.txt
   * Output binary "1 / 0" values based on keys in columns 1 and 2.
 
