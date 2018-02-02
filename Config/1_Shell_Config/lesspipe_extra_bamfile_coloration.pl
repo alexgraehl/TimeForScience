@@ -34,6 +34,13 @@ my $STG=$F_YELLOW; # start color G: 33 = yellow
 # with a background color. Otherwise the background "leaks"
 # beyond where it is supposed to be.
 
+#my $INPUT_FILENAME = undef;
+#if (scalar(@ARGV) == 1) {
+#	$INPUT_FILENAME = $ARGV[0];
+#} elsif (scalar(@ARGV) >= 2) {
+#	die "Error in lesspipe_extra_bamfile_coloration.pl: more than two input filenames!"
+#}
+
 my $STN=qq{\033[45m\033[1;37m}; #  \033[45m}; # start color N: magenta background, black foreground
 my $RES=qq{\033[0m} ; # RESET color
 
@@ -53,11 +60,44 @@ my %colors = ( 'A' => $STA
 	       
 );
 
+
+# my %aa_colors = ( 'F' => $PHE
+# 		  , 'L' => $LEU
+# 		  , 'I' => $ILE
+# 		  , 'M' => $MET
+# 		  , 'V' => $VAL
+# 		  , 'S' => $SER
+# 		  , 'P' => $PRO
+# 		  , 'T' => $THR
+# 		  , 'A' => $ALA
+# 		  , 'Y' => $TYR
+# 		  , 'H' => $HIS
+# 		  , 'Q' => $GLN
+# 		  , 'N' => $ASN
+# 		  , 'K' => $LYS
+# 		  , 'D' => $ASP
+# 		  , 'E' => $GLU
+# 		  , 'C' => $CYS
+# 		  , 'W' => $TRP
+# 		  , 'R' => $ARG
+# 		  , 'G' => $GLY
+# 		  , 'X' => $XXX
+# 		)
+#  ASP,GLU   bright red [230,10,10]     CYS,MET     yellow [230,230,0]
+#  LYS,ARG   blue       [20,90,255]     SER,THR     orange [250,150,0]
+#  PHE,TYR   mid blue   [50,50,170]     ASN,GLN     cyan   [0,220,220]
+#  GLY       light grey [235,235,235]   LEU,VAL,ILE green  [15,130,15]
+#  ALA       dark grey  [200,200,200]   TRP         pink   [180,90,180]
+#  HIS       pale blue  [130,130,210]   PRO         flesh  [220,150,130]
+
+# Try to guess if a section of text is DNA.
+# (Maybe also try to guess if it's an amino acid? (AA)? Not currently implemented.)
 while (my $line = <>) {
     my @potentiallyInteresting = ();
     my @boringVersion = ();
-    my $inDNA = 0;
-
+    my $inDNA = 0; # DNA bases
+    my $inAA  = 0; # amino acids!
+    
     my @arr = split(//, $line);
 
     my $prevC = '';
@@ -74,7 +114,6 @@ while (my $line = <>) {
 		$toPush = $colors{$c} . $c;
 	    }
 	    if ($c =~ /[Nn]/) { $toPush .= $RES; } # note that we add the $RES reset character AFTER AN 'N' but not anything else. That's because N needs its background reset, as it is the only letter with a colored background.
-	    
 	    push(@potentiallyInteresting, $toPush);
 	    push(@boringVersion, $c);
 	} else {

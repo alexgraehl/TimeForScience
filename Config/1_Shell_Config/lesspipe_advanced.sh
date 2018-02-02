@@ -34,7 +34,7 @@ basecolor() {
     ## Assumes that you pass something INTO it via a pipe -- otherwise it fails
     ## Example:  cat myfile | sed 's/1/2/' | basecolor 
     #sed -e 's/\(AA*\)/\1'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
-    perl "${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_extra_bamfile_coloration.pl"
+    perl "${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_extra_bamfile_coloration.pl" "$1"
     #sed -e 's/A/'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
     # todo: replace me
     # Colorize based on entire blocks of identical characters. Turns out not to be any faster, unfortunately!
@@ -84,7 +84,18 @@ lesspipe() {
 |*.f[aq].bz2\
 |*.f[aq].xz\
 |*.fast[aq]\
+|*.fast[aq].txt\
 |*.f[aq]\
+|*.fna\
+|*.fna.gz\
+|*.fna.bz2\
+|*.fna.xz\
+|*.fna.txt\
+|*.faa\
+|*.faa.gz\
+|*.faa.bz2\
+|*.faa.xz\
+|*.faa.txt\
 |*.fast[aq].gz\
 |*.fast[aq].bz2\
 |*.fast[aq].xz\
