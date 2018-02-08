@@ -1,5 +1,5 @@
 #!/bin/bash -
-#
+
 # To use this filter with less, define LESSOPEN:
 # export LESSOPEN="|/usr/bin/lesspipe.sh %s"
 # (Note that that is the default one, not this advanced one)
@@ -17,6 +17,7 @@ smartdecompress() {
     case "$1" in
 	*.gz)	DECOMPRESSOR="gunzip -c" ;;
 	*.bz2)	DECOMPRESSOR="bunzip2 -c" ;;
+	*.xz)   DECOMPRESSOR="xz --decompress --stdout " ;;
 	*)	DECOMPRESSOR="cat" ;;
     esac
     $DECOMPRESSOR "$1"; # <-- this is what we pass into the relevant "smart" function below. Note that the quotes ("$1") are crucial for handling files with spaces.
@@ -34,7 +35,7 @@ basecolor() {
     ## Assumes that you pass something INTO it via a pipe -- otherwise it fails
     ## Example:  cat myfile | sed 's/1/2/' | basecolor 
     #sed -e 's/\(AA*\)/\1'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
-    perl "${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_extra_bamfile_coloration.pl" "$1"
+    perl "${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_extra_bamfile_coloration.pl" # do NOT pass in the filename!
     #sed -e 's/A/'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
     # todo: replace me
     # Colorize based on entire blocks of identical characters. Turns out not to be any faster, unfortunately!

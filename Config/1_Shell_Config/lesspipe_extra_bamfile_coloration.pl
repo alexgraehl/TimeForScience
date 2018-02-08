@@ -97,7 +97,6 @@ while (my $line = <>) {
     my @boringVersion = ();
     my $inDNA = 0; # DNA bases
     my $inAA  = 0; # amino acids!
-    
     my @arr = split(//, $line);
 
     my $prevC = '';
@@ -106,7 +105,6 @@ while (my $line = <>) {
 	    # Hyphen (gap) is allowed to be "maybe" part of a DNA sequence. It gets whatever color the previous base had, if any.
 	    # We could fix this by resetting the color after every base, if we really wanted to.
 	    $inDNA = 1;
-
 	    my $toPush;
 	    if ($prevC eq $c) {
 		$toPush = $c; # if the previous character was ALSO the same as this one, then no need to change the colors again... unless it's an N
