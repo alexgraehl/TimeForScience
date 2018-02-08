@@ -46,20 +46,13 @@ my $RES=qq{\033[0m} ; # RESET color
 
 my $MIN_DNA_SEQ_LENGTH_TO_COLOR = 5; # Color a run of "ACGTN-" if they are at least THIS long (or longer).
 
-my %colors = ( 'A' => $STA
-	       , 'a' => $STA
-	       , 'T' => $STT
-	       , 't' => $STT
-	       , 'G' => $STG
-	       , 'g' => $STG
-	       , 'C' => $STC
-	       , 'c' => $STC
-	       , 'N' => $STN
-	       , 'n' => $STN
+my %colors = ( 'A' => $STA  , 'a' => $STA
+	       , 'T' => $STT, 't' => $STT
+	       , 'G' => $STG, 'g' => $STG
+	       , 'C' => $STC, 'c' => $STC
+	       , 'N' => $STN, 'n' => $STN
 	       , '-' => $RES # Hyphen does not get colored--reset it to the terminal default!
-	       
 );
-
 
 # my %aa_colors = ( 'F' => $PHE
 # 		  , 'L' => $LEU
