@@ -98,10 +98,15 @@ function witch { # Shows the versions for all on-your-path verisons of software.
 }
 
 function phageomancy-all {
+    phageomancy-all-just "ALL"
+}
+
+function phageomancy-all-just {
+    echo "Running this mode (${1}) on all gz files in this directory..."
     PREFIXES=$(ls -1 p*.gz | grep -E '(fastq|fq).gz$' | perl -pe 's/_R.*//' | sort -u)
     for f in $PREFIXES; do
 	echo "Handling $f ..."
-	phageomancy-one "${f}"
+	phageomancy-one "${f}" "${1}"
     done
 }
 
@@ -113,7 +118,8 @@ function phageomancy-just {
     echo "Handling ${1} with mode ${2}..."
     PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
     RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
-    ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --name="${1}" --resources="${RESOURCE_DIR}"
+    #ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --name="${1}" --resources="${RESOURCE_DIR}"
+    ${PHAGEOMANCY_PY} --mode="${2}" --name="${1}" --resources="${RESOURCE_DIR}"
 }
 
 function delve { # or 'dv'
