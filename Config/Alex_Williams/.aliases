@@ -101,17 +101,12 @@ function phageomancy-all {
     PREFIXES=$(ls -1 p*.gz | grep -E '(fastq|fq).gz$' | perl -pe 's/_R.*//' | sort -u)
     for f in $PREFIXES; do
 	echo "Handling $f ..."
-	PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
-	RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
-	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="ALL" --name="${f}" --resources="${RESOURCE_DIR}"
+	phageomancy-one "${f}"
     done
 }
 
 function phageomancy-one {
-    echo "Handling ${1} ..."
-    PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
-    RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
-    ipython --pdb ${PHAGEOMANCY_PY} -- --mode="ALL" --name="${1}" --resources="${RESOURCE_DIR}"
+    phageomancy-just "${1}" "ALL"
 }
 
 function phageomancy-just {
