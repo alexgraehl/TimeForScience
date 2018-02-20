@@ -120,11 +120,12 @@ function phageomancy-just {
     echo "Handling ${1} with mode ${2}..."
     PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
     RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
+    NSPADES=1 # number of assemblies to run (we subset to 100k reads per assembly by default)
     if [[ "${PHAGEOMANCY_DEBUG}" == 1 ]]; then
 	echo "Running with IPYTHON since 'export PHAGEOMANCY_DEBUG=1' was set somewhere earlier."
-	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --name="${1}" --resources="${RESOURCE_DIR}"
+	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --name="${1}" --resources="${RESOURCE_DIR}" --n-assembly-replicates=${NSPADES}
     else
-	${PHAGEOMANCY_PY}                  --mode="${2}" --name="${1}" --resources="${RESOURCE_DIR}"
+	${PHAGEOMANCY_PY}                  --mode="${2}" --name="${1}" --resources="${RESOURCE_DIR}" --n-assembly-replicates=${NSPADES}
     fi
 }
 
