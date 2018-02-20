@@ -75,7 +75,7 @@
 	<key>NSWindow Frame SUUpdateAlert</key>
 	<string>403 191 634 622 0 0 1440 877 </string>
 	<key>NSWindow Frame SessionsPreferences</key>
-	<string>-267 1039 606 456 -536 900 2560 1417 </string>
+	<string>115 60 606 469 0 0 1440 877 </string>
 	<key>NSWindow Frame SharedPreferences</key>
 	<string>271 383 770 429 0 0 1440 877 </string>
 	<key>NSWindow Frame UKCrashReporter</key>
@@ -962,8 +962,10 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2017-12-20T00:10:37Z</date>
+	<date>2018-02-18T15:42:09Z</date>
 	<key>SUSendProfileInfo</key>
+	<false/>
+	<key>ShowFullScreenTabBar</key>
 	<false/>
 	<key>TabStyle</key>
 	<integer>1</integer>
