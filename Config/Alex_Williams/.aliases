@@ -68,7 +68,7 @@ function hunt { # cd into a directory with a script
 }
 
 function cto { # instead of CD to a file, CD directly to a file's directory, since naturally you can't actually CD to a file
-    if [[ "$#" == 0 ]] ; then echo "[ERROR] You need to pass EXACTLY ONE filename or directory name into this function!"; return; fi
+    if [[ "$#" != 1 ]] ; then echo "[ERROR] You need to pass EXACTLY ONE filename or directory name into this function!"; return; fi
     if [[ -d "$1" ]] ; then cd "$1" ; return 0; fi # it's already a directory, change to it!
     TO=$(dirname "$1")
     cd "$TO"
@@ -97,28 +97,29 @@ function witch { # Shows the versions for all on-your-path verisons of software.
     for f in $(which -a "$1"); do echo -en "\n${a_echo_color}$f${a_end_color} --> "; eval "$f $VER_STR" | head -n 2; done; echo ""
 }
 
-function phageomancy-many {
-    phageomancy-many-do "ALL"
+function phageomancy-one {
+    if [[ "$#" != 1 ]] ; then echo "[ERROR in phageomancy-one] You need to pass EXACTLY ONE prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz)."; return; fi
+    phageomancy-just "${1}" "ALL"
 }
 
 function phageomancy-many-do {
+    if [[ "$#" != 1 ]] ; then echo "[ERROR in phageomancy-many-do] You need to pass EXACTLY ONE mode in!"; return; fi
     echo "Running this mode (${1}) on all gz files in this directory..."
     PREFIXES=$(ls -1 p*.gz | grep -E '(fastq|fq).gz$' | perl -pe 's/_R.*//' | sort -u)
     for f in $PREFIXES; do
 	echo "Handling $f ..."
-	phageomancy-one "${f}" "${1}"
+	phageomancy-just "${f}" "${1}"
     done
 }
 
-function phageomancy-one {
-    if [[ "$#" != 1 ]] ; then echo "[ERROR] You need to pass EXACTLY ONE prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz)."; return; fi
-    phageomancy-just "${1}" "ALL"
+function phageomancy-many {
+    phageomancy-many-do "ALL"
 }
 
 export PHAGEOMANCY_DEBUG=0
 
 function phageomancy-just {
-        if [[ "$#" != 2 ]] ; then echo "[ERROR] You need to pass EXACTLY TWO thigns in: 1) prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz) and 2) the mode (like 'ALL')"; return; fi
+    if [[ "$#" != 2 ]] ; then echo "[ERROR] You need to pass EXACTLY TWO thigns in: 1) prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz) and 2) the mode (like 'ALL')"; return; fi
     echo "Handling ${1} with mode ${2}..."
     PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
     RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
