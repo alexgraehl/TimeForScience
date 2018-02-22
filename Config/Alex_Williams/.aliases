@@ -97,6 +97,10 @@ function witch { # Shows the versions for all on-your-path verisons of software.
     for f in $(which -a "$1"); do echo -en "\n${a_echo_color}$f${a_end_color} --> "; eval "$f $VER_STR" | head -n 2; done; echo ""
 }
 
+function phageomancy-sanitize {
+    /bin/rm -v -rf **/070_READ_DEPTH_COVERAGE_OVER_ASSEMBLY/*.bam **/015_FASTQ_SUBSET_READS
+}
+
 function phageomancy-one {
     if [[ "$#" != 1 ]] ; then echo "[ERROR in phageomancy-one] You need to pass EXACTLY ONE prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz)."; return; fi
     phageomancy-just "${1}" "ALL"
