@@ -1035,7 +1035,7 @@ function hist {
     history | tail -n 100
 }
 
-# ================ QUEUE / QSUB LOG VIEWING AND MOVING ================
+# ~~~~~~~~~~~~~~~ QUEUE / QSUB LOG VIEWING AND MOVING ~~~~~~~~~~~~~~~
 function rmlogs { # Usage:     catlogs (no arguments)
     NUM_FOUND=$(find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' | wc -l)
     echo "Deleting $NUM_FOUND 'qsub' logs (the files ending with .e1234 or .o456, etc.)..."
@@ -1055,7 +1055,7 @@ function mvlogs { # Usage:   mvlogs OUTPUT_DIRECTORY
     find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' -print0 | xargs -0 -I{} mv {} $1/
     echo "[OK] Moved all the logs into the directory $1"
 }
-# ========================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 function refresh { # Usage:  refresh (no arguments)
     FAKEFILE=$(mktemp ./tmp.XXXXXX.tmp) ; /bin/rm $FAKEFILE;
