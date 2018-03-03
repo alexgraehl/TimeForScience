@@ -120,6 +120,8 @@ function phageomancy-many {
     phageomancy-many-do "ALL"
 }
 
+
+
 export PHAGEOMANCY_DEBUG=0
 export PHAGEOMANCY_N_SPADES=1 # number of assemblies to run (we subset to 100k reads per assembly by default)
 
@@ -1160,6 +1162,13 @@ function homebrew-everything {
     sleep 4
     brew tap homebrew/science
     brew install ipython samtools bedtools fastqc emacs docker bash bedtools blast blat bamtools wget scipy numpy ncurses pigz parallel hdf5 htop git tmux
+}
+
+function phageomancy-html-archive {
+    tarname=$(basename `pwd`)-HTML-archive.tar.gz
+    echo "Saving into '${tarname}'..."
+    tar -cvzf "${tarname}" 000* 030* 049* 05* 070*/*read_cov* 071* 074* 110*
+    echo "[Done] creating ${tarname}."
 }
 
 # count bases per line in a fasta file:
