@@ -112,7 +112,7 @@ function phageomancy-many-do {
     PREFIXES=$(ls -1 p*.gz | grep -E '(fastq|fq).gz$' | perl -pe 's/_R.*//' | perl -pe 's/[-_]*~.*//' | sort -u)
     for f in $PREFIXES; do
 	echo "Handling $f ..."
-	phageomancy-just "${f}" "${1}" "phage"
+	phageomancy-just "${f}" "${1}"
     done
 }
 
