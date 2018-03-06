@@ -130,12 +130,13 @@ function phageomancy-just {
     domain='phage'
     echo "Handling ${1} with mode ${2} and ${PHAGEOMANCY_N_SPADES} SPAdes replicates..."
     PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
-    RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
+    RES_DIR=$HOME/PHAGEOMANCY/resources
+    # ORPHAN_ALLOWING=" --allow-orphan-pe-reads "
     if [[ "${PHAGEOMANCY_DEBUG}" == 1 ]]; then
 	echo "Running with IPYTHON since 'export PHAGEOMANCY_DEBUG=1' was set somewhere earlier."
-	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --allow-orphan-pe-reads --domain="${domain}" --name="${1}" --resources="${RESOURCE_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
+	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
     else
-	${PHAGEOMANCY_PY}                  --mode="${2}" --allow-orphan-pe-reads --domain="${domain}" --name="${1}" --resources="${RESOURCE_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
+	${PHAGEOMANCY_PY}                  --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
     fi
 }
 
@@ -154,12 +155,12 @@ function bacteriomancy-just {
     domain='bacteria'
     echo "Handling ${1} with mode ${2} and ${PHAGEOMANCY_N_SPADES} SPAdes replicates..."
     PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
-    RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
+    RES_DIR=$HOME/PHAGEOMANCY/resources
     if [[ "${PHAGEOMANCY_DEBUG}" == 1 ]]; then
 	echo "Running with IPYTHON since 'export PHAGEOMANCY_DEBUG=1' was set somewhere earlier."
-	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RESOURCE_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
+	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
     else
-	${PHAGEOMANCY_PY}                  --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RESOURCE_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
+	${PHAGEOMANCY_PY}                  --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
     fi
 }
 
