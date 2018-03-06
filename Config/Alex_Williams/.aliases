@@ -177,6 +177,7 @@ NL="\$'\\n'" # newline!
 alias t="transpose.pl"
 alias cheat="echo \
 \">> Phageomancy on one dir: f=p000z_k00c3_s0037~p000z_S4_L001 && phageomancy_pipeline.py --mode=ALL --name=\\\$f --fqguess --phacts-dir=\\\$HOME/PHAGEOMANCY/PH_PHACTS_EXE/PHACTS/ --spades-n=5 \" ${NL}\
+\">> Phageomancy on subdirs: for x in pYOURPATTERN*; do cd \\\$x; echo \\\"Handling \\\$x...\\\"; phageomancy-many && echo '[OK]'; cd ../; done \" ${NL}\
 \">> Rscript/R read STDIN: One-liner R and perl extravaganza for plotting contig lengths:  cat contigs.fasta  | perl -ne 'next if not m/^>/; chomp; m/>NODE_(\d+).*length_([\d.]+).*cov_([\d.]+)/; print join(qq{\t}, \\\$1, \\\$2, \\\$3).qq{\n};' | Rscript --vanilla -e 'ddd=read.table(file(\\\"stdin\\\"),header=F,row.names=1); pdf(\\\"a.pdf\\\"); plot(ddd[,1], ddd[,2]); dev.off();' \" ${NL}\
 \">> UNICODE get character as shell escape: printf YOURCHAR | hexdump , then convert that like this: printf \\\"\\\\xE2\\\\x98\\\\xA0\\\" \" ${NL}\
 \">> Amazon AWS / S3: upgrade awscli on an instance:  pip install awscli --upgrade --user   \" ${NL}\
@@ -391,7 +392,7 @@ alias cheat="echo \
 \">> RNASEQ: Truncate a fastq file to length 19 without using fastx-trimmer: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
 \">> Obtain SRA sequence from NCBI: prefetch --verbose SRR__whateverID__ \" ${NL}\
 \">> SRA->FASTQ: fastq-dump --gzip SRR1234.sra    (<-- creates new file 'SRR1234.fastq.gz') \" ${NL}\
-\">> MINION LONG READ SEQ: FAST5 to FASTQ: Make a single FASTQ out of all FAST5s in each of the 'barcode' subdirectories (assumes the file structure is: minion/barcode01/batch9988/file.fast5): for bar in barcode*; do final=ToFQ.\\\$bar.final.fq.gz; /bin/rm -f \\\$final; for f in \\\${bar}/*/*.fast5; do echo 'Handling'\\\$f; poretools fastq \\\$f | gzip >> \\\$final; done; done \" ${NL}\
+\">> MINION LONG READ SEQ: FAST5 to FASTQ: Make a single FASTQ out of all FAST5s in each of the 'barcode' subdirectories (assumes the file structure is: minion/barcode01/batch9988/file.fast5): for bar in barcode*; do final=ToFQ.\\\$bar.final.fq.gz; /bin/rm -f \\\$final; for f in \\\${bar}/*/*.fast5; do echo \\\"Handling \\\$f\\\"; poretools fastq \\\$f | gzip >> \\\$final; done; done \" ${NL}\
 \">> BLAST: DNA pair-wise similarity for all sequences in a fasta file:   makeblastdb -in REF.fa -db nucl  &&  blastn -outfmt 6 -db REF.fa -query REF.fa -out results.out \" ${NL}\
 \">> BLAST: extract DATABASE sequences back to FASTA: In the directory with database files starting with the prefix 'nt_your_prefix_whatever', blastdbcmd -db nt_your_prefix_whatever -entry all -out - | gzip > all_sequences.fasta  \" ${NL}\
 \">> DNA reverse-complement: perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
