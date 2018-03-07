@@ -98,7 +98,15 @@ function witch { # Shows the versions for all on-your-path verisons of software.
 }
 
 function phageomancy-sanitize {
+    echo "Removing the largest files, for ease of uploading. Do not do this on the source data!"
     /bin/rm -v -rf **/070_READ_DEPTH_COVERAGE_OVER_ASSEMBLY/*.bam **/015_FASTQ_SUBSET_READS
+}
+
+function phageomancy-sanitize-more {
+    echo "Removing everything even remotely large, so that we can easily upload these things."
+    phageomancy-sanitize
+    gzip -9 **/contigs.fasta
+    /bin/rm -rf **/contigs.paths **/scaffolds.paths **/*_assembly_graph.fastg  **/misc **/052_EXTENDED*
 }
 
 function phageomancy-one {

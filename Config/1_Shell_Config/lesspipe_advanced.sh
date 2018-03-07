@@ -20,7 +20,8 @@ smartdecompress() {
 	*.xz)   DECOMPRESSOR="xz --decompress --stdout " ;;
 	*)	DECOMPRESSOR="cat" ;;
     esac
-    $DECOMPRESSOR "$1"; # <-- this is what we pass into the relevant "smart" function below. Note that the quotes ("$1") are crucial for handling files with spaces.
+    #echo "DEBUG>>>>  decompressor was: ${DECOMPRESSOR}"
+    ${DECOMPRESSOR} "$1"; # <-- this is what we pass into the relevant "smart" function below. Note that the quotes ("$1") are crucial for handling files with spaces.
 }
 
 #STO="\033[1m" # start color... not useful?
