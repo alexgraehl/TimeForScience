@@ -714,7 +714,7 @@ function s2 {
 function v {
     # Use sheet.py to view a file or list of files. These files cannot be gzipped, however.
     # Must be python2.6, and not python 3, currently
-    python `which sheet.py` "$@"
+    `which sheet.py` "$@"
 }
 
 alias huh='cat <(declare -f) <(alias)' ## uses bash subshells to show everything that is defined

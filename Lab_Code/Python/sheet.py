@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2.7
 
 #@COMMENT@ sheet.py is an interactive terminal-based spreadsheet viewer for tab-delimited files. Frequency-of-use rating: 9/10. See also "sheet.pl" if you want a non-interactive version that behaves similarly to the UNIX "column" tool.
 
