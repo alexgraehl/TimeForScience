@@ -136,6 +136,7 @@ export PHAGEOMANCY_N_SPADES=1 # number of assemblies to run (we subset to 100k r
 function phageomancy-just {
     if [[ "$#" != 2 ]] ; then echo "[ERROR] You need to pass EXACTLY TWO thigns in: 1) prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz) and 2) the mode (like 'ALL')"; return; fi
     domain='phage'
+    echo "Remember that you can debug this by setting 'export PHAGEOMANCY_DEBUG=1'"
     echo "Handling ${1} with mode ${2} and ${PHAGEOMANCY_N_SPADES} SPAdes replicates..."
     PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
     RES_DIR=$HOME/PHAGEOMANCY/resources
