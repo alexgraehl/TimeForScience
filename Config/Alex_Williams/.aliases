@@ -220,6 +220,7 @@ alias cheat="echo \
 \">> Mac: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
 \">> Mac/cron : edit crontab cron.tab with emacs: env EDITOR=emacs crontab -e \" ${NL}\
 \">> Delayed sudo: sudo sh -c \\\"(sleep 3600; do your command here )\\\" \" ${NL}\
+\">> Display image in ASCII on the command line: 'tiv' IMAGENAME \" ${NL}\
 \">> Image SIPS: PNG -> JPEG: mkdir outjpegs; sips -s format jpeg *.png --out outjpegs \" ${NL}\
 \">> Imagemagick SVG -> PNG: convert -format png -background transparent -density 300 in.svg out.png (see also the -resize 100 option)\" ${NL}\
 \">> Imagemagick convert multi-page pdf: for a in \\\$(seq 90); do echo \\\"Converting page \\\$a...\\\"; convert -quality 80 your.pdf[\\\$a] OUT_page_\\\$a.jpg ; done   (note: REQUIRES ghostscript (brew install gs) or it will crash) \" ${NL}\
