@@ -326,6 +326,12 @@ fi
 # enable color support of ls
 [[ -x "/usr/bin/dircolors" ]] && eval "`dircolors -b`"
 
+# Source any global bash definitions
+if [[ -f /etc/bashrc ]]; then
+	. /etc/bashrc
+fi
+
+
 # Enable programmable completion features. May already be enabled in
 # /etc/bash.bashrc or /etc/profile, in which case this would not be necessary.
 if [[ -f "/etc/bash_completion" ]]; then
