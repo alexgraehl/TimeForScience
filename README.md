@@ -15,12 +15,12 @@ A: Here are the BASH commands for setting things up:
 * `export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/`
 
 HOW TO CHECK OUT THIS REPO with SSH.
-* You should use SSH and not HTTPS. With HTTPS, you have to type your password every time. Annoying!
-* 1. Get your hopefully-already-existing SSH key: cat ~/.ssh/id_rsa.pub
-* 2. Add that key to Github (the "gear" icon in the top right, then "SSH Keys")
-* 3. Test the connection in the terminal with ssh -T git@github.com
-* 4. To check out TimeForScience into your home directory:
+0. You should use SSH and not HTTPS. With HTTPS, you have to type your password every time. Annoying!
+1. Get your hopefully-already-existing SSH key: cat ~/.ssh/id_rsa.pub
+2. Add that key to Github (the "gear" icon in the top right, then "SSH Keys")
+3. Test the connection in the terminal with ssh -T git@github.com
+4. To check out TimeForScience into your home directory:
   * `cd ~/ ; git clone git@github.com:alexgraehl/TimeForScience.git`
-* 5. Finally, set your .bashrc to have an important TIME_FOR_SCIENCE_DIR environment variable, which some scripts rely on, by running the following TWO commands:
+5. Finally, set your .bashrc to have an important TIME_FOR_SCIENCE_DIR environment variable, which some scripts rely on, by running the following TWO commands:
   * Command 1: `echo 'export TIME_FOR_SCIENCE_DIR="$HOME/TimeForScience"' >> ~/.bashrc`
   * Command 2: `echo 'export PATH="$PATH:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R"' >> ~/.bashrc ; source ~/.bashrc`
