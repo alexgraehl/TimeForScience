@@ -4,6 +4,17 @@
 # do anything. Printing any output breaks ssh and various things.
 # This is why this line is important at the very top!
 
+# Source any global bash definitions
+if [[ -f /etc/bashrc ]]; then
+	. /etc/bashrc
+fi
+
+# Enable programmable completion features. May already be enabled in
+# /etc/bash.bashrc or /etc/profile, in which case this would not be necessary.
+if [[ -f "/etc/bash_completion" ]]; then
+    . /etc/bash_completion
+fi
+
 # ~/.bashrc: executed by bash(1) for non-login shells (Loaded when the shell is non-interactively started up)
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc) for examples
 
@@ -30,10 +41,20 @@ if [[ "$OSTYPE" == darwin* ]] ; then isMac="1" ; fi
 COMPYNAME="$HOSTNAME" # <-- we will have to modify this if it's my home machine / some machine where $HOSTNAME doesn't work
 
 command -v "scutil" > /dev/null # <-- Note: we check the exit code from this ("$?") below
-if [[ "0" == $? ]] && [[ $(scutil --get ComputerName) == "Slithereens" ]]; then
+
+MAC_SHARING_NAME=$(scutil --get ComputerName)
+if [[ "0" == $? ]] && [[ "${MAC_SHARING_NAME}" == "Slithereens" ]]; then
     isAgwHomeMachine=1
     COMPYNAME="Slithereens"
 fi
+
+
+# This is a wonky way of detecting what the MAC thinks its own computer name is
+if [[ "0" == $? ]] && [[ "${MAC_SHARING_NAME}" == "Capsid" ]]; then
+    isAgwHomeMachine=1
+    COMPYNAME="Capsid"
+fi
+
 
 BLACK=$(tput setaf 0)
 RED=$(tput setaf 1)
@@ -228,16 +249,6 @@ PRE_PS1="\[${BRIGHT}\]\[${BLUE}\]\t\[${MAGENTA}\]\$(parse_git_branch)\[${NORMAL}
 # Note: requires a "\n" after the "print_if_nonzero" or else Ctrl-A / Ctrl-E gets messed up when pasting
 
 RIGNODE_HOSTNAME=${RIGNODE_HOSTNAME:-no_rignode_hostname} # bash, assign a DEFAULT value if the argument is not defined
-case "$COMPYNAME"
-in
-    zzz*)
-	export PS1="${PRE_PS1}\[${POWDER_BLUE}\].mac\$\[${NORMAL}\] " # we are on a mac laptop probably
-	;;
-    *) ## Otherwise...
-	export PS1="${PRE_PS1/\$ }[$COMPYNAME] $ " # prepend "compute node" to it
-	;;
-esac
-
 
 
 # ============ Start of code block from http://ezprompt.net/ =====
@@ -295,15 +306,23 @@ function parse_git_dirty {
 	fi
 }
 
-export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;42m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]\h\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] "
+export PRE_PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;42m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]${COMPYNAME}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
+
+case "$COMPYNAME"
+in
+    zzz*|*GYFH|Slithereens|Capsid)
+	export PS1="${PRE_PS1}"
+	#export PS1="${PRE_PS1}\[${POWDER_BLUE}\].mac\$\[${NORMAL}\] " # we are on a mac laptop probably
+	;;
+    *) ## Otherwise...
+	export PS1="--> ${PRE_PS1/\$ } $ " # change the name for things we think are remote servers
+	;;
+esac
 
 # ============ End of code block from http://ezprompt.net/ =====
 
-
-
 #if [[ -n "$color_prompt" ]] ; then
 #    if [[ -z "$is_sshing" ]] ; then
-
 ## Conditional logic IS allowed in the ps1, bizarrely!
 #PS1='$(if [[ $USER == alexgw ]]; then echo "$REGULAR_PROMPT"; else echo "$PWD%"; fi)'
 #export PS1=\$(date +%k:%M:%S)
@@ -326,17 +345,6 @@ fi
 # enable color support of ls
 [[ -x "/usr/bin/dircolors" ]] && eval "`dircolors -b`"
 
-# Source any global bash definitions
-if [[ -f /etc/bashrc ]]; then
-	. /etc/bashrc
-fi
-
-
-# Enable programmable completion features. May already be enabled in
-# /etc/bash.bashrc or /etc/profile, in which case this would not be necessary.
-if [[ -f "/etc/bash_completion" ]]; then
-    . /etc/bash_completion
-fi
 
 export CLICOLOR='Yes'
 export LS_OPTIONS='--color=auto'
