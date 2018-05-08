@@ -13,8 +13,12 @@ Host *
     KeepAlive        yes
     ForwardX11       yes
     Compression      yes
-    CompressionLevel 9
+#    CompressionLevel 9
 
+# https://serverfault.com/questions/422908/how-can-i-prevent-the-warning-no-xauth-data-using-fake-authentication-data-for
+# If you get this message: "No xauth program." when sshing...
+# "it doesn't have a correct path to the xauth program. (On this version of macOS the path to xauth is nonstandard.) The solution was to add this line to /etc/ssh/ssh_config:  XAuthLocation /opt/X11/bin/xauth "
+XAuthLocation /opt/X11/bin/xauth
 
 #Host whatever.only.internal.use internal
 #   User         yourname
