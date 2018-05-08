@@ -315,7 +315,7 @@ in
 	#export PS1="${PRE_PS1}\[${POWDER_BLUE}\].mac\$\[${NORMAL}\] " # we are on a mac laptop probably
 	;;
     *) ## Otherwise...
-	export PS1="--> ${PRE_PS1/\$ } $ " # change the name for things we think are remote servers
+	export PS1="--> ${PRE_PS1}" # change the name for things we think are remote servers
 	;;
 esac
 
