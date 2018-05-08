@@ -3,7 +3,7 @@ set -e
 set -o pipefail
 set -o xtrace
 
-cd ~/
+cd "$HOME"
 
 if [[ -z "$TIME_FOR_SCIENCE_DIR" ]]; then echo "[ERROR: a required variable is NOT set!] You need to set the TIME_FOR_SCIENCE_DIR to the location of the TimeForScience directory (probably in your home directory). You could do this by following the instructions at https://github.com/alexgraehl/TimeForScience."; exit 1; else echo "[OK] The TIME_FOR_SCIENCE_DIR environment variable is '$TIME_FOR_SCIENCE_DIR'"; fi
 
@@ -11,16 +11,13 @@ if [[ ! -d "$TIME_FOR_SCIENCE_DIR" ]]; then echo "[ERROR: the TIME_FOR_SCIENCE_D
 
 if [[ ! -e "$TIME_FOR_SCIENCE_DIR/README.md" ]]; then echo "[ERROR: the TIME_FOR_SCIENCE_DIR appears NOT to contain a 'README.md', which implies that it is not a valid checked-out copy of the TimeForScience repository."; exit 1; else echo "[OK] The $TIME_FOR_SCIENCE_DIR/README.md file was successfully found."; fi
 
-cd "$HOME"
-
-
 SHOULD_HOMEBREW=1
 
 # ==============================================================================
 #            Create symlinks to standard config files
 # ==============================================================================
 if [[ $(dirname $TIME_FOR_SCIENCE_DIR) == "$HOME" ]]; then echo "use relative links"; else echo "do not use relative links--apparently the TimeForScience directory is NOT located immediately in your home directory2. Exiting here, as we cannot deal with this."; exit 1; fi
-cd $HOME
+
 HOMEDIR_CONFIG_FILES_TO_SYMLINK=(.aliases .bash_profile .bashrc .emacs .inputrc .screenrc .tmux.conf)
 for FILE in ${HOMEDIR_CONFIG_FILES_TO_SYMLINK[@]}; do
 	TIME_FOR_SCIENCE_BASENAME=$(basename $TIME_FOR_SCIENCE_DIR)
@@ -30,8 +27,11 @@ for FILE in ${HOMEDIR_CONFIG_FILES_TO_SYMLINK[@]}; do
 	if [[ ! -e $CFG ]]; then echo "[ERROR] The config file that we expected to exist, specifically, '$CFG', did not exist."; exit 1; else echo "[OK] Linking $CFG to the home directory (via relative path)"; fi
 	ln -f -s $CFG ./
 done
-# ==============================================================================
 
+
+# ==============================================================================
+#                          SSH Config
+# ==============================================================================
 if [[ -e "$HOME/.ssh/config" ]]; then
     echo "[SKIPPING] The ssh config file at .ssh/config ALREADY exists, so we are not overwriting it."
 else
@@ -40,76 +40,66 @@ else
     chmod    go-rwx ~/.ssh/id_rsa
 fi
 
-
-echo "APP STORE: install from the Mac App store: Slack Divvy Pixelmator XCode"
-echo "You should manually INSTALL: SCROLL REVERSER FROM --> https://pilotmoon.com/downloads/ScrollReverser-1.7.6.zip"
-echo "You should manually INSTALL: iTERM2 FROM --> https://www.iterm2.com/"
-echo "Remember to sync the iTerm2 preferences from my config folder on github!"
-echo "You should manually INSTALL Transmit (Paid!) (File transfer / FTP) FROM --> https://panic.com/transmit/"
-echo "install Hermes (Pandora) FROM --> http://hermesapp.org/"
-echo "You should manually install Clipy (the open-source successor to ClipMenu) FROM --> https://clipy-app.com/"
-echo "install OmniGraffle (Paid!) from ____________"
-# curl https://github.com/HermesApp/Hermes/archive/master.zip > ~/Downloads/hermes_pandora_app.zip
-
-echo "You will need to MANUALLY run XCode to let it install its weird components"
-echo "maybe something like this: sudo /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild  -license accept"
-#sudo installer -pkg /Applications/Xcode-beta.app/Contents/Resources/Packages/MobileDevice.pkg -target /
-#sudo installer -pkg /Applications/Xcode-beta.app/Contents/Resources/Packages/MobileDeviceDevelopment.pkg -target /
-
 # ==============================================================================
 #                         Homebrew
 # ==============================================================================
 
 if [[ 1 == $SHOULD_HOMEBREW ]]; then
-    echo "Running 'brew update'..."
-    brew update
+    echo "Homebrew installation"
     brew cask install java # required for gradle and more
-    brew install bash bcftools bedtools blast boost cairo catimg dialog emacs ess fastqc ffmpeg fontconfig fqzcomp freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htop htslib imagemagick isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mercurial mono mpfr nettle openssl pcre pixman pkg-config poretools pv qemu readline samtools sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
-    brew install docker
+    brew install bash bcftools bedtools blast boost cairo catimg dialog emacs fastqc ffmpeg fontconfig freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htop htslib imagemagick isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle openssl pcre pixman pkg-config pv python3 qemu R readline samtools sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
+    #docker
 fi
 
 # ==============================================================================
 
 AGW_BASH_MAJOR_VERSION=$(echo "$BASH_VERSION" | perl -pe "s/(\d+).*/\1/; chomp;")
-
-if (( $AGW_BASH_MAJOR_VERSION >= 4 )); then
-	echo "[OK] globstar should be supported on bash version $AGW_BASH_MAJOR_VERSION"
+if (( ${AGW_BASH_MAJOR_VERSION} >= 4 )); then
+    echo "[OK] globstar should be supported on bash version $AGW_BASH_MAJOR_VERSION, which is >= 4."
 else
-    echo "[GOTTA FIX] globstar is NOT supported on bash version $AGW_BASH_MAJOR_VERSION, so let's add a new bash"
+    echo "[GOTTA FIX] globstar is NOT supported on bash version $AGW_BASH_MAJOR_VERSION. This is probably because the Apple-included bash is ancient (3.x). Let's now use Homebrew to set a new bash."
     ALLOWED_TO_INSTALL_BASH_4_ON_MAC=1
     if [[ "${ALLOWED_TO_INSTALL_BASH_4_ON_MAC}" == "1" ]]; then
 	brew install bash
 	NEW_BASH_LOCATION=/usr/local/bin/bash
-	#grep $NEW_BASH_LOCATION /etc/shells
-	echo "$NEW_BASH_LOCATION" >> /etc/shells
-	chsh -s $NEW_BASH_LOCATION
-	#sudo bash -c 'echo "/usr/local/bin/bash" >> /etc/shells'
+	echo "Assuming that homebrew has installed bash to the location ${NEW_BASH_LOCATION}."
+	if [[ -f ${NEW_BASH_LOCATION} ]]; then
+	    #grep $NEW_BASH_LOCATION /etc/shells
+	    sudo bash -c "echo '${NEW_BASH_LOCATION}' >> /etc/shells"
+	    sudo chsh -s ${NEW_BASH_LOCATION} ${USER}
+	else
+	    echo "Failure! The bash installation was not located in the expected location. Did homebrew fail to install bash? The expected location (which is seemingly NOT A VALID FILE) was supposed to be --> ${NEW_BASH_LOCATION}" && exit 1
+	fi
     fi
 fi
+
+# ==============================================================================
+echo "Making a few required directories, in case they aren't already present."
+mkdir -p ${HOME}/bin
 
 # ==============================================================================
 echo "Making a bunch of uninteresting files/folders hidden in the default Finder view..."
 FILES_TO_INVISIFY=("$HOME/Movies" "$HOME/Music" "$HOME/Public" "$HOME/TimeForScience" "$HOME/bin")
 for FILE in ${FILES_TO_INVISIFY[@]}; do
-    chflags -h hidden $FILE
+    chflags -h hidden ${FILE}
 done
 # ==============================================================================
 
 # ==============================================================================
 echo "A bunch of things that should be installed via pip2 (Python 2)"
-PIP2_PACKAGES=("awscli", "pylint", "matplotlib", "numpy")
+PIP2_PACKAGES=("awscli" "pylint" "matplotlib" "numpy" "scipy")
 for PACKAGE in ${PIP2_PACKAGES[@]}; do
-    print "Installing the package $PACKAGE via pip2..."
-    pip2 install $PACKAGE
+    echo "[PYTHON2 (PIP2)] Installing the package $PACKAGE..."
+    python  -m pip install ${PACKAGE}
 done
 # ==============================================================================
 
 # ==============================================================================
 echo "A bunch of things that should be installed via pip3 (Python 3)"
-PIP3_PACKAGES=("awscli", "pylint", "matplotlib", "numpy", "jupyter")
+PIP3_PACKAGES=("awscli" "pylint" "matplotlib" "numpy" "scipy" "jupyter")
 for PACKAGE in ${PIP3_PACKAGES[@]}; do
-    print "Installing the package $PACKAGE via pip3..."
-    pip3 install $PACKAGE
+    echo "[PYTHON3 (PIP3)] Installing the package $PACKAGE..."
+    python3 -m pip install ${PACKAGE}
 done
 # ==============================================================================
 
@@ -117,10 +107,32 @@ done
 #pip install awscli
 #echo "[Installed] the 'aws' tool"
 
-#echo "Installing pylint for Python 2.x"
-#pip2 install pylint
+echo "MAC APP STORE: install from the Mac App store:"
+echo "      * Divvy"
+echo "      * Slack"
+echo "      * Pixelmator"
+echo "      * XCode"
 
-echo "[DONE]"
+echo "YOU SHOULD MANUALLY INSTALL THE FOLLOWING PROGRAMS:"
+echo "           RStudio                   FROM --> https://www.rstudio.com/products/rstudio/download/#download"
+echo "           SCROLL REVERSER           FROM --> https://pilotmoon.com/downloads/ScrollReverser-1.7.6.zip"
+echo "           iTERM2                    FROM --> https://www.iterm2.com/"
+echo "           PYCHARM                   FROM --> https://www.jetbrains.com/pycharm/"
+echo "           CLIPY (replaces ClipMenu) FROM --> https://clipy-app.com/"
+echo "           HERMES (Pandora)          FROM --> http://hermesapp.org/"  # curl https://github.com/HermesApp/Hermes/archive/master.zip > ~/Downloads/hermes_pandora_app.zip
+echo "           TRANSMIT (PANIC) (Paid!)  FROM --> https://panic.com/transmit/#download"
+echo "           OMNIGRAFFLE (Paid!)       FROM --> https://www.omnigroup.com/"
+
+echo "Remember to sync the iTerm2 preferences from my config folder on github!"
+
+
+echo "You will need to MANUALLY run XCode to let it install its weird components"
+echo "maybe something like this: sudo /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild  -license accept"
+#sudo installer -pkg /Applications/Xcode-beta.app/Contents/Resources/Packages/MobileDevice.pkg -target /
+#sudo installer -pkg /Applications/Xcode-beta.app/Contents/Resources/Packages/MobileDeviceDevelopment.pkg -target /
+
+echo "[DONE!] But remember to manually install the software shown above."
+
 
 
 
