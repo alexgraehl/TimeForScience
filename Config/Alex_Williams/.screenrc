@@ -1,6 +1,6 @@
 # -*-Sh-*-  <-- Tells emacs what syntax highlighting to use
 
-# Note: tmux is another "screen-like" program I could probably be using
+# Note: tmux is a superior "screen-like" program that you may want to use instead.
 
 # http://gentoo-wiki.com/TIP_Using_screen
 
@@ -67,7 +67,6 @@ defscrollback 100000
 
 # Set the "escape" character to ctrl-o instead of the default, which is ctrl-a. Now it won't fight with "Ctrl-A='go to beginning of line!'"
 escape ^Oo
-
 
 # Line below: Somehow termcapinfo was supposed to fix the scrollback buffer? Unclear.
 # termcapinfo xterm ti@:te@
