@@ -1,4 +1,7 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -u
+set -e
+set -o pipefail
+set -o xtrace
 
 cd ~/
 
@@ -25,7 +28,7 @@ for FILE in ${HOMEDIR_CONFIG_FILES_TO_SYMLINK[@]}; do
 	echo "CFG="$CFG
 	echo "FILE="$FILE
 	if [[ ! -e $CFG ]]; then echo "[ERROR] The config file that we expected to exist, specifically, '$CFG', did not exist."; exit 1; else echo "[OK] Linking $CFG to the home directory (via relative path)"; fi
-	ln -s $CFG ./
+	ln -f -s $CFG ./
 done
 # ==============================================================================
 
@@ -37,16 +40,18 @@ else
     chmod    go-rwx ~/.ssh/id_rsa
 fi
 
-echo "install from the Mac App store: Slack Divvy Pixelmator"
-echo "install iTerm2 from ____________"
-echo "Sync the iTerm2 preferences from my config folder on github"
+
+echo "APP STORE: install from the Mac App store: Slack Divvy Pixelmator XCode"
+echo "You should manually INSTALL: SCROLL REVERSER FROM --> https://pilotmoon.com/downloads/ScrollReverser-1.7.6.zip"
+echo "You should manually INSTALL: iTERM2 FROM --> https://www.iterm2.com/"
+echo "Remember to sync the iTerm2 preferences from my config folder on github!"
+echo "You should manually INSTALL Transmit (Paid!) (File transfer / FTP) FROM --> https://panic.com/transmit/"
+echo "install Hermes (Pandora) FROM --> http://hermesapp.org/"
+echo "You should manually install Clipy (the open-source successor to ClipMenu) FROM --> https://clipy-app.com/"
 echo "install OmniGraffle (Paid!) from ____________"
-echo "install Transmit (Paid!) (File transfer) from ____________"
-echo "install Hermes (Pandora):"
 # curl https://github.com/HermesApp/Hermes/archive/master.zip > ~/Downloads/hermes_pandora_app.zip
-echo "install Clipy from https://clipy-app.com/ (successor to ClipMenu)"
-echo "Install XCode from the app store"
-echo "Run XCode to let it install its weird components"
+
+echo "You will need to MANUALLY run XCode to let it install its weird components"
 echo "maybe something like this: sudo /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild  -license accept"
 #sudo installer -pkg /Applications/Xcode-beta.app/Contents/Resources/Packages/MobileDevice.pkg -target /
 #sudo installer -pkg /Applications/Xcode-beta.app/Contents/Resources/Packages/MobileDeviceDevelopment.pkg -target /
@@ -56,14 +61,11 @@ echo "maybe something like this: sudo /Applications/Xcode.app/Contents/Developer
 # ==============================================================================
 
 if [[ 1 == $SHOULD_HOMEBREW ]]; then
-    brew tap homebrew/science
-    brew tap homebrew/versions
+    echo "Running 'brew update'..."
     brew update
     brew cask install java # required for gradle and more
-    brew install bamutil bash bcftools bedtools blast boost cairo catimg dialog emacs ess fastqc ffmpeg fontconfig fqzcomp freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htop htslib imagemagick isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mercurial mono mpfr nettle openssl pcre pixman pkg-config poretools pv qemu readline samtools sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
+    brew install bash bcftools bedtools blast boost cairo catimg dialog emacs ess fastqc ffmpeg fontconfig fqzcomp freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htop htslib imagemagick isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mercurial mono mpfr nettle openssl pcre pixman pkg-config poretools pv qemu readline samtools sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
     brew install docker
-#    brew install Caskroom/cask/gpgtools
-#    brew install homebrew/dupes/unzip
 fi
 
 # ==============================================================================
@@ -73,15 +75,16 @@ AGW_BASH_MAJOR_VERSION=$(echo "$BASH_VERSION" | perl -pe "s/(\d+).*/\1/; chomp;"
 if (( $AGW_BASH_MAJOR_VERSION >= 4 )); then
 	echo "[OK] globstar should be supported on bash version $AGW_BASH_MAJOR_VERSION"
 else
-	echo "[GOTTA FIX] globstar is NOT supported on bash version $AGW_BASH_MAJOR_VERSION, so let's add a new bash"
-fi
-
-if [[ 'some bash thing' == "yep" ]]; then
-    NEW_BASH_LOCATION=/usr/local/bin/bash
-    chsh -s $NEW_BASH_LOCATION
-    grep $NEW_BASH_LOCATION /etc/shells
-    echo "$NEW_BASH_LOCATION" >> /etc/shells
-    #sudo bash -c 'echo "/usr/local/bin/bash" >> /etc/shells'
+    echo "[GOTTA FIX] globstar is NOT supported on bash version $AGW_BASH_MAJOR_VERSION, so let's add a new bash"
+    ALLOWED_TO_INSTALL_BASH_4_ON_MAC=1
+    if [[ "${ALLOWED_TO_INSTALL_BASH_4_ON_MAC}" == "1" ]]; then
+	brew install bash
+	NEW_BASH_LOCATION=/usr/local/bin/bash
+	#grep $NEW_BASH_LOCATION /etc/shells
+	echo "$NEW_BASH_LOCATION" >> /etc/shells
+	chsh -s $NEW_BASH_LOCATION
+	#sudo bash -c 'echo "/usr/local/bin/bash" >> /etc/shells'
+    fi
 fi
 
 # ==============================================================================
