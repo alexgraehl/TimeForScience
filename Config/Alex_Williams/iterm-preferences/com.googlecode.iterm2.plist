@@ -193,11 +193,11 @@
 				<key>Alpha Component</key>
 				<real>1</real>
 				<key>Blue Component</key>
-				<real>0.0</real>
+				<real>0.180450439453125</real>
 				<key>Color Space</key>
 				<string>sRGB</string>
 				<key>Green Component</key>
-				<real>0.40728759765625</real>
+				<real>0.6727142333984375</real>
 				<key>Red Component</key>
 				<real>0.0</real>
 			</dict>
@@ -955,7 +955,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2018-05-08T19:28:17Z</date>
+	<date>2018-05-09T20:50:33Z</date>
 	<key>SUSendProfileInfo</key>
 	<false/>
 	<key>ShowFullScreenTabBar</key>
