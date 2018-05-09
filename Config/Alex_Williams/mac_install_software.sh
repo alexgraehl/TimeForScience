@@ -123,6 +123,8 @@ echo "           HERMES (Pandora)          FROM --> http://hermesapp.org/"  # cu
 echo "           TRANSMIT (PANIC) (Paid!)  FROM --> https://panic.com/transmit/#download"
 echo "           OMNIGRAFFLE (Paid!)       FROM --> https://www.omnigroup.com/"
 
+echo "UCSC Genome Browser software can be obtained for a Mac with this command: (as documented on the download page: http://hgdownload.cse.ucsc.edu/admin/exe/macOSX.x86_64/ )"
+echo "mkdir -p ~/bin/ucsc && cd ~/bin/ucsc && rsync -aP rsync://hgdownload.soe.ucsc.edu/genome/admin/exe/macOSX.x86_64/ ./"
 echo "Remember to sync the iTerm2 preferences from my config folder on github!"
 
 
