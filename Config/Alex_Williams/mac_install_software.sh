@@ -47,7 +47,7 @@ fi
 if [[ 1 == $SHOULD_HOMEBREW ]]; then
     echo "Homebrew installation"
     brew cask install java # required for gradle and more
-    brew install bash bcftools bedtools blast boost cairo catimg dialog emacs fastqc ffmpeg fontconfig freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htop htslib imagemagick isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle openssl pcre pixman pkg-config pv python3 qemu R readline samtools sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
+    brew install bash bcftools bedtools blast boost cairo catimg dialog emacs fastqc ffmpeg fontconfig freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htop htslib imagemagick isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle openssl pcre pixman pkg-config pv python3 qemu R readline rsync samtools sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
     #docker
 fi
 
@@ -124,7 +124,7 @@ echo "           TRANSMIT (PANIC) (Paid!)  FROM --> https://panic.com/transmit/#
 echo "           OMNIGRAFFLE (Paid!)       FROM --> https://www.omnigroup.com/"
 
 echo "UCSC Genome Browser software can be obtained for a Mac with this command: (as documented on the download page: http://hgdownload.cse.ucsc.edu/admin/exe/macOSX.x86_64/ )"
-echo "mkdir -p ~/bin/ucsc && cd ~/bin/ucsc && rsync -aP rsync://hgdownload.soe.ucsc.edu/genome/admin/exe/macOSX.x86_64/ ./"
+echo "mkdir -p ~/bin/ucsc && cd ~/bin/ucsc && rsync -aP rsync://hgdownload.soe.ucsc.edu/genome/admin/exe/macOSX.x86_64/ ./  (requires rsync >= 3.1, so get that from homebrew if you're using the ancient Mac version of rsync)"
 echo "Remember to sync the iTerm2 preferences from my config folder on github!"
 
 
