@@ -136,5 +136,13 @@ echo "maybe something like this: sudo /Applications/Xcode.app/Contents/Developer
 echo "[DONE!] But remember to manually install the software shown above."
 
 
+if [[ 1 == 2 ]]; then
+    echo "NOTE: currently this is never run"
+    echo "Installing IGV..."
+    cd ~/bin
+    git clone https://github.com/igvteam/igv.git
+    cd igv/
+fi
+
 
 
