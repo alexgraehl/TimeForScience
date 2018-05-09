@@ -26,7 +26,11 @@ if [[ "$USER" == "alexgw" ]] || [[ "$USER" == "awilliams" ]] || [[ "$USER" == "a
     alias checktrash='mkdir -p /tmp/${USER}/Trash/ && echo "Contents of /tmp/${USER}/Trash:" && ls /tmp/${USER}/Trash/'
     alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv /tmp/${USER}/Trash/ && echo "Emptied the trash directory (/tmp/${USER}/Trash)" ;'
     alias rm='trash.pl' ## <-- Note that the "real" rm can still always be invoked by '/bin/rm'
+    OUR_RM='trash.pl'
+else
+    OUR_RM=rm
 fi
+
 
 # git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@users.noreply.github.com"
 echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
@@ -555,11 +559,11 @@ alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse
 alias make='make --warn-undefined-variables --print-directory'
 alias mcm='make clean && make'
 function remake { ## Lets you type "remake" to remove a file and then use GNU make to try to re-generate it
-    trash.pl "$@" ;  make --warn-undefined-variables --print-directory "$@"
+    ${OUR_RM} "$@" ;  make --warn-undefined-variables --print-directory "$@"
 }
 
 function rel { ## Remake and then view;
-    trash.pl "$@" ;  make --warn-undefined-variables --print-directory "$@" ; s "$@"
+    ${OUR_RM} "$@" ;  make --warn-undefined-variables --print-directory "$@" ; s "$@"
 }
 
 # Aliases related to COLOR GREP
@@ -665,11 +669,9 @@ alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/le
 ## LESS +++++++++++++++++
 
 # Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
-alias sn='/usr/bin/less -S --LINE-NUMBERS --status-column --RAW-CONTROL-CHARS -f --IGNORE-CASE'
-
-alias sweep='trash.pl *.tmp *.temp' ## Sweep out the .tmp files
-
-alias htop='htop --sort-key PERCENT_CPU'
+alias sn="/usr/bin/less -S --LINE-NUMBERS --status-column --RAW-CONTROL-CHARS -f --IGNORE-CASE"
+alias sweep="${OUR_RM} *.tmp *.temp" ## Sweep out the .tmp files
+alias htop="htop --sort-key PERCENT_CPU"
 
 function playnicely {
     # Takes one argument.

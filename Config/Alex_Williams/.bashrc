@@ -40,17 +40,21 @@ if [[ "$OSTYPE" == darwin* ]] ; then isMac="1" ; fi
 
 COMPYNAME="$HOSTNAME" # <-- we will have to modify this if it's my home machine / some machine where $HOSTNAME doesn't work
 
+
+
 command -v "scutil" > /dev/null # <-- Note: we check the exit code from this ("$?") below
 
+HAS_SCUTIL=$((1-$?)) # $? = 0 means the above command SUCCEEDED
+
 MAC_SHARING_NAME=$(scutil --get ComputerName)
-if [[ "0" == $? ]] && [[ "${MAC_SHARING_NAME}" == "Slithereens" ]]; then
+if [[ 1 == "${HAS_SCUTIL}" ]] && [[ "${MAC_SHARING_NAME}" == "Slithereens" ]]; then
     isAgwHomeMachine=1
     COMPYNAME="Slithereens"
 fi
 
 
 # This is a wonky way of detecting what the MAC thinks its own computer name is
-if [[ "0" == $? ]] && [[ "${MAC_SHARING_NAME}" == "Capsid" ]]; then
+if [[ 1 == "${HAS_SCUTIL}" ]] && [[ "${MAC_SHARING_NAME}" == "Capsid" ]]; then
     isAgwHomeMachine=1
     COMPYNAME="Capsid"
 fi
