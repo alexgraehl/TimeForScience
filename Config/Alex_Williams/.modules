@@ -1,0 +1,50 @@
+# set -o xtrace
+#echo "Note: make sure you SOURCE this program !!!!"
+#echo "(Instead of running it like a shell script.)"
+#echo "To get a full list of available modules, type:"
+#echo "       module avail 2>| modules.list.txt"
+# removed: conda
+# removed: ; time module load       apps/hdf5
+# time module load       apps/ngs_pipeline
+# time module load       apps/tcga_tools
+#      apps/bamtools \
+#      apps/bcl2fastq \
+#      apps/bcftools \
+#      apps/biopython \
+#      apps/boost \
+#      apps/bowtie \
+#      apps/bwa \
+#      apps/clustalw \
+#      apps/cramtools \
+#      apps/htop \
+#      apps/htslib \
+#      apps/java/8u74 \
+#      apps/texinfo \
+#      apps/texlive \
+#      apps/pandoc \
+#      apps/ghostscript \
+#      apps/hmmer \
+#      apps/ncbi-blast \
+#      apps/ruby \
+#      apps/vcflib \
+#      apps/VCFtools \
+#
+
+echo "[.modules: Installing modules now... this usually takes ~3 seconds]"
+time module load \
+      apps/bedtools \
+      apps/bioconductor \
+      apps/emacs/24.5 \
+      apps/git \
+      apps/gne-sequence-analysis \
+      apps/gnu-make \
+      apps/ngs-pipeline-tools \
+      apps/python3 \
+      apps/R \
+      apps/salmon \
+      apps/samtools \
+      apps/seq-utils \
+      apps/tmux \
+
+#echo $(which bedtools)
+ 

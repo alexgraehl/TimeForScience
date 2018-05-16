@@ -15,6 +15,13 @@ if [[ -f "/etc/bash_completion" ]]; then
     . /etc/bash_completion
 fi
 
+if [[ -f "$HOME/.modules" ]]; then
+    echo "[MODULES]: loading..."
+    time source "$HOME/.modules"
+    echo "[MODULES]: Done loading"
+fi
+
+
 # ~/.bashrc: executed by bash(1) for non-login shells (Loaded when the shell is non-interactively started up)
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc) for examples
 
@@ -395,4 +402,7 @@ umask u=rwx,g=rwx,o=rx # <-- give users and groups full access to files I create
 # export projects="$HOME/projects"
 # export documents="$HOME/Documents"
 # export dropbox="$HOME/Dropbox"
+
+
+
 
