@@ -78,6 +78,8 @@ function cto { # instead of CD to a file, CD directly to a file's directory, sin
     cd "$TO"
 }
 
+alias igv='/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/bin/java -jar /Applications/IGV_2.4.10.app/Contents/Java/igv.jar'
+
 function witch { # Shows the versions for all on-your-path verisons of software.
     # Takes ONE required argument: the program name. Can also take a SECOND argument, which is the actual command to run to check versions (if it isn't 'version')
     # Example:   witch emacs
