@@ -68,9 +68,9 @@
 		<integer>1</integer>
 	</dict>
 	<key>NSWindow Frame SharedPreferences</key>
-	<string>501 300 918 512 0 0 1440 877 </string>
+	<string>501 365 796 473 0 0 1440 877 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>155 93 585 452 0 0 1440 877 </string>
+	<string>0 0 1440 877 0 0 1440 877 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
 	<string>176 70 585 452 0 0 1440 877 </string>
 	<key>NSWindow Frame iTerm Window 2</key>
@@ -124,12 +124,16 @@
 			</dict>
 			<key>Ansi 10 Color</key>
 			<dict>
-				<key>Blue Component</key>
-				<real>0.3333333432674408</real>
-				<key>Green Component</key>
+				<key>Alpha Component</key>
 				<real>1</real>
+				<key>Blue Component</key>
+				<real>0.401641845703125</real>
+				<key>Color Space</key>
+				<string>sRGB</string>
+				<key>Green Component</key>
+				<real>0.8457794189453125</real>
 				<key>Red Component</key>
-				<real>0.3333333432674408</real>
+				<real>0.37424531579017639</real>
 			</dict>
 			<key>Ansi 11 Color</key>
 			<dict>
@@ -186,10 +190,14 @@
 			</dict>
 			<key>Ansi 2 Color</key>
 			<dict>
+				<key>Alpha Component</key>
+				<real>1</real>
 				<key>Blue Component</key>
-				<real>0.0</real>
+				<real>0.180450439453125</real>
+				<key>Color Space</key>
+				<string>sRGB</string>
 				<key>Green Component</key>
-				<real>0.73333334922790527</real>
+				<real>0.6727142333984375</real>
 				<key>Red Component</key>
 				<real>0.0</real>
 			</dict>
@@ -947,7 +955,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2018-05-08T19:28:17Z</date>
+	<date>2018-05-09T20:50:33Z</date>
 	<key>SUSendProfileInfo</key>
 	<false/>
 	<key>ShowFullScreenTabBar</key>
