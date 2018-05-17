@@ -537,7 +537,7 @@ function dos2unix { # Convert a Windows-style line-ending file to a UNIX one. Us
 ## Utility commands
 
 if [[ -f ~/.agw_cfg/prefer_screen ]]; then
-    echo "[COLOR_FYI] Preferring SCREEN over tmux: aliasing 'rr' to screen."
+    echo "[:FYI:] Preferring SCREEN over tmux: aliasing 'rr' to screen."
     alias rr='screen -xR -U' #"screen -xR -U" ## Reconnect to the previous screen, or make a new one if there isn't one already
     ## -U: "screen understands UTF8"
 else

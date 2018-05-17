@@ -1,6 +1,6 @@
 # set -o xtrace
 #echo "Note: make sure you SOURCE this program (Instead of running it like a shell script.)"
-echo "[COLOR_FYI]: To get a full list of available modules, type:  module avail 2>| modules.list.txt"
+echo "[:FYI:]: To list all modules: module avail 2>| LIST.TXT"
 # removed: conda
 # removed: ; time module load       apps/hdf5
 # time module load       apps/ngs_pipeline
