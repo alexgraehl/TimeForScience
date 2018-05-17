@@ -1,6 +1,8 @@
 
 # This file contains common variables used in MAP.
 
+SHELL     := /bin/bash
+
 EMPTY     :=
 SPACE     :=$(EMPTY) $(EMPTY)
 TAB       :=$(EMPTY)	$(EMPTY)
