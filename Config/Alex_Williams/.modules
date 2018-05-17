@@ -1,6 +1,5 @@
 # set -o xtrace
-#echo "Note: make sure you SOURCE this program !!!!"
-#echo "(Instead of running it like a shell script.)"
+#echo "Note: make sure you SOURCE this program (Instead of running it like a shell script.)"
 echo "[COLOR_FYI]: To get a full list of available modules, type:  module avail 2>| modules.list.txt"
 # removed: conda
 # removed: ; time module load       apps/hdf5
@@ -35,7 +34,7 @@ echo "[COLOR_FYI]: To get a full list of available modules, type:  module avail 
 #      apps/ngs-pipeline-tools \
 #      apps/python3 \
 
-time module add apps/R \
+module add apps/R \
 	apps/bedtools \
 	apps/emacs/24.5 \
 	apps/git \
