@@ -68,7 +68,7 @@
 		<integer>1</integer>
 	</dict>
 	<key>NSWindow Frame SharedPreferences</key>
-	<string>340 241 918 512 0 0 1440 877 </string>
+	<string>340 280 796 473 0 0 1440 877 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
 	<string>0 0 1440 877 0 0 1440 877 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
@@ -782,7 +782,7 @@
 					<key>partial</key>
 					<true/>
 					<key>regex</key>
-					<string>\b(alexgw|awilliams)\b</string>
+					<string>\b(alexgw|awilliams|willia\d\d)\b</string>
 				</dict>
 				<dict>
 					<key>action</key>
