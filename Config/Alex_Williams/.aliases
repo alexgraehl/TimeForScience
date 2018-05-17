@@ -536,10 +536,13 @@ function dos2unix { # Convert a Windows-style line-ending file to a UNIX one. Us
 
 ## Utility commands
 
-## -U: "screen understands UTF8"
-alias rr='tmux attach || tmux new' #"screen -xR -U" ## Reconnect to the previous screen, or make a new one if there isn't one already
-
-alias ss='screen -xR -U' #"screen -xR -U" ## Reconnect to the previous screen, or make a new one if there isn't one already
+if [[ -f ~/.agw_cfg/prefer_screen ]]; then
+    echo "[COLOR_FYI] Preferring SCREEN over tmux: aliasing 'rr' to screen."
+    alias rr='screen -xR -U' #"screen -xR -U" ## Reconnect to the previous screen, or make a new one if there isn't one already
+    ## -U: "screen understands UTF8"
+else
+    alias rr='tmux attach || tmux new' #"screen -xR -U" ## Reconnect to the previous screen, or make a new one if there isn't one already
+fi
 
 alias wcl='grep -c ""' # actually gives you the NUMBER and not the filename
 alias sortt='sort -t "	"' # sort with tab as separator
@@ -1215,4 +1218,3 @@ function phageomancy-html-archive {
 
 # count bases per line in a fasta file:
 # cat x.fa | grep -v '^>' | perl -ne 'chomp; my @a=split(//,$_); my %c=(); for my $x (@a) { $c{lc($x)}++; }; for my $k (keys(%c)) { print($k.qq{=}.$c{$k}."\t"); }; print qq{  <-- \n};'
-
