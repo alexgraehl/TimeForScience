@@ -1,8 +1,7 @@
 # set -o xtrace
 #echo "Note: make sure you SOURCE this program !!!!"
 #echo "(Instead of running it like a shell script.)"
-#echo "To get a full list of available modules, type:"
-#echo "       module avail 2>| modules.list.txt"
+echo "[COLOR_FYI]: To get a full list of available modules, type:  module avail 2>| modules.list.txt"
 # removed: conda
 # removed: ; time module load       apps/hdf5
 # time module load       apps/ngs_pipeline
@@ -28,23 +27,24 @@
 #      apps/ruby \
 #      apps/vcflib \
 #      apps/VCFtools \
-#
+#      apps/tmux \
 
-echo "[.modules: Installing modules now... this usually takes ~3 seconds]"
-time module load \
-      apps/bedtools \
-      apps/bioconductor \
-      apps/emacs/24.5 \
-      apps/git \
-      apps/gne-sequence-analysis \
-      apps/gnu-make \
-      apps/ngs-pipeline-tools \
-      apps/python3 \
-      apps/R \
-      apps/salmon \
-      apps/samtools \
-      apps/seq-utils \
-      apps/tmux \
+#      apps/bioconductor \
+#      apps/gne-sequence-analysis \
+#      apps/gnu-make \
+#      apps/ngs-pipeline-tools \
+#      apps/python3 \
+
+time module add apps/R \
+	apps/bedtools \
+	apps/emacs/24.5 \
+	apps/git \
+	apps/samtools \
+        apps/seq-utils \
+
+# loading SALMON causes R to fail with this message about 'GOMP_4.0':
+# --> 13:40:13[rescomp5007] R --version
+#   /gne/research/apps/R/3.4.3-20171201-stable/x86_64-linux-2.6-rhel6/lib64/R/bin/exec/R: /gne/research/apps/salmon/0.9.1/x86_64-linux-2.6-rhel6/lib/libgomp.so.1: version `GOMP_4.0' not found (required by /gne/research/apps/R/3.4.3-20171201-stable/x86_64-linux-2.6-rhel6/lib64/R/lib/libR.so)
 
 #echo $(which bedtools)
  
