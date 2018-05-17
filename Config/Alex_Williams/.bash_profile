@@ -10,7 +10,7 @@ source ~/.bashrc
 #if [ -f '/Users/alexwilliams/Downloads/google-cloud-sdk/completion.bash.inc' ]; then source '/Users/alexwilliams/Downloads/google-cloud-sdk/completion.bash.inc'; fi
 
 if [[ -f "$HOME/.modules" ]]; then
-    echo "[COLOR_FYI]: Modules loading..."
+    echo "[:FYI:] Modules loading..."
     time source "$HOME/.modules"
-    echo "[COLOR_FYI]: Modules are done loading"
+    echo "[:FYI:] Modules are done loading"
 fi
