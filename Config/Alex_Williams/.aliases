@@ -1221,5 +1221,5 @@ function phageomancy-html-archive {
 
 function hsync {
     echo "[:FYI:] HTML syncing..."
-    rsync -avz $HOME/workspace/html/ $HOME/web/
+    rsync -avz $HOME/workspace/html_master/ $HOME/web/
 }
