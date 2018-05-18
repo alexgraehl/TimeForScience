@@ -84,7 +84,7 @@ else
     a_end_color=''
 fi
 
-echo -e "${a_echo_color}>>> BASH: Loading .bashrc...${a_end_color}" ## <-- comes after the colors are set up in platform-specific fashion
+echo -e "${a_echo_color}>>> [:FYI:] Loading .bashrc...${a_end_color}" ## <-- comes after the colors are set up in platform-specific fashion
 
 if [[ -d "$HOME/work" ]]; then
     export BINF_CORE_WORK_DIR="$HOME/work" # <-- set BINF_CORE work directory
@@ -339,7 +339,6 @@ fi
 # enable color support of ls
 [[ -x "/usr/bin/dircolors" ]] && eval "`dircolors -b`"
 
-
 export CLICOLOR='Yes'
 export LS_OPTIONS='--color=auto'
 export LS_COLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=43;31;03:ex=01;31'  ## LS_COLORS *with* an underscore is for Ubuntu
@@ -367,7 +366,6 @@ bind "\M-K:next-history"
 bind "\C-s:history-search-forward" # This doesn't seem to work for some reason
 
 umask u=rwx,g=rwx,o=rx # <-- give users and groups full access to files I create, and let other users READ and EXECUTE
-
 
 # Save the local ethernet "en0" MAC address into the variable LOCAL_EN0_MAC. Note the zero.
 # Allows per-machine settinsg.

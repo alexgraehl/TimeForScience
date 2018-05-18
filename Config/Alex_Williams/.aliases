@@ -33,7 +33,7 @@ fi
 
 
 # git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@users.noreply.github.com"
-echo -e "${a_echo_color}>>> BASH: Loading bash-aliases...${a_end_color}"
+echo -e "${a_echo_color}>>> [:FYI:] Loading bash-aliases...${a_end_color}"
 #echo $GIT_COMMITTER_EMAIL
 # echo $GIT_AUTHOR_EMAIL # not important if you set the other thing
 
@@ -103,81 +103,81 @@ function witch { # Shows the versions for all on-your-path verisons of software.
     for f in $(which -a "$1"); do echo -en "\n${a_echo_color}$f${a_end_color} --> "; eval "$f $VER_STR" | head -n 2; done; echo ""
 }
 
-function phageomancy-sanitize {
-    echo "Removing the largest files, for ease of uploading. Do not do this on the source data!"
-    /bin/rm -v -rf **/070_READ_DEPTH_COVERAGE_OVER_ASSEMBLY/*.bam **/015_FASTQ_SUBSET_READS
-}
-
-function phageomancy-sanitize-more {
-    echo "Removing everything even remotely large, so that we can easily upload these things."
-    phageomancy-sanitize
-    gzip -9 **/contigs.fasta
-    /bin/rm -rf **/contigs.paths **/scaffolds.paths **/*_assembly_graph.fastg  **/misc **/052_EXTENDED*
-}
-
-function phageomancy-one {
-    if [[ "$#" != 1 ]] ; then echo "[ERROR in phageomancy-one] You need to pass EXACTLY ONE prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz)."; return; fi
-    phageomancy-just "${1}" "ALL"
-}
-
-function phageomancy-many-do {
-    if [[ "$#" != 1 ]] ; then echo "[ERROR in phageomancy-many-do] You need to pass EXACTLY ONE mode in!"; return; fi
-    echo "Running this mode (${1}) on all gz files in this directory..."
-    PREFIXES=$(ls -1 p*.gz | grep -E '(fastq|fq).gz$' | perl -pe 's/_R.*//' | perl -pe 's/[-_]*~.*//' | sort -u)
-    for f in $PREFIXES; do
-	echo "Handling $f ..."
-	phageomancy-just "${f}" "${1}"
-    done
-}
-
-function phageomancy-many {
-    phageomancy-many-do "ALL"
-}
-
-
-
-export PHAGEOMANCY_DEBUG=0
-export PHAGEOMANCY_N_SPADES=1 # number of assemblies to run (we subset to 100k reads per assembly by default)
-
-function phageomancy-just {
-    if [[ "$#" != 2 ]] ; then echo "[ERROR] You need to pass EXACTLY TWO thigns in: 1) prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz) and 2) the mode (like 'ALL')"; return; fi
-    domain='phage'
-    echo "Remember that you can debug this by setting 'export PHAGEOMANCY_DEBUG=1'"
-    echo "Handling ${1} with mode ${2} and ${PHAGEOMANCY_N_SPADES} SPAdes replicates..."
-    PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
-    RES_DIR=$HOME/PHAGEOMANCY/resources
-    # ORPHAN_ALLOWING=" --allow-orphan-pe-reads "
-    if [[ "${PHAGEOMANCY_DEBUG}" == 1 ]]; then
-	echo "Running with IPYTHON since 'export PHAGEOMANCY_DEBUG=1' was set somewhere earlier."
-	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
-    else
-	${PHAGEOMANCY_PY}                  --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
-    fi
-}
-
-function bacteriomancy-many-do {
-    if [[ "$#" != 1 ]] ; then echo "[ERROR in bacteriomancy-many-do] You need to pass EXACTLY ONE mode in!"; return; fi
-    echo "Running this mode (${1}) on all gz files in this directory..."
-    PREFIXES=$(ls -1 b*.gz | grep -E '(fastq|fq).gz$' | perl -pe 's/_R.*//' | perl -pe 's/[-_]*~.*//' | sort -u)
-    for f in $PREFIXES; do
-	echo "Handling $f ..."
-	bacteriomancy-just "${f}" "${1}"
-    done
-}
-
-function bacteriomancy-just {
-    if [[ "$#" != 2 ]] ; then echo "[ERROR] You need to pass EXACTLY TWO thigns in: 1) prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz) and 2) the mode (like 'ALL')"; return; fi
-    domain='bacteria'
-    echo "Handling ${1} with mode ${2} and ${PHAGEOMANCY_N_SPADES} SPAdes replicates..."
-    PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
-    RES_DIR=$HOME/PHAGEOMANCY/resources
-    if [[ "${PHAGEOMANCY_DEBUG}" == 1 ]]; then
-	echo "Running with IPYTHON since 'export PHAGEOMANCY_DEBUG=1' was set somewhere earlier."
-	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
-    else
-	${PHAGEOMANCY_PY}                  --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
-    fi
-}
+#function phageomancy-sanitize {
+#    echo "Removing the largest files, for ease of uploading. Do not do this on the source data!"
+#    /bin/rm -v -rf **/070_READ_DEPTH_COVERAGE_OVER_ASSEMBLY/*.bam **/015_FASTQ_SUBSET_READS
+#}
+#
+#function phageomancy-sanitize-more {
+#    echo "Removing everything even remotely large, so that we can easily upload these things."
+#    phageomancy-sanitize
+#    gzip -9 **/contigs.fasta
+#    /bin/rm -rf **/contigs.paths **/scaffolds.paths **/*_assembly_graph.fastg  **/misc **/052_EXTENDED*
+#}
+#
+#function phageomancy-one {
+#    if [[ "$#" != 1 ]] ; then echo "[ERROR in phageomancy-one] You need to pass EXACTLY ONE prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz)."; return; fi
+#    phageomancy-just "${1}" "ALL"
+#}
+#
+#function phageomancy-many-do {
+#    if [[ "$#" != 1 ]] ; then echo "[ERROR in phageomancy-many-do] You need to pass EXACTLY ONE mode in!"; return; fi
+#    echo "Running this mode (${1}) on all gz files in this directory..."
+#    PREFIXES=$(ls -1 p*.gz | grep -E '(fastq|fq).gz$' | perl -pe 's/_R.*//' | perl -pe 's/[-_]*~.*//' | sort -u)
+#    for f in $PREFIXES; do
+#	echo "Handling $f ..."
+#	phageomancy-just "${f}" "${1}"
+#    done
+#}
+#
+#function phageomancy-many {
+#    phageomancy-many-do "ALL"
+#}
+#
+#
+#
+#export PHAGEOMANCY_DEBUG=0
+#export PHAGEOMANCY_N_SPADES=1 # number of assemblies to run (we subset to 100k reads per assembly by default)
+#
+#function phageomancy-just {
+#    if [[ "$#" != 2 ]] ; then echo "[ERROR] You need to pass EXACTLY TWO thigns in: 1) prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz) and 2) the mode (like 'ALL')"; return; fi
+#    domain='phage'
+#    echo "Remember that you can debug this by setting 'export PHAGEOMANCY_DEBUG=1'"
+#    echo "Handling ${1} with mode ${2} and ${PHAGEOMANCY_N_SPADES} SPAdes replicates..."
+#    PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
+#    RES_DIR=$HOME/PHAGEOMANCY/resources
+#    # ORPHAN_ALLOWING=" --allow-orphan-pe-reads "
+#    if [[ "${PHAGEOMANCY_DEBUG}" == 1 ]]; then
+#	echo "Running with IPYTHON since 'export PHAGEOMANCY_DEBUG=1' was set somewhere earlier."
+#	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
+#    else
+#	${PHAGEOMANCY_PY}                  --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
+#    fi
+#}
+#
+#function bacteriomancy-many-do {
+#    if [[ "$#" != 1 ]] ; then echo "[ERROR in bacteriomancy-many-do] You need to pass EXACTLY ONE mode in!"; return; fi
+#    echo "Running this mode (${1}) on all gz files in this directory..."
+#    PREFIXES=$(ls -1 b*.gz | grep -E '(fastq|fq).gz$' | perl -pe 's/_R.*//' | perl -pe 's/[-_]*~.*//' | sort -u)
+#    for f in $PREFIXES; do
+#	echo "Handling $f ..."
+#	bacteriomancy-just "${f}" "${1}"
+#    done
+#}
+#
+#function bacteriomancy-just {
+#    if [[ "$#" != 2 ]] ; then echo "[ERROR] You need to pass EXACTLY TWO thigns in: 1) prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz) and 2) the mode (like 'ALL')"; return; fi
+#    domain='bacteria'
+#    echo "Handling ${1} with mode ${2} and ${PHAGEOMANCY_N_SPADES} SPAdes replicates..."
+#    PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
+#    RES_DIR=$HOME/PHAGEOMANCY/resources
+#    if [[ "${PHAGEOMANCY_DEBUG}" == 1 ]]; then
+#	echo "Running with IPYTHON since 'export PHAGEOMANCY_DEBUG=1' was set somewhere earlier."
+#	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
+#    else
+#	${PHAGEOMANCY_PY}                  --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
+#    fi
+#}
 
 function delve { # or 'dv'
     ## Finds, in any subdirectories, any files that have a name that matches the input text. Sort of like a poor man's "locate"
@@ -1218,3 +1218,8 @@ function phageomancy-html-archive {
 
 # count bases per line in a fasta file:
 # cat x.fa | grep -v '^>' | perl -ne 'chomp; my @a=split(//,$_); my %c=(); for my $x (@a) { $c{lc($x)}++; }; for my $k (keys(%c)) { print($k.qq{=}.$c{$k}."\t"); }; print qq{  <-- \n};'
+
+function hsync {
+    echo "[:FYI:] HTML syncing..."
+    rsync -avz $HOME/workspace/html/ $HOME/web/
+}
