@@ -17,7 +17,13 @@ else
     echo "Note: no .local-config-no-git was found. SSH commands, server shortcuts, and tmux coloring may fail. You may want to MANUALLY copy this file over from another machine."
 fi
 
-if [[ "$USER" == "alexgw" ]] || [[ "$USER" == "awilliams" ]] || [[ "$USER" == "alexwilliams" ]]; then
+if [[ "${USER}" == "alexgw" ]] || [[ "${USER}" == "awilliams" ]] || [[ "${USER}" == "alexwilliams" ]] || [[ "${USER}" =~ willia* ]]; then
+    IS_ALEX_ACCOUNT=1
+else
+    IS_ALEX_ACCOUNT=0
+fi
+
+if [[ "${IS_ALEX_ACCOUNT}" == "1" ]]; then
     ## SAFER 'rm' COMMANDS --only applies to the user(s) above.
     ## Below: aliases the command "rm" to actually run the script "trash.pl," which moves files to a trash directory in /tmp.
     ## They can be recovered by just copying them back.
@@ -824,7 +830,7 @@ function qkiri { # kill all your OWN jobs
     select yn in "Wrong! Cancel! Keep these jobs!" "Delete--yes, kill ALL of my jobs without regret!"; do
 	case $yn in
 	    Wrong*)  echo "Cancelled!"; break;;
-	    Delete*) qselect -u $USER | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats; break ;;
+	    Delete*) qselect -u ${USER} | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats; break ;;
 	esac
     done
 }
@@ -933,7 +939,7 @@ function accuse { # See who is using the CPU. Usage: just "accuse" with no argum
     top -b -n 1 | tail -n +7 >> ${TOPTEMP} ;
     echo -e "USERNAME\t%CPU\tBARGRAPH\t# Date = \"${D}\"" >> ${TEMP2}
     NCPU=$(nproc)
-    for u in $USERS_WITH_JOBS; do \
+    for u in ${USERS_WITH_JOBS}; do \
 	cat $TOPTEMP | perl -e "my \$user = ${u}; my \$tot = 0; while(<>){ chomp; my @a=split(/\s+/); if (\$a[2] =~ m/${u}/i) {\$tot += \$a[9];}; } my \$stars = '|' . 'x' x (1+int((\$tot+50)/${NCPU})); print qq{\$user\t\$tot\t\$stars\n};"  >> ${TEMP2}; \
     done ;
     cat ${TEMP2} | column -t -s $'\t'
