@@ -341,7 +341,7 @@ alias cheat="echo \
 \">> UNIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
 \">> UNIX: IO nice for a user \\\$THEUSER: SSS=\\\$(ps -fu \\\$THEUSER | perl -pe 's/[ ]+/\t/g' | cut -f 2 | tail -n +2); for pid in \\\$SSS ; do echo 'PID' \\\$pid; sudo ionice -c3 -p \\\$pid ; sudo renice +10 -p \\\$pid; done\" ${NL}\
 \">> UNIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
-\">> UNIX GREP: look for text from a file, like join: grep -w -f KEYFILE.txt search_in_file.txt \" ${NL}\
+\">> UNIX GREP: find text in a file VERBATIM, like join: grep -w -f KEYFILE.txt search_in_file.txt  (remove the '-w' to allow PARTIAL matches as well)\" ${NL}\
 \">> UNIX GREP: filter files based on presence of text: mkdir YES NO; for f in *.txt; do if [[ \\\"\\\$(grep 'YOUR_STRING_HERE' \\\$f | wc -l)\\\" -ne \\\"0\\\" ]]; then mv \\\$f yes/; else mv \\\$f no/; fi ; done \" ${NL}\
 \">> UNIX: Check Linux version: cat /etc/*-release \" ${NL}\
 \">> UNIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
