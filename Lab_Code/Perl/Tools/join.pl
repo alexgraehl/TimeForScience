@@ -13,7 +13,7 @@ use POSIX      qw(ceil floor);
 use List::Util qw(max min);
 use Getopt::Long;
 use Carp; # backtrace on errors. Has the "confess" function. Use this instead of "die" if you want useful information!
-$| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buffer terminal output! Setting this to zero can cause STDERR and STDOUT to be interleaved in weird ways.
+$| = 1; # Always flush text output IMMEDIATELY to the console, don't wait to buffer terminal output! Setting this to zero can cause STDERR and STDOUT to be interleaved in weird ways.ob
 
 sub tryToLoadModule($) {
     my $x = eval("require $_[0]");
@@ -71,8 +71,6 @@ my $shouldUnixSortKeys    = 0;
 my $shouldIgnoreCase  = 0; # by default, case-sensitive
 my $sumDuplicates     = 0; # if multiple keys are seen in ONE FILE, try to SUM them.
 
-
-
 sub get_key_accounting_for_case_sensitivity($$\%) {
 	my ($ignore_case, $key, $mappingHashPtr) = @_;
 	return (($ignore_case) ? $$mappingHashPtr{$key} : $key);
@@ -80,14 +78,12 @@ sub get_key_accounting_for_case_sensitivity($$\%) {
 
 sub guess_multi_join_type_from_parameters($$$$) {
 	my ($join_type, $should_set_subtract, $num_input_files, $na_string) = @_;
-
 	if ($should_set_subtract || (defined($join_type) && $join_type =~ m/^${SETDIFF_STR}/i)) {
 		(2 == $num_input_files)  or quitWithUsageError("You can only specify set difference (-v) if there are EXACTLY TWO input files. The first file is the 'gold standard' file, and the keys in the second one are used to subtract out lines from the 'gold' file.");
 		!defined($join_type)     or quitWithUsageError("You cannot specify the '-v' (negate / set subtract) operator AND ALSO specify a join type. -v ALREADY implies 'set subtraction' (first file minus keys in second file.)");
 		!defined($na_string)     or quitWithUsageError("You cannot specify BOTH set subtraction (the '-v' operator) AND ALSO a missing-value string (e.g. '-o NA' or '-ob'). Try removing the '-o' argument.");
 		$join_type = $SETDIFF_STR;
 	}
-	
 	if (!defined($join_type)) {
 		($num_input_files <= 2) or quitWithUsageError("Since you are handling 3 or more files, you must specify a join type, either '--multi=union' or '--multi=intersect'. Re-run the command with --multi=i or --multi=u");
 		$join_type = defined($na_string) ? $UNION_STR : $INTERSECT_STR;
@@ -118,7 +114,7 @@ sub openSmartAndGetFilehandle($) {
     my ($filename) = @_;
     if ($filename eq '-') { return(*STDIN); } # <-- RETURN!!!
     my $reader;
-    if    ($filename =~ /[.](gz|gzip)$/i)  { $reader = "gzip  -d --stdout $filename |"; }    # Un-gzip a file and send it to STDOUT.
+    if    ($filename =~ /[.](gz|gzip|Z)$/i)  { $reader = "gzip  -d --stdout $filename |"; }    # Un-gzip a file and send it to STDOUT.
     elsif ($filename =~ /[.]bz2$/i) { $reader = "bzip2 -d -c       $filename |"; }    # Un-bz2 a file and send it to STDOUT
     elsif ($filename =~ /[.]xz$/i)  { $reader = "xz -d -c       $filename |"; }    # Un-xz a file and send it to STDOUT
     elsif ($filename =~ /[.]zip$/i) { $reader = "unzip -p $filename |"; } # Un-regular-zip a file and send it to STDOUT with "-p": which is DIFFERENT from -c (-c is NOT what you want here). See 'man unzip'
@@ -152,7 +148,6 @@ sub is_line_array_too_weird_to_use(\@$$$) {
 
 sub handleMultiJoin($$$$$$) {
 	my ($k1, $k2, $filenameArrPtr, $mergeType, $d1, $d2) = @_;
-	
 	my %datHash               = (); # this stores all the lines, and gets very large. Key = filename, value = hash with a second key = line key, value = array of data on that line
 	my %longestLineInFileHash = (); # key = filename, value = how long the longest line in that file is
 	my %keysHash              = (); # key = the keys seen in ALL files, value = order that this key was added (0 is the first key, 1 is the second, etc...)
@@ -381,7 +376,8 @@ sub main() { # Main program
 	check_for_valid_input_files(@files) or die "[ERROR] in reading input files.";
 	$stringWhenNoMatch = sanitized_version_of_no_match_string($stringWhenNoMatch);
 	handleMultiJoin($keyCol1, $keyCol2, \@files, $multiJoinType, $delim1, $delim2);
-	($numDupeKeysMultiJoin > 0) and verboseWarnPrint("$numDupeKeysMultiJoin duplicate keys were skipped in the multi-joining.");
+	($numDupeKeysMultiJoin > 0) and verboseWarnPrint("$numDupeKeysMultiJoin duplicate keys were skipped in the joining process.");
+	warn("Hey there seems to be a problem in the '-o' option right now! Do not trust this script.");
 }
 
 main();
