@@ -1230,7 +1230,7 @@ function hsync {
     rsync -avz $HOME/workspace/html_master/ $HOME/web/
 }
 
-function fasta2oneliner {
-    echo -e ">> Removing line breaks from FASTA sequences..."   >&2 # print to stderr
+function fasta2single_line_per_seq {
+    echo -e ">> Removing line breaks from multi-line FASTA sequences... now each record will have exactly one title line and exactly one sequence line..."   >&2 # print to stderr
     zless "$1" | awk '!/^>/{printf "%s", $0; n="\n"} /^>/{print n $0; n=""} END {printf"%s",n}'
 }
