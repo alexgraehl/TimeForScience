@@ -1229,3 +1229,8 @@ function hsync {
     echo "[:FYI:] HTML syncing..."
     rsync -avz $HOME/workspace/html_master/ $HOME/web/
 }
+
+function fasta2oneliner {
+    echo -e ">> Removing line breaks from FASTA sequences..."   >&2 # print to stderr
+    zless "$1" | awk '!/^>/{printf "%s", $0; n="\n"} /^>/{print n $0; n=""} END {printf"%s",n}'
+}
