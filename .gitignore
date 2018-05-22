@@ -75,12 +75,10 @@ hgrc
 .DS_Store?
 .Spotlight-V100
 .Trashes
-ehthumbs.db
+thumbs.db
 Thumbs.db
 Icon
-Icon[]
-Icon
-# FYI: Input the Mac CR (carriage return) with Ctrl-Q Ctrl-M
+# FYI: Input the Mac CR (carriage return) with Ctrl-Q Ctrl-M... but this breaks everything! So you can't have Icon[^M] <-- note that isn't a real newline!
 
 # Weird backup files maybe
 .#*
