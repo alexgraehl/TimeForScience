@@ -1,5 +1,5 @@
 [
-  { "type":"escape", "align":"left" },
+ { "type":"displaySleep", "width":80, "align":"left" },
 
   { "type":"brightness",
     "width":120,
@@ -44,6 +44,5 @@
 
 ,
 
- { "type":"displaySleep", "width":80, "align":"right" }
 
 ]

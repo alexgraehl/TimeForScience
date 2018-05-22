@@ -570,11 +570,11 @@ alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse
 alias make='make --warn-undefined-variables --print-directory'
 alias mcm='make clean && make'
 function remake { ## Lets you type "remake" to remove a file and then use GNU make to try to re-generate it
-    ${OUR_RM} "$@" ;  make --warn-undefined-variables --print-directory "$@"
+    ${OUR_RM} "$@" ; make --warn-undefined-variables --print-directory "$@"
 }
 
-function rel { ## Remake and then view;
-    ${OUR_RM} "$@" ;  make --warn-undefined-variables --print-directory "$@" ; s "$@"
+function rel { ## Remake and then view
+    ${OUR_RM} "$@" ; make --warn-undefined-variables --print-directory "$@" ; s "$@"
 }
 
 # Aliases related to COLOR GREP
@@ -583,9 +583,9 @@ alias grepc='grep   --color=always --with-filename --line-number'
 alias egrepc='egrep --color=always --with-filename --line-number'
 alias fgrepc='fgrep --color=always --with-filename --line-number'
 
-# Aliases related to CVS
-alias commit="cvs commit -m 'AGW CVS Commit'"
-alias gitcom="git commit -a -m 'Changes committed by alexgw'"
+# git aliases
+alias gitcom="git commit -a -m 'Changes committed by ${USER}'"
+alias gitlist="git ls-tree -r master --name-only" # show currently tracked files
 alias gitstat="git ls-files --modified --deleted"
 alias gitdiff="git difftool"
 
@@ -604,9 +604,9 @@ function sciencecom {
 
 function scienceup {
     if [[ -d "$1/.git" ]] ; then
-	echo "Committing any local GIT changes before syncing with remote master."
+	echo "[:FYI:] Committing any local GIT changes before syncing with remote master."
 	git --git-dir="$1/.git" --work-tree="$1" commit -a -m "Committing any local changes from ${USER} before sync with remote server." ;
-	echo "Pulling GIT changes from remote master."
+	echo "[:FYI:] Pulling GIT changes from remote master."
 	git --git-dir="$1/.git" --work-tree="$1" pull ;
 	#cd "$1" ; git --git-dir "$1" commit -a -m "Committing any local changes from ${USER} before sync with remote server." ; git --git-dir "$1" pull ;
     else
@@ -617,53 +617,18 @@ function scienceup {
 
 function science {
     if [[ -e "${TIME_FOR_SCIENCE_DIR}" ]]; then
-       (echo 'TimeForScience (GitHub):' ; scienceup ${TIME_FOR_SCIENCE_DIR} && sciencecom ${TIME_FOR_SCIENCE_DIR}) ;
+       (echo '[:FYI:] TimeForScience (GitHub):' ; scienceup ${TIME_FOR_SCIENCE_DIR} && sciencecom ${TIME_FOR_SCIENCE_DIR}) ;
     fi
-    if [[ -e "${HOME}/epi" ]]; then
-	(echo '~/Epi (GitHub):' ; scienceup ${HOME}/epi && sciencecom ${HOME}/epi) ;
-	#  rsync -avz --links "${HOME}/epi"   /Volumes/GoogleDrive/My\ Drive/
-    fi
-    if [[ -e "${HOME}/pyswarm" ]]; then
-	(echo '~/pyswarm (GitHub):' ; scienceup ${HOME}/pyswarm && sciencecom ${HOME}/pyswarm) ;
-    fi
-    #echo 'Bioinformatics (Git on Westway):' ; scienceup ${BINF_CORE_WORK_DIR} ; sciencecom ${BINF_CORE_WORK_DIR}
-    #echo -e "Updating (wait 10 more seconds)..."
-    #sleep 5;
-    #echo -e "Updating (wait 5 more seconds)..."
-    #sleep 5;
-    #echo -e '\nFinished updating on' `date`
 }
 
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
 
-alias nami=' ssh ${AGW_SSH_OPTIONS} -i ~/Dropbox/metaquery-dev.pem bitnami@52.53.252.164'
-
-alias nau=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${BN_IP}'  # From the not-uploaded file /work/Code/alexgw/aliases-server-config (or .aliases-server-config in the home directory!)
-alias naux='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${BN_IP}'
-alias bus=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${BC_IP}'
-alias busx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${BC_IP}'
-alias wes=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${WES_IP}'
-alias wesx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${WES_IP}'
-
-alias rig=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${RIG_IP}'
-alias rigx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
-
-alias beef='ssh ${AGW_SSH_OPTIONS} -i ${BEEFY_PEM} ${BEEFY_U}@${BEEFY_IP}'
-
 alias agwcom='ssh ${AGW_SSH_OPTIONS}   ${AGWCOM_USERNAME}@${AGWCOM_URL}'
 
+alias nami=' ssh ${AGW_SSH_OPTIONS} -i ~/Dropbox/metaquery-dev.pem bitnami@52.53.252.164'
+alias rig=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${RIG_IP}'
+alias rigx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
 RIG_SAND_IP=${RIG_IP/./-sandbox.} # add "-sandbox" before the first dot
-alias sand=' ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_SAND_IP}'
-
-alias lig=' ssh ${AGW_SSH_OPTIONS}     ${PL_USERNAME}@${PL_IP}' # <-- LIG = different username!
-alias ligx='ssh ${AGW_SSH_OPTIONS} -Y  ${PL_USERNAME}@${PL_IP}' # <-- LIG = different username!
-
-alias bue=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PB_IP}'
-alias buex='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${PB_IP}'
-alias che=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${CLUS_IP}'
-alias newv='ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${NEWV_IP}'
-alias tuck='ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${PS_IP}'
-
 alias oso='ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${OSO_IP}'
 alias osox='ssh ${AGW_SSH_OPTIONS} -Y ${ACC_U}@${OSO_IP}'
 
@@ -684,28 +649,26 @@ alias sn="/usr/bin/less -S --LINE-NUMBERS --status-column --RAW-CONTROL-CHARS -f
 alias sweep="${OUR_RM} *.tmp *.temp" ## Sweep out the .tmp files
 alias htop="htop --sort-key PERCENT_CPU"
 
-function playnicely {
-    # Takes one argument.
-    # requires sudo privileges. Takes one argument, the username to make play nicely:
-    # example: playnicely THEUSERNAME
-    SSS=$(ps -fu "$1" | perl -pe 's/[ ]+/\t/g' | cut -f 2 | tail -n +2);
-    for pid in $SSS ; do echo 'ionice-ing and nice+15-ing process ID' $pid; sudo ionice -c3 -p $pid ; sudo renice +15 -p $pid ; done 
-}
+#function playnicely {
+#    # Takes one argument.
+#    # requires sudo privileges. Takes one argument, the username to make play nicely:
+#    # example: playnicely THEUSERNAME
+#    SSS=$(ps -fu "$1" | perl -pe 's/[ ]+/\t/g' | cut -f 2 | tail -n +2);
+#    for pid in $SSS ; do echo 'ionice-ing and nice+15-ing process ID' $pid; sudo ionice -c3 -p $pid ; sudo renice +15 -p $pid ; done 
+#}
+#
+#function disknicely {
+#    # Takes ZERO arguments. Just for making the 'nfsd' processes less annoying.
+#    SSS=$(ps -eopid,uid,cmd | grep "nfsd" | grep -v "grep" | perl -p -e "s/^[ ]+//" | cut -d " " -f 1) # Get any 'nfsd' processes
+#    for pid in $SSS ; do echo 'ionice-ing and nice+15-ing the NFS process ID' $pid; sudo ionice -c3 -p $pid ; sudo renice +15 -p $pid ; don#e 
+#}
 
-function disknicely {
-    # Takes ZERO arguments. Just for making the 'nfsd' processes less annoying.
-    SSS=$(ps -eopid,uid,cmd | grep "nfsd" | grep -v "grep" | perl -p -e "s/^[ ]+//" | cut -d " " -f 1) # Get any 'nfsd' processes
-    for pid in $SSS ; do echo 'ionice-ing and nice+15-ing the NFS process ID' $pid; sudo ionice -c3 -p $pid ; sudo renice +15 -p $pid ; done 
+function s { ## <-- this needs to come BEFORE the other things that use less!
+    magicless --LINE-NUMBERS --status-column "$@"  # "s" uses "magicless" to run files through sheet.pl
 }
-
 
 function acol {
     column -s $'\t' -t # columns delimited by tabs! Like 'sheet.py'
-}
-
-function s { ## <-- this needs to come BEFORE the other things that use less!
-    # "s" uses "magicless" to run files through sheet.pl
-    magicless --LINE-NUMBERS --status-column "$@"
 }
 
 function acols {
@@ -734,8 +697,8 @@ function v {
 }
 
 alias huh='cat <(declare -f) <(alias)' ## uses bash subshells to show everything that is defined
-alias backoff='${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh off'
-alias backon='${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh on'
+#alias backoff='${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh off'
+#alias backon='${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh on'
 
 function n { # show colors
     echo -e  "$color_prefix[30m black $color_prefix[31mred $color_prefix[32mgreen $color_prefix[33myellow $color_prefix[34mblue $color_prefix[35mmagenta $color_prefix[36mcyan $color_prefix[37mwhite"
@@ -759,9 +722,8 @@ function maczip {
     fi
 }
 
-
 function xztar {
-    # Tar and xzip in one place so you don't have to remember the syntax. Yeah, or you could just remember the syntax!
+    # Tar and xzip in one place so you don't have to remember the syntax. Or you could just remember the syntax!
     if [[ "$#" != 1 ]]; then echo "xztar can only accept ONE argument! One directory or file to tar/xz."; exit 1; fi
     OUTNAME=$(basename $1).tar.xz
     echo "Note that xztar is incredibly slow! So be prepared for it to take forever. Creating this archive: $OUTNAME"
