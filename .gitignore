@@ -1,3 +1,11 @@
+# Gitignore format:  https://labs.consol.de/development/git/2017/02/22/gitignore.html
+# target/               folder (due to the trailing /) recursively
+# target                file or folder named target recursively
+# /target               file or folder named target in the top-most directory (due to the leading /)
+# /target/              folder named target in the top-most directory (leading and trailing /)
+# *.class               every file or folder ending with .class recursively
+# target/**/logs/       every folder named logs somewhere under a folder named target (** includes /)
+
 ###################
 # Google          #
 ###################
@@ -62,8 +70,21 @@ hgrc
 *.Z
 *.xz
 
+######################
+# Code / XCode / etc #
+######################
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+.idea/
+.eclipse
+
+######################
 # Logs and databases #
 ######################
+*.logs
 *.log
 *.sql
 *.sqlite
@@ -72,13 +93,13 @@ hgrc
 # OS generated files #
 ######################
 .DS_Store
-.DS_Store?
+.DS_Store*
 .Spotlight-V100
 .Trashes
 thumbs.db
 Thumbs.db
-Icon
-# FYI: Input the Mac CR (carriage return) with Ctrl-Q Ctrl-M... but this breaks everything! So you can't have Icon[^M] <-- note that isn't a real newline!
+Icon*
+# FYI: Input the Mac CR (carriage return) with Ctrl-Q Ctrl-M... but this maybe breaks thigns? Unclear.
 
 # Weird backup files maybe
 .#*
