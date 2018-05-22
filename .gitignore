@@ -98,8 +98,8 @@ hgrc
 .Trashes
 thumbs.db
 Thumbs.db
-Icon*
-# FYI: Input the Mac CR (carriage return) with Ctrl-Q Ctrl-M... but this maybe breaks thigns? Unclear.
+Icon[]
+# FYI: Input the Mac CR (carriage return) with Ctrl-Q Ctrl-M in emacs
 
 # Weird backup files maybe
 .#*
