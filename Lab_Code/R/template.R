@@ -16,7 +16,7 @@ if (!exists("print.agw")) {
 }
 
 # ======================================================================================
-if (interactive()) { options(error=recover) } else { options(error=traceback) } # useful even non-interactively
+if (interactive()) { options(error=recover, max.print=1000) } else { options(error=traceback) } # useful even non-interactively
 options(stringsAsFactors=F, menu.graphics=F) # for top of file
 # ======================================================================================
 # Common functions
@@ -24,13 +24,23 @@ print0=function(...){print(paste0(...))}; system0=function(...){print0("[SYSTEM 
 file.nonzero.exists=function(f){return(file.exists(f)&&file.info(f)$size>0)}
 GLOBAL_ERRORS <- c("")
 errlog <- function(...) { msg=paste0(...);print0(msg);warning(msg); GLOBAL_ERRORS <<- append(GLOBAL_ERRORS, msg); }
-qsubize <- function(cmd, name_prefix="X") { # Returns a qsub wrapper for the command 'cmd'
-     QSUB_EXE <- system2("which", args=c("qsub"),  stdout=T); stopifnot(file.exists(QSUB_EXE))
-     username <- Sys.info()[["user"]]
-     persistent_n <- ifelse(is.null(attr(qsubize, "sum")), yes=0, no=(attr(qsubize, "sum")+1)) # <-- 'n' will be a "static" variable that persists between function calls
-     attr(qsubize, "sum") <<- persistent_n # note the "<<-" to save this to the global scope!!!
-     cmd <- paste0("echo \"", cmd, "\" | ", QSUB_EXE, " -V -N \"B2B_", name_prefix, "_", persistent_n, "_", username, "\"", "\n")
-     return(cmd)
-}
 # ======================================================================================
 
+
+
+
+
+
+
+
+
+
+
+# qsubize <- function(cmd, name_prefix="X") { # Returns a qsub wrapper for the command 'cmd'
+#      QSUB_EXE <- system2("which", args=c("qsub"),  stdout=T); stopifnot(file.exists(QSUB_EXE))
+#      username <- Sys.info()[["user"]]
+#      persistent_n <- ifelse(is.null(attr(qsubize, "sum")), yes=0, no=(attr(qsubize, "sum")+1)) # <-- 'n' will be a "static" variable that persists between function calls
+#      attr(qsubize, "sum") <<- persistent_n # note the "<<-" to save this to the global scope!!!
+#      cmd <- paste0("echo \"", cmd, "\" | ", QSUB_EXE, " -V -N \"B2B_", name_prefix, "_", persistent_n, "_", username, "\"", "\n")
+#      return(cmd)
+# }
