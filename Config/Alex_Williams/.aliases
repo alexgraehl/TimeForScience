@@ -297,7 +297,7 @@ alias cheat="echo \
 \">> GZIP: verify files: for f in **/*.gz; do gunzip --test -v \\\$f ; done; \" ${NL}\
 \">> Text: wrap lines at 80 chars, preserving/ignoring word boundaries: fold -w 80 -s text.txt (omit -s to cut words) \" ${NL}\
 \">> Shell/bash: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
-\">> Shell/bash: Pipe stderr (and stdout too): CMD 2>&1 | less -S \" ${NL}\
+\">> Shell/bash: Pipe both STDERR and STDOUT: CMD |& less  or the old way --> CMD 2>&1 (for bash < 4)\" ${NL}\
 \">> Shell/bash: Modify variable: newV=\\\$(sed -e's/a/1/; s/b/2/; s/c/3/' <<< \\\$oldV) \" ${NL}\
 \">> Shell/bash: Script run with ionice:  ionice -c3 -p\\\$\\\$ (top line of a /bin/sh script) \" ${NL}\
 \">> Shell/bash: Rename files with parent directory in filename for f in DIRS*/file.whatever; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).\\\$(basename \\\$f).whatever ; done \" ${NL}\
