@@ -70,6 +70,14 @@ UNDERLINE=$(tput smul)
 if [[ -n "$color_prompt" ]] ; then
     color_prefix="\033" ## <-- \033 works everywhere. \e works on Linux
     a_echo_color="${color_prefix}[1;32m" ## green  ## can also be: 1;33 ## was [3;40m before
+
+    a_red_bold="${color_prefix}[1;31m"
+    a_green_bold="${color_prefix}[1;32m"
+    a_yellow_bold="${color_prefix}[1;33m"
+    a_blue_bold="${color_prefix}[1;34m"
+    a_pink_bold="${color_prefix}[1;35m"
+    a_cyan_bold="${color_prefix}[1;36m"
+    a_white_bold="${color_prefix}[1;37m"
     a_status_color="${color_prefix}[1;33m"
     a_warning_color="${color_prefix}[1;31m"
 

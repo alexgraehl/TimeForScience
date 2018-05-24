@@ -1193,6 +1193,25 @@ function hsync {
 }
 
 function fasta2single_line_per_seq {
-    echo -e ">> Removing line breaks from multi-line FASTA sequences... now each record will have exactly one title line and exactly one sequence line..."   >&2 # print to stderr
+    echo -e "[:FYI:] Removing line breaks from multi-line FASTA sequences... now each record will have exactly one title line and exactly one sequence line..."   >&2 # print to stderr
     zless "$1" | awk '!/^>/{printf "%s", $0; n="\n"} /^>/{print n $0; n=""} END {printf"%s",n}'
+}
+
+function jj {
+    # show jobs
+    echo -e "[:FYI:] Queue documentation is here: https://sites.google.com/a/gene.com/rescomp/guides/user-guide#TOC-Checking-the-Status-of-a-Job" >&2 # print to stderr
+    echo -e "${a_blue_bold}Detailed current jobs:${a_end_color}"
+    bjobs -u "${USER}"
+    #bjobs -u "${USER}" -w # wide (show full names, etc.
+    echo -e "${a_blue_bold}Current and recently-completed jobs:${a_end_color}"
+    bjobs -a -o "jobid:10 stat:4 job_group:12 job_name:60 delimiter='|'"
+    # -a is "show recently-completed jobs!"
+    FAILED_JOB_TEXT=$(bjobs -a -x -l  2>&1 >/dev/null)    # Capture STDERR and STDOUT both to a variable returns 0 no matter what. If there's no job, it returns the verbatim text "No job found"
+    if [[ "${FAILED_JOB_TEXT}" =~ No.*job.* ]]; then
+	echo -e "${a_blue_bold}[DONE] All jobs appear to have run successfully.${a_end_color}"
+    else
+	echo -e "[:ERR:]: ${a_red_bold}Jobs that failed (-a -x -l output):${a_end_color}"
+	echo -e "${FAILED_JOB_TEXT}"
+	echo -e "[:ERR:]: [End of list]"
+    fi
 }
