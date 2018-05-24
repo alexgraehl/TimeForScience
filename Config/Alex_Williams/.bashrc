@@ -152,33 +152,32 @@ function deduped() { # input: one string to de-dupe. Usage: PATH=$(deduped $PATH
 
 # ============================= PATH STUFF ============================
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/
-export R_BINF_CORE=${BINF_CORE_WORK_DIR}/Code/R
 
 MINICONDA_BIN="${HOME}/miniconda3/bin"
 EPIGIT="$HOME/epi"
 
 export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin" ## <-- clear out initial path!!
 export PATH="/opt/pbs/default/bin:/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${HOME}/.local/bin:${PATH}"
-export PATH=$(deduped "${HOME}/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Code/Python:${EPIGIT}/users/alexgw:${EPIGIT}/genomics:${MINICONDA_BIN}")   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
+export PATH=$(deduped "${HOME}/bin:${HOME}/.local/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Code/Python:${EPIGIT}/users/alexgw:${EPIGIT}/genomics:${MINICONDA_BIN}")   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 
 # PATH="$(echo $PATH | perl -e 'print join(":", grep { not $seen{$_}++ } split(/:/, scalar <>))')"  # remove dupes
 
-BINFAPPBASE=/data/applications
-BINFVERSION=2015_06
+#BINFAPPBASE=/data/applications
+#BINFVERSION=2015_06
 # 'export' added to "BINFSWROOT" on August 25, 2016
-export BINFSWROOT=$(deduped $BINFAPPBASE/$BINFVERSION)
-export BINFBINROOT=$(deduped $BINFSWROOT/bin)
+export BINFSWROOT="" #$(deduped $BINFAPPBASE/$BINFVERSION)
+#export BINFBINROOT=$(deduped $BINFSWROOT/bin)
 export PERL5LIB=$(deduped $BINFSWROOT/libperl/lib/perl5:$HOME/.linuxbrew/lib/perl5/site_perl:$PERL5LIB)
 export PERLLIB=$PERL5LIB
 # PYTHONPATH: ------- UPDATE: Added August 25, 2016
-export BINFPYROOT=$(deduped $BINFSWROOT/libpython2.7)
-export PYTHONPATH=$(deduped $BINFPYROOT:$BINFPYROOT/lib64/python2.7/site-packages:$BINFPYROOT/lib/python2.7/site-packages:$HOME/epi/users/alexgw:$PYTHONPATH)
+#export BINFPYROOT=$(deduped $BINFSWROOT/libpython2.7)
+#export PYTHONPATH=$(deduped $BINFPYROOT:$BINFPYROOT/lib64/python2.7/site-packages:$BINFPYROOT/lib/python2.7/site-packages:$HOME/epi/users/alexgw:$PYTHONPATH)
 #$BINFPYROOT:$BINFPYROOT/dist-packages:$BINFPYROOT/lib64/python2.7/site-packages:$PYTHONPATH)
-export R_LIBS=$(deduped $BINFSWROOT/libr)
-export PATH=$(deduped $BINFBINROOT:$PATH:$BINFPYROOT/bin)
-export LD_LIBRARY_PATH=$(deduped "$HOME/.linuxbrew/lib:$BINFSWROOT/lib:$LD_LIBRARY_PATH")
+#export R_LIBS=$(deduped $BINFSWROOT/libr)
+export PATH=$(deduped $PATH) #:$BINFPYROOT/bin)
+export LD_LIBRARY_PATH=$(deduped "$HOME/.linuxbrew/lib:$LD_LIBRARY_PATH")
 export LIBRARY_PATH=$LD_LIBRARY_PATH
-export CPATH=$(deduped $BINFSWROOT/include:$CPATH)
+#export CPATH=$(deduped $BINFSWROOT/include:$CPATH)
 
 export CXX=/usr/bin/g++ # The location of the c++ compiler. NOT "cpp"--that is the C preprocessor.
 export LANG="en_US.UTF-8"    # Set the LANG to UTF-8

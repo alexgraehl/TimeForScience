@@ -43,7 +43,9 @@ echo -e "${a_echo_color}>>> [:FYI:] Loading bash-aliases...${a_end_color}"
 #echo $GIT_COMMITTER_EMAIL
 # echo $GIT_AUTHOR_EMAIL # not important if you set the other thing
 
-CODE_DIRS_FOR_GREPPING="${R_BINF_CORE} ${BINF_CORE_WORK_DIR}/Code/ProjectCode ${BINF_CORE_WORK_DIR}/Code/system_scripts ${BINF_CORE_WORK_DIR}/Code/alexgw ${TIME_FOR_SCIENCE_DIR}"
+# can have multiple space-delimited directories here
+CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR}"
+
 
 ## Searches both the R source and the current directory (and any subdirectories!)
 ## Note that it only looks for files with a ".R" ending!!!!!!!
