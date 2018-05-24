@@ -40,6 +40,7 @@ module add apps/R \
 	apps/git \
 	apps/samtools \
         apps/seq-utils \
+	apps/python3 \
 
 # loading SALMON causes R to fail with this message about 'GOMP_4.0':
 # --> 13:40:13[rescomp5007] R --version
