@@ -38,15 +38,22 @@ esac
 [[ -n "$TMUX" ]] && [[ "$color_prompt" == 1 ]] && export TERM=screen-256color
 if [[ "$OSTYPE" == darwin* ]] ; then isMac="1" ; fi
 
-COMPYNAME="$HOSTNAME" # <-- we will have to modify this if it's my home machine / some machine where $HOSTNAME doesn't work
-
 # ============= See what the Mac (if it is a mac) thinks the computer's name is. This is the setting in the Sharing preference pane. ===
 command -v "scutil" > /dev/null # <-- Note: we check the exit code from this ("$?") below
 HAS_SCUTIL=$((1-$?)) # $? = 0 means the above command SUCCEEDED
-if [[ 1 == "${HAS_SCUTIL}" ]]; then MAC_SHARING_NAME=$(scutil --get ComputerName); else MAC_SHARING_NAME="PROBABLY_NOT_A_MAC"; fi
+if [[ 1 == "${HAS_SCUTIL}" ]]; then
+    MAC_SHARING_NAME=$(scutil --get ComputerName)
+else
+    MAC_SHARING_NAME="PROBABLY_NOT_A_MAC_due_to_absence_of_the_SCUTIL_program"
+fi
+
 if [[ "${MAC_SHARING_NAME}" == "Slithereens" || "${MAC_SHARING_NAME}" == "Capsid" ]]; then
     isAgwHomeMachine=1
-    COMPYNAME="Slithereens"
+    COMPYNAME="Mac"
+    COMPYSHORT="Mac"
+else
+    COMPYNAME="$HOSTNAME"
+    COMPYSHORT="$COMPYNAME"
 fi
 # =============
 
@@ -307,16 +314,18 @@ function parse_git_dirty {
 	fi
 }
 
-export PRE_PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;42m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]${COMPYNAME}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
 
 case "$COMPYNAME"
 in
-    zzz*|*GYFH|Slithereens|Capsid)
-	export PS1="${PRE_PS1}"
+    zzz*|*GYFH|Mac*|Slithereens|Capsid)
+	#export PS1="${PRE_PS1}"
+	# 37;44m is white on a BLUE background
+	export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;42m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]${COMPYSHORT}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
 	#export PS1="${PRE_PS1}\[${POWDER_BLUE}\].mac\$\[${NORMAL}\] " # we are on a mac laptop probably
 	;;
     *) ## Otherwise...
-	export PS1="--> ${PRE_PS1}" # change the name for things we think are remote servers
+	export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;42m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[39;46m\]${COMPYSHORT}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
+	#export PS1="--> ${PRE_PS1}" # change the name for things we think are remote servers
 	;;
 esac
 
