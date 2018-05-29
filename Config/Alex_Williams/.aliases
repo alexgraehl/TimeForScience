@@ -618,8 +618,12 @@ function scienceup {
 }
 
 function science {
-    if [[ -e "${TIME_FOR_SCIENCE_DIR}" ]]; then
+    if [[ -d "${TIME_FOR_SCIENCE_DIR}" ]]; then
        (echo '[:FYI:] TimeForScience (GitHub):' ; scienceup ${TIME_FOR_SCIENCE_DIR} && sciencecom ${TIME_FOR_SCIENCE_DIR}) ;
+    fi
+    CODE_ZERO="${HOME}/workspace/0_CODE"
+    if [[ -d "${CODE_ZERO}" ]]; then
+       (echo '[:FYI:] WORKSPACE:' ; scienceup ${CODE_ZERO} && sciencecom ${CODE_ZERO}) ;
     fi
 }
 
