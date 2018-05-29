@@ -39,7 +39,7 @@ fi
 
 
 # git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@users.noreply.github.com"
-echo -e "${a_echo_color}>>> [:FYI:] Loading bash-aliases...${a_end_color}"
+echo -e "${a_echo_color}[:FYI:] Loading bash-aliases...${a_end_color}"
 #echo $GIT_COMMITTER_EMAIL
 # echo $GIT_AUTHOR_EMAIL # not important if you set the other thing
 
@@ -453,7 +453,7 @@ SNEK="\xF0\x9F\x90\x8D"
 if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then
     # 'exa' is a 'ls' replacement
     function lsw {
-	echo -e "${a_banner_color}>>>>" $(pwd -P) "${a_end_color}"
+	echo -e "${a_banner_color}> >" $(pwd -P) "${a_end_color}"
 	if [[ -e ".readme" ]]; then
 	    echo -e -n "${a_dirinfo_color}"
 	    cat ".readme" | fold -s -w 80 | sed -e "s/^/$(echo -ne ${SNEK})  /"
@@ -789,9 +789,9 @@ alias snake="echo -n $'\xF0\x9F\x90\x8D'' '"  # Emoji snake. See http://apps.tim
 alias cake="echo  -n $'\xF0\x9F\x8D\xB0'' '"  # Emoji cake.  See http://apps.timwhitlock.info/emoji/tables/unicode
 
 function qkiri { # kill all your OWN jobs
-    echo ">> If qkiri fails, try running this command: qselect -u YOURNAME | sudo xargs qdel -p"
-    echo "Do you REALLY REALLY want to completely cancel LITERALLY EVERY SINGLE ONE OF YOUR JOBS? ALL OF THEM???"
-    select yn in "Wrong! Cancel! Keep these jobs!" "Delete--yes, kill ALL of my jobs without regret!"; do
+    echo "[:FYI:] If qkiri fails, try running this command: qselect -u YOURNAME | sudo xargs qdel -p"
+    echo "[:HEY:] REALLY terminate LITERALLY EVERY SINGLE ONE OF YOUR JOBS? ***ALL*** OF THEM???"
+    select yn in "Wait a minute! Keep these jobs!" "DELETE THEM---kill ALL of my jobs without regret!"; do
 	case $yn in
 	    Wrong*)  echo "Cancelled!"; break;;
 	    Delete*) qselect -u ${USER} | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats; break ;;
