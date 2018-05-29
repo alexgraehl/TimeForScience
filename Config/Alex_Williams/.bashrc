@@ -314,6 +314,10 @@ function parse_git_dirty {
 	fi
 }
 
+# \w and PROMPT_DIRTRIM=2 will give you a decent 'sampler' of the path
+#export PS1="[\[\033[0;33m\]\$(date +%d%b) \$(date +%T) \[\033[0;34m\]\u@\h:] \[\033[1;31m\]\w\[\033[0m\]>"
+#export PS1="\033[0;33m\]\$(date +%d%b) \$(date +%T) \[\033[0;34m\]\u@\h: \[\033[1;31m\]\w\[\033[0m\]$"
+
 
 case "$COMPYNAME"
 in
