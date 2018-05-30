@@ -795,12 +795,13 @@ alias cake="echo  -n $'\xF0\x9F\x8D\xB0'' '"  # Emoji cake.  See http://apps.tim
 function qkiri { # kill all your OWN jobs
     echo "[:FYI:] If qkiri fails, try running this command: qselect -u YOURNAME | sudo xargs qdel -p"
     echo "[:HEY:] REALLY terminate LITERALLY EVERY SINGLE ONE OF YOUR JOBS? ***ALL*** OF THEM???"
-    select yn in "Wait a minute! Keep these jobs!" "DELETE THEM---kill ALL of my jobs without regret!"; do
+    select yn in "[:FYI:] Wait a minute! Keep these jobs!" "[:ERR:] DELETE THEM---kill ALL of my jobs without regret!"; do
 	case $yn in
-	    Wrong*)  echo "Cancelled!"; break;;
-	    Delete*) qselect -u ${USER} | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats; break ;;
+	    Wrong*)  echo "Ok, not doing anything."; break;;
+	    Delete*) bkill 0 -u ${USER}
 	esac
     done
+    #qselect -u ${USER} | xargs qdel ; echo "[Cancelled jobs]"; sleep 1; qstats; break ;;
 }
 
 # grep 'pattern' can also be replaced with: perl -nle "print if m{PATTERN}" # <-- beware of '$1' versus "$1" issues!
