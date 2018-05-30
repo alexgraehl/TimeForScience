@@ -1206,6 +1206,8 @@ function fasta2single_line_per_seq {
 
 function jj {
     # show jobs
+    # If you want to colorize them, see: which qstats.sh
+    
     echo -e "[:FYI:] Queue documentation is here: https://sites.google.com/a/gene.com/rescomp/guides/user-guide#TOC-Checking-the-Status-of-a-Job" >&2 # print to stderr
     echo -e "${a_blue_bold}Detailed current jobs:${a_end_color}"
     bjobs -u "${USER}"
@@ -1221,4 +1223,8 @@ function jj {
 	echo -e "${FAILED_JOB_TEXT}"
 	echo -e "[:ERR:]: [End of list]"
     fi
+}
+
+function jing { # only CURRENTLY RUNNING jobs
+    jj | grep -v -E '[|]EXIT'
 }
