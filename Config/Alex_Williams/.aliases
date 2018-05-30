@@ -1060,21 +1060,27 @@ function hist {
 # ~~~~~~~~~~~~~~~ QUEUE / QSUB LOG VIEWING AND MOVING ~~~~~~~~~~~~~~~
 function rmlogs { # Usage:     catlogs (no arguments)
     NUM_FOUND=$(find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' | wc -l)
-    echo "Deleting $NUM_FOUND 'qsub' logs (the files ending with .e1234 or .o456, etc.)..."
-    find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' -delete
+    echo "Deleting $NUM_FOUND 'qsub' logs (the files ending with .e1234 or .o456, etc. or .log.err or .log.out)..."
+    find . -maxdepth 1  -type f \
+	 -regex '.*[.][eo][0-9]+' -o -regex '.*.log.\(err\|out\)' \
+	 -delete
     echo "[Done] Deleted the $NUM_FOUND log files.."
 }
 function catlogs { # Usage:     catlogs (no arguments)
-    echo "Concatenating all the QSUB logs in this directory into one file, which we will then view with 'less'"
+    echo "Concatenating all the QSUB/BSUB logs in this directory into one file, which we will then view with 'less'"
     #cat *.[eo][0-9][0-9]* | s
-    find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' -print0 | xargs -0 -I{} paste.pl "FILE={}" {} | s
+    find . -maxdepth 1  -type f \
+	 -regex '.*[.][eo][0-9]+' -o -regex '.*.log.\(err\|out\)' \
+	 -print0 | xargs -0 -I{} paste.pl "FILE={}" {} | s
     #find . -maxdepth 1 -type f -exec paste.pl "FILE={}" {} \; | s
 }
 function mvlogs { # Usage:   mvlogs OUTPUT_DIRECTORY
     # This function moves those annoying qzub logs to the destination directory
     if [[ "$#" == "0" ]] ; then echo "[:ERR:] mvlogs needs a destination directory!"; return; fi
     if [[ ! -d $1 ]] ; then echo "[:ERR:] mvlogs needs an EXISTING DIRECTORY as a destination! The specified directory ($1) appears not to exist."; return; fi
-    find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' -print0 | xargs -0 -I{} mv {} $1/
+    find . -maxdepth 1  -type f \
+	 -regex '.*[.][eo][0-9]+' -o -regex '.*.log.\(err\|out\)' \
+	 -print0 | xargs -0 -I{} mv {} $1/
     echo "[OK] Moved all the logs into the directory $1"
 }
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
