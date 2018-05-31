@@ -1234,3 +1234,6 @@ function jj {
 function jing { # only CURRENTLY RUNNING jobs
     jj | grep -v -E '[|]EXIT'
 }
+
+# Bist has more too:
+# bhist -w -a -l 769084 | less -S
