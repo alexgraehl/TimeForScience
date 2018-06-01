@@ -467,7 +467,7 @@ if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then
     alias ll='exa -l -a --color=auto'
     
 elif agw_cmd_exists "exa" ; then
-    # Not the mac, I guess??
+    # Not the mac, but apparently exa is still installed.
     alias ls='exa --color=auto'
     alias ll='exa -l -a --color=auto'
 else
@@ -484,9 +484,16 @@ else
     else
 	AGW_MACEXT=' '
     fi
-    
+
     alias ls="/bin/ls               ${AGW_LS_OPT} "
-    alias ll="/bin/ls   -l -h -A -F ${AGW_LS_OPT} "
+    function llfunction {
+	export CLICOLOR_FORCE=1
+	/bin/ls -l -h -A -F ${AGW_LS_OPT} "$@" | grep -v -E '([.]serverauth|Velocity_ini[.]txt|[.]jenv|[.]jswingreader|igv.*[/]|[.]t_coffee|[.]subversion|[.]jalview_properties|[.]cache|[.]cups|[.]rstudio-desktop|[.]viminfo|[.]vamsas|[.]lesshst|[.]Xauthority|[.]biojs_templates|[.]oracle_jre_usage|[.]UGENE_files.*[/]|[.]UGENE_downloaded.*[/]|[.]R.*[/]$|[.]RData$|[.]Rhistory$|.InstallAnywhere.*[/]$|.bash_sessions$|\sShares.*[/]$|[.]CFUserTextEncoding$|installer[.]failurerequests|[.]dbfseventsd.*[=]$|.file$|.DocumentRevisions-V100.*[/]$|[.]OSInstallerMessages$|[.]PKInstallSandboxManager.*[/]$|[.]VolumeIcon.icns|[.]fseventsd.*/$|[.]vol.*/$|[.]Spotlight-V100.*[/]$)'
+	#|*Velocity_ini.txt|.jenv|.jswingreader|.lesshst|.oracle_jre_usage|.rstudio-desktop|.subversion|.viminfo)'
+	unset CLICOLOR_FORCE
+    }
+    alias ll=llfunction
+    #alias ll="/bin/ls   -l -h -A -F ${AGW_LS_OPT} "
     alias lmac="ll ${AGW_MACEXT} " # mac-specific with EXTENDED attributes (-@)
 fi
 
