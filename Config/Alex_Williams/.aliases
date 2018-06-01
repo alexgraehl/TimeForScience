@@ -473,7 +473,9 @@ elif agw_cmd_exists "exa" ; then
 else
     if [[ "$color_prompt" && "$isMac" ]]; then
 	AGW_LS_OPT=' -F -G ' #-@ ' ## Mac: Color option is -G. Also, on a Mac, show the extended attributes (-@)
+	AGW_LL_COLOR_ALWAYS=${AGW_LS_OPT} # same as above, on the mac
     elif [[ "$color_prompt" && (-z "$isMac") ]]; then
+	AGW_LL_COLOR_ALWAYS=' --indicator-style=slash --color=always '
 	AGW_LS_OPT=' --indicator-style=slash --color=auto ' ## Ubuntu: color is --color=auto
     else
 	AGW_LS_OPT=''
@@ -488,7 +490,7 @@ else
     alias ls="/bin/ls               ${AGW_LS_OPT} "
     function llfunction {
 	export CLICOLOR_FORCE=1
-	/bin/ls -l -h -A -F ${AGW_LS_OPT} "$@" | grep -v -E '([.]serverauth|Velocity_ini[.]txt|[.]jenv|[.]jswingreader|igv.*[/]|[.]t_coffee|[.]subversion|[.]jalview_properties|[.]cache|[.]cups|[.]rstudio-desktop|[.]viminfo|[.]vamsas|[.]lesshst|[.]Xauthority|[.]biojs_templates|[.]oracle_jre_usage|[.]UGENE_files.*[/]|[.]UGENE_downloaded.*[/]|[.]R.*[/]$|[.]RData$|[.]Rhistory$|.InstallAnywhere.*[/]$|.bash_sessions$|\sShares.*[/]$|[.]CFUserTextEncoding$|installer[.]failurerequests|[.]dbfseventsd.*[=]$|.file$|.DocumentRevisions-V100.*[/]$|[.]OSInstallerMessages$|[.]PKInstallSandboxManager.*[/]$|[.]VolumeIcon.icns|[.]fseventsd.*/$|[.]vol.*/$|[.]Spotlight-V100.*[/]$)'
+	/bin/ls -l -h -A -F ${AGW_LL_COLOR_ALWAYS} "$@" | grep -v -E '([.]serverauth|Velocity_ini[.]txt|[.]jenv|[.]jswingreader|igv.*[/]|[.]t_coffee|[.]subversion|[.]jalview_properties|[.]cache|[.]cups|[.]rstudio.*[/]$|[.]rstudio-desktop|[.]viminfo|[.]vamsas|[.]lesshst|[.]Xauthority|[.]biojs_templates|[.]oracle_jre_usage|[.]UGENE_files.*[/]|[.]UGENE_downloaded.*[/]|[.]R.*[/]$|[.]RData$|[.]Rhistory.*$|.InstallAnywhere.*[/]$|.bash_sessions$|\sShares.*[/]$|[.]CFUserTextEncoding$|installer[.]failurerequests|[.]dbfseventsd.*[=]$|.file$|.DocumentRevisions-V100.*[/]$|[.]OSInstallerMessages$|[.]PKInstallSandboxManager.*[/]$|[.]VolumeIcon.icns|[.]fseventsd.*/$|[.]vol.*/$|[.]Spotlight-V100.*[/]$|[.]mozilla.*[/]$|[.]gnome2.*[/]$|[.]dbus.*[/]$|[.]gconf.*[/]$|[.]kshrc|[.]lsbatch.*[/]$|[.]GSeqWeb.*[/]$)'
 	#|*Velocity_ini.txt|.jenv|.jswingreader|.lesshst|.oracle_jre_usage|.rstudio-desktop|.subversion|.viminfo)'
 	unset CLICOLOR_FORCE
     }
