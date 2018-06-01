@@ -345,6 +345,7 @@ alias cheat="echo \
 \">> UNIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
 \">> UNIX GREP: find text in a file VERBATIM, like join: grep -w -f KEYFILE.txt search_in_file.txt  (remove the '-w' to allow PARTIAL matches as well. You can use '-E' to allow regular expressions in the file too!)\" ${NL}\
 \">> UNIX GREP: filter files based on presence of text: mkdir YES NO; for f in *.txt; do if [[ \\\"\\\$(grep 'YOUR_STRING_HERE' \\\$f | wc -l)\\\" -ne \\\"0\\\" ]]; then mv \\\$f yes/; else mv \\\$f no/; fi ; done \" ${NL}\
+\">> AWK FILTER based on numeric value: filter based on a number: cat test | awk '{ if (\\\$1 >= 900 && \\\$1 > 0) print; }' \" ${NL}\
 \">> UNIX: Check Linux version: cat /etc/*-release \" ${NL}\
 \">> UNIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
 \">> UNIX: Rsync transfer files: rsync --dry-run -R -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
@@ -1223,7 +1224,7 @@ function jj {
     # -a is "show recently-completed jobs!"
     FAILED_JOB_TEXT=$(bjobs -a -x -l  2>&1 >/dev/null)    # Capture STDERR and STDOUT both to a variable returns 0 no matter what. If there's no job, it returns the verbatim text "No job found"
     if [[ "${FAILED_JOB_TEXT}" =~ No.*job.* ]]; then
-	echo -e "${a_blue_bold}[DONE] All jobs appear to have run successfully.${a_end_color}"
+	echo -e "${a_blue_bold}All recently-completed jobs appeared to have exited successfully.${a_end_color}"
     else
 	echo -e "[:ERR:]: ${a_red_bold}Jobs that failed (-a -x -l output):${a_end_color}"
 	echo -e "${FAILED_JOB_TEXT}"
