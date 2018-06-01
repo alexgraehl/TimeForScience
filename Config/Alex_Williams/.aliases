@@ -1236,5 +1236,21 @@ function jing { # only CURRENTLY RUNNING jobs
     jj | grep -v -E '[|]EXIT'
 }
 
+function setsubtract {
+    # input files do NOT need to be sorted
+    if [[ "$#" != 2 ]] ; then echo "[:ERR:]] You need to pass EXACTLY TWO files to the set subtraction!"; return; fi
+    if [[ ! -f "$1" ]] ; then echo "[:ERR:]] Could not find the specified input file: $1!"; return; fi
+    if [[ ! -f "$2" ]] ; then echo "[:ERR:]] Could not find the specified input file: $2!"; return; fi
+    grep -F -x -v -f "$2" "$1"
+}
+
+function setunion {
+    # input files do NOT need to be sorted
+    if [[ "$#" != 2 ]] ; then echo "[:ERR:]] You need to pass EXACTLY TWO files to the set union!"; return; fi
+    if [[ ! -f "$1" ]] ; then echo "[:ERR:]] Could not find the specified input file: $1!"; return; fi
+    if [[ ! -f "$2" ]] ; then echo "[:ERR:]] Could not find the specified input file: $2!"; return; fi
+    cat "$1" "$2" | sort -u
+}
+
 # Bist has more too:
 # bhist -w -l -a -n 99 769084 | less -S
