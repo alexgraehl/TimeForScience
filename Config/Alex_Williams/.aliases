@@ -1216,15 +1216,23 @@ function jj {
     # If you want to colorize them, see: which qstats.sh
     
     echo -e "[:FYI:] Queue documentation is here: https://sites.google.com/a/gene.com/rescomp/guides/user-guide#TOC-Checking-the-Status-of-a-Job" >&2 # print to stderr
-    echo -e "${a_blue_bold}Detailed current jobs:${a_end_color}"
-    bjobs -u "${USER}"
+    ARRAY_JOB_TEXT=$(bjobs -A -u "${USER}" 2>&1) # Captures STDERR+STDOUT
+    if [[ "${ARRAY_JOB_TEXT}" =~ ".*array is not found.*" ]]; then
+	echo -e "${a_blue_bold}(No active array jobs.)${a_end_color}"
+    else
+	echo -e "${a_blue_bold}Array job status (-A):${a_end_color}"
+	echo -e "${ARRAY_JOB_TEXT}"
+    fi
+
+    #echo -e "${a_blue_bold}Detailed current jobs:${a_end_color}"
+    #bjobs -u "${USER}"
     #bjobs -u "${USER}" -w # wide (show full names, etc.
-    echo -e "${a_blue_bold}Current and recently-completed jobs:${a_end_color}"
-    bjobs -a -o "jobid:10 stat:4 job_group:12 job_name:60 delimiter='|'"
+    echo -e "${a_blue_bold}Current & recently-finished jobs:${a_end_color}"
+    bjobs -a -o "jobid:10 stat:4 job_group:12 job_name:60 user queue from_host exec_host submit_time delimiter='|'"
     # -a is "show recently-completed jobs!"
-    FAILED_JOB_TEXT=$(bjobs -a -x -l  2>&1 >/dev/null)    # Capture STDERR and STDOUT both to a variable returns 0 no matter what. If there's no job, it returns the verbatim text "No job found"
+    FAILED_JOB_TEXT=$(bjobs -a -x -l  2>&1)    # Capture STDERR and STDOUT both to a variable returns 0 no matter what. If there's no job, it returns the verbatim text "No job found"
     if [[ "${FAILED_JOB_TEXT}" =~ No.*job.* ]]; then
-	echo -e "${a_blue_bold}All recently-completed jobs appeared to have exited successfully.${a_end_color}"
+	echo -e "${a_blue_bold}(All recently-completed jobs exited successfully.)${a_end_color}"
     else
 	echo -e "[:ERR:]: ${a_red_bold}Jobs that failed (-a -x -l output):${a_end_color}"
 	echo -e "${FAILED_JOB_TEXT}"
