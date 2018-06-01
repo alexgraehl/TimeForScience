@@ -1236,4 +1236,4 @@ function jing { # only CURRENTLY RUNNING jobs
 }
 
 # Bist has more too:
-# bhist -w -a -l 769084 | less -S
+# bhist -w -l -a -n 99 769084 | less -S
