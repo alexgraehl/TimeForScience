@@ -78,6 +78,14 @@ if [[ -n "$color_prompt" ]] ; then
     color_prefix="\033" ## <-- \033 works everywhere. \e works on Linux
     a_echo_color="${color_prefix}[1;32m" ## green  ## can also be: 1;33 ## was [3;40m before
 
+    # ######################
+    # 256 color escapes from https://misc.flogisoft.com/bash/tip_colors_and_formatting
+    a_green82="${color_prefix}[38;5;82m" # intense lime green
+    a_orange136="${color_prefix}[38;5;136m"
+    a_yellow226="${color_prefix}[38;5;226m" # bright yellow
+    a_lavender93="${color_prefix}[38;5;93m"
+    # ######################
+    
     a_red_bold="${color_prefix}[1;31m"
     a_green_bold="${color_prefix}[1;32m"
     a_yellow_bold="${color_prefix}[1;33m"
