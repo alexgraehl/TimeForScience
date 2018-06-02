@@ -1221,7 +1221,6 @@ function fasta2single_line_per_seq {
 function jj {
     # show jobs
     # If you want to colorize them, see: which qstats.sh
-    
     echo -e "[:FYI:] Queue documentation is here: https://sites.google.com/a/gene.com/rescomp/guides/user-guide#TOC-Checking-the-Status-of-a-Job" >&2 # print to stderr
     ARRAY_JOB_TEXT=$(bjobs -A -u "${USER}" 2>&1) # Captures STDERR+STDOUT
     if [[ "${ARRAY_JOB_TEXT}" =~ ".*array is not found.*" ]]; then
@@ -1229,14 +1228,15 @@ function jj {
     else
 	echo -e "${a_blue_bold}Array job status (-A):${a_end_color}"
 	echo -e "${ARRAY_JOB_TEXT}"
+	bjobs -w -A -u "${USER}" # wide to show FULL array names
+	echo -e "[:FYI:] Cancel ALL jobs in an array with:  bkill -J \"JOBNAME*\" <-- be careful!"
     fi
-
     #echo -e "${a_blue_bold}Detailed current jobs:${a_end_color}"
     #bjobs -u "${USER}"
     #bjobs -u "${USER}" -w # wide (show full names, etc.
     echo -e "${a_blue_bold}Current & recently-finished jobs:${a_end_color}"
-    # memlimit:3 run_time:6 time_left:5 job_group:10
-    JOB_TEXT=$(bjobs -a -o "jobid:8 stat:4 job_name:32 user:4 queue:3 cpu_used:6 max_mem:3 from_host:5 exec_host:5 submit_time:12 finish_time:12 delimiter='|'" 2>&1)
+    # memlimit:3 run_time:6 time_left:5 job_group:10 from_host:12 
+    JOB_TEXT=$(bjobs -a -o "jobid:8 stat:4 job_name:32 user:4 queue:3 cpu_used:6 max_mem:3 exec_host:18 submit_time:12 finish_time:12 delimiter='|'" 2>&1)
     JOB_TEXT=$(echo "${JOB_TEXT}" |  perl -pe "s/^(.*[|]RUN.*)\$/${a_green82}\$1${a_end_color}/g")
     JOB_TEXT=$(echo "${JOB_TEXT}" |  perl -pe "s/^(.*[|]DONE.*)\$/${a_orange136}\$1${a_end_color}/g")
     JOB_TEXT=$(echo "${JOB_TEXT}" | perl -pe "s/^(.*PEN.*)\$/${a_yellow226}\$1${a_end_color}/g")
