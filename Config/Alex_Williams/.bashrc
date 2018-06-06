@@ -5,7 +5,7 @@
 # This is why this line is important at the very top!
 
 # Source any global bash definitions
-if [[ -f /etc/bashrc ]]; then
+if [[ -f "/etc/bashrc" ]]; then
 	. /etc/bashrc
 fi
 
@@ -24,7 +24,9 @@ fi
 
 function agw_cmd_exists() { # Check if a command exists
     type "$1" &> /dev/null
-    # or try: if [[ -n `which exa 2> /dev/null` ]] ... # Usage example: if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then ... 
+    # Alternative approach: command -v "scutil" > /dev/null # <-- Note: we check the exit code from this ("$?") below
+    # And then check the exit code:   HAS_PROGRAM=$((1-$?)) # $? = 0 means the above command SUCCEEDED
+    # or try: if [[ -n `which exa 2> /dev/null` ]] ... # Usage example: if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then ...
 }
 
 if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
@@ -35,25 +37,23 @@ case "$TERM" in
     xterm-color|xterm-256color|screen-256color)	color_prompt=1 ;;
     *)	                        ;;
 esac
-[[ -n "$TMUX" ]] && [[ "$color_prompt" == 1 ]] && export TERM=screen-256color
-if [[ "$OSTYPE" == darwin* ]] ; then isMac="1" ; fi
+[[ -n "${TMUX}" ]] && [[ "${color_prompt}" == 1 ]] && export TERM=screen-256color
+if [[ "${OSTYPE}" == darwin* ]] ; then isMac="1" ; fi
 
-# ============= See what the Mac (if it is a mac) thinks the computer's name is. This is the setting in the Sharing preference pane. ===
-command -v "scutil" > /dev/null # <-- Note: we check the exit code from this ("$?") below
-HAS_SCUTIL=$((1-$?)) # $? = 0 means the above command SUCCEEDED
-if [[ 1 == "${HAS_SCUTIL}" ]]; then
-    MAC_SHARING_NAME=$(scutil --get ComputerName)
+# ============= See what the Mac (if it is one) thinks the computer's name is. This is the setting in the Sharing preference pane. ===
+if agw_cmd_exists "scutil"; then
+    export MAC_SHARING_NAME=$(scutil --get ComputerName)
 else
-    MAC_SHARING_NAME="PROBABLY_NOT_A_MAC_due_to_absence_of_the_SCUTIL_program"
+    export MAC_SHARING_NAME="PROBABLY_NOT_A_MAC_due_to_absence_of_the_SCUTIL_program"
 fi
 
 if [[ "${MAC_SHARING_NAME}" == "Slithereens" || "${MAC_SHARING_NAME}" == "Capsid" ]]; then
-    isAgwHomeMachine=1
-    COMPYNAME="Mac"
-    COMPYSHORT="Mac"
+    export isAgwHomeMachine=1
+    export COMPYNAME="Mac"
+    export COMPYSHORT="Mac"
 else
-    COMPYNAME="$HOSTNAME"
-    COMPYSHORT="$COMPYNAME"
+    export COMPYNAME="$HOSTNAME"
+    export COMPYSHORT="$COMPYNAME"
 fi
 # =============
 
@@ -108,8 +108,8 @@ fi
 
 echo -e "${a_echo_color}[:FYI:] Loading .bashrc...${a_end_color}" ## <-- comes after the colors are set up in platform-specific fashion
 
-if [[ -d "$HOME/work" ]]; then
-    export BINF_CORE_WORK_DIR="$HOME/work" # <-- set BINF_CORE work directory
+if [[ -d "${HOME}/work" ]]; then
+    export BINF_CORE_WORK_DIR="${HOME}/work" # <-- set BINF_CORE work directory
 elif [[ -d "/work" ]]; then
     export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
 else
@@ -118,15 +118,13 @@ else
 fi
 
 if [[ -d "$HOME/TimeForScience" ]]; then ## If this is in the home directory, then set it no matter what.
-    export TIME_FOR_SCIENCE_DIR="$HOME/TimeForScience"
-elif [[ "$USER" == "alexgw" ]]; then ## Location of the TIME FOR SCIENCE directory. This is mostly Alex's code.
-    export TIME_FOR_SCIENCE_DIR="$HOME/TimeForScience"
+    export TIME_FOR_SCIENCE_DIR="${HOME}/TimeForScience"
 else
     export TIME_FOR_SCIENCE_DIR="/home/alexgw/TimeForScience"
     if [[ -d ${TIME_FOR_SCIENCE_DIR} ]]; then
 	true # Don't do anything; it was found, which is fine
     else
-	echo "[WARNING in .bashrc: TIME_FOR_SCIENCE_DIR not found]"
+	echo "[:HEY:] WARNING in .bashrc: TIME_FOR_SCIENCE_DIR not found]"
 	export TIME_FOR_SCIENCE_DIR="COULD_NOT_FIND_TIME_FOR_SCIENCE_DIRECTORY_ON_FILESYSTEM"
     fi
 fi
@@ -136,12 +134,12 @@ fi
 # ~/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 # Sets up the aliases whether or not this shell is interactive
-if [[ -f ${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/.aliases ]]; then
+if [[ -f "${HOME}/.aliases" ]]; then
+    source "${HOME}/.aliases"
+elif [[ -f ${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/.aliases ]]; then
     source ${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/.aliases
 elif [[ -f ${BINF_CORE_WORK_DIR}/Code/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
     source ${BINF_CORE_WORK_DIR}/Code/TimeForScience/Config/Alex_Williams/.aliases
-elif [[ -f ${HOME}/TimeForScience/Config/Alex_Williams/.aliases ]] ; then
-    source ${HOME}/TimeForScience/Config/Alex_Williams/.aliases
 fi
 
 function deduped() { # input: one string to de-dupe. Usage: PATH=$(deduped $PATH). May break on things with spaces.
