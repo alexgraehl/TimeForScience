@@ -45,6 +45,8 @@ echo -e "${a_echo_color}[:FYI:] Loading bash-aliases...${a_end_color}"
 
 CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR}" # <-- Multiple **space-delimited** directories can be here
 
+
+
 ## Searches both the R source and the current directory (and any subdirectories!)
 ## Note that it only looks for files with a ".R" ending!!!!!!!
 if [[ -n "${isMac}" ]] ; then ## It *is* a mac!
@@ -52,7 +54,7 @@ if [[ -n "${isMac}" ]] ; then ## It *is* a mac!
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
 	    "$@" ${CODE_DIRS_FOR_GREPPING} ./
     }
-    alias zcat='gzcat' ## On the Mac, "zcat" is NOT gzcat by default!
+    alias zcat="gzip --decompress --stdout" # The Mac doesn't have the gzip-handling zcat (AKA gzcat)
 else
     ## Not a Mac!
     function ff {     ## Annoyingly, grep is different between mac/unix
@@ -871,11 +873,11 @@ function mycat { # cat2 / mycat
 	    *.bam)  VC="samtools view -h " ; filetype="BAM_FILE_DETECTED_AGW";;
 	esac
 	case "$filetype" in 
-	    gzip*)  VC="gzip  --decompress --stdout " ;; # zcat
-	    bzip2*) VC="bzip2 --decompress --stdout " ;; # bzcat
-	    [xX][zZ]*) VC="xz --decompress --stdout " ;; # xzcat
+	    gzip*)     VC="gzip --decompress --stdout " ;; # zcat / gzcat on the Mac
+	    bzip2*)   VC="bzip2 --decompress --stdout " ;; # bzcat
+	    [xX][zZ]*)   VC="xz --decompress --stdout " ;; # xzcat
 	esac
-	$VC "$filename" # <-- actually decompress the file and print it to stdout
+	${VC} "$filename" # <-- actually decompress the file and print it to stdout
     done
 }
 
@@ -956,7 +958,7 @@ function refresh { # Usage:  refresh (no arguments)
 }
 
 function star_make_index {
-    # This makes an alignment directory for the "STAR" aligner, when given just a fasta file and a length.
+    # This makes an alignment directory for the STAR aligner, when given just a FASTA file and a length.
     # The exact length is not critical, but it should ideally be the same length as the reads, if possible (slightly longer is OK too, but not necessary).
     if [[ "$#" != "2" ]] ; then echo "[:ERR:] star_make_index needs an input FASTA file and a 'how long are the reads' parameter!"; return 1; fi
     FAS=$1
@@ -1004,7 +1006,7 @@ function pdf2png {
 }
 
 function zwcl {
-    for f in "$@" ; do echo -e -n "$f\t"; zless $f | wc -l; done
+    for f in "$@" ; do echo -e -n "$f\t"; zcat -f $f | wc -l; done # note that zless is SUPER slow compared to zcat
 }
 
 function aws_ls_fastq {
@@ -1061,7 +1063,7 @@ function hsync {
 
 function fasta2single_line_per_seq {
     echo -e "[:FYI:] Removing line breaks from multi-line FASTA sequences... now each record will have exactly one title line and exactly one sequence line..."   >&2 # print to stderr
-    zless "$1" | awk '!/^>/{printf "%s", $0; n="\n"} /^>/{print n $0; n=""} END {printf"%s",n}'
+    zcat -f "$1" | awk '!/^>/{printf "%s", $0; n="\n"} /^>/{print n $0; n=""} END {printf"%s",n}'
 }
 
 function jj {
