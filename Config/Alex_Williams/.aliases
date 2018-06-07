@@ -136,7 +136,7 @@ alias cheat="echo \
 \">> ZIP on Mac without the dot files: zip -r -X out.zip input_directory_here    -x \\\"*.DS_Store\\\" \" ${NL}\
 \">> RAM/Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
 \">> Mac: what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
-\">> Mac: lock a file, for example to prevent Dropbox from replacing a custom icon: chflags uchg ~/Dropbox/Icon\\\$'\\r' \" ${NL}\
+\">> Mac: lock a file, for example to prevent Dropbox from replacing a custom icon: chflags uchg ~/Dropbox/Icon\\\$'\\r'  (use nouchg to unlock a file)\" ${NL}\
 \">> Mac disk: specific file I/O: fs_usage <programname> \" ${NL}\
 \">> Mac disk: filesystem I/O:    fs_usage -w | grep -v '0\\.0'  \" ${NL}\
 \">> Mac set startup disk: sudo bless -mount /Volumes/YOURDISK -setBoot \" ${NL}\
@@ -565,10 +565,7 @@ alias agwcom='ssh ${AGW_SSH_OPTIONS}   ${AGWCOM_USERNAME}@${AGWCOM_URL}'
 
 alias nami=' ssh ${AGW_SSH_OPTIONS} -i ~/Dropbox/metaquery-dev.pem bitnami@52.53.252.164'
 alias rig=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${RIG_IP}'
-alias rigx='ssh ${AGW_SSH_OPTIONS} -Y  ${ACC_U}@${RIG_IP}'
 RIG_SAND_IP=${RIG_IP/./-sandbox.} # add "-sandbox" before the first dot
-alias oso='ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${OSO_IP}'
-alias osox='ssh ${AGW_SSH_OPTIONS} -Y ${ACC_U}@${OSO_IP}'
 
 ## LESS +++++++++++++++++
 export PAGER=less
@@ -1010,10 +1007,6 @@ function zwcl {
     for f in "$@" ; do echo -e -n "$f\t"; zless $f | wc -l; done
 }
 
-function redrop {
-    dropbox.py stop && dropbox.py start && sleep 2 && dropbox.py status;
-}
-
 function aws_ls_fastq {
     if [[ -z ${EPI_S3_FASTQ_SEQ_BUCKET+x} ]]; then echo "EPI_S3_FASTQ_SEQ_BUCKET is unset! Set it in the .local-config-no-git file."; return 1; fi
     # Note that the buckets are defined in .local-config-no-git
@@ -1057,12 +1050,6 @@ function homebrew-everything {
     brew install ipython samtools bedtools fastqc emacs docker bash bedtools blast blat bamtools wget scipy numpy ncurses pigz parallel hdf5 htop git tmux
 }
 
-function phageomancy-html-archive {
-    tarname=$(basename `pwd`)-HTML-archive.tar.gz
-    echo "Saving into '${tarname}'..."
-    tar -cvzf "${tarname}" 000* 030* 049* 05* 070*/*read_cov* 071* 074* 110*
-    echo "[Done] creating ${tarname}."
-}
 
 # count bases per line in a fasta file:
 # cat x.fa | grep -v '^>' | perl -ne 'chomp; my @a=split(//,$_); my %c=(); for my $x (@a) { $c{lc($x)}++; }; for my $k (keys(%c)) { print($k.qq{=}.$c{$k}."\t"); }; print qq{  <-- \n};'
@@ -1287,3 +1274,13 @@ function syncweb {
 #	${PHAGEOMANCY_PY}                  --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
 #    fi
 #}
+#
+#function phageomancy-html-archive {
+#    tarname=$(basename `pwd`)-HTML-archive.tar.gz
+#    echo "Saving into '${tarname}'..."
+#    tar -cvzf "${tarname}" 000* 030* 049* 05* 070*/*read_cov* 071* 074* 110*
+#    echo "[Done] creating ${tarname}."
+#}
+#
+#
+
