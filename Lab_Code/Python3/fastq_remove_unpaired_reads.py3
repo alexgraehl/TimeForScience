@@ -2,80 +2,122 @@
 '''
 This script requires python3
 '''
+import os.path
+import sys
+import re
+import gzip
+import bz2
+#sys.path.insert(0, os.path.join(os.environ['TIME_FOR_SCIENCE_DIR'], "Lab_Code","Python3"))
 
 # import ipdb; ipdb.set_trace()
+#from .open_compressed_agw import Open_compressed_agw
 import argparse
-import os
-import sys
+#import sys
 #import pdb   #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
-import textwrap
+#import textwrap
 #import time # we usually just want the "sleep" function
+
+def open_compressed_agw(filename, mode):
+    if re.search(r"[.](gz|gzip|Z)$", filename, flags=re.IGNORECASE):
+        return gzip.open(filename=filename, mode=mode)
+    if re.search(r"[.](bz2|bzip2)$", filename, flags=re.IGNORECASE):
+        return bz2.BZ2File(filename=filename, mode=mode)
+    else:
+        return open(filename=filename, mode=mode)
 
 def argErrorAndExit(msg="(No additional information given)"):
     raise SystemExit("[ERROR] in arguments to this script: " + msg)
 
 def main():
-    print("Getting ready to handle command line arguments...")
-    parser = argparse.ArgumentParser(description="%(prog)s: template for python 2 and python 3.",
-                                     epilog='''Example usage: python %(prog)s (no example yet)\n(some examples go here)\n(More examples go here)''',
+    parser = argparse.ArgumentParser(description="%(prog)s: fastq filterer in python 3.",
+                                     epilog='''Example usage: python %(prog)s (examples go here)''',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("-f", "--file",  dest="filename", type=str,             default=None, metavar="FILE", required=False, help="Minimum x (length) value.")
-    parser.add_argument("-N", "--name",  dest="username", type=str,             default="Dave",               required=False, help="specify a username to run as")
-    parser.add_argument("-p", "--port",  dest="portnum",  type=int,             default=80,                                   help="port number to run on")
-    parser.add_argument("-q", "--quiet", dest="verbose",  action="store_false",                                               help="don't print status messages to stdout")
+    parser.add_argument("--outpattern", "-o",  dest="outpattern", type=str, default=None, metavar="PATTERN", required=True, help="Output pattern. Should have a '#' somewhere, which will become a 1 or 2 in the output.")
+    #parser.add_argument("-N", "--name",  dest="username", type=str,             default="Dave",               required=False, help="specify a username to run as")
+    #parser.add_argument("-p", "--port",  dest="portnum",  type=int,             default=80,                                   help="port number to run on")
+    parser.add_argument("-v", "--verbose", dest="verbose",  action="store_true", help="Print verbose status messages to stderr")
     parser.add_argument("remainder", nargs=argparse.REMAINDER) # get the REMAINING un-parsed arguments (for example, a bunch of filenames)
     args = parser.parse_args()
 
-    if not len(args.remainder) >= 1:
-        print("You should really specify at least one file to this script, but oh well!")
-        pass
+    if args.outpattern is None or not re.search('#', args.outpattern):
+        print("ARGUMENT ERROR: You must specify an OUTPUT PATTERN with a '#' in it, like:   MYFILE_Pair_Number_#.fastq.gz")
+        print("                The '#' will be replaced with a '1' or '2'.")
+        print("                The pattern you specified was: " + str(args.outpattern))
+        sys.exit(1)
 
-    print("There were also this many un-parsed command line arguments: " + str(len(args.remainder)))
-    for i,extra_argument in enumerate(args.remainder):
-        print("The extra argument number " + str(i) + " was: " + extra_argument)
-        filename = extra_argument
-        if os.path.isfile(filename):
-            try:
-                with open(filename, str("r")) as fff:
-                    for linenum,line in enumerate(fff):
-                        ldelim = line.split("\t")
-                        if (linenum % 10 == 0):
-                            print("Writing every 10th line...")
-                            pass
-                        if linenum > 100:
-                            print("After 100 lines, we stop reading this file.")
-                            break
+    if not re.search("[.](fq|fastq)[.](gz|gzip)$", args.outpattern, flags=re.IGNORECASE):
+        print("ARGUMENT ERROR: Your output pattern must end in '.fastq.gz' or '.fq.gz'.")
+        sys.exit(1)
 
-                        pass  # end 'for'
-                    pass  # end 'with'
-            except Exception as e:
-                print("Failed to open the example test file. Normally we should re-raise this exception, probably. Exception: " + str(e))
-                #raise #future.utils.raise_with_traceback(e)
-                pass  # raise
-            pass
-        pass
+    if not 2 == len(args.remainder):
+        print("ARGUMENT ERROR: You must specify TWO input FASTQ files to filter out reads from.")
+        sys.exit(1)
 
-    for x in range(10):
-        sys.stdout.write(str(x)+"\t")
-        pass
-    print("")
+    (fq1, fq2) = (args.remainder[0], args.remainder[1])
+    if not os.path.isfile(fq1): raise Exception("Failed to find input file <"+fq1+">")
+    if not os.path.isfile(fq2): raise Exception("Failed to find input file <"+fq2+">")
 
-    for a,b in zip([1,2,3],[10,20,30,40]): # note that the 40 is ***OMITTED***!!!
-        print("{a}, {b}".format(a=str(a), b=str(b)))
-        pass
-
-    #pdb.set_trace()
-    d = dict()
-    for k,v in d.items(): # <-- python 2/3-compatible version of 'iteritems'
-        print(str(k) + str(v))
-        pass
-
-    byte_str = b'This is a BYTE string, not a unicode one! We rarely want to use this feature.'
-
-    assert isinstance("mystring", str), "Uh oh, something went wrong if this gets triggered"
+    out1 = args.outpattern.replace("#", "1")
+    out2 = args.outpattern.replace("#", "2")
     
-    #
-    print("Handled the command line arguments!")
+    def scrub_name(s):
+        s2 = re.sub(r"\s.*", "", s.strip())
+        s3 = re.sub(r"[/][12]", "/_ANY_", s2)
+        return s3
+
+    def populate_set_with_names(filename):
+        sss = set()
+        with open_compressed_agw(filename, 'rt') as fff:
+            for linenum,line in enumerate(fff):
+                if (linenum % 4 == 0):
+                    xid = scrub_name(line)
+                    if not xid.startswith("@"): raise("Invalid FASTQ line!")
+                    sss.add(xid)
+                    #print("\t".join([xid, yid, str(xid == yid)]))
+                    pass
+                pass
+            pass
+        return sss
+
+    in1, int2 = populate_set_with_names(fq1), populate_set_with_names(fq2)
+    inboth = in1.intersection(in2)
+
+    if args.verbose: sys.stderr.write("Num records in file 1: " + str(len(in2)) + "\n")
+    if args.verbose: sys.stderr.write("Num records in file 2: " + str(len(in2)) + "\n")
+    if args.verbose: sys.stderr.write("Num records in the INTERSECTION (in both sets): " + str(len(inboth)) + "\n")
+    def write_fastqs_in_set(filename, sss, destname):
+        n_printed, n_omitted = 0, 0
+        if (filename == destname): raise Exception("Filename cannot be the same as destination name.")
+        with open_compressed_agw(filename, 'rt') as fff, open_compressed_agw(destname, 'wt') as dest:
+            linenum = 0 # do NOT try to use enumerate here!
+            for line in fff:
+                if (linenum % 4 == 0):
+                    xid = scrub_name(line)
+                    if xid in sss:
+                        dest.write(line) # name
+                        dest.write(fff.readline()) # sequence
+                        dest.write(fff.readline()) # quality header
+                        dest.write(fff.readline()) # quality score
+                        linenum   += 3 # <-- remember that we just wrote THREE more lines!
+                        n_printed += 1
+                        if args.verbose: sys.stderr.write("[OK]   Writing  ID " + xid + "\n")
+                    else:
+                        if args.verbose: sys.stderr.write("[OMIT] OMITTING ID " + xid + "\n")
+                        n_omitted += 1
+                    pass
+                linenum += 1 # do NOT move this to an enumerate!
+                pass
+            pass
+        sys.stderr.write("[fastq_remove_unpaired_reads.py3]: Wrote " + str(n_printed) + " records (and omitted " + str(n_omitted) + ") to --> " + destname + "\n")
+        return (n_printed, n_omitted)
+
+    (ok1, omit1) = write_fastqs_in_set(fq1, inboth, destname=out1)
+    (ok2, omit2) = write_fastqs_in_set(fq2, inboth, destname=out2)
+
+    if ok1 != ok2: raise Exception("Should never occur by definition")
+    #if ok1 != ok2:
+    #    sys.stderr.print("WARNING: Differing numbers of output lines in inputs. FQ file 1 ({fq1}) had {ok1} printed lines and {omit1} omitted lines, while
+    
     return # end of 'main'
 
 # Must come at the VERY END!

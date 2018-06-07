@@ -337,7 +337,7 @@
  scroll-conservatively     1
  show-trailing-whitespace  t
  tab-width                 4 ;; <-- tab indent width!
- indent-tabs-mode          t ;; <-- except for python
+ indent-tabs-mode          nil
  default-fill-column       80 ;; <-- when you "meta-q" to fit text, what line widths are used for wrapping?
  transient-mark-mode       t ;; show when we mark text for copying/selection, BUT also makes the selection disappear after one use. (if unset, we can use ctrl-space ctrl-space)
 
