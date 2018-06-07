@@ -1133,6 +1133,11 @@ function setunion {
     cat "$1" "$2" | sort -u
 }
 
+function syncweb {
+    mv -f ${HOME}/workspace/W_*.html  ${HOME}/web/projects/
+    mv -f ${HOME}/workspace/W_*.Rmd  ${HOME}/web/projects/
+}
+    
 # Bist has more too:
 # bhist -w -l -a -n 99 769084 | less -S
 
