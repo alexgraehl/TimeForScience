@@ -19,11 +19,6 @@ fi
 
 if [[ "${USER}" == "alexgw" ]] || [[ "${USER}" == "awilliams" ]] || [[ "${USER}" == "alexwilliams" ]] || [[ "${USER}" =~ willia* ]]; then
     IS_ALEX_ACCOUNT=1
-else
-    IS_ALEX_ACCOUNT=0
-fi
-
-if [[ "${IS_ALEX_ACCOUNT}" == "1" ]]; then
     ## SAFER 'rm' COMMANDS --only applies to the user(s) above.
     ## Below: aliases the command "rm" to actually run the script "trash.pl," which moves files to a trash directory in /tmp.
     ## They can be recovered by just copying them back.
@@ -34,6 +29,7 @@ if [[ "${IS_ALEX_ACCOUNT}" == "1" ]]; then
     alias rm='trash.pl' ## <-- Note that the "real" rm can still always be invoked by '/bin/rm'
     OUR_RM='trash.pl'
 else
+    IS_ALEX_ACCOUNT=0
     OUR_RM=rm
 fi
 
@@ -42,15 +38,9 @@ echo -e "${a_echo_color}[:FYI:] Loading bash-aliases...${a_end_color}"
 #echo $GIT_COMMITTER_EMAIL
 # echo $GIT_AUTHOR_EMAIL # not important if you set the other thing
 
-
 CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR}" # <-- Multiple **space-delimited** directories can be here
-
-
-
-## Searches both the R source and the current directory (and any subdirectories!)
-## Note that it only looks for files with a ".R" ending!!!!!!!
 if [[ -n "${isMac}" ]] ; then ## It *is* a mac!
-    function ff {
+    function ff { ## Searches certain source directories, and the current directory (and any subdirectories!)
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
 	    "$@" ${CODE_DIRS_FOR_GREPPING} ./
     }
@@ -78,11 +68,14 @@ function hunt { # cd into a directory with a script
     echo "Moved into directory <$THEDIR>."
 }
 
-function cto { # instead of CD to a file, CD directly to a file's directory, since naturally you can't actually CD to a file
-    if [[ "$#" != 1 ]] ; then echo "[:ERR:]] You need to pass EXACTLY ONE filename or directory name into this function!"; return 1; fi
+#function cd {
+
+#}
+
+function cto { # Like CD, but lets you go to a FILE as well.
+    if [[ "$#" != 1 ]] ; then echo "[:ERR:]] 'cto' requires EXACTLY ONE file/directory name!"; return 1; fi
     if [[ -d "$1" ]] ; then cd "$1" ; return 0; fi # it's already a directory, change to it!
-    TO=$(dirname "$1")
-    cd "$TO"
+    cd $(dirname "$1")
 }
 
 alias igv='/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/bin/java -jar /Applications/IGV_2.4.10.app/Contents/Java/igv.jar'

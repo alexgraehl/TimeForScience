@@ -5,19 +5,13 @@
 # This is why this line is important at the very top!
 
 # Source any global bash definitions
-if [[ -f "/etc/bashrc" ]]; then
-	. /etc/bashrc
-fi
+[[ -f "/etc/bashrc" ]] &&  . /etc/bashrc
 
-# Enable programmable completion features. May already be enabled in
-# /etc/bash.bashrc or /etc/profile, in which case this would not be necessary.
-if [[ -f "/etc/bash_completion" ]]; then
-    . /etc/bash_completion
-fi
+# Enable programmable completion features. May already be enabled in  /etc/bash.bashrc or /etc/profile, in which case this would not be necessary.
+[[ -f "/etc/bash_completion" ]] &&  . /etc/bash_completion
 
 # ~/.bashrc: executed by bash(1) for non-login shells (Loaded when the shell is non-interactively started up)
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc) for examples
-
 # This site also has some useful commands: https://github.com/mrzool/bash-sensible/blob/master/sensible.bash
 
 # ============= Set up things below ONLY if this shell is interactive ===============
@@ -29,7 +23,6 @@ function agw_cmd_exists() { # Check if a command exists
     # or try: if [[ -n `which exa 2> /dev/null` ]] ... # Usage example: if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then ...
 }
 
-if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
 
 # If we're in TMUX, then change the screen type to "screen-256color" and export the TERM
 export TERM=xterm-256color # override the defaults and always assume 256 colors
@@ -117,7 +110,7 @@ else
     export BINF_CORE_WORK_DIR="NO_BIOINFORMATICS_CORE_WORK_DIR_FOUND"
 fi
 
-if [[ -d "$HOME/TimeForScience" ]]; then ## If this is in the home directory, then set it no matter what.
+if [[ -d "${HOME}/TimeForScience" ]]; then ## If this is in the home directory, then set it no matter what.
     export TIME_FOR_SCIENCE_DIR="${HOME}/TimeForScience"
 else
     export TIME_FOR_SCIENCE_DIR="/home/alexgw/TimeForScience"
@@ -166,28 +159,25 @@ function deduped() { # input: one string to de-dupe. Usage: PATH=$(deduped $PATH
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/
 
 MINICONDA_BIN="${HOME}/miniconda3/bin"
-EPIGIT="$HOME/epi"
+EPIGIT="${HOME}/epi"
 
 export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin" ## <-- clear out initial path!!
 export PATH="/opt/pbs/default/bin:/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${HOME}/.local/bin:${PATH}"
-export PATH=$(deduped "${HOME}/bin:${HOME}/.local/bin:${HOME}/.linuxbrew/bin:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Tools:$TIME_FOR_SCIENCE_DIR/Lab_Code/Perl/Scientific:$TIME_FOR_SCIENCE_DIR/Lab_Code/Python:$TIME_FOR_SCIENCE_DIR/Lab_Code/Shell:$TIME_FOR_SCIENCE_DIR/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Code/Python:${EPIGIT}/users/alexgw:${EPIGIT}/genomics:${MINICONDA_BIN}")   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
-
-# PATH="$(echo $PATH | perl -e 'print join(":", grep { not $seen{$_}++ } split(/:/, scalar <>))')"  # remove dupes
-
+export PATH=$(deduped "${HOME}/bin:${HOME}/.local/bin:${HOME}/.linuxbrew/bin:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/Tools:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/Scientific:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python2:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python3:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Shell:${TIME_FOR_SCIENCE_DIR}/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Code/Python:${EPIGIT}/users/alexgw:${EPIGIT}/genomics:${MINICONDA_BIN}")   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 #BINFAPPBASE=/data/applications
 #BINFVERSION=2015_06
 # 'export' added to "BINFSWROOT" on August 25, 2016
 export BINFSWROOT="" #$(deduped $BINFAPPBASE/$BINFVERSION)
 #export BINFBINROOT=$(deduped $BINFSWROOT/bin)
-export PERL5LIB=$(deduped $BINFSWROOT/libperl/lib/perl5:$HOME/.linuxbrew/lib/perl5/site_perl:$PERL5LIB)
+export PERL5LIB=$(deduped $BINFSWROOT/libperl/lib/perl5:${HOME}/.linuxbrew/lib/perl5/site_perl:$PERL5LIB)
 export PERLLIB=$PERL5LIB
 # PYTHONPATH: ------- UPDATE: Added August 25, 2016
 #export BINFPYROOT=$(deduped $BINFSWROOT/libpython2.7)
-#export PYTHONPATH=$(deduped $BINFPYROOT:$BINFPYROOT/lib64/python2.7/site-packages:$BINFPYROOT/lib/python2.7/site-packages:$HOME/epi/users/alexgw:$PYTHONPATH)
+#export PYTHONPATH=$(deduped $BINFPYROOT:$BINFPYROOT/lib64/python2.7/site-packages:$BINFPYROOT/lib/python2.7/site-packages:${HOME}/epi/users/alexgw:$PYTHONPATH)
 #$BINFPYROOT:$BINFPYROOT/dist-packages:$BINFPYROOT/lib64/python2.7/site-packages:$PYTHONPATH)
 #export R_LIBS=$(deduped $BINFSWROOT/libr)
 export PATH=$(deduped $PATH) #:$BINFPYROOT/bin)
-export LD_LIBRARY_PATH=$(deduped "$HOME/.linuxbrew/lib:$LD_LIBRARY_PATH")
+export LD_LIBRARY_PATH=$(deduped "${HOME}/.linuxbrew/lib:$LD_LIBRARY_PATH")
 export LIBRARY_PATH=$LD_LIBRARY_PATH
 #export CPATH=$(deduped $BINFSWROOT/include:$CPATH)
 
@@ -226,14 +216,6 @@ shopt -s cmdhist ## Save multi-line pasted commands into one single history comm
 export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
 # =========================== TERMINAL HISTORY =========================
 
-# set variable identifying the chroot you work in (used in the prompt below)
-# What the heck even is this
-#if [[ -z $debian_chroot ]] && [[ -r /etc/debian_chroot ]]; then
-#    debian_chroot=$(cat /etc/debian_chroot)
-#fi
-
-
-
 highlight_text() { # prints colored text apparently. One argument, which is the color setting. 1 = red, 2 = green... etc
     if [ -x /usr/bin/tput ]; then tput bold; tput setaf $1; fi
     shift
@@ -255,14 +237,8 @@ parse_git_branch() { # Shows the current 'git' branch if you're in a git-control
 }
 
 
-#PS1="[\D{%e}=\t \h:\W]$ "
-# Note: all color sequence escapes must be surrounded by \[ ... \]. So all instances of \e must have \[ before them, or line wrap will break. See this: https://stackoverflow.com/questions/342093/ps1-line-wrapping-with-colours-problem . More specifically: "terminal escapes should be surrounded by \[ \] in order for bash to be able to correctly count printing characters to the beginning of the line. "
-PRE_PS1="\[${BRIGHT}\]\[${BLUE}\]\t\[${MAGENTA}\]\$(parse_git_branch)\[${NORMAL}\]"
-#export PS1="\$(print_if_nonzero_exit_code)\n[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
-# Note: requires a "\n" after the "print_if_nonzero" or else Ctrl-A / Ctrl-E gets messed up when pasting
 
-RIGNODE_HOSTNAME=${RIGNODE_HOSTNAME:-no_rignode_hostname} # bash, assign a DEFAULT value if the argument is not defined
-
+#RIGNODE_HOSTNAME=${RIGNODE_HOSTNAME:-no_rignode_hostname} # bash, assign a DEFAULT value if the argument is not defined
 
 # ============ Start of code block from http://ezprompt.net/ =====
 # ===================================
@@ -323,6 +299,11 @@ function parse_git_dirty {
 #export PS1="[\[\033[0;33m\]\$(date +%d%b) \$(date +%T) \[\033[0;34m\]\u@\h:] \[\033[1;31m\]\w\[\033[0m\]>"
 #export PS1="\033[0;33m\]\$(date +%d%b) \$(date +%T) \[\033[0;34m\]\u@\h: \[\033[1;31m\]\w\[\033[0m\]$"
 
+#PS1="[\D{%e}=\t \h:\W]$ "
+# Note: all color sequence escapes must be surrounded by \[ ... \]. So all instances of \e must have \[ before them, or line wrap will break. See this: https://stackoverflow.com/questions/342093/ps1-line-wrapping-with-colours-problem . More specifically: "terminal escapes should be surrounded by \[ \] in order for bash to be able to correctly count printing characters to the beginning of the line. "
+#PRE_PS1="\[${BRIGHT}\]\[${BLUE}\]\t\[${MAGENTA}\]\$(parse_git_branch)\[${NORMAL}\]"
+#export PS1="\$(print_if_nonzero_exit_code)\n[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
+# Note: requires a "\n" after the "print_if_nonzero" or else Ctrl-A / Ctrl-E gets messed up when pasting
 
 case "$COMPYNAME"
 in
@@ -340,6 +321,7 @@ esac
 
 # ============ End of code block from http://ezprompt.net/ =====
 
+#if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
 #if [[ -n "$color_prompt" ]] ; then
 #    if [[ -z "$is_sshing" ]] ; then
 ## Conditional logic IS allowed in the ps1, bizarrely!
@@ -357,8 +339,7 @@ if [[ -n "$color_prompt" ]]; then
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
 else
-    echo -n ''
-    #PS1="$(date +[%d]%H:%M) \u@\h:\W]\$ "
+    true
 fi
 
 # enable color support of ls
@@ -374,7 +355,7 @@ export  CVSEDITOR="emacs -nw"
 export SVN_EDITOR="emacs -nw"
 export     EDITOR="emacs -nw"
 
-export EPI_PHAGEOMANCY_RESOURCE_DIR=$HOME/PHAGEOMANCY/resources
+export EPI_PHAGEOMANCY_RESOURCE_DIR=${HOME}/PHAGEOMANCY/resources
 
 export HUE_BASE_IP="192.168.1.222"
 
@@ -414,11 +395,8 @@ umask u=rwx,g=rwx,o=rx # <-- give users and groups full access to files I create
 #shopt -s cdable_vars
 
 # Examples:
-# export dotfiles="$HOME/dotfiles"
-# export projects="$HOME/projects"
-# export documents="$HOME/Documents"
-# export dropbox="$HOME/Dropbox"
-
-
-
+# export dotfiles="${HOME}/dotfiles"
+# export projects="${HOME}/projects"
+# export documents="${HOME}/Documents"
+# export dropbox="${HOME}/Dropbox"
 
