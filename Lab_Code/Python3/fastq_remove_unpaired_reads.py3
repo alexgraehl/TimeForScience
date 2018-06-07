@@ -79,10 +79,10 @@ def main():
             pass
         return sss
 
-    in1, int2 = populate_set_with_names(fq1), populate_set_with_names(fq2)
+    in1, in2 = populate_set_with_names(fq1), populate_set_with_names(fq2)
     inboth = in1.intersection(in2)
 
-    if args.verbose: sys.stderr.write("Num records in file 1: " + str(len(in2)) + "\n")
+    if args.verbose: sys.stderr.write("Num records in file 1: " + str(len(in1)) + "\n")
     if args.verbose: sys.stderr.write("Num records in file 2: " + str(len(in2)) + "\n")
     if args.verbose: sys.stderr.write("Num records in the INTERSECTION (in both sets): " + str(len(inboth)) + "\n")
     def write_fastqs_in_set(filename, sss, destname):
