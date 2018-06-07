@@ -1,3 +1,4 @@
+################################################
 # Gitignore format:  https://labs.consol.de/development/git/2017/02/22/gitignore.html
 # target/               folder (due to the trailing /) recursively
 # target                file or folder named target recursively
@@ -5,6 +6,7 @@
 # /target/              folder named target in the top-most directory (leading and trailing /)
 # *.class               every file or folder ending with .class recursively
 # target/**/logs/       every folder named logs somewhere under a folder named target (** includes /)
+################################################
 
 ###################
 # Google          #
@@ -21,6 +23,25 @@
 .hg/hgrc
 hgrc
 
+###############################
+# Compressed files / archives #
+###############################
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.bz2
+*.dmg
+*.img
+*.iso
+*.gz
+*.gzip
+*.jar
+*.rar
+*.tar
+*.zip
+*.Z
+*.xz
+
 ###################
 # Large bio files #
 ###################
@@ -36,6 +57,7 @@ hgrc
 *.bigBed
 *.bb
 
+###################
 # Compiled source #
 ###################
 *.com
@@ -45,7 +67,9 @@ hgrc
 *.o
 *.so
 
-# Weird files
+###################
+# Weird files     #
+###################
 *.swp
 *~.nib
 *.pbxuser
@@ -53,22 +77,11 @@ hgrc
 *.perspectivev3
 *.pyc
 
-# Packages/compressed files #
-############
-# it's better to unpack these files and commit the raw source
-# git has its own built in compression methods
-*.7z
-*.dmg
-*.gz
-*.iso
-*.jar
-*.rar
-*.tar
-*.zip
-*.gz
-*.bz2
-*.Z
-*.xz
+
+######################
+# R stuff            #
+######################
+.Rhistory
 
 ######################
 # Code / XCode / etc #
@@ -101,7 +114,9 @@ Thumbs.db
 Icon[]
 # FYI: Input the Mac CR (carriage return) with Ctrl-Q Ctrl-M in emacs
 
-# Weird backup files maybe
+######################
+# Weird backup files #
+######################
 .#*
 *~
 ._*
