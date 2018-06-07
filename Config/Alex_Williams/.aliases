@@ -1067,7 +1067,7 @@ function jj {
     # If you want to colorize them, see: which qstats.sh
     echo -e "[:FYI:] Queue documentation is here: https://sites.google.com/a/gene.com/rescomp/guides/user-guide#TOC-Checking-the-Status-of-a-Job" >&2 # print to stderr
     ARRAY_JOB_TEXT=$(bjobs -A -u "${USER}" 2>&1) # Captures STDERR+STDOUT
-    if [[ "${ARRAY_JOB_TEXT}" =~ ".*array is not found.*" ]]; then
+    if [[ "${ARRAY_JOB_TEXT}" =~ .*array\ is\ not\ found.* ]]; then
 	echo -e "${a_blue_bold}(No active array jobs.)${a_end_color}"
     else
 	echo -e "${a_blue_bold}Array job status (-A):${a_end_color}"
