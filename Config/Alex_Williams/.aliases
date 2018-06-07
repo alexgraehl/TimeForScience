@@ -136,6 +136,7 @@ alias cheat="echo \
 \">> ZIP on Mac without the dot files: zip -r -X out.zip input_directory_here    -x \\\"*.DS_Store\\\" \" ${NL}\
 \">> RAM/Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
 \">> Mac: what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
+\">> Mac: lock a file, for example to prevent Dropbox from replacing a custom icon: chflags uchg ~/Dropbox/Icon\\\$'\\r' \" ${NL}\
 \">> Mac disk: specific file I/O: fs_usage <programname> \" ${NL}\
 \">> Mac disk: filesystem I/O:    fs_usage -w | grep -v '0\\.0'  \" ${NL}\
 \">> Mac set startup disk: sudo bless -mount /Volumes/YOURDISK -setBoot \" ${NL}\
