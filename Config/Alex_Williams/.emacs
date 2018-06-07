@@ -217,14 +217,14 @@
 (if (not (boundp 'should-load-ess))
     (setq should-load-ess nil)) ;; <-- if should-load-ess is not already defined, then initialize a new variable if we haven't loaded ess, then this *remains* "nil"
 
-
 (add-to-list 'load-path "/usr/share/emacs/site-lisp")
 (add-to-list 'load-path "/usr/local/share/emacs/site-lisp")
-(add-to-list 'load-path "/Users/alexgw/bin/ESS/lisp")
+(add-to-list 'load-path "~/bin/ESS/lisp")
+(add-to-list 'load-path "~/bin/share/emacs/site-lisp/")
+(add-to-list 'load-path "~/bin/share/emacs/site-lisp/ess")  ;; wow, you actually have to specify the EXACT SUBDIRECTORY for this to work
 (add-to-list 'load-path "~/.emacs.d/site-lisp")
 (add-to-list 'load-path "~/.linuxbrew/share/emacs/site-lisp")
 ;(add-to-list 'load-path "~/.linuxbrew/share/emacs/site-lisp/ess") ;; wow, you actually have to specify the EXACT SUBDIRECTORY for this to work
-(add-to-list 'load-path (concat (getenv "BINFSWROOT") "/share/emacs/site-lisp"))
 (add-to-list 'load-path (concat (getenv "BINFSWROOT") "/share/emacs/site-lisp/ess")) ;; <-- REQUIRED to specify it this deep in the hierarchy
 
 (if (system-type-is-darwin)
@@ -234,7 +234,7 @@
 
 (if (system-type-is-gnu)
     (progn
-      (setq should-load-ess nil) ; don't load R syntax highlighting
+      (setq should-load-ess t) ; do/don't (t/nil) load R syntax highlighting
       (require 'show-wspace nil t) ; show whitespace! (?)
       ))
 
@@ -818,6 +818,7 @@ current line."
 (if should-load-ess (message "[AGW]: Loading ESS (Emacs Speaks Statistics)") (message "[AGW]: NOT loading ESS (Emacs Speaks Statistics)"))
 (if should-load-ess ;; emacs speaks statistics
     (progn
+      ;; (load "ess-site")
       (require 'ess-site) ;; nil t)
       (message "Setting R syntax stuff...")
       (add-hook 'ess-mode-hook  ;; R-mode-hook r-mode-hook r mode <-- should be ess-mode-hook
