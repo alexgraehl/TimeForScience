@@ -76,6 +76,11 @@ if [[ -n "$color_prompt" ]] ; then
     a_orange136="${color_prefix}[38;5;136m"
     a_yellow226="${color_prefix}[38;5;226m" # bright yellow
     a_lavender93="${color_prefix}[38;5;93m"
+    a_red="${color_prefix}[38;5;9m"
+    a_green="${color_prefix}[38;5;10m"
+    a_blue="${color_prefix}[38;5;21m"
+    a_yellow="${color_prefix}[38;5;11m"
+    a_magenta="${color_prefix}[38;5;13m"
     # ######################
     
     a_red_bold="${color_prefix}[1;31m"
@@ -87,7 +92,9 @@ if [[ -n "$color_prompt" ]] ; then
     a_white_bold="${color_prefix}[1;37m"
     a_status_color="${color_prefix}[1;33m"
     a_warning_color="${color_prefix}[1;31m"
-
+    a_error_color=${a_red}
+    a_ok_color=${a_green82}
+    
     a_banner_color="${color_prefix}[1;45m"
     a_dirinfo_color="${color_prefix}${POWDER_BLUE}"
     a_end_color="${color_prefix}[m"
