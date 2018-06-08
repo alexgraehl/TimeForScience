@@ -39,9 +39,10 @@ def main():
     parser.add_argument("remainder", nargs=argparse.REMAINDER) # get the REMAINING un-parsed arguments (for example, a bunch of filenames)
     args = parser.parse_args()
 
-    if args.outpattern is None or not re.search('#', args.outpattern):
-        print("ARGUMENT ERROR: You must specify an OUTPUT PATTERN with a '#' in it, like:   MYFILE_Pair_Number_#.fastq.gz")
-        print("                The '#' will be replaced with a '1' or '2'.")
+    PAIR_PLACEHOLDER_SYMBOL='@@@'
+    if args.outpattern is None or not re.search(PAIR_PLACEHOLDER_SYMBOL, args.outpattern):
+        print("ARGUMENT ERROR: You must specify an OUTPUT PATTERN with a " + PAIR_PLACEHOLDER_SYMBOL + " in it, like this:   -o MYFILE_Pair_Number_" + PAIR_PLACEHOLDER_SYMBOL + ".fastq.gz")
+        print("                The " + PAIR_PLACEHOLDER_SYMBOL + " will be replaced with a '1' or '2'.")
         print("                The pattern you specified was: " + str(args.outpattern))
         sys.exit(1)
 
@@ -57,8 +58,8 @@ def main():
     if not os.path.isfile(fq1): raise Exception("Failed to find input file <"+fq1+">")
     if not os.path.isfile(fq2): raise Exception("Failed to find input file <"+fq2+">")
 
-    out1 = args.outpattern.replace("#", "1")
-    out2 = args.outpattern.replace("#", "2")
+    out1 = args.outpattern.replace(PAIR_PLACEHOLDER_SYMBOL, "1") # e.g. "_pair1"
+    out2 = args.outpattern.replace(PAIR_PLACEHOLDER_SYMBOL, "2") # e.g. "_pair2"
     
     def scrub_name(s):
         s2 = re.sub(r"\s.*", "", s.strip())
