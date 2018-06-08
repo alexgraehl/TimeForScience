@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 '''
-This script requires python3
+This script requires python3. 
+You can test it like so:  fastq_remove_unpaired_reads.py3 -o 'out_pair@@@.fq.gz' a_1.fastq.gz a_2.fastq.gz
+# Resulting files from that invocation above would be 'out_pair1.fq.gz' and 'out_pair2.fq.gz'
+Note that the '@@@' is special and is replaced by the pair number
+
 '''
 import os.path
 import sys
@@ -14,7 +18,6 @@ import bz2
 import argparse
 #import sys
 #import pdb   #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
-#import textwrap
 #import time # we usually just want the "sleep" function
 
 def open_compressed_agw(filename, mode):
