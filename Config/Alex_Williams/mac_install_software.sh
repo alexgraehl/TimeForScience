@@ -45,9 +45,9 @@ fi
 # ==============================================================================
 
 if [[ 1 == $SHOULD_HOMEBREW ]]; then
-    echo "Homebrew installation"
+    echo "Installing a ton of stuff via homebrew (which must already be installed in order for this to work)"
     brew cask install java # required for gradle and more
-    brew install bash bcftools bedtools blast boost cairo catimg dialog emacs fastqc ffmpeg fontconfig freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htop htslib imagemagick isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle openssl pcre pixman pkg-config pv python3 qemu R readline rsync samtools sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
+    brew install bash bcftools bedtools blast boost cairo catimg dialog emacs fastqc ffmpeg fontconfig freetype gcc gdbm gettext git glib gmp gnutls gradle gsl hdf5 htop htslib imagemagick ipython ipython3 isl jpeg lame libevent libffi libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle numpy openssl pcre pigz pixman pkg-config pv python3 qemu R readline rsync samtools scipy sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
     #docker
 fi
 

@@ -670,23 +670,21 @@ function xztar {
 # maybe this will help with escaping? for f in `ls`; do printf "%q " $f; done
 # looks like 'printf' can save the day
 function mini {
-    [[ "$#" == 1 ]]         && compressedBasename="$1" || compressedBasename="Archive" ## If you pass it one argument, then that argument will also be the filename
+    [[ "$#" == 1 ]]         && comp_base="$1" || comp_base="Archive" ## If you pass it one argument, then that argument will also be the filename
     agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD/Mac, so check for it
-
     # xz is 10 times slower than bz2 to compress, but can be ~30% smaller for text.
     # xz is FASTER to decompress than bzip2, and is nearly the same as gzip.
-    
-    compressedBasename=`echo "$compressedBasename" | sed "s/[/]//"` ## Let's remove any slashes from the name of the *output*. That way if someone types "mini MyDir/" it will generate "MyDir.tar.bz2" and NOT "MyDir/.tar.bz2"
+    comp_base=`echo "${comp_base}" | sed "s/[/]//"` ## Let's remove any slashes from the name of the *output*. That way if someone types "mini MyDir/" it will generate "MyDir.tar.bz2" and NOT "MyDir/.tar.bz2"
     if [[ $(tar --version) =~ .*bsdtar.* ]]; then TAREX=" -c -v "      # BSD tar
     else TAREX=" --preserve-permissions --atime-preserve -c -v "; fi   # GNU tar
-    if [[ -f "${compressedBasename}.tar" || -f "${compressedBasename}.tar.bz2" ]] ; then
-	echo "mini: HALTING: Cannot create a new archive---either ${compressedBasename}.tar or ${compressedBasename}.tar.bz2 already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive!!! Delete it and compress again." ;
+    if [[ -f "${comp_base}.tar" || -f "${comp_base}.tar.bz2" ]] ; then
+	echo "mini: HALTING: Cannot create a new archive---either ${comp_base}.tar or ${comp_base}.tar.bz2 already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive!!! Delete it and compress again." ;
 	return 1;
     else
 	if [[ "$#" -gt 1 ]] ; then echo "Adding a total of $# files to the archive." ; fi
-	for var in "$@"; do echo " * Archiving $var --> ${compressedBasename}.tar.bz2" ; done
+	for var in "$@"; do echo " * Archiving $var --> ${comp_base}.tar.bz2" ; done
 	echo "[TAR] command running now... maybe should use 'xz' instead of bzip" ;
-	eval "$AGW_IONICE" tar "$TAREX" --bzip2 -f "${compressedBasename}.tar.bz2" $@;
+	eval "$AGW_IONICE" tar "$TAREX" --bzip2 -f "${comp_base}.tar.bz2" $@;
 	echo "[Done]" ;
     fi
 }
@@ -815,7 +813,6 @@ function giant { # find giant files
     #IFS=$SAVED_IFS
 }
 
-
 function giantpleb { # find giant files
     #SAVED_IFS=$IFS; IFS=$(echo -en "\n\b")
     echo "Calculating all sizes first, then sorting them in ascending order..." >&2 # print to stderr
@@ -823,8 +820,6 @@ function giantpleb { # find giant files
     du -sc $DIRS | perl -nle 'print if not m/\btotal\b/' | perl -nle "@a = split(/\s+/); if (\$a[0]>0){print ((\$a[0]/1024.0/1024.0).qq{\t}.\$a[1]);} else { };" | sort -k1,1g | perl -e "my \$t = 0; while(<>) { my @a=split; \$t += \$a[0]; print join(qq{\t}, int(\$t/1024.0).qq{T}, int(\$a[0]).qq{G}, \$a[1]).qq{\n} }"
     #IFS=$SAVED_IFS
 }
-
-
 
 function wholog {
     echo "About to show who logs in and how big their home directories are..." >&2 # print to stderr
@@ -904,7 +899,7 @@ function rtag {
     done
 }
 
-function wgetdevour { # wget devour
+function wgetdevour { # Downloads certain types of files via wget for a password-protected directory
     if [[ "$#" != "3" ]] ; then echo "[:ERR:] You need to pass THREE arguments -- username, password, directory!"; return 1; fi
     USERNAME=$1
     PASSWORD=$2
@@ -921,7 +916,7 @@ function hist {
 }
 
 QUEUE_LOGFILE_PATTERN='.*.\([eo][0-9]+\|.log.err\|.log.out\|.out.log\|.err.log\)'
-# ~~~~~~~~~~~~~~~ QUEUE / QSUB LOG VIEWING AND MOVING ~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~ QUEUE / QSUB / BSUB LOG VIEWING AND MOVING ~~~~~~~~~~~~~~~
 function rmlogs { # Usage:     catlogs (no arguments)
     #if [[ "$#" == "0" ]] ; then SEARCH_DIRS=. ; else SEARCH_DIRS=$@ ; fi
     NUM_FOUND=$(find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' | wc -l)
@@ -945,10 +940,10 @@ function mvlogs { # Usage:   mvlogs OUTPUT_DIRECTORY
 }
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function refresh { # Usage:  refresh (no arguments)
-    FAKEFILE=$(mktemp ./tmp.XXXXXX.tmp) ; /bin/rm $FAKEFILE;
-    (>&2 echo "Refreshing the filesystem, which is important since the NFS system otherwise takes 60 seconds to update...")
-}
+#function refresh { # Usage:  refresh (no arguments)
+#    FAKEFILE=$(mktemp ./tmp.XXXXXX.tmp) ; /bin/rm $FAKEFILE;
+#    (>&2 echo "Refreshing the filesystem, which is important since the NFS system otherwise takes 60 seconds to update...")
+#}
 
 function star_make_index {
     # This makes an alignment directory for the STAR aligner, when given just a FASTA file and a length.
@@ -999,7 +994,7 @@ function pdf2png {
 }
 
 function zwcl {
-    for f in "$@" ; do echo -e -n "$f\t"; zcat -f $f | wc -l; done # note that zless is SUPER slow compared to zcat
+    for f in "$@" ; do echo -e -n "$f\t"; zcat -f $f | wc -l; done # don't use zless, it's super slow compared to zcat
 }
 
 function aws_ls_fastq {
@@ -1036,16 +1031,6 @@ function docker-begone {
     
 }
 
-function homebrew-everything {
-    echo "Installing a ton of stuff via homebrew, which you should already have installed..."
-    sleep 1
-    echo "(Starting in 4 seconds...)"
-    sleep 4
-    brew tap homebrew/science
-    brew install ipython samtools bedtools fastqc emacs docker bash bedtools blast blat bamtools wget scipy numpy ncurses pigz parallel hdf5 htop git tmux
-}
-
-
 # count bases per line in a fasta file:
 # cat x.fa | grep -v '^>' | perl -ne 'chomp; my @a=split(//,$_); my %c=(); for my $x (@a) { $c{lc($x)}++; }; for my $k (keys(%c)) { print($k.qq{=}.$c{$k}."\t"); }; print qq{  <-- \n};'
 
@@ -1073,7 +1058,7 @@ function jj {
 	echo -e "${a_blue_bold}Array job status (-A):${a_end_color}"
 	echo -e "${ARRAY_JOB_TEXT}"
 	bjobs -w -A -u "${USER}" # wide to show FULL array names
-	echo -e "[:FYI:] Cancel ALL jobs in an array with:  bkill -J \"JOBNAME*\" <-- be careful!"
+	echo -e "[:FYI:] To cancel ALL jobs in an array --> bkill -J \"JOBNAME*\" <-- be careful!"
     fi
     #echo -e "${a_blue_bold}Detailed current jobs:${a_end_color}"
     #bjobs -u "${USER}"
@@ -1088,7 +1073,7 @@ function jj {
     # -a is "show recently-completed jobs!"
     FAILED_JOB_TEXT=$(bjobs -a -x -l  2>&1)    # Capture STDERR and STDOUT both to a variable returns 0 no matter what. If there's no job, it returns the verbatim text "No job found"
     if [[ "${FAILED_JOB_TEXT}" =~ No.*job.* ]]; then
-	echo -e "${a_blue_bold}(All recently-completed jobs exited successfully.)${a_end_color}"
+	echo -e "${a_blue_bold}(No recent job failures were found.)${a_end_color}"
     else
 	echo -e "[:ERR:]: ${a_red_bold}Jobs that failed (-a -x -l output):${a_end_color}"
 	echo -e "${FAILED_JOB_TEXT}"
@@ -1123,12 +1108,6 @@ function syncweb {
     
 # Bist has more too:
 # bhist -w -l -a -n 99 769084 | less -S
-
-
-
-
-
-
 
 
 #function checkbackup {
