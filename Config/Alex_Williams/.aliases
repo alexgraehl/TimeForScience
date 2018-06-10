@@ -936,7 +936,7 @@ function mvlogs { # Usage:   mvlogs OUTPUT_DIRECTORY
     if [[ "$#" != "1" ]] ; then echo "[:ERR:] mvlogs needs EXACTLY ONE destination directory!"; return 1; fi
     if [[ ! -d $1 ]] ; then echo "[:ERR:] mvlogs needs an EXISTING DIRECTORY as a destination! The specified directory ($1) appears not to exist."; return 1; fi
     find . -maxdepth 1  -type f -regex "${QUEUE_LOGFILE_PATTERN}" -print0 | -print0 | xargs -0 -I{} mv {} $1/
-    echo "[:OK :] Moved all the logs into the directory $1"
+    echo "[:OK :] Moved all the logs into the directory <$1>"
 }
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
