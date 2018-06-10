@@ -921,21 +921,20 @@ function rmlogs { # Usage:     catlogs (no arguments)
     #if [[ "$#" == "0" ]] ; then SEARCH_DIRS=. ; else SEARCH_DIRS=$@ ; fi
     NUM_FOUND=$(find . -maxdepth 1  -type f  -regex '.*[.][eo][0-9]+' | wc -l)
     echo "Deleting $NUM_FOUND 'qsub' logs (the files ending with .e1234 or .o456, etc. or .log.err or .log.out)..."
-    find . -maxdepth 1  -type f \
-	 -regex '.*.\([eo][0-9]+\|.log.err\|.log.out\)' \
+    find . -maxdepth 1 -type f -regex '.*.\([eo][0-9]+\|.log.err\|.log.out\)' \
 	 -delete
     echo "[Done] Deleted the $NUM_FOUND log files.."
 }
 function catlogs { # Usage:     catlogs (no arguments)
     if [[ "$#" == "0" ]] ; then SEARCH_DIRS=. ; else SEARCH_DIRS=$@ ; fi
     echo "Concatenating all the QSUB/BSUB logs in this directory into one file, which we will then view with 'less'"
-    find ${SEARCH_DIRS} -maxdepth 1  -type f -regex "${QUEUE_LOGFILE_PATTERN}" -print0 | xargs -0 -I{} paste.pl "FILE={}" {} | s
+    find ${SEARCH_DIRS} -maxdepth 1 -type f -regex "${QUEUE_LOGFILE_PATTERN}" -print0 | xargs -0 -I{} paste.pl "FILE={}" {} | s
 }
 function mvlogs { # Usage:   mvlogs OUTPUT_DIRECTORY
     # This function moves those annoying qzub logs to the destination directory
     if [[ "$#" != "1" ]] ; then echo "[:ERR:] mvlogs needs EXACTLY ONE destination directory!"; return 1; fi
-    if [[ ! -d $1 ]] ; then echo "[:ERR:] mvlogs needs an EXISTING DIRECTORY as a destination! The specified directory ($1) appears not to exist."; return 1; fi
-    find . -maxdepth 1  -type f -regex "${QUEUE_LOGFILE_PATTERN}" -print0 | -print0 | xargs -0 -I{} mv {} $1/
+    if [[ ! -d $1 ]]     ; then echo "[:ERR:] mvlogs needs an EXISTING DIRECTORY as a destination! The specified directory ($1) appears not to exist."; return 1; fi
+    find . -maxdepth 1 -type f -regex "${QUEUE_LOGFILE_PATTERN}" -print0 | xargs -0 -I{} mv {} $1/
     echo "[:OK :] Moved all the logs into the directory <$1>"
 }
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
