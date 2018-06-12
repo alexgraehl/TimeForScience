@@ -1108,7 +1108,22 @@ function syncweb {
     mv -f ${HOME}/workspace/W_*.html  ${HOME}/web/projects/
     mv -f ${HOME}/workspace/W_*.Rmd  ${HOME}/web/projects/
 }
-    
+
+function bsubtemp {
+    if [[ "$#" != 1 ]] ; then echo "[:ERR:]] Please specify a job name!"; return 1; fi
+    JJJ=${1/ /_} # spaces --> '_'
+    echo "#!/bin/bash"
+    echo "#BSUB -q medium                     # Short is 2 hours, medium is 24 hours"
+    echo "#BSUB -J '${JJJ}'                          "
+    echo "#BSUB -R 'rusage[mem=1]'            # In GB"
+    echo "#BSUB -R 'span[hosts=1]'            # No splitting across hosts"
+    echo "#BSUB -n 1                          # N threads"
+    echo "#BSUB -o ${JJJ}-%J-%I.bsub.log.out  "
+    echo "#BSUB -e ${JJJ}-%J-%I.bsub.log.err  "
+    echo ''
+
+}
+
 # Bist has more too:
 # bhist -w -l -a -n 99 769084 | less -S
 
