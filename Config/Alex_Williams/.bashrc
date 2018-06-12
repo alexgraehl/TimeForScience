@@ -166,11 +166,9 @@ function deduped() { # input: one string to de-dupe. Usage: PATH=$(deduped $PATH
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/
 
 MINICONDA_BIN="${HOME}/miniconda3/bin"
-EPIGIT="${HOME}/epi"
-
 export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin" ## <-- clear out initial path!!
 export PATH="/opt/pbs/default/bin:/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${HOME}/.local/bin:${PATH}"
-export PATH=$(deduped "${HOME}/bin:${HOME}/.local/bin:${HOME}/.linuxbrew/bin:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/Tools:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/Scientific:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python2:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python3:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Shell:${TIME_FOR_SCIENCE_DIR}/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Code/Python:${EPIGIT}/users/alexgw:${EPIGIT}/genomics:${MINICONDA_BIN}")   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
+export PATH=$(deduped "${HOME}/bin:${HOME}/.local/bin:${HOME}/.linuxbrew/bin:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python2:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python3:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Shell:${TIME_FOR_SCIENCE_DIR}/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Code/Python:${MINICONDA_BIN}")   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
 #BINFAPPBASE=/data/applications
 #BINFVERSION=2015_06
 # 'export' added to "BINFSWROOT" on August 25, 2016
@@ -361,8 +359,6 @@ export    CVS_RSH="ssh"
 export  CVSEDITOR="emacs -nw"
 export SVN_EDITOR="emacs -nw"
 export     EDITOR="emacs -nw"
-
-export EPI_PHAGEOMANCY_RESOURCE_DIR=${HOME}/PHAGEOMANCY/resources
 
 export HUE_BASE_IP="192.168.1.222"
 
