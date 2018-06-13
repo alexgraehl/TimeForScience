@@ -67,39 +67,39 @@ REVERSE=$(tput smso)
 UNDERLINE=$(tput smul)
 
 if [[ -n "$color_prompt" ]] ; then
-    color_prefix="\033" ## <-- \033 works everywhere. \e works on Linux
-    a_echo_color="${color_prefix}[1;32m" ## green  ## can also be: 1;33 ## was [3;40m before
+    cpre="\033" ## <-- \033 works everywhere. \e works on Linux
+    a_echo_color="${cpre}[1;32m" ## green  ## can also be: 1;33 ## was [3;40m before
 
     # ######################
     # 256 color escapes from https://misc.flogisoft.com/bash/tip_colors_and_formatting
-    a_green82="${color_prefix}[38;5;82m" # intense lime green
-    a_orange136="${color_prefix}[38;5;136m"
-    a_yellow226="${color_prefix}[38;5;226m" # bright yellow
-    a_lavender93="${color_prefix}[38;5;93m"
-    a_red="${color_prefix}[38;5;9m"
-    a_green="${color_prefix}[38;5;10m"
-    a_blue="${color_prefix}[38;5;21m"
-    a_yellow="${color_prefix}[38;5;11m"
-    a_magenta="${color_prefix}[38;5;13m"
+    a_green82="${cpre}[38;5;82m" # intense lime green
+    a_orange136="${cpre}[38;5;136m"
+    a_yellow226="${cpre}[38;5;226m" # bright yellow
+    a_lavender93="${cpre}[38;5;93m"
+    a_red="${cpre}[38;5;9m"
+    a_green="${cpre}[38;5;10m"
+    a_blue="${cpre}[38;5;21m"
+    a_yellow="${cpre}[38;5;11m"
+    a_magenta="${cpre}[38;5;13m"
     # ######################
     
-    a_red_bold="${color_prefix}[1;31m"
-    a_green_bold="${color_prefix}[1;32m"
-    a_yellow_bold="${color_prefix}[1;33m"
-    a_blue_bold="${color_prefix}[1;34m"
-    a_pink_bold="${color_prefix}[1;35m"
-    a_cyan_bold="${color_prefix}[1;36m"
-    a_white_bold="${color_prefix}[1;37m"
-    a_status_color="${color_prefix}[1;33m"
-    a_warning_color="${color_prefix}[1;31m"
+    a_red_bold="${cpre}[1;31m"
+    a_green_bold="${cpre}[1;32m"
+    a_yellow_bold="${cpre}[1;33m"
+    a_blue_bold="${cpre}[1;34m"
+    a_pink_bold="${cpre}[1;35m"
+    a_cyan_bold="${cpre}[1;36m"
+    a_white_bold="${cpre}[1;37m"
+    a_status_color="${cpre}[1;33m"
+    a_warning_color="${cpre}[1;31m"
     a_error_color=${a_red}
     a_ok_color=${a_green82}
     
-    a_banner_color="${color_prefix}[1;45m"
-    a_dirinfo_color="${color_prefix}${POWDER_BLUE}"
-    a_end_color="${color_prefix}[m"
+    a_banner_color="${cpre}[1;45m"
+    a_dirinfo_color="${cpre}${POWDER_BLUE}"
+    a_end_color="${cpre}[m"
 else
-    color_prefix='' # Sadly, we do not have color on this terminal.
+    cpre='' # Sadly, we do not have color on this terminal.
     a_echo_color=''
     a_status_color=''
     a_warning_color=''

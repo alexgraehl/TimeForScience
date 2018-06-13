@@ -634,8 +634,8 @@ alias huh='cat <(declare -f) <(alias)' ## uses bash subshells to show everything
 #alias backon='${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh on'
 
 function n { # show colors
-    # ${color_prefix} is defined in my ~/.bashrc (usually as \033)
-    echo -e  "${color_prefix}[30m black ${color_prefix}[31mred ${color_prefix}[32mgreen ${color_prefix}[33myellow ${color_prefix}[34mblue ${color_prefix}[35mmagenta ${color_prefix}[36mcyan ${color_prefix}[37mwhite"
+    # ${cpre} is defined in my ~/.bashrc (usually as \033)
+    echo -e  "${cpre}[30m black ${cpre}[31mred ${cpre}[32mgreen ${cpre}[33myellow ${cpre}[34mblue ${cpre}[35mmagenta ${cpre}[36mcyan ${cpre}[37mwhite"
 }
 
 ## Maczip zips things on the mac WITHOUT including the dot files and .DS_Stores
