@@ -549,7 +549,7 @@ function scienceup {
 
 function science {
     if [[ -d "${TIME_FOR_SCIENCE_DIR}" ]]; then
-       (echo '[:FYI:] TimeForScience (GitHub):' ; scienceup ${TIME_FOR_SCIENCE_DIR} && sciencecom ${TIME_FOR_SCIENCE_DIR}) ;
+       (echo -e '${POWDER_BLUE}TimeForScience (GitHub):${a_end_color}' ; scienceup ${TIME_FOR_SCIENCE_DIR} && sciencecom ${TIME_FOR_SCIENCE_DIR}) ;
     fi
     CODE_ZERO="${HOME}/workspace/0_CODE"
     if [[ -d "${CODE_ZERO}" ]]; then
