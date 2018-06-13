@@ -562,11 +562,11 @@ function science {
     CODE_ZERO="${HOME}/workspace/0_CODE"
     if [[ -d "${CODE_ZERO}" ]]; then
 
-	if [[ ! "${HOSTNAME}" =~ resco.* ]]; then
-	    echo "hostname has resco"
+	if [[ ${HOSTNAME} =~ resco.* ]]; then
+	    echo "hostname, which is ${HOSTNAME} has resco"
 	    Z_REMOTE=NO_REMOTE
 	else
-	    echo "hostname doesnot"
+	    echo "hostname, which is ${HOSTNAME} DOES NOT resco"
 	    Z_REMOTE=YES
 	fi
 	(echo -e "${REVERSE}WORKSPACE:${a_end_color}"; scienceup "${CODE_ZERO}" "${Z_REMOTE}" && sciencecom "${CODE_ZERO}" "${Z_REMOTE}")
