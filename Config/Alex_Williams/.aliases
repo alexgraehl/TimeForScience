@@ -563,8 +563,10 @@ function science {
     if [[ -d "${CODE_ZERO}" ]]; then
 
 	if [[ ! "${HOSTNAME}" =~ resco* ]]; then
+	    echo "hostname has resco"
 	    Z_REMOTE=NO_REMOTE
 	else
+	    echo "hostname doesnot"
 	    Z_REMOTE=YES
 	fi
 	(echo -e "${REVERSE}WORKSPACE:${a_end_color}"; scienceup "${CODE_ZERO}" "${Z_REMOTE}" && sciencecom "${CODE_ZERO}" "${Z_REMOTE}")
@@ -1065,7 +1067,6 @@ function j1 {
     fi
     # show jobs
     # If you want to colorize them, see: which qstats.sh
-    echo -e "[:FYI:] Queue documentation is here: https://sites.google.com/a/gene.com/rescomp/guides/user-guide#TOC-Checking-the-Status-of-a-Job" >&2 # print to stderr
     ARRAY_JOB_TEXT=$(bjobs -A -u "${USER}" 2>&1) # Captures STDERR+STDOUT
     if [[ "${ARRAY_JOB_TEXT}" =~ .*array\ is\ not\ found.* ]]; then
 	echo -e "${a_blue_bold}(No active array jobs.)${a_end_color}"
