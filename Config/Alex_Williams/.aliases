@@ -552,7 +552,7 @@ function science {
        (echo -e "${REVERSE}TimeForScience (GitHub):${a_end_color}" ; scienceup ${TIME_FOR_SCIENCE_DIR} && sciencecom ${TIME_FOR_SCIENCE_DIR}) ;
     fi
     CODE_ZERO="${HOME}/workspace/0_CODE"
-    if [[ -d "${CODE_ZERO}" ]]; then
+    if [[ -d "${CODE_ZERO}" && ! $"{HOSTNAME}" =~ resc* ]]; then
        (echo -e "${REVERSE}WORKSPACE:${a_end_color}" ; scienceup ${CODE_ZERO} && sciencecom ${CODE_ZERO}) ;
     fi
 }
