@@ -1126,14 +1126,15 @@ function bsubtemp {
     if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] Please specify a job name!"; return 1; fi
     JJJ=${1/ /_} # spaces --> '_'
     echo -e "#!/bin/bash"
-    echo -e "#BSUB -q medium                     # Short is 2 hours, medium is 24 hours"
-    echo -e "#BSUB -J '${JJJ}'                          "
-    echo -e "#BSUB -R 'rusage[mem=1]'            # In GB"
-    echo -e "#BSUB -R 'span[hosts=1]'            # No splitting across hosts"
-    echo -e "#BSUB -n 1                          # N threads"
-    echo -e "#BSUB -o ${JJJ}-%J-%I.bsub.log.out  "
-    echo -e "#BSUB -e ${JJJ}-%J-%I.bsub.log.err  "
-    echo -e "#BSUB -L /bin/bash                  # Ensure that we are using BASH"
+    echo -e "#BSUB -L /bin/bash                # Ensure that we are using BASH"
+    echo -e "#BSUB -R 'span[hosts=1]'          # No splitting across hosts"
+    echo -e "#BSUB -q medium                   # Short is 2 hours, medium is 24 hours"
+    echo -e "#BSUB -R 'rusage[mem=1]'          # In GB"
+    echo -e "#BSUB -n 1                        # N threads"
+    echo -e "#BSUB -J ${JJJ}"
+    echo -e "#BSUB -o ${JJJ}-%J-%I.bsub.log.out"
+    echo -e "#BSUB -e ${JJJ}-%J-%I.bsub.log.err"
+
     echo ''
 
 }
