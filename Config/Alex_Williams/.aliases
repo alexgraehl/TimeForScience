@@ -553,7 +553,7 @@ function science {
     fi
     CODE_ZERO="${HOME}/workspace/0_CODE"
     if [[ -d "${CODE_ZERO}" ]]; then
-       (echo "${REVERSE}WORKSPACE:{a_end_color}" ; scienceup ${CODE_ZERO} && sciencecom ${CODE_ZERO}) ;
+       (echo "${REVERSE}WORKSPACE:${a_end_color}" ; scienceup ${CODE_ZERO} && sciencecom ${CODE_ZERO}) ;
     fi
 }
 
