@@ -1123,6 +1123,7 @@ function bsubtemp {
     echo "#BSUB -n 1                          # N threads"
     echo "#BSUB -o ${JJJ}-%J-%I.bsub.log.out  "
     echo "#BSUB -e ${JJJ}-%J-%I.bsub.log.err  "
+    echo "#BSUB -L /bin/bash                  # Ensure that we are using BASH"
     echo ''
 
 }
