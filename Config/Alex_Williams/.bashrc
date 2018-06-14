@@ -192,6 +192,7 @@ export LANG="en_US.UTF-8"    # Set the LANG to UTF-8
 #export LANG="en_US.UTF-8" &&  emacs --no-splash -nw ~/Downloads/XDownloads/unicode.txt
 
 stty -ixon  # Disable the useless START/STOP output control (the one that pauses input is you press 'Ctrl-S' and resumes is you press 'Ctrl-Q')
+set   -o pipefail # Report a problem that occurs ANYWHERE in a piped command.
 shopt -s globstar # With globstar set (bash 4.0+), bash recurses all the directories. In other words, enables '**'
 set   -o ignoreeof  # Prevent Ctrl-D from exiting! Still exits if you press it 10 times.
 shopt -s checkwinsize # Check the window size after each command and, if necessary, update the values of LINES and COLUMNS.
@@ -361,7 +362,6 @@ export SVN_EDITOR="emacs -nw"
 export     EDITOR="emacs -nw"
 
 export HUE_BASE_IP="192.168.1.222"
-
 # Keybindings: Add IJKL navigation to supplement/replace the arrow keys
 bind "\M-J:backward-word"
 bind "\M-L:forward-word"
