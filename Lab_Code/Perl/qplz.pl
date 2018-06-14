@@ -419,17 +419,14 @@ sub craftQsubCommand($$$$$) {
 # ==1==
 sub main() { # Main program
 	my ($decimalPlaces) = 4; # How many decimal places to print, by default
-
 	(scalar(@ARGV) >= 1) or quitWithUsageError("You need to specify some arguemnts, like a command to run. You can specify EITHER a simple command (like 'qplz my_command 123') or a script name (like 'qplz myscript.sh') in order to submit a request to the queue.");
 
 	my %copt = ();  # Command OPTions. Hash of final values
 	foreach my $opt (@RECOGNIZED_PBS_OPTIONS) { $copt{$opt} = undef; }
-
 	my ($pbs_submit_file) = undef;
 	my ($shouldOverridePbsDirectives) = 0;
 	my ($shouldBackgroundSubmit) = 0; # default: CONSTANTLY MONITOR the job
 	#$Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
-
 	# ============= FIGURE OUT WHERE THE COMMANDS ACTUALLY START =====================
 	# We need to figure out which arguments are to qplz, and which are to the actual command.
 	# Example:   qplz   -m 10  mycommand -m 10
@@ -459,18 +456,15 @@ sub main() { # Main program
 			#print "did not recognize $item...\n";
 			last; # last = "break" out of the loop!
 		}
-		# nothing here
 	}
 	#print "index is $index, which gets us to element:  <$ARGV[$index]> \n";
 	my @qplzOptions      = @ARGV[0..($index-1)];
 	my @remainingCommand = @ARGV[$index..(scalar(@ARGV)-1)];
-
 	#print join(" ::: ", @qplzOptions);
 	#print "\n";
 	#print join(" ::: ", @remainingCommand);
 	#print "\n";
 	# ================= DONE FIGURING OUT WHERE THE QPLZ arguments end and the COMMAND begins ===========
-
 	Getopt::Long::GetOptionsFromArray(\@qplzOptions
 					  , "h|help|man"      => sub { printUsageAndQuit(); }
 					  , "ncpus|ncpu|c=i"  => \$copt{ncpus}
@@ -482,9 +476,7 @@ sub main() { # Main program
 			   ) or printUsageAndQuit();
 
 	((scalar(@remainingCommand) >= 1) or defined($pbs_submit_file)) or quitWithUsageError("You need to specify EITHER a simple command (like 'qplz my_command 123') or a script name (like 'qplz myscript.sh') in order to submit a request to the queue.");
-
 	((scalar(@remainingCommand) == 0) or $remainingCommand[0] !~ m/^[-]/) or quitWithUsageError("Seems like a problem occurred: it looks like you supplied an UNRECOGNIZED command line argument to qplz...\n...specifically, this one: \"$remainingCommand[0]\".\nYou should check the usage to see if that is really a valid command.");
-
 	my $grp = getOurQueueGroup();
 	my %optIsAlreadyInFile = (); # remember which $PBS directives were defined in the script
 	foreach my $opt (@RECOGNIZED_PBS_OPTIONS) { $optIsAlreadyInFile{opt} = 0; }
