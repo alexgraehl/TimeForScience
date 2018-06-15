@@ -1298,11 +1298,17 @@ function bsubtemp {
 #
 
 
-function qq {
+function quick {
     cmd=$1
-    ttt=tempfile.tmp
-    bsubtemp QUICK    >| ${ttt}
-    echo -e ""       >> ${ttt}
-    echo -e "${cmd}" >> ${ttt} 
-    echo "bsub -K   -q 'medium' < ${ttt}"
+    ttt=$(mktemp --suffix=".${USER}.bsub.sh")
+    jobname="Q_${USER}_$(date +%s)"
+    echo -e "Submitting with quick temp file ${a_cyan}${ttt}"
+    echo -e "${a_green}Running the job here locally... blocking until it finishes!"
+    echo -e "${a_end_color}Command to run:  ${a_cyan}${cmd}\n${a_end_color}"
+    bsubtemp "${jobname}"    >| ${ttt}
+    echo -e ""               >> ${ttt}
+    echo -e "${cmd}"         >> ${ttt}
+    echo -e ""               >> ${ttt}
+    bsub -K   -q 'short' < ${ttt}
+    echo -e "${a_green}[DONE]${a_end_color}"
 }

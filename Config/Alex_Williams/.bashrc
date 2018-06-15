@@ -76,11 +76,15 @@ if [[ -n "$color_prompt" ]] ; then
     a_orange136="${cpre}[38;5;136m"
     a_yellow226="${cpre}[38;5;226m" # bright yellow
     a_lavender93="${cpre}[38;5;93m"
-    a_red="${cpre}[38;5;9m"
-    a_green="${cpre}[38;5;10m"
-    a_blue="${cpre}[38;5;21m"
-    a_yellow="${cpre}[38;5;11m"
-    a_magenta="${cpre}[38;5;13m"
+    a_red="${cpre}[31m"
+    a_green="${cpre}[32m"
+    a_yellow="${cpre}[33m"
+    a_blue="${cpre}[34m"
+    a_magenta="${cpre}[35m"
+    a_cyan="${cpre}[36m"
+    a_lightgray="${cpre}[37m"
+    a_darkgray="${cpre}[38m"
+
     # ######################
     
     a_red_bold="${cpre}[1;31m"
