@@ -183,6 +183,7 @@ alias cheat="echo \
 \">> R: Convert columns of a dataframe to factors (from char): fact.df   <- char.df; fact.df[] <- lapply(char.df[], as.factor) \" ${NL}\
 \">> R: Prevent blank page in PDF: pdf(..., onefile=FALSE) \" ${NL}\
 \">> R: Aggregate rows / average rows with same name (mean): mAGG <- t(sapply(by(MAT,rownames(MAT),colMeans),identity)) \" ${NL}\
+\">> R: Aggregate rows in a tibble: aggtib <- as_tibble(aggregate(mytib$VALUE, by=list(pull(mytib, \\\"SAMPLENAME\\\", FUN=max) \" ${NL}\
 \">> R: Read bzip/gz file:  x <- read.table(bzfile(\\\"name.bz2\\\") or gzfile(...) \" ${NL}\
 \">> R: Read from stdin:    x <- read.table(pipe(\\\"cat something name.bz2 | bunzip2\\\") \" ${NL}\
 \">> R: Pick CRAN mirror, no GUI popup (install.packages): chooseCRANmirror(graphics=F) \" ${NL}\
@@ -225,6 +226,7 @@ alias cheat="echo \
 \">> Shell/bash: Rename files to a LIST of new names in a file: while read -u 9 SRC; do read -u 8 DEST; echo mv \\\"\\\$SRC\\\" \\\"\\\$DEST\\\"; done 9<<<\\\"\\\$(ls -1 * | grep -v NEW_FILENAME_LIST.txt)\\\" 8< NEW_FILENAME_LIST.txt \" ${NL}\
 \">> Shell/bash: Check to see if dir is empty if [[ \\\"\\\$(ls -A $OUTDIR)\\\" ]]; then echo \\\"ERR: Output dir not empty!\\\"; exit 2; fi \" ${NL}\
 \">> MD5 verify: md5sum -c md5*.txt. Checksum must be 1st col, then 2 spaces, then filename. If checksum is 2nd: cat md5*.txt | awk '{print \\\$2\\\"  \\\"\\\$1}' | md5sum -c \" ${NL}\
+\">> MD5 on multiple files: find . -type f -exec md5 {} \; > list.txt    \" ${NL}\
 \">> HEX HEXDUMP: View individual bytes of a file in hex form: hexdump -C FILENAME \" ${NL}\
 \">> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
 \">> GIT do not download huge LFS files when git lfs is enabled: GIT_LFS_SKIP_SMUDGE=1 git clone YOUR_REPO \" ${NL}\
