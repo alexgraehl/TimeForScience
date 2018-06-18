@@ -1057,12 +1057,25 @@ function fasta2single_line_per_seq {
     zcat -f "$1" | awk '!/^>/{printf "%s", $0; n="\n"} /^>/{print n $0; n=""} END {printf"%s",n}'
 }
 
+function agw_cmd_exists() { # Check if a command exists
+    type "$1" &> /dev/null
+    # Alternative approach: command -v "scutil" > /dev/null # <-- Note: we check the exit code from this ("$?") below
+    # And then check the exit code:   HAS_PROGRAM=$((1-$?)) # $? = 0 means the above command SUCCEEDED
+    # or try: if [[ -n `which exa 2> /dev/null` ]] ... # Usage example: if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then ...
+}
+
 function j1 {
     if ! agw_cmd_exists "bsub"; then
 	echo -e "[:ERR:] This is NOT a machine on the cluster with the BSUB queue. Connect to the cluster machine first!"; return 1;
     fi
-    # show jobs
-    # If you want to colorize them, see: which qstats.sh
+    : "${cpre}=\033}" ## <-- Color prefix, if not already set
+    : "${a_end_color:=${cpre}[m}"
+    : "${a_ok_color:="$(tput setaf 2)"}"  # Green, if not already set
+    : "${a_err_color:="$(tput setaf 1)"}" # Red, if not already set
+    : "${a_orange136}:=${cpre}[38;5;136m}"
+    : "${a_yellow226}:=${cpre}[38;5;226m}"
+    : "${a_blue_bold}:=${cpre}[1;34m}"
+    : "${a_red_bold}:=${cpre}[1;31m}"
     ARRAY_JOB_TEXT=$(bjobs -A -u "${USER}" 2>&1) # Captures STDERR+STDOUT
     if [[ "${ARRAY_JOB_TEXT}" =~ .*array\ is\ not\ found.* ]]; then
 	echo -e "${a_blue_bold}(No active array jobs.)${a_end_color}"
@@ -1080,7 +1093,7 @@ function j1 {
     JOB_TEXT=$(bjobs -a -o "jobid:8 stat:4 job_name:48 user:4 queue:3 cpu_used:6 max_mem:3 exec_host:18 submit_time:12 finish_time:12 delimiter='|'" 2>&1)
     JOB_TEXT=$(echo -e "${JOB_TEXT}" | perl -pe "s/^(.*[|]RUN.*)\$/${a_ok_color}\$1${a_end_color}/g")
     JOB_TEXT=$(echo -e "${JOB_TEXT}" | perl -pe "s/^(.*[|]DONE.*)\$/${a_orange136}\$1${a_end_color}/g")
-    JOB_TEXT=$(echo -e "${JOB_TEXT}" | perl -pe "s/^(.*[|]EXIT.*)\$/${a_error_color}\$1${a_end_color}/g")
+    JOB_TEXT=$(echo -e "${JOB_TEXT}" | perl -pe "s/^(.*[|]EXIT.*)\$/${a_err_color}\$1${a_end_color}/g")
     JOB_TEXT=$(echo -e "${JOB_TEXT}" | perl -pe "s/^(.*[|]PEN.*)\$/${a_yellow226}\$1${a_end_color}/g") # pending
     echo -e "${JOB_TEXT}"
     # -a is "show recently-completed jobs!"
@@ -1093,7 +1106,6 @@ function j1 {
 	echo -e "[:ERR:]: [End of list]"
     fi
 }
-
 
 function jj {
     j1 | less -S --RAW-CONTROL-CHARS -f --IGNORE-CASE

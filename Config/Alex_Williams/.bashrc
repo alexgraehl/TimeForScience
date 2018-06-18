@@ -23,6 +23,25 @@ function agw_cmd_exists() { # Check if a command exists
     # or try: if [[ -n `which exa 2> /dev/null` ]] ... # Usage example: if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then ...
 }
 
+function deduped() { # input: one string to de-dupe. Usage: PATH=$(deduped $PATH). May break on things with spaces.
+    local X="$1"
+    local new=""
+    local old="$X:"
+    if [ -n "$X" ]; then
+	while [ -n "$old" ]; do
+	    x=${old%%:*}
+	    case "$new": in
+		*:"$x":*) ;; # <-- entry EXISTS already
+		*)new="$new:$x";; # Does not exist already
+	    esac
+	    old=${old#*:}
+	done
+	new=${new#:}
+    fi
+    new=$(echo "$new" | perl -pe 's/^[:+]//' | perl -pe 's/[:]+/:/g' | perl -pe 's/[:+]\$//') # remove leading/trailing ':'
+    # Remove any leading or trailing ':' from the path
+    echo "$new"
+}
 
 # If we're in TMUX, then change the screen type to "screen-256color" and export the TERM
 export TERM=xterm-256color # override the defaults and always assume 256 colors
@@ -67,7 +86,7 @@ REVERSE=$(tput smso)
 UNDERLINE=$(tput smul)
 
 if [[ -n "$color_prompt" ]] ; then
-    cpre="\033" ## <-- \033 works everywhere. \e works on Linux
+    cpre="\033" ## <-- Color prefix. \033 works everywhere. \e works on Linux
     a_echo_color="${cpre}[1;32m" ## green  ## can also be: 1;33 ## was [3;40m before
 
     # ######################
@@ -96,7 +115,7 @@ if [[ -n "$color_prompt" ]] ; then
     a_white_bold="${cpre}[1;37m"
     a_status_color="${cpre}[1;33m"
     a_warning_color="${cpre}[1;31m"
-    a_error_color=${a_red}
+    a_err_color=${a_red}
     a_ok_color=${a_green82}
     
     a_banner_color="${cpre}[1;45m"
@@ -117,7 +136,6 @@ if [[ -d "${HOME}/work" ]]; then
 elif [[ -d "/work" ]]; then
     export BINF_CORE_WORK_DIR="/work"  # <-- set BINF_CORE work directory
 else
-    #echo "[WARNING in .bashrc: WORK directory not found]"
     export BINF_CORE_WORK_DIR="NO_BIOINFORMATICS_CORE_WORK_DIR_FOUND"
 fi
 
@@ -146,25 +164,6 @@ elif [[ -f ${BINF_CORE_WORK_DIR}/Code/TimeForScience/Config/Alex_Williams/.alias
     source ${BINF_CORE_WORK_DIR}/Code/TimeForScience/Config/Alex_Williams/.aliases
 fi
 
-function deduped() { # input: one string to de-dupe. Usage: PATH=$(deduped $PATH). May break on things with spaces.
-    local X="$1"
-    local new=""
-    local old="$X:"
-    if [ -n "$X" ]; then
-	while [ -n "$old" ]; do
-	    x=${old%%:*}
-	    case "$new": in
-		*:"$x":*) ;; # <-- entry EXISTS already
-		*)new="$new:$x";; # Does not exist already
-	    esac
-	    old=${old#*:}
-	done
-	new=${new#:}
-    fi
-    new=$(echo "$new" | perl -pe 's/^[:+]//' | perl -pe 's/[:]+/:/g' | perl -pe 's/[:+]\$//') # remove leading/trailing ':'
-    # Remove any leading or trailing ':' from the path
-    echo "$new"
-}
 
 # ============================= PATH STUFF ============================
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/
@@ -173,28 +172,16 @@ MINICONDA_BIN="${HOME}/miniconda3/bin"
 export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/X11/bin:/sw/bin" ## <-- clear out initial path!!
 export PATH="/opt/pbs/default/bin:/usr/local/bin:${BINF_CORE_WORK_DIR}/Apps/bin:/usr/local/sbin:/opt/bin:/projects/bin:${HOME}/.local/bin:${PATH}"
 export PATH=$(deduped "${HOME}/bin:${HOME}/.local/bin:${HOME}/.linuxbrew/bin:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python2:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python3:${TIME_FOR_SCIENCE_DIR}/Lab_Code/Shell:${TIME_FOR_SCIENCE_DIR}/Lab_Code/R:${PATH}:${BINF_CORE_WORK_DIR}/Code/Python:${MINICONDA_BIN}")   # <-- PRIORITY: programs in your own home directory come FIRST, then System-wide "Science" bin, then other stuff.
-#BINFAPPBASE=/data/applications
-#BINFVERSION=2015_06
-# 'export' added to "BINFSWROOT" on August 25, 2016
 export BINFSWROOT="" #$(deduped $BINFAPPBASE/$BINFVERSION)
-#export BINFBINROOT=$(deduped $BINFSWROOT/bin)
 export PERL5LIB=$(deduped $BINFSWROOT/libperl/lib/perl5:${HOME}/.linuxbrew/lib/perl5/site_perl:$PERL5LIB)
 export PERLLIB=$PERL5LIB
-# PYTHONPATH: ------- UPDATE: Added August 25, 2016
-#export BINFPYROOT=$(deduped $BINFSWROOT/libpython2.7)
-#export PYTHONPATH=$(deduped $BINFPYROOT:$BINFPYROOT/lib64/python2.7/site-packages:$BINFPYROOT/lib/python2.7/site-packages:${HOME}/epi/users/alexgw:$PYTHONPATH)
-#$BINFPYROOT:$BINFPYROOT/dist-packages:$BINFPYROOT/lib64/python2.7/site-packages:$PYTHONPATH)
 #export R_LIBS=$(deduped $BINFSWROOT/libr)
 export PATH=$(deduped $PATH) #:$BINFPYROOT/bin)
 export LD_LIBRARY_PATH=$(deduped "${HOME}/.linuxbrew/lib:$LD_LIBRARY_PATH")
 export LIBRARY_PATH=$LD_LIBRARY_PATH
 #export CPATH=$(deduped $BINFSWROOT/include:$CPATH)
-
 export CXX=/usr/bin/g++ # The location of the c++ compiler. NOT "cpp"--that is the C preprocessor.
 export LANG="en_US.UTF-8"    # Set the LANG to UTF-8
-#export LANG=C               # Set the LANG to C. Speeds some command line tools up, but *BREAKS* some UTF-8 stuff, like emacs!
-#export LANG="en_US.UTF-8" &&  emacs --no-splash -nw ~/Downloads/XDownloads/unicode.txt
-
 stty -ixon  # Disable the useless START/STOP output control (the one that pauses input is you press 'Ctrl-S' and resumes is you press 'Ctrl-Q')
 set   -o pipefail # Report a problem that occurs ANYWHERE in a piped command.
 shopt -s globstar # With globstar set (bash 4.0+), bash recurses all the directories. In other words, enables '**'
@@ -245,8 +232,6 @@ print_if_nonzero_exit_code() { # Example of using this in your prompt: PS1='$(hi
 parse_git_branch() { # Shows the current 'git' branch if you're in a git-controlled directory
      git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/[\1]/'
 }
-
-
 
 #RIGNODE_HOSTNAME=${RIGNODE_HOSTNAME:-no_rignode_hostname} # bash, assign a DEFAULT value if the argument is not defined
 
