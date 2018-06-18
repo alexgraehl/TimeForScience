@@ -546,7 +546,7 @@ function scienceup {
     git --git-dir="$1/.git" --work-tree="$1" commit -a -m "Committing any local changes from ${USER} before sync with remote server." ;
     if [[ "${SHOULD_REMOTE}" == 1 ]]; then
 	echo -e "[:FYI:] Pulling GIT changes from remote master."
-	echo "SHould remote --> ${SHOULD_REMOTE}"
+	echo "SHould remote --> YES PLEASE ${SHOULD_REMOTE}"
 	git --git-dir="$1/.git" --work-tree="$1" pull ;
     fi
 }
