@@ -529,9 +529,9 @@ function sciencecom {
     if [[ ! -d "$1/.git" ]] ; then echo -e "[:HEY:] No $1 git repository exists on this machine."; return 1; fi
     if [[ "${2}" == "NO_REMOTE" ]]; then SHOULD_REMOTE=0; else SHOULD_REMOTE=1; fi
     echo -e "[:FYI:] Committing GIT changes locally."
-    #cd "$1" ; git commit -a -m "Committing changes from ${USER}" ; git push origin master ;
     git --git-dir="$1/.git" --work-tree="$1" commit -a -m "Committing changes from ${USER}"
     if [[ "${SHOULD_REMOTE}" == 1 ]]; then
+	echo "SHould remote COMMIT --> YES PLEASE ${SHOULD_REMOTE}"
 	echo -e "Pushing GIT changes to remote master."
 	git --git-dir="$1/.git" --work-tree="$1" push origin master ;
     fi
