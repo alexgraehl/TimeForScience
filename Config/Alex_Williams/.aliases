@@ -525,36 +525,33 @@ alias gitdiff="git difftool"
 function sciencecom {
     # If you want to NOT interact remotely (for example, this is the 'most upstream' repo with nothing to push to)
     # then pass in NO_REMOTE as argument 2.
-    if [[ "${2}" == "NO_REMOTE" ]]; then SHOULD_REMOTE=0; else SHOULD_REMOTE=1; fi
-    if [[ -d "$1/.git" ]] ; then
-	echo -e "[:FYI:] Committing GIT changes locally."
-	#cd "$1" ; git commit -a -m "Committing changes from ${USER}" ; git push origin master ;
-	git --git-dir="$1/.git" --work-tree="$1" commit -a -m "Committing changes from ${USER}"
-	if [[ "${SHOULD_REMOTE}" == 1 ]]; then
-	    echo -e "Pushing GIT changes to remote master."
-	    git --git-dir="$1/.git" --work-tree="$1" push origin master ;
-	fi
-    else
+    if [[ ! -d "$1/.git" ]] ; then
 	echo -e "[:HEY:] No $1 git repository exists on this machine."
 	return 1;
+    fi
+    if [[ "${2}" == "NO_REMOTE" ]]; then SHOULD_REMOTE=0; else SHOULD_REMOTE=1; fi
+    echo -e "[:FYI:] Committing GIT changes locally."
+    #cd "$1" ; git commit -a -m "Committing changes from ${USER}" ; git push origin master ;
+    git --git-dir="$1/.git" --work-tree="$1" commit -a -m "Committing changes from ${USER}"
+    if [[ "${SHOULD_REMOTE}" == 1 ]]; then
+	echo -e "Pushing GIT changes to remote master."
+	git --git-dir="$1/.git" --work-tree="$1" push origin master ;
     fi
 }
 
 function scienceup {
     # If you want to NOT interact remotely (for example, this is the 'most upstream' repo with nothing to pull from)
     # then pass in NO_REMOTE as argument 2.
-    if [[ "${2}" == "NO_REMOTE" ]]; then SHOULD_REMOTE=0; else SHOULD_REMOTE=1; fi
-    if [[ -d "$1/.git" ]] ; then
-	echo -e "[:FYI:] Committing any local GIT changes before syncing with remote master."
-	git --git-dir="$1/.git" --work-tree="$1" commit -a -m "Committing any local changes from ${USER} before sync with remote server." ;
-	if [[ "${SHOULD_REMOTE}" == 1 ]]; then
-	    echo -e "[:FYI:] Pulling GIT changes from remote master."
-	    git --git-dir="$1/.git" --work-tree="$1" pull ;
-	fi
-	#cd "$1" ; git --git-dir "$1" commit -a -m "Committing any local changes from ${USER} before sync with remote server." ; git --git-dir "$1" pull ;
-    else
+    if [[ ! -d "$1/.git" ]] ; then
 	echo -e "[:HEY:] No $1 git repository exists on this machine."
 	return 1;
+    fi
+    if [[ "${2}" == "NO_REMOTE" ]]; then SHOULD_REMOTE=0; else SHOULD_REMOTE=1; fi
+    echo -e "[:FYI:] Committing any local GIT changes before syncing with remote master."
+    git --git-dir="$1/.git" --work-tree="$1" commit -a -m "Committing any local changes from ${USER} before sync with remote server." ;
+    if [[ "${SHOULD_REMOTE}" == 1 ]]; then
+	echo -e "[:FYI:] Pulling GIT changes from remote master."
+	git --git-dir="$1/.git" --work-tree="$1" pull ;
     fi
 }
 
@@ -564,7 +561,8 @@ function science {
     fi
     CODE_ZERO="${HOME}/workspace/0_CODE"
     if [[ -d "${CODE_ZERO}" ]]; then
-	if [[ "${HOSTNAME}" =~ resco.* ]]; then Z_REMOTE=NO_REMOTE; else Z_REMOTE=YES; fi
+	#if [[ "${HOSTNAME}" =~ resco.* ]]; then Z_REMOTE=NO_REMOTE; else Z_REMOTE=YES; fi
+	Z_REMOTE=YES
 	(echo -e "${REVERSE}WORKSPACE:${a_end_color}"; scienceup "${CODE_ZERO}" "${Z_REMOTE}" && sciencecom "${CODE_ZERO}" "${Z_REMOTE}")
     fi
 }
