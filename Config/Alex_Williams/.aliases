@@ -63,8 +63,8 @@ fi
 
 
 function agw_cmd_exists() { # Check if a command exists
-    command -v "$1" &>/dev/null #|| { echo >&2 "I require foo but it's not installed.  Aborting."; exit 1; }
-    #type "$1" &> /dev/null
+    #command -v "$1" &>/dev/null #|| { echo >&2 "I require foo but it's not installed.  Aborting."; exit 1; }
+    type "$1" &> /dev/null
     # Alternative approach: command -v "scutil" > /dev/null # <-- Note: we check the exit code from this ("$?") below
     # And then check the exit code:   HAS_PROGRAM=$((1-$?)) # $? = 0 means the above command SUCCEEDED
     # or try: if [[ -n `which exa 2> /dev/null` ]] ... # Usage example: if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then ...
