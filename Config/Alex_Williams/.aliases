@@ -183,6 +183,7 @@ alias cheat="echo \
 \">> R: Convert columns of a dataframe to factors (from char): fact.df   <- char.df; fact.df[] <- lapply(char.df[], as.factor) \" ${NL}\
 \">> R: Prevent blank page in PDF: pdf(..., onefile=FALSE) \" ${NL}\
 \">> R: Aggregate rows / average rows with same name (mean): mAGG <- t(sapply(by(MAT,rownames(MAT),colMeans),identity)) \" ${NL}\
+\">> R: Aggregate rows in a tibble: aggtib <- as_tibble(aggregate(mytib$VALUE, by=list(pull(mytib, \\\"SAMPLENAME\\\", FUN=max) \" ${NL}\
 \">> R: Read bzip/gz file:  x <- read.table(bzfile(\\\"name.bz2\\\") or gzfile(...) \" ${NL}\
 \">> R: Read from stdin:    x <- read.table(pipe(\\\"cat something name.bz2 | bunzip2\\\") \" ${NL}\
 \">> R: Pick CRAN mirror, no GUI popup (install.packages): chooseCRANmirror(graphics=F) \" ${NL}\
