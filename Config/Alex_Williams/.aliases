@@ -562,16 +562,17 @@ function scienceup {
     fi
 }
 
+function scienceboth {
+    if [[ -d "$1" ]]; then
+	echo -e "${REVERSE}$1:${a_end_color}"
+       scienceup "$@" && sciencecom "$@"
+    fi
+
+}
 function science {
-    if [[ -d "${TIME_FOR_SCIENCE_DIR}" ]]; then
-       (echo -e "${REVERSE}TimeForScience (GitHub):${a_end_color}" ; scienceup ${TIME_FOR_SCIENCE_DIR} && sciencecom ${TIME_FOR_SCIENCE_DIR}) ;
-    fi
-    CODE_ZERO="${HOME}/workspace/git_0_CODE"
-    if [[ -d "${CODE_ZERO}" ]]; then
-	#if [[ "${HOSTNAME}" =~ resco.* ]]; then Z_REMOTE=NO_REMOTE; else Z_REMOTE=YES; fi
-	Z_REMOTE=YES
-	(echo -e "${REVERSE}WORKSPACE:${a_end_color}"; scienceup "${CODE_ZERO}" "${Z_REMOTE}" && sciencecom "${CODE_ZERO}" "${Z_REMOTE}")
-    fi
+    scienceboth "${TIME_FOR_SCIENCE_DIR}"
+    scienceboth "${HOME}/workspace/git_0_CODE"
+    scienceboth "${HOME}/workspace/0_CODE"
 }
 
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
