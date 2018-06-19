@@ -5,8 +5,8 @@
 ## Originally written in 2002 by Josh Stuart in the lab of Stuart Kim, Stanford University.
 ## Support for MEDIAN calculation added by Alex Williams, 2007
 
-use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libfile.pl";
-use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstats.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl"; require "libfile.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl"; require "libstats.pl";
 
 use strict;
 use warnings;

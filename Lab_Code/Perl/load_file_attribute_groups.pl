@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "bio_load_settings.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl"; require "bio_load_settings.pl";
 
 #-------------------------------------------
 # load_file_attribute_groups

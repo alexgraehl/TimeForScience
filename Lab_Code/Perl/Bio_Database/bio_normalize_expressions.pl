@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #usage: normalize_expressions.pl
 
-use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "format_number.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl"; require "format_number.pl";
 
 #---------------------------------------------------------------------------------------------------------------------------
 # input: 

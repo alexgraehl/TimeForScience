@@ -9,7 +9,7 @@
 ##############################################################################
 
 use lib "$ENV{MYPERLDIR}/lib";
-use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries";
+use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl";
 require "libfile.pl";
 require "libset.pl";
 

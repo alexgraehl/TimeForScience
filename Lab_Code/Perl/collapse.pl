@@ -67,7 +67,7 @@ sub main() {
 		my $list = $data{$key};
 		if (defined($function)) {
 			# Only if 'function' is defined to we need to handle vec_eval / libstats.pl
-			use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "libstats.pl";
+			use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl"; require "libstats.pl";
 			my @tuple;
 			foreach my $field (@{$list}) {
 				my @vector = split($delim_out, $field);

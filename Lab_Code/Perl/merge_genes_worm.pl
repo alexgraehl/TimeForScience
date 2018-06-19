@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "worm.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl"; require "worm.pl";
 use strict;
 
 my $error_log_file = "errors_merge_genes.log";

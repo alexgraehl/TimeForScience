@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 use strict;
-use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/LabLibraries"; require "worm.pl";
+use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl"; require "worm.pl";
 
 my $error_log_file = "errors_merge_synonyms.log";
 
