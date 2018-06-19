@@ -32,25 +32,41 @@ def argErrorAndExit(msg="(No additional information given)"):
     raise SystemExit("[ERROR] in arguments to this script: " + msg)
 
 def main():
+    PAIR_PLACEHOLDER_SYMBOL='@@@'
     parser = argparse.ArgumentParser(description="%(prog)s: fastq filterer in python 3.",
                                      epilog='''Example usage: python %(prog)s (examples go here)''',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("--outpattern", "-o",  dest="outpattern", type=str, default=None, metavar="PATTERN", required=True, help="Output pattern. Should have a '#' somewhere, which will become a 1 or 2 in the output.")
+    parser.add_argument("--outpattern", "-o",  dest="outpattern", type=str, default=None, metavar="PATTERN", required=False, help="Output pattern. Should have a '@@@' somewhere, which will become a 1 or 2 in the output.")
+    parser.add_argument("--out1",  dest="out1", type=str, default=None, metavar="FILENAME", required=False, help="Output filename for fq1. Mutually exclusive with 'outpattern' above.")
+    parser.add_argument("--out2",  dest="out2", type=str, default=None, metavar="FILENAME", required=False, help="Output filename for fq2. Mutually exclusive with 'outpattern' above.")
     #parser.add_argument("-N", "--name",  dest="username", type=str,             default="Dave",               required=False, help="specify a username to run as")
     #parser.add_argument("-p", "--port",  dest="portnum",  type=int,             default=80,                                   help="port number to run on")
     parser.add_argument("-v", "--verbose", dest="verbose",  action="store_true", help="Print verbose status messages to stderr")
     parser.add_argument("remainder", nargs=argparse.REMAINDER) # get the REMAINING un-parsed arguments (for example, a bunch of filenames)
     args = parser.parse_args()
 
-    PAIR_PLACEHOLDER_SYMBOL='@@@'
-    if args.outpattern is None or not re.search(PAIR_PLACEHOLDER_SYMBOL, args.outpattern):
-        print("ARGUMENT ERROR: You must specify an OUTPUT PATTERN with a " + PAIR_PLACEHOLDER_SYMBOL + " in it, like this:   -o MYFILE_Pair_Number_" + PAIR_PLACEHOLDER_SYMBOL + ".fastq.gz")
-        print("                The " + PAIR_PLACEHOLDER_SYMBOL + " will be replaced with a '1' or '2'.")
-        print("                The pattern you specified was: " + str(args.outpattern))
+    if args.outpattern is None:
+        if args.out1 and args.out2:
+            print("ARGUMENT ERROR: You must specifiy either an output pattern (like my_file_pair@@@.fq.gz, where the '@@@' will become a 1 or a 2) or specific output filenames.")
+            sys.exit(1)
+        out1 = args.out1
+        out2 = args.out2
+    else:
+        if not re.search(PAIR_PLACEHOLDER_SYMBOL, args.outpattern):
+            print("ARGUMENT ERROR: You must specify an OUTPUT PATTERN with a " + PAIR_PLACEHOLDER_SYMBOL + " in it, like this:   -o MYFILE_Pair_Number_" + PAIR_PLACEHOLDER_SYMBOL + ".fastq.gz")
+            print("                The " + PAIR_PLACEHOLDER_SYMBOL + " will be replaced with a '1' or '2'.")
+            print("                The pattern you specified was: " + str(args.outpattern))
+            sys.exit(1)
+        out1 = args.outpattern.replace(PAIR_PLACEHOLDER_SYMBOL, "1") # e.g. "_pair1"
+        out2 = args.outpattern.replace(PAIR_PLACEHOLDER_SYMBOL, "2") # e.g. "_pair2"
+        pass
+        
+    if not re.search("[.](fq|fastq)[.](gz|gzip)$", out1, flags=re.IGNORECASE):
+        print("ARGUMENT ERROR: Your output filenames must both end in '.fastq.gz' or '.fq.gz'. They MUST be gzipped, we do not support uncompressed files! Offending not-gzipped-fastq name was: " + str(out2))
         sys.exit(1)
 
-    if not re.search("[.](fq|fastq)[.](gz|gzip)$", args.outpattern, flags=re.IGNORECASE):
-        print("ARGUMENT ERROR: Your output pattern must end in '.fastq.gz' or '.fq.gz'.")
+    if not re.search("[.](fq|fastq)[.](gz|gzip)$", out2, flags=re.IGNORECASE):
+        print("ARGUMENT ERROR: Your output filenames must both end in '.fastq.gz' or '.fq.gz'. They MUST be gzipped, we do not support uncompressed files! Offending not-gzipped-fastq name was: " + str(out2))
         sys.exit(1)
 
     if not 2 == len(args.remainder):
@@ -61,8 +77,6 @@ def main():
     if not os.path.isfile(fq1): raise Exception("Failed to find input file <"+fq1+">")
     if not os.path.isfile(fq2): raise Exception("Failed to find input file <"+fq2+">")
 
-    out1 = args.outpattern.replace(PAIR_PLACEHOLDER_SYMBOL, "1") # e.g. "_pair1"
-    out2 = args.outpattern.replace(PAIR_PLACEHOLDER_SYMBOL, "2") # e.g. "_pair2"
     
     def scrub_name(s):
         s2 = re.sub(r"\s.*", "", s.strip())
@@ -126,6 +140,7 @@ def main():
 
 # Must come at the VERY END!
 if __name__ == "__main__":
+    assert sys.version_info >= (3,5), "You need to run this with python3.5 or later."
     main()
     pass
 
