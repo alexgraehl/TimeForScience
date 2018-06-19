@@ -12,6 +12,7 @@ You can test it like so:
 import os.path
 import sys
 import re
+import bz2
 import gzip
 from collections import OrderedDict
 from subprocess import call
@@ -38,6 +39,8 @@ def scrub_name(s):
 def populate_OrderedDict_with_names(filename):
     # https://docs.python.org/3/library/collections.html#collections.OrderedDict
     sss = OrderedDict()
+
+    print("Opening file " + filename + "...")
     with open_compressed_agw(filename, 'rt') as fff:
         for linenum,line in enumerate(fff):
             if (linenum % 4 == 0):
@@ -47,7 +50,7 @@ def populate_OrderedDict_with_names(filename):
                     sys.stder.write("[Warning]: DUPLICATED RECORD NAME: the record name <" + str(xid) + "> appeared TWICE, with the second appearance on line number <" + str(linenum) + "> in file <" + filename + ">. Continuing anyway...\n")
                     pass
                 sss[xid] = True
-                #print("\t".join([xid, yid, str(xid == yid)]))
+                #print("Got this read: " + xid)
                 pass
             pass
         pass
@@ -71,7 +74,7 @@ def write_fastqs_in_set(infile, bothset, destname, verbose):
                     dest.write(fff.readline()) # quality score
                     linenum   += 3 # <-- remember that we just wrote THREE more lines!
                     n_printed += 1
-                    if verbose: sys.stderr.write("[OK]   Writing  ID " + xid + "\n")
+                    #if verbose: sys.stderr.write("[OK]   Writing  ID " + xid + "\n")
                 else:
                     if verbose: sys.stderr.write("[OMIT] OMITTING ID " + xid + "\n")
                     n_omitted += 1
@@ -103,7 +106,8 @@ def main():
     for f in [fq1, fq2]:
         if not os.path.isfile(f): raise Exception("Failed to find input file <"+f+">")
         pass
-    (dict1, dict2) = (populate_OrderedDict_with_names(fq1), populate_OrderedDict_with_names(fq2))
+    dict1 = populate_OrderedDict_with_names(fq1)
+    dict2 = populate_OrderedDict_with_names(fq2)
     if args.verbose: sys.stderr.write("Num records in file 1: " + str(len(dict1)) + "\n")
     if args.verbose: sys.stderr.write("Num records in file 2: " + str(len(dict2)) + "\n")
     files_have_all_matching_reads = (list(dict1.keys()) == list(dict2.keys()))
@@ -117,11 +121,10 @@ def main():
         (ok2, omit2) = write_fastqs_in_set(infile=fq2, bothset=keys_in_both, destname=out2, verbose=args.verbose)
         assert ok1 == ok2
     else:
-        call(["ln", "-s", fq1, out1]) # just symlink... don't re-write the file
-        call(["ln", "-s", fq2, out2]) # just symlink... don't re-write the file
-        sys.stderr.write("Generated two symlinks: <" + out1 + "> and <" + out2 + ">\n")
+        call(["ln", "-s", os.path.realpath(fq1), out1]) # just symlink... don't re-write the file
+        call(["ln", "-s", os.path.realpath(fq2), out2]) # just symlink... don't re-write the file
+        sys.stderr.write("Generated two ABSOLUTE PATH symlinks: <" + out1 + "> and <" + out2 + ">\n")
         pass
-    
     return # end of 'main'
 
 # Must come at the VERY END!
