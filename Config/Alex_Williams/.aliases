@@ -535,6 +535,13 @@ alias gitlist="git ls-tree -r master --name-only" # show currently tracked files
 alias gitstat="git ls-files --modified --deleted"
 alias gitdiff="git difftool"
 
+function googcom {
+    D="/Volumes/GoogleDrive/My Drive/Alex_All_Projects"
+    cd "/Volumes/GoogleDrive/My Drive/Alex_All_Projects"
+    echo "Changed directories to: ${D}"
+    gitcom
+}
+
 function sciencecom {
     # If you want to NOT interact remotely (for example, this is the 'most upstream' repo with nothing to push to) then pass in NO_REMOTE as argument 2.
     if [[ ! -d "$1/.git" ]] ; then echo -e "[:HEY:] No $1 git repository exists on this machine."; return 1; fi
