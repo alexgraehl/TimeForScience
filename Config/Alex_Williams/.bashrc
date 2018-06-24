@@ -229,12 +229,10 @@ print_if_nonzero_exit_code() { # Example of using this in your prompt: PS1='$(hi
     else highlight_text $ERR_COLOR   "[Exit code $exit_code]"; fi
 } 
 
-parse_git_branch() { # Shows the current 'git' branch if you're in a git-controlled directory
-     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/[\1]/'
-}
-
+#parse_git_branch() { # Shows the current 'git' branch if you're in a git-controlled directory
+#     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/[\1]/'
+#}
 #RIGNODE_HOSTNAME=${RIGNODE_HOSTNAME:-no_rignode_hostname} # bash, assign a DEFAULT value if the argument is not defined
-
 # ============ Start of code block from http://ezprompt.net/ =====
 # ===================================
 function nonzero_return() {
