@@ -1209,30 +1209,7 @@ function syncweb {
     mv -f ${HOME}/workspace/W_*.Rmd  ${HOME}/web/projects/
 }
 
-function bsubtemp {
-    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] Please specify a job name!"; return 1; fi
-    JJJ=${1/ /_} # spaces --> '_'
-    echo -e "#!/bin/bash"
-    echo -e "set -euo pipefail; shopt -s nullglob; shopt -s globstar;"
-    echo -e "#BSUB -L /bin/bash                # Ensure that we are using BASH"
-    echo -e "#BSUB -R 'span[hosts=1]'          # No splitting across hosts"
-    echo -e "#BSUB -q medium                   # short=2 hours, medium=24 hours"
-    echo -e "#BSUB -R 'rusage[mem=1]'          # In GB"
-    echo -e "#BSUB -n 1                        # N threads"
-    echo -e "#BSUB -J ${JJJ}"
-    echo -e "#BSUB -o ${JJJ}-%J-%I.bsub.log.out   # or '-oo' to OVERWRITE (instead of appending)"
-    echo -e "#BSUB -e ${JJJ}-%J-%I.bsub.log.err   # or '-eo' to OVERWRITE (instead of appending)"
-    echo -e ''
-    echo -e ": \"\${LSB_JOBID:=}\" # set undefined job ID to empty"
-    echo -e "if [[ -z \"\${LSB_JOBID}\" ]]; then"
-    echo -e "    echo \"This is being run on the command line, not being submitted by bsub < scriptname.sh\"; "
-    echo -e "    exit 1; "
-    echo -e "fi"
-    echo ''
-}
 
-# Bist has more too:
-# bhist -w -l -a -n 99 769084 | less -S
 
 
 #function checkbackup {
@@ -1297,107 +1274,56 @@ function bsubtemp {
 #    "${cmd[@]}" # <- Actually execute. See http://unix.stackexchange.com/questions/131766/why-does-my-shell-script-choke-on-whitespace-or-other-special-characters
 #}
 
-
-#function phageomancy-sanitize {
-#    echo -e "Removing the largest files, for ease of uploading. Do not do this on the source data!"
-#    /bin/rm -v -rf **/070_READ_DEPTH_COVERAGE_OVER_ASSEMBLY/*.bam **/015_FASTQ_SUBSET_READS
-#}
-#
-#function phageomancy-sanitize-more {
-#    echo -e "Removing everything even remotely large, so that we can easily upload these things."
-#    phageomancy-sanitize
-#    gzip -9 **/contigs.fasta
-#    /bin/rm -rf **/contigs.paths **/scaffolds.paths **/*_assembly_graph.fastg  **/misc **/052_EXTENDED*
-#}
-#
-#function phageomancy-one {
-#    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:] in phageomancy-one] You need to pass EXACTLY ONE prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz)."; return 1; fi
-#    phageomancy-just "${1}" "ALL"
-#}
-#
-#function phageomancy-many-do {
-#    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:] in phageomancy-many-do] You need to pass EXACTLY ONE mode in!"; return 1; fi
-#    echo -e "Running this mode (${1}) on all gz files in this directory..."
-#    PREFIXES=$(ls -1 p*.gz | grep -E '(fastq|fq).gz$' | perl -pe 's/_R.*//' | perl -pe 's/[-_]*~.*//' | sort -u)
-#    for f in $PREFIXES; do
-#	echo -e "Handling $f ..."
-#	phageomancy-just "${f}" "${1}"
-#    done
-#}
-#
-#function phageomancy-many {
-#    phageomancy-many-do "ALL"
-#}
-#
-#
-#
-#export PHAGEOMANCY_DEBUG=0
-#export PHAGEOMANCY_N_SPADES=1 # number of assemblies to run (we subset to 100k reads per assembly by default)
-#
-#function phageomancy-just {
-#    if [[ "$#" != 2 ]] ; then echo -e "[:ERR:]] You need to pass EXACTLY TWO thigns in: 1) prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz) and 2) the mode (like 'ALL')"; return 1; fi
-#    domain='phage'
-#    echo -e "Remember that you can debug this by setting 'export PHAGEOMANCY_DEBUG=1'"
-#    echo -e "Handling ${1} with mode ${2} and ${PHAGEOMANCY_N_SPADES} SPAdes replicates..."
-#    PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
-#    RES_DIR=$HOME/PHAGEOMANCY/resources
-#    # ORPHAN_ALLOWING=" --allow-orphan-pe-reads "
-#    if [[ "${PHAGEOMANCY_DEBUG}" == 1 ]]; then
-#	echo -e "Running with IPYTHON since 'export PHAGEOMANCY_DEBUG=1' was set somewhere earlier."
-#	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
-#    else
-#	${PHAGEOMANCY_PY}                  --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
-#    fi
-#}
-#
-#function bacteriomancy-many-do {
-#    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:] in bacteriomancy-many-do] You need to pass EXACTLY ONE mode in!"; return 1; fi
-#    echo -e "Running this mode (${1}) on all gz files in this directory..."
-#    PREFIXES=$(ls -1 b*.gz | grep -E '(fastq|fq).gz$' | perl -pe 's/_R.*//' | perl -pe 's/[-_]*~.*//' | sort -u)
-#    for f in $PREFIXES; do
-#	echo -e "Handling $f ..."
-#	bacteriomancy-just "${f}" "${1}"
-#    done
-#}
-#
-#function bacteriomancy-just {
-#    if [[ "$#" != 2 ]] ; then echo -e "[:ERR:]] You need to pass EXACTLY TWO thigns in: 1) prefix-for-the-fastq-filename in (e.g. 'p0012_my_thing' if the files are p0012_my_thing_blah_blah_R1.fastq.gz and _R2.fastq.gz) and 2) the mode (like 'ALL')"; return 1; fi
-#    domain='bacteria'
-#    echo -e "Handling ${1} with mode ${2} and ${PHAGEOMANCY_N_SPADES} SPAdes replicates..."
-#    PHAGEOMANCY_PY=`which phageomancy_pipeline.py`
-#    RES_DIR=$HOME/PHAGEOMANCY/resources
-#    if [[ "${PHAGEOMANCY_DEBUG}" == 1 ]]; then
-#	echo -e "Running with IPYTHON since 'export PHAGEOMANCY_DEBUG=1' was set somewhere earlier."
-#	ipython --pdb ${PHAGEOMANCY_PY} -- --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
-#    else
-#	${PHAGEOMANCY_PY}                  --mode="${2}" --domain="${domain}" --name="${1}" --resources="${RES_DIR}" --n-assembly-replicates=${PHAGEOMANCY_N_SPADES}
-#    fi
-#}
-#
-#function phageomancy-html-archive {
-#    tarname=$(basename `pwd`)-HTML-archive.tar.gz
-#    echo -e "Saving into '${tarname}'..."
-#    tar -cvzf "${tarname}" 000* 030* 049* 05* 070*/*read_cov* 071* 074* 110*
-#    echo -e "[Done] creating ${tarname}."
-#}
-#
-#
+function bsubtemp {
+    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] Please specify a job name!"; return 1; fi
+    JJJ=${1/ /_} # spaces --> '_'
+    echo -e "#!/bin/bash"
+    echo -e "set -euo pipefail; shopt -s nullglob; shopt -s globstar;"
+    echo -e "#BSUB -L /bin/bash                # Ensure that we are using BASH"
+    echo -e "#BSUB -R 'span[hosts=1]'          # No splitting across hosts"
+    echo -e "#BSUB -q medium                   # short=2 hours, medium=24 hours"
+    echo -e "#BSUB -R 'rusage[mem=1]'          # In GB"
+    echo -e "#BSUB -n 1                        # N threads"
+    echo -e "#BSUB -J ${JJJ}"
+    echo -e "#BSUB -o ${JJJ}-%J-%I.bsub.log.out   # or '-oo' to OVERWRITE (instead of appending)"
+    echo -e "#BSUB -e ${JJJ}-%J-%I.bsub.log.err   # or '-eo' to OVERWRITE (instead of appending)"
+    echo -e ''
+    echo -e ": \"\${LSB_JOBID:=}\" # set undefined job ID to empty"
+    echo -e "if [[ -z \"\${LSB_JOBID}\" ]]; then"
+    echo -e "    echo \"This is being run on the command line, not being submitted by bsub < scriptname.sh\"; "
+    echo -e "    exit 1; "
+    echo -e "fi"
+    echo ''
+    # 'bhist' has more info too: # bhist -w -l -a -n 99 769084 | less -S
+}
 
 function bbq { # bsub, be quick!
-    echo -e "${a_green}B${a_blue}B${a_green}Q${a_end_color}: ${a_green}B${a_end_color}sub ${a_blue}B${a_end_color}e ${a_green}Q${a_end_color}uick!"
-    if [[ "$#" != 1 ]] ; then { echo -e "[:ERR:] BBQ: You must specify EXACTLY ONE command to add to the queue run---put your command in quotes! Example:  bbq \"ls -al\"  "; return; } fi
+    # Usage:   bbq "my command here"
+    # Note:    * Outputs log files to THE CURRENT DIRECTORY!
+    #          * Makes a temp file using 'mktemp'
+    #          * Blocks until the submitted job is complete (with bsub -K).
+    #          * It is NOT OK to cancel out of the submitted job! It will cancel the job!
+    : "${cpre}=\033}" ## <-- Color prefix, if not already set
+    : "${a_end_color}:=${cpre}[m}"
+    : "${a_blue_bold}:=${cpre}[1;34m}"
+    : "${a_green="${cpre}[32m"}"
+    echo -e -n "${a_blue_bold}BSS${a_end_color}: ${a_blue_bold}B${a_end_color}sub ${a_blue_bold}B${a_end_color}e ${a_blue_bold}Q${a_end_color}uick! "
+    if [[ "$#" != 1 ]] ; then { echo -e "\n[:ERR:] BBQ: You must specify EXACTLY ONE command to add to the queue run---put your command in quotes! Example:  bbq \"ls -al\"  "; return; } fi
     cmd=$1
     ttt=$(mktemp --suffix=".${USER}.bsub.sh")
     jobname="Q_${USER}_$(date +%s)"
-    echo -e "Submitting with quick temp file ${a_cyan}${ttt}${a_end_color}"
+    echo -e "Submitting this (temporary) script: ${a_blue_bold}${ttt}${a_end_color}"
     #echo -e " But OVERRIDING the specified queue and setting it to SHORT, so 2 hours maximum!"
-    echo -e "Command to run:  ${a_cyan}${cmd}\n${a_end_color}"
+    echo -e "Command to run:  ${a_blue_bold}${cmd}\n${a_end_color}"
     bsubtemp "${jobname}"    >| ${ttt}
     echo -e ""               >> ${ttt}
     echo -e "${cmd}"         >> ${ttt}
     echo -e ""               >> ${ttt}
     #bsub -K   -q 'short' < ${ttt}
-    echo -e "${a_green}Running the job here locally... blocking until it finishes!${a_end_color}"
+    echo -e "Running the job here locally... blocking until it finishes!"
+    echo -e "You can check the BSUB command with -->  ${a_blue_bold}less -S ${ttt}${a_end_color}"
+    echo -e "${a_green}[WAITING FOR JOB \"${jobname}\"... DO NOT CTRL-C THIS JOB!]${a_end_color}"
+    echo -e "${a_green}[WARNING: IF YOU CTRL-C, THE QUEUE JOB IS ABORTED, EVEN IF IT IS RUNNING!]${a_end_color}"
     bsub -K < ${ttt}
     echo -e "${a_green}[DONE]${a_end_color}"
 }
