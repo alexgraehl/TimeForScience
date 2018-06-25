@@ -123,6 +123,9 @@ alias dv='delve'
 BRACKET_OPEN='{'
 PAREN_OPEN='('
 TAB='	'
+DLR='\$'
+DQ='\"'
+BS='\\'
 NL="\$'\\n'" # newline!
 alias t="transpose.pl"
 alias cheat="echo \
@@ -177,6 +180,7 @@ alias cheat="echo \
 \">> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
 \" \" ${NL}\
 \">> BASH script header (2 lines): #!/bin/bash __NEWLINE__ set -euo -o pipefail; shopt -s nullglob; shopt -s globstar; set -o xtrace; \" ${NL}\
+\">> BASH in MAKEFILE: In a Make rule, you can use a bash loop like so, with THREE slashes before a quote and SLASH-DOLLAR-DOLLAR instead of a dollar sign to access BASH variables. Example:  bash -c ${DQ}for fff in */*; do echo -e ${BS}${BS}${BS}${DQ}${BS}${DLR}${DLR}fff${BS}${BS}${BS}${DQ}; done; echo -e ${BS}${BS}${BS}${DQ}This goes in a makefile.${BS}${BS}${BS}${DQ}; ${DQ} \" ${NL}\
 \">> BASH: Literal tab: \$'\\t' (example: join -t \$'\\t' to join on tabs) or \\\$(echo -en '\\t') . In MAKE: printf '\\t' \" ${NL}\
 \">> SH  : Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
 \" \" ${NL}\
