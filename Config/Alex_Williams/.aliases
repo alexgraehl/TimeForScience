@@ -431,7 +431,11 @@ P_L_A_C_E__H_O_L_D_E_R
 |[.]config
 |[.]gitconfig
 |[.]aliases
-|[.]bash.?\(?:_history|rc|profile|logout|sessions\)
+|[.]bash_history
+|[.]bash_profile
+|[.]bash_sessions
+|[.]bash_logout
+|[.]bashrc
 |[.]cache
 |[.]local
 |[.]screenrc
@@ -441,7 +445,7 @@ P_L_A_C_E__H_O_L_D_E_R
 |[.]t_coffee
 |[.]subversion
 |[.]jalview_properties
-| [.]cache
+|[.]cache
 |[.]emacs[.]?[d]?
 |[.]cups
 |Rlib.*[/]
