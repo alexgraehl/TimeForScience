@@ -1379,18 +1379,21 @@ function bsubtemp {
 #
 #
 
-
-function quick {
+function bbq { # bsub, be quick!
+    echo -e "${a_green}B${a_blue}B${a_green}Q${a_end_color}: ${a_green}B${a_end_color}sub ${a_blue}B${a_end_color}e ${a_green}Q${a_end_color}uick!"
+    if [[ "$#" != 1 ]] ; then { echo -e "[:ERR:] BBQ: You must specify EXACTLY ONE command to add to the queue run---put your command in quotes! Example:  bbq \"ls -al\"  "; return; } fi
     cmd=$1
     ttt=$(mktemp --suffix=".${USER}.bsub.sh")
     jobname="Q_${USER}_$(date +%s)"
-    echo -e "Submitting with quick temp file ${a_cyan}${ttt}"
-    echo -e "${a_green}Running the job here locally... blocking until it finishes!"
-    echo -e "${a_end_color}Command to run:  ${a_cyan}${cmd}\n${a_end_color}"
+    echo -e "Submitting with quick temp file ${a_cyan}${ttt}${a_end_color}"
+    #echo -e " But OVERRIDING the specified queue and setting it to SHORT, so 2 hours maximum!"
+    echo -e "Command to run:  ${a_cyan}${cmd}\n${a_end_color}"
     bsubtemp "${jobname}"    >| ${ttt}
     echo -e ""               >> ${ttt}
     echo -e "${cmd}"         >> ${ttt}
     echo -e ""               >> ${ttt}
-    bsub -K   -q 'short' < ${ttt}
+    #bsub -K   -q 'short' < ${ttt}
+    echo -e "${a_green}Running the job here locally... blocking until it finishes!${a_end_color}"
+    bsub -K < ${ttt}
     echo -e "${a_green}[DONE]${a_end_color}"
 }
