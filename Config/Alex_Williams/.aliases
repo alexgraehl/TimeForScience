@@ -424,7 +424,6 @@ else
 	#/bin/ls -l -h -A -F ${AGW_LL_COLOR_ALWAYS} "$@" | perl -pe 's!(.*)!${1} WHAT [:H:]!'
 	#LS_ENDCOLOR=$(echo '[0m')
 	#|WHATDIR${LS_ENDCOLOR}\/
-
 	/bin/ls -l -h -A -F ${AGW_LL_COLOR_ALWAYS} "$@" | perl -pe "s!(.*)(
 P_L_A_C_E__H_O_L_D_E_R
 |[.]serverauth
