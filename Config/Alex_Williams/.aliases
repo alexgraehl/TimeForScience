@@ -33,10 +33,7 @@ else
     OUR_RM=rm
 fi
 
-# git config --global user.name "alexgraehl" ; git config --global user.email "alexgraehl@users.noreply.github.com"
 echo -e "${a_echo_color}[:FYI:] Loading bash-aliases...${a_end_color}"
-#echo $GIT_COMMITTER_EMAIL
-# echo $GIT_AUTHOR_EMAIL # not important if you set the other thing
 
 CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR}" # <-- Multiple **space-delimited** directories can be here
 if [[ -n "${isMac}" ]] ; then ## It *is* a mac!
@@ -61,7 +58,6 @@ else
     }
 fi
 
-
 function agw_cmd_exists() { # Check if a command exists
     #command -v "$1" &>/dev/null #|| { echo >&2 "I require foo but it's not installed.  Aborting."; exit 1; }
     type "$1" &> /dev/null
@@ -78,10 +74,6 @@ function hunt { # cd into a directory with a script
     cd "$THEDIR"
     echo -e "Moved into directory <$THEDIR>."
 }
-
-#function cd {
-
-#}
 
 function cto { # Like CD, but lets you go to a FILE as well.
     if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] 'cto' requires EXACTLY ONE file/directory name!"; return 1; fi
@@ -876,19 +868,19 @@ function mvln { # move and then make an ALIAS where the previous file was
     fi
 }
 
-function neararchive { # usage: cd /work/projects/your-project  then: "neararchive myproj-1234-rna-mouse"  --> will move things to the nearline storage and symlink them back
-    if [[ "$#" == 0 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE filename into this function!"; return 1; fi
-    D=$(basename `pwd`)
-    TARGET="/nearline_storage/castles_made_of_sand/not_backed_up/${D}"
-    echo -e "We would like to move the following $# files to the NEARLINE SECONDARY STORAGE folder <${TARGET}/>... sound ok to you? Select a NUMERIC option below:"
-    ls -1 -lh $@
-    select yn in "[Cancel]" "Move those files!"; do
-	case $yn in
-	    Move*) mkdir -p "$TARGET"; for f in "$@"; do mv "$f" "${TARGET}/" && ln -s "${TARGET}/$f" ./ ; echo -e "Moved <$f> to <${TARGET}/$f>..." ; done; break;;
-	    *) echo -e "Ok, not doing anything."; break;;
-	esac
-    done
-}
+#function neararchive { # usage: cd /work/projects/your-project  then: "neararchive myproj-1234-rna-mouse"  --> will move things to the nearline storage and symlink them back
+#    if [[ "$#" == 0 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE filename into this function!"; return 1; fi
+#    D=$(basename `pwd`)
+#    TARGET="/nearline_storage/castles_made_of_sand/not_backed_up/${D}"
+#    echo -e "We would like to move the following $# files to the NEARLINE SECONDARY STORAGE folder <${TARGET}/>... sound ok to you? Select a NUMERIC option below:"
+#    ls -1 -lh $@
+#    select yn in "[Cancel]" "Move those files!"; do
+#	case $yn in
+#	    Move*) mkdir -p "$TARGET"; for f in "$@"; do mv "$f" "${TARGET}/" && ln -s "${TARGET}/$f" ./ ; echo -e "Moved <$f> to <${TARGET}/$f>..." ; done; break;;
+#	    *) echo -e "Ok, not doing anything."; break;;
+#	esac
+#    done
+#}
 
 function accuse { # See who is using the CPU. Usage: just "accuse" with no arguments
     USERS_WITH_JOBS=$(ps aux | tail -n +2 | cut -d ' ' -f 1 | uniq | sort -u)
@@ -1094,16 +1086,17 @@ function pdf2png {
 }
 
 function zwcl {
-    for f in "$@" ; do echo -e -n "$f\t"; zcat -f $f | wc -l; done # don't use zless, it's super slow compared to zcat
+    zgrep -c '' "$@"
+    #for f in "$@" ; do echo -e -n "$f\t"; zgrep -c '' $f; done # don't use zless, it's super slow compared to zcat
 }
 
-function aws_ls_fastq {
-    if [[ -z ${EPI_S3_FASTQ_SEQ_BUCKET+x} ]]; then echo -e "EPI_S3_FASTQ_SEQ_BUCKET is unset! Set it in the .local-config-no-git file."; return 1; fi
-    # Note that the buckets are defined in .local-config-no-git
-    (>&2 echo -e "Performing the equivalent of an 'ls -1' on the sequencing data bucket. You probably want to redirect this to a text file.")
-    aws s3 ls s3://${EPI_S3_FASTQ_SEQ_BUCKET}/Fastq_Files_per_run/ --recursive | awk '{print $4 }'
-    (>^2 echo -e "[Done] listing the directory on ${EPI_S3_FASTQ_SEQ_BUCKET}!")
-}
+#function aws_ls_fastq {
+#    if [[ -z ${EPI_S3_FASTQ_SEQ_BUCKET+x} ]]; then echo -e "EPI_S3_FASTQ_SEQ_BUCKET is unset! Set it in the .local-config-no-git file."; return 1; fi
+#    # Note that the buckets are defined in .local-config-no-git
+#    (>&2 echo -e "Performing the equivalent of an 'ls -1' on the sequencing data bucket. You probably want to redirect this to a text file.")
+#    aws s3 ls s3://${EPI_S3_FASTQ_SEQ_BUCKET}/Fastq_Files_per_run/ --recursive | awk '{print $4 }'
+#    (>^2 echo -e "[Done] listing the directory on ${EPI_S3_FASTQ_SEQ_BUCKET}!")
+#}
 
 function pybug {
     #echo -e "$1"       # First argument
@@ -1112,24 +1105,23 @@ function pybug {
 	echo -e "Looks like your (required!) python script <$1> could not be found!"; return 1;
     fi
     echo -e "Running [ipython]..."
-    ipython --pdb "$1"         -- "${@:2}"
-    #             SCRIPT NAME     ARGUMENTS
+    ipython --pdb "$1"     --      "${@:2}"
+    #             SCRIPT  DASHES   ARGUMENTS
 }
 
-function docker-begone {
-    echo -e "Stopping and removing ALL DOCKER CONTAINERS. ALL OF THEM!"
-    docker stop $(docker ps -a -q)
-    docker rm $(docker ps -a -q)
-    echo -e "Not even one docker container was spared."
-    echo -e "Clearing out space also..."
-    docker rm $(docker ps -q -f 'status=exited')
-    echo -e "You may also have to, with RUNNING YOUR CONTAINERS, run this: docker system prune -a"
-    echo -e "The file that should be small now is:"
-    ls -lah $HOME/Library/Containers/com.docker.docker/Data/com.docker.driver.*/*.qcow2
-    echo -e "Clearing out space for any 'dangling' docker items (probably there are none)..."
-    docker rmi $(docker images -q -f "dangling=true")
-    
-}
+#function docker-begone {
+#    echo -e "Stopping and removing ALL DOCKER CONTAINERS. ALL OF THEM!"
+#    docker stop $(docker ps -a -q)
+#    docker rm $(docker ps -a -q)
+#    echo -e "Not even one docker container was spared."
+#    echo -e "Clearing out space also..."
+#    docker rm $(docker ps -q -f 'status=exited')
+#    echo -e "You may also have to, with RUNNING YOUR CONTAINERS, run this: docker system prune -a"
+#    echo -e "The file that should be small now is:"
+#    ls -lah $HOME/Library/Containers/com.docker.docker/Data/com.docker.driver.*/*.qcow2
+#    echo -e "Clearing out space for any 'dangling' docker items (probably there are none)..."
+#    docker rmi $(docker images -q -f "dangling=true")
+#}
 
 # count bases per line in a fasta file:
 # cat x.fa | grep -v '^>' | perl -ne 'chomp; my @a=split(//,$_); my %c=(); for my $x (@a) { $c{lc($x)}++; }; for my $k (keys(%c)) { print($k.qq{=}.$c{$k}."\t"); }; print qq{  <-- \n};'
@@ -1184,9 +1176,6 @@ function j1 {
 
 function jj {
     j1 | less -S --RAW-CONTROL-CHARS -f --IGNORE-CASE
-}
-function jing { # only CURRENTLY RUNNING jobs
-    j1 | grep -v -E '[|]EXIT'
 }
 
 function setsubtract {
@@ -1308,18 +1297,21 @@ function bbq { # bsub, be quick!
     : "${a_end_color}:=${cpre}[m}"
     : "${a_blue_bold}:=${cpre}[1;34m}"
     : "${a_green="${cpre}[32m"}"
-    echo -e -n "${a_blue_bold}BSS${a_end_color}: ${a_blue_bold}B${a_end_color}sub ${a_blue_bold}B${a_end_color}e ${a_blue_bold}Q${a_end_color}uick! "
+    echo -e "${a_blue_bold}BSS${a_end_color}: ${a_blue_bold}B${a_end_color}sub ${a_blue_bold}B${a_end_color}e ${a_blue_bold}Q${a_end_color}uick!"
     if [[ "$#" != 1 ]] ; then { echo -e "\n[:ERR:] BBQ: You must specify EXACTLY ONE command to add to the queue run---put your command in quotes! Example:  bbq \"ls -al\"  "; return; } fi
     cmd=$1
-    ttt=$(mktemp --suffix=".${USER}.bsub.sh")
+    ttt=/dev/stdout #$(mktemp --suffix=".${USER}.bsub.sh")
     jobname="Q_${USER}_$(date +%s)"
-    echo -e "Submitting this (temporary) script: ${a_blue_bold}${ttt}${a_end_color}"
-    #echo -e " But OVERRIDING the specified queue and setting it to SHORT, so 2 hours maximum!"
-    echo -e "Command to run:  ${a_blue_bold}${cmd}\n${a_end_color}"
+    echo       -e "(Remember that backslashes in your command may need to be doubled.)"
+    echo       -e "(Remember that DOLLAR SIGNS MUST BE ESCAPED! So use \\$ instead of '$'.)"
+    echo       -e "Submitting this (temporary) script: ${a_blue_bold}${ttt}${a_end_color}"
+    echo       -e "Command to run:  ${a_bold_blue}"
+    printf "%s\n" "${cmd}"
+    echo       -e "\n${a_end_color}"
     bsubtemp "${jobname}"    >| ${ttt}
-    echo -e ""               >> ${ttt}
-    echo -e "${cmd}"         >> ${ttt}
-    echo -e ""               >> ${ttt}
+    printf "%s\n" ""         >> ${ttt}
+    printf "%s\n" "${cmd}"   >> ${ttt}
+    printf "%s\n" ""         >> ${ttt}
     #bsub -K   -q 'short' < ${ttt}
     echo -e "Running the job here locally... blocking until it finishes!"
     echo -e "You can check the BSUB command with -->  ${a_blue_bold}less -S ${ttt}${a_end_color}"
