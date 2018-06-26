@@ -7,11 +7,12 @@
 #  under the same terms as Perl itself.
 #
 # Larry(?)'s RCS header:
-#  RCSfile: rename,v   Revision: 4.1   Date: 92/08/07 17:20:30 
+#  RCSfile: rename,v   Revision: 4.1   Date: 92/08/07 17:20:30
 #
 # $RCSfile: rename,v $$Revision: 1.5 $$Date: 1998/12/18 16:16:31 $
 #
 # $Log: rename,v $
+# Revision 1.6: 2018: Color support, certain warnings, updates.
 # Revision 1.5  1998/12/18 16:16:31  rmb1
 # moved to perl/source
 # changed man documentation to POD
@@ -122,25 +123,18 @@ sub printUsage() {
 
 
 
-
-my ($verbose, $no_act, $force, $renameRegexp);
-
+my ($quiet, $no_act, $force, $renameRegexp);
 Getopt::Long::Configure('bundling');
 $Getopt::Long::passthrough = 1; # ignore arguments we don't recognize in GetOptions, and put them in @ARGV
 
-GetOptions(
-	   'v|verbose' => \$verbose,
-	   'n|no-act|dry|dry-run|dryrun'  => \$no_act,
-	   'f|force'   => \$force,
-	   'help|?|h'  => sub { print "Sorry no help yet. Check the source.\n"; die "Alas there is no help text.\n" }
+GetOptions('q|quiet'   => \$quiet
+	   ,'n|no-act|dry|dry-run|dryrun'  => \$no_act
+	   ,'f|force'   => \$force
+	   ,'help|?|h'  => sub { printUsage(); exit(0); }
 	  ) or printUsageAndQuit();
-	   
+
 ($renameRegexp = shift) or printUsageAndQuit();
-
 $renameRegexp =~ m/^s/ or die "[rename.pl] INCORRECT USAGE: The regular expression MUST start with 's'. Example: 's/8/9/g' to change all '8's to '9's.\n";
-
-$verbose = ($verbose or $no_act); ## ALWAYS be verbose when we are using a dry-run
-
 
 #$renameRegexp =~ m/^s\/(.*)\/([a-zA-Z]*)$/i;
 #my $rexMain = $1; # The main body of the regular expression. Not distinguishing the "before" and "after" parts yet.
@@ -158,12 +152,12 @@ $verbose = ($verbose or $no_act); ## ALWAYS be verbose when we are using a dry-r
 #print STDERR "Test color!\n";
 
 if (!@ARGV) {
-	print "reading filenames from STDIN\n" if $verbose;
+	print "Reading filenames from STDIN...\n" if !$quiet;
 	@ARGV = <STDIN>;
 	chop(@ARGV);
 }
 
-if ($verbose) {
+if (!$quiet) {
 	print "About to examine " . scalar(@ARGV) . " files/folders that might be renamed if they match the input regexp pattern of " . safeColor($renameRegexp, "white on_blue") . " . . .\n";
 }
 
@@ -201,21 +195,25 @@ for (@ARGV) {
 	#my $evalResult = eval $toName =~ $renameRegexp;     ## apply the renaming operation to "$_" by default --- this changes "$_" to the newly-renamed version, but does NOT rename the file on disk yet!
 	die $@ if $@;		## ?????????????? why is perl so confusing
 
+	my $numSpacesToPad = $longestFilenameLen - length($fromName);
+	my $pad            = (' ' x $numSpacesToPad);
+
 	if ($fromName eq $toName) {
-		next;
-	}			# same filenames -- ignore quietly
-    
-	if ($no_act) {
-		my $spacesToPad = $longestFilenameLen - length($fromName);
-		if ($verbose) {
-			print STDOUT safeColor("Dry run: $fromName ", "green")
-			  . (' ' x $spacesToPad)
-			  . safeColor("---DRY-RUN--->", "cyan")
-			  . " " . $toName . "\n";
+		if (!$quiet) {
+			print STDOUT safeColor("$fromName ", "blue")
+			  . $pad . safeColor(" (Not renamed--no changes)", "blue") . "\n";
 		}
-		next; # NEXT!!!!! Skip renaming...
+		next;
 	}
 
+	if ($no_act) {
+		if (!$quiet) {
+			print STDOUT safeColor("Dry run: $fromName ", "green")
+			  . $pad . safeColor("---DRY-RUN--->", "cyan")
+			  . " " . $toName . "\n";
+		}
+		next; # NEXT!!!!! Skip the rename code for this file...
+	}
 	
 	if (-e $toName and !$force) {
 		printNonFatalFailure("$fromName was not renamed: $toName already exists");
@@ -223,7 +221,12 @@ for (@ARGV) {
 	}
 
 	if (rename $fromName, $toName) { ## <-- now try to actually rename the file on disk!
-		print "$fromName  renamed to  $toName\n";
+		if (!$quiet) {
+			print STDOUT safeColor("$fromName ", "green")
+			  . $pad . safeColor("--RENAMED-->", "yellow")
+			  . " " . $toName . "\n";
+		}
+		#print "$fromName  renamed to  $toName\n";
 	} else {
 		warn "Can't rename $fromName $toName: $!\n"; ## any error codes are stored in "$!" automatically
 	}
@@ -319,7 +322,7 @@ Note: are you trying to rename files in a directory to match a LIST of new names
       Although that is not part of this script, here is a shell one-liner that will do it:
       (Requires a 1-column file named "NEW_FILENAME_LIST.txt" of new filesnames, in the same
       order that "ls -1" uses. Probably breaks on special characters, so beware.)
->>>>>> while read -u 9 SRC; do read -u 8 DEST; echo mv "$SRC" "$DEST"; done \
-             9<<<"$(ls -1 * | grep -v NEW_FILENAME_LIST.txt)" 8< NEW_FILENAME_LIST.txt && echo "[DONE]"
+      while read -u 9 SRC; do read -u 8 DEST; echo mv "$SRC" "$DEST"; done ; 9<<<"$(ls -1 * | grep -v NEW_FILENAME_LIST.txt)" 8< NEW_FILENAME_LIST.txt && echo "[DONE]"
+      Note that the "9<<<" is in fact a real thing, not a typo! It matches the 'read -u 9' earlier.
 
 =cut
