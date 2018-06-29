@@ -23,6 +23,13 @@ startup_message off
 
 attrcolor b ".I" ## <-- allow bold colors. Apparently necessary for screen to work with 256 colors.
 
+# =================
+# Supposedly this lets you use your normal Terminal scrollbar even in screen?
+# untested
+termcapinfo xterm ti@:te@
+termcapinfo xterm-color ti@:te@
+# =================
+
 # . AB = background, AF=foreground
 termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm' # <-- Tell screen how to set colors (for 256 color terminal)
 defbce "on"  # erase background with current bg color (useful for 256 color terminals)
@@ -54,11 +61,19 @@ bind ^w copy
 bind ^y paste
 bind ^r source "${HOME}/.screenrc"  # reload the screenrc!
 
-# navigating regions with Ctrl-arrows
+# ===================
+# navigating regions with Ctrl-arrows? untested
 bindkey "^[[1;5D" focus left
 bindkey "^[[1;5C" focus right
 bindkey "^[[1;5A" focus up
 bindkey "^[[1;5B" focus down
+# ===================
+
+
+## easier scroll https://superuser.com/questions/138748/how-to-scroll-up-and-look-at-data-in-gnu-screen
+#bindkey "^[[5~" eval 'copy' 'stuff ^b'  # PgUp   | Enter copy/scrollback mode and page up
+#bindkey "^[[6~" eval 'copy' 'stuff ^f'  # PgDown | Enter copy/scrollback mode and page down
+
 
 #caption always "%n(%t) : %C"
 #caption always "%{= kc}%H (system load: %l)%-21=%{= .m}%D %d.%m.%Y %0c"
