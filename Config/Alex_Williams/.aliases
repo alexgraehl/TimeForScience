@@ -1275,7 +1275,7 @@ function syncweb {
 #}
 
 function bsubtemp {
-    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] Please specify a job name!"; return 1; fi
+    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] Please specify a job name! Note that you probably also want to send this output to STDOUT, so e.g. 'bsubtemp MYJOB > job.sub.sh'"; return 1; fi
     JJJ=${1/ /_} # spaces --> '_'
     echo -e "#!/bin/bash"
     echo -e "set -euo pipefail; shopt -s nullglob; shopt -s globstar;"
