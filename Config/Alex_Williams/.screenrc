@@ -8,6 +8,9 @@
 # http://www.frexx.de/xterm-256-notes/    # terminfo and termcap for 256 color terminal
 # allow bold colors - necessary for some reason
 
+# See also this config for inspiration: https://gist.github.com/joaopizani/2718397
+
+
 #term screen-256color
 #term xterm-color
 term xterm-256color
@@ -34,6 +37,8 @@ hardstatus alwayslastline
 hardstatus string ' %{kW}%-Lw%{wk}%n %t%{kW}%+Lw' ## {kW} = black WHITE
 # old status:  hardstatus string ' %{bW}%-Lw%{rW}%50>%n%f* %t%{bW}%+Lw'
 
+#hardstatus string '%{= kG}[%{G}%H%? %1`%?%{g}][%= %{= kw}%-w%{+b yk} %n*%t%?(%u)%? %{-}%+w %=%{g}][%{B}%m/%d %{W}%C%A%{g}]'
+
 bind x  # Remove the "screen lock" key command
 bind ^x  # Remove the "screen lock" key command
 
@@ -48,6 +53,12 @@ bind ^d remove  # deletes the current mini-screen (doesn't kill the shell, thoug
 bind ^w copy
 bind ^y paste
 bind ^r source "${HOME}/.screenrc"  # reload the screenrc!
+
+# navigating regions with Ctrl-arrows
+bindkey "^[[1;5D" focus left
+bindkey "^[[1;5C" focus right
+bindkey "^[[1;5A" focus up
+bindkey "^[[1;5B" focus down
 
 #caption always "%n(%t) : %C"
 #caption always "%{= kc}%H (system load: %l)%-21=%{= .m}%D %d.%m.%Y %0c"
