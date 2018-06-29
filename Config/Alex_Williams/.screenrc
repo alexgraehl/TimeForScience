@@ -8,6 +8,9 @@
 # http://www.frexx.de/xterm-256-notes/    # terminfo and termcap for 256 color terminal
 # allow bold colors - necessary for some reason
 
+# See also this config for inspiration: https://gist.github.com/joaopizani/2718397
+
+
 #term screen-256color
 #term xterm-color
 term xterm-256color
@@ -19,6 +22,13 @@ vbell off
 startup_message off
 
 attrcolor b ".I" ## <-- allow bold colors. Apparently necessary for screen to work with 256 colors.
+
+# =================
+# Supposedly this lets you use your normal Terminal scrollbar even in screen?
+# untested
+termcapinfo xterm ti@:te@
+termcapinfo xterm-color ti@:te@
+# =================
 
 # . AB = background, AF=foreground
 termcapinfo xterm 'Co#256:AB=\E[48;5;%dm:AF=\E[38;5;%dm' # <-- Tell screen how to set colors (for 256 color terminal)
@@ -34,6 +44,8 @@ hardstatus alwayslastline
 hardstatus string ' %{kW}%-Lw%{wk}%n %t%{kW}%+Lw' ## {kW} = black WHITE
 # old status:  hardstatus string ' %{bW}%-Lw%{rW}%50>%n%f* %t%{bW}%+Lw'
 
+#hardstatus string '%{= kG}[%{G}%H%? %1`%?%{g}][%= %{= kw}%-w%{+b yk} %n*%t%?(%u)%? %{-}%+w %=%{g}][%{B}%m/%d %{W}%C%A%{g}]'
+
 bind x  # Remove the "screen lock" key command
 bind ^x  # Remove the "screen lock" key command
 
@@ -48,6 +60,20 @@ bind ^d remove  # deletes the current mini-screen (doesn't kill the shell, thoug
 bind ^w copy
 bind ^y paste
 bind ^r source "${HOME}/.screenrc"  # reload the screenrc!
+
+# ===================
+# navigating regions with Ctrl-arrows? untested
+bindkey "^[[1;5D" focus left
+bindkey "^[[1;5C" focus right
+bindkey "^[[1;5A" focus up
+bindkey "^[[1;5B" focus down
+# ===================
+
+
+## easier scroll https://superuser.com/questions/138748/how-to-scroll-up-and-look-at-data-in-gnu-screen
+#bindkey "^[[5~" eval 'copy' 'stuff ^b'  # PgUp   | Enter copy/scrollback mode and page up
+#bindkey "^[[6~" eval 'copy' 'stuff ^f'  # PgDown | Enter copy/scrollback mode and page down
+
 
 #caption always "%n(%t) : %C"
 #caption always "%{= kc}%H (system load: %l)%-21=%{= .m}%D %d.%m.%Y %0c"
