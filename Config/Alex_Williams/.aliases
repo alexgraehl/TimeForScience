@@ -1143,8 +1143,9 @@ function hsync {
 }
 
 function fasta2single_line_per_seq {
-    echo -e "[:FYI:] Removing line breaks from multi-line FASTA sequences... now each record will have exactly one title line and exactly one sequence line..."   >&2 # print to stderr
-    zcat -f "$1" | awk '!/^>/{printf "%s", $0; n="\n"} /^>/{print n $0; n=""} END {printf"%s",n}'
+    echo -e "[:HEY:] FYI, this script reads from STDIN, and inputs to STDOUT. We'll be waiting for a cat-ed in input FASTA file." >&2 # print to stderr
+    if [[ "$#" != 0 ]] ; then echo -e "[:ERR:]] This script takes NO ARGUMENTS. You must 'cat' a FASTA file to pass it in, like this:  cat myfile.fa | fasta2single_line_per_seq | gzip > done.fa.gz  "; return 1; fi
+    awk '!/^>/{printf "%s", $0; n="\n"} /^>/{print n $0; n=""} END {printf"%s",n}'
 }
 
 function j1 {
@@ -1325,6 +1326,7 @@ function bbq { # bsub, be quick!
     printf "%s\n" ""         >> ${ttt}
     #bsub -K   -q 'short' < ${ttt}
     echo -e "Running the job here locally... blocking until it finishes!"
+    echo -e "(You probably want to be running this job in SCREEN or TMUX.)"
     echo -e "You can check the BSUB command with -->  ${a_blue_bold}less -S ${ttt}${a_end_color}"
     echo -e "${a_green}[WAITING FOR JOB \"${jobname}\"... DO NOT CTRL-C THIS JOB!]${a_end_color}"
     echo -e "${a_green}[WARNING: IF YOU CTRL-C, THE QUEUE JOB IS ABORTED, EVEN IF IT IS RUNNING!]${a_end_color}"
