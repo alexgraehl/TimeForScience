@@ -1308,7 +1308,7 @@ function bbq { # bsub, be quick!
     : "${cpre}=\033}" ## <-- Color prefix, if not already set
     : "${a_end_color}:=${cpre}[m}"
     : "${a_blue_bold}:=${cpre}[1;34m}"
-    : "${a_green="${cpre}[32m"}"
+    : "${a_green}:=${cpre}[32m}"
     echo -e "${a_blue_bold}BSS${a_end_color}: ${a_blue_bold}B${a_end_color}sub ${a_blue_bold}B${a_end_color}e ${a_blue_bold}Q${a_end_color}uick!"
     if [[ "$#" != 1 ]] ; then { echo -e "\n[:ERR:] BBQ: You must specify EXACTLY ONE command to add to the queue run---put your command in quotes! Example:  bbq \"ls -al\"  "; return; } fi
     cmd=$1
@@ -1334,3 +1334,16 @@ function bbq { # bsub, be quick!
     echo -e "${a_green}[DONE]${a_end_color}"
 }
 
+    
+function delete_android_file_transfer_on_mac() {
+    PID=$(ps -fe | grep "[A]ndroid File Transfer Agent" | awk '{print $2}')
+    if [[ -n ${PID} ]]; then kill ${PID}; fi;
+    mv "/Applications/Android File Transfer.app/Contents/Resources/Android File Transfer Agent.app" \
+       "/Applications/Android File Transfer.app/Contents/Resources/Android File Transfer Agent DISABLED.app"
+    mv "${HOME}/Library/Application Support/Google/Android File Transfer/Android File Transfer Agent.app" \
+       "${HOME}/Library/Application Support/Google/Android File Transfer/Android File Transfer Agent DISABLED.app"
+    osascript -e 'tell application "System Events" to delete every login item whose name is "Android File Transfer Agent"'
+    echo "Done disabling it. Note that the files have been RENAMED, and not totally deleted!"
+}
+
+	
