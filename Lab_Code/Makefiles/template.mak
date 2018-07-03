@@ -6,8 +6,9 @@ TAB       :=$(EMPTY)	$(EMPTY)
 # IMMEDIATE EVALUATION>>  := means "set this variable to be whatever the value on the right side is at this very moment"
 # LAZY EVALUATION>>   =  means "set this variable to the equation on the right side, and then evaluate the right side whenever it comes up.
 
-generated=test_1
 downloaded=
+generated=test_1
+
 
 all: $(generated) $(downloaded)
 
