@@ -861,21 +861,16 @@ function qsass { # kill all jobs that match this grep... works for usernames, jo
     done
 }
 
-function mvln { # move and then make an ALIAS where the previous file was
-    if [[ "$#" == 0 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE filename (source) and ONE DESTINATION (probably a directory?) into this function!"; return 1; fi
+function mvln { # move and then make an ALIAS in the current location, leaving a "ghostly" alias where the file previously was
+    if [[ "$#"  < 2 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE filename (source) and ONE DESTINATION (probably a directory?) into this function!"; return 1; fi
     if [[ "$#" != 2 ]] ; then echo -e "[:ERR:] Right now, this only works with TWO ARGUMENTS (target and destination)!"; return 1; fi
-    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD/Mac, so check for it
-    FILE=$1
-    if [[ ! -e $FILE ]] ; then echo -e "[:ERR:] Your source file ($FILE) does not exist!"; return 1; fi
-    LAST=${@: -1}
-    if [[ -d $LAST ]]; then # target is a directory
-	LAST=${LAST%/} # remove trailing slash. This is OK even with '/' (root), since we always insert a slash at the end no matter what
-	eval $AGW_IONICE mv "$FILE" "$LAST/"
-	ln -s "$LAST/$FILE" "$FILE"
-    else # target is a file
-	eval $AGW_IONICE mv "$FILE" "$LAST"
-	ln -s "$LAST" "$FILE"
+    SOURCE=$1
+    if [[ ! -e "${SOURCE}" ]] ; then echo -e "[:ERR:] Your source file (${SOURCE}) does not exist!"; return 1; fi
+    DEST=${@: -1}
+    if [[ -d "${DEST}" ]]; then # target is a directory
+	DEST="${DEST%/}/${SOURCE}" # remove trailing slash. This is OK even with '/' (root), since we always insert a slash at the end no matter what
     fi
+    mv "${SOURCE}" "${DEST}"  && ln -s "${DEST}" "${SOURCE}" && echo -e "Moved ${a_green}${SOURCE} -> ${DEST}${a_end_color} and left a symlink at ${a_cyan}${SOURCE}${a_end_color}"
 }
 
 #function neararchive { # usage: cd /work/projects/your-project  then: "neararchive myproj-1234-rna-mouse"  --> will move things to the nearline storage and symlink them back
