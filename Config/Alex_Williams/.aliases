@@ -126,35 +126,35 @@ alias cheat="echo \
 \">> Rscript/R read STDIN: One-liner R and perl extravaganza for plotting contig lengths:  cat contigs.fasta  | perl -ne 'next if not m/^>/; chomp; m/>NODE_(\d+).*length_([\d.]+).*cov_([\d.]+)/; print join(qq{\t}, \\\$1, \\\$2, \\\$3).qq{\n};' | Rscript --vanilla -e 'ddd=read.table(file(\\\"stdin\\\"),header=F,row.names=1); pdf(\\\"a.pdf\\\"); plot(ddd[,1], ddd[,2]); dev.off();' \" ${NL}\
 \">> UNICODE get character as shell escape: printf YOURCHAR | hexdump , then convert that like this: printf \\\"\\\\xE2\\\\x98\\\\xA0\\\" \" ${NL}\
 \">> Amazon AWS / S3: upgrade awscli on an instance:  pip install awscli --upgrade --user   \" ${NL}\
-\">> Docker list even EXITED containers: docker ps -a \" ${NL}\
-\">> Docker connect interactively no matter what: docker run --name prokka -v '/:/MacRoot/' -i -t --entrypoint '/bin/bash' YOURIMAGE \" ${NL}\
-\">> Docker start a container from an image 1: docker run --name NEWNAME --rm -i -t IMGNAME bash \" ${NL}\
-\">> Docker start a container from an image 2: docker run -it 0134abd1356  <-- check 'docker images' for a list of images \" ${NL}\
-\">> Docker attach to container: docker exec -it CONTAINERNAME bash \" ${NL}\
-\">> Echo emoji to terminal: example: a snake is echo $'\xF0\x9F\x90\x8D' (See http://apps.timwhitlock.info/emoji/tables/unicode) \" ${NL}\
-\">> Safari: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
+\">> DOCKER: list even EXITED containers: docker ps -a \" ${NL}\
+\">> DOCKER: connect interactively no matter what: docker run --name prokka -v '/:/MacRoot/' -i -t --entrypoint '/bin/bash' YOURIMAGE \" ${NL}\
+\">> DOCKER: start a container from an image 1: docker run --name NEWNAME --rm -i -t IMGNAME bash \" ${NL}\
+\">> DOCKER: start a container from an image 2: docker run -it 0134abd1356  <-- check 'docker images' for a list of images \" ${NL}\
+\">> DOCKER: attach to container: docker exec -it CONTAINERNAME bash \" ${NL}\
+\">> EMOJI TO TERMINAL: example: a snake is echo $'\xF0\x9F\x90\x8D' (See http://apps.timwhitlock.info/emoji/tables/unicode) \" ${NL}\
+\">> SAFARI: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
 \">> Unzip files into SUBDIRECTORIES always: ls *.zip|awk -F'.zip' '{print \\\"unzip \\\"\\\$0\\\" -d \\\"\\\$1}'|sh  \" ${NL}\
 \">> ZIP on Mac without the dot files: zip -r -X out.zip input_directory_here    -x \\\"*.DS_Store\\\" \" ${NL}\
 \">> RAM/Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
-\">> Mac: what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
-\">> Mac: lock a file, for example to prevent Dropbox from replacing a custom icon: chflags uchg ~/Dropbox/Icon\\\$'\\r'  (use nouchg to unlock a file)\" ${NL}\
+\">> MAC: what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
+\">> MAC: lock a file, for example to prevent Dropbox from replacing a custom icon: chflags uchg ~/Dropbox/Icon\\\$'\\r'  (use nouchg to unlock a file)\" ${NL}\
 \">> Mac disk: specific file I/O: fs_usage <programname> \" ${NL}\
 \">> Mac disk: filesystem I/O:    fs_usage -w | grep -v '0\\.0'  \" ${NL}\
 \">> Mac set startup disk: sudo bless -mount /Volumes/YOURDISK -setBoot \" ${NL}\
-\">> Mac: show weird file flags: ls -l -@ \" ${NL}\
-\">> Mac: rebuild spotlight for the boot drive only: sudo mdutil -E / \" ${NL}\
+\">> MAC: show weird file flags: ls -l -@ \" ${NL}\
+\">> MAC: rebuild spotlight for the boot drive only: sudo mdutil -E / \" ${NL}\
 \">> Mac Time Machine: exclude/check: tmutil isexcluded/tmutil addexclusion (-p) PATH \" ${NL}\
 \">> Mac Time Machine: delete backups: tmutil delete /Volumes/DISK/Backups.backupdb/COMPNAME/ \" ${NL}\
-\">> Mac: recursively clear worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
-\">> Mac: delete impossible-to-delete files find FILE -flags schg -exec chflags noschg {} \\; \" ${NL}\
-\">> Mac: show library: chflags nohidden ~/Library/ \" ${NL}\
-\">> Mac: batch change modification time: find . -print0 | xargs -0 SetFile -d '12/31/2012 12:00:00 PM' \" ${NL}\
+\">> MAC: recursively clear worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
+\">> MAC: delete impossible-to-delete files find FILE -flags schg -exec chflags noschg {} \\; \" ${NL}\
+\">> MAC: show library: chflags nohidden ~/Library/ \" ${NL}\
+\">> MAC: batch change modification time: find . -print0 | xargs -0 SetFile -d '12/31/2012 12:00:00 PM' \" ${NL}\
 \">> FIND: delete files when argument list too long: find . -iname '*whatever*' -delete \" ${NL}\
-\">> Mac: No quarantine warn  : defaults write com.apple.LaunchServices LSQuarantine -bool NO \" ${NL}\
-\">> Mac: check code signing: codesign -vvv /Applications/iTunes.app \" ${NL}\
-\">> Mac: No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
-\">> Mac: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
-\">> Mac: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
+\">> MAC: No quarantine warn  : defaults write com.apple.LaunchServices LSQuarantine -bool NO \" ${NL}\
+\">> MAC: check code signing: codesign -vvv /Applications/iTunes.app \" ${NL}\
+\">> MAC: No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
+\">> MAC: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
+\">> MAC: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
 \">> Mac/cron : edit crontab cron.tab with emacs: env EDITOR=emacs crontab -e \" ${NL}\
 \">> Delayed sudo: sudo sh -c \\\"(sleep 3600; do your command here )\\\" \" ${NL}\
 \">> Display image in ASCII on the command line: 'tiv' IMAGENAME \" ${NL}\
@@ -197,22 +197,20 @@ alias cheat="echo \
 \">> R: Read from stdin:    x <- read.table(pipe(\\\"cat something name.bz2 | bunzip2\\\") \" ${NL}\
 \">> R: Pick CRAN mirror, no GUI popup (install.packages): chooseCRANmirror(graphics=F) \" ${NL}\
 \">> R: Install package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
-\">> R: sessionInfo(): show packages. ls('package:something') shows details. '.libPaths()' shows lib dirs. \" ${NL}\
 \">> R: traceback() - to properly debug. Also: options(error=recover()) \" ${NL}\
 \">> R: t.test failing? Use tryCatch: tryCatch(something, error=function() { return('NA'); }); \" ${NL}\
 \">> R: Need to un-list things? Use unlist! \" ${NL}\
 \">> R: Perpendicular axis labels: las=2 (1=horiz, 3=vertical) \" ${NL}\
 \">> R: draw beyond graph region: par(xpd=T/F/NA) \" ${NL}\
 \">> R: square plot: par(pty='s') \" ${NL}\
-\">> R: figure out attributes of a variable: attr(x, 'theAttribute'); Works even when names()/attributes() does not! \" ${NL}\
+\">> R: find attributes of a variable: attr(x, 'theAttribute'); Works when names()/attributes() fails! \" ${NL}\
 \">> R: inspect object: str(...) \" ${NL}\
 \">> R: totally blank plot: plot(c(0,1),c(0,1),ann=F,bty='n',type='n',xaxt='n',yaxt='n') \" ${NL}\
 \">> R: cut things into bins, like a histogram: cut(...) \" ${NL}\
 \">> R: factor -> Integers: unclass(...) \" ${NL}\
 \">> R: Perpendicular axis: par(las=2) (1 = horiz, 3 = vertical) \" ${NL}\
 \">> R: Draw BEYOND the axes / plot region: par(xpd=...) \" ${NL}\
-\">> R: Show package contents: abridged way --> ls('package:some_package_name_here') or comprehensive way --> help(library='PACKAGENAME'); \" ${NL}\
-\">> R: Show versions of installed packages: sessionInfo(...) \" ${NL}\
+\">> R: sessionInfo(): show packages and versions of installed packages. ls('package:something') shows a summary of package contents, and help(library='packagename') will show package contents in more detail. '.libPaths()' shows lib dirs. \" ${NL}\
 \">> R: Collapse a list down to a basic vector: unlist(...) \" ${NL}\
 \">> R: Remove names from a structure: unname(...) \" ${NL}\
 \">> R: Resize terminal width / columns: options(width=Sys.getenv(\\\"COLUMNS\\\")) \" ${NL}\
@@ -225,56 +223,55 @@ alias cheat="echo \
 \">> R: install package from CRAN without root: install.packages(repos='http://cran.cnr.berkeley.edu/', dependencies=TRUE, lib=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), pkgs=c('PACKAGENAMEHERE')) \" ${NL}\
 \" \" ${NL}\
 \">> GZIP: verify files: for f in **/*.gz; do gunzip --test -v \\\$f ; done; \" ${NL}\
-\">> Text: wrap lines at 80 chars, preserving/ignoring word boundaries: fold -w 80 -s text.txt (omit -s to cut words) \" ${NL}\
-\">> Shell/bash: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
-\">> Shell/bash: Pipe both STDERR and STDOUT: CMD |& less  or the old way --> CMD 2>&1 (for bash < 4)\" ${NL}\
-\">> Shell/bash: Modify variable: newV=\\\$(sed -e's/a/1/; s/b/2/; s/c/3/' <<< \\\$oldV) \" ${NL}\
-\">> Shell/bash: Script run with ionice:  ionice -c3 -p\\\$\\\$ (top line of a /bin/sh script) \" ${NL}\
-\">> Shell/bash: Rename files with parent directory in filename for f in DIRS*/file.whatever; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).\\\$(basename \\\$f).whatever ; done \" ${NL}\
-\">> Shell/bash: Rename files to NOT have the path in them at all: for fff in **/*.html ; do ggg=$(echo $fff | tr / _); mv $fff $ggg; done \" ${NL}\
-\">> Shell/bash: Rename files to have unique names: for f in **/*fastqc.html; do /bin/cp \\\$f DESTINATION_DIR/\\\$(md5sum \\\$f | cut -d ' ' -f 1).\\\$(basename \\\$f); done \" ${NL}\
-\">> Shell/bash: Rename files to a LIST of new names in a file: while read -u 9 SRC; do read -u 8 DEST; echo mv \\\"\\\$SRC\\\" \\\"\\\$DEST\\\"; done 9<<<\\\"\\\$(ls -1 * | grep -v NEW_FILENAME_LIST.txt)\\\" 8< NEW_FILENAME_LIST.txt \" ${NL}\
-\">> Shell/bash: Check to see if dir is empty if [[ \\\"\\\$(ls -A $OUTDIR)\\\" ]]; then echo \\\"ERR: Output dir not empty!\\\"; exit 2; fi \" ${NL}\
+\">> LINE WRAP: wrap lines at 80 chars, preserving/ignoring word boundaries: fold -w 80 -s text.txt (omit -s to cut words) \" ${NL}\
+\">> SHELL: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
+\">> SHELL: Pipe both STDERR and STDOUT: CMD |& less  or the old way --> CMD 2>&1 (for bash < 4)\" ${NL}\
+\">> SHELL: Modify variable: newV=\\\$(sed -e's/a/1/; s/b/2/; s/c/3/' <<< \\\$oldV) \" ${NL}\
+\">> SHELL: Script run with ionice:  ionice -c3 -p\\\$\\\$ (top line of a /bin/sh script) \" ${NL}\
+\">> SHELL: Rename files with parent directory in filename for f in DIRS*/file.whatever; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).\\\$(basename \\\$f).whatever ; done \" ${NL}\
+\">> SHELL: Rename files to NOT have the path in them at all: for fff in **/*.html ; do ggg=$(echo $fff | tr / _); mv $fff $ggg; done \" ${NL}\
+\">> SHELL: Rename files to have unique names: for f in **/*fastqc.html; do /bin/cp \\\$f DESTINATION_DIR/\\\$(md5sum \\\$f | cut -d ' ' -f 1).\\\$(basename \\\$f); done \" ${NL}\
+\">> SHELL: Rename files to a LIST of new names in a file: while read -u 9 SRC; do read -u 8 DEST; echo mv \\\"\\\$SRC\\\" \\\"\\\$DEST\\\"; done 9<<<\\\"\\\$(ls -1 * | grep -v NEW_FILENAME_LIST.txt)\\\" 8< NEW_FILENAME_LIST.txt \" ${NL}\
+\">> SHELL: Check to see if dir is empty if [[ \\\"\\\$(ls -A $OUTDIR)\\\" ]]; then echo \\\"ERR: Output dir not empty!\\\"; exit 2; fi \" ${NL}\
 \">> MD5 verify: md5sum -c md5*.txt. Checksum must be 1st col, then 2 spaces, then filename. If checksum is 2nd: cat md5*.txt | awk '{print \\\$2\\\"  \\\"\\\$1}' | md5sum -c \" ${NL}\
 \">> MD5 on multiple files: find . -type f -exec md5 {} \; > list.txt    \" ${NL}\
 \">> HEX HEXDUMP: View individual bytes of a file in hex form: hexdump -C FILENAME \" ${NL}\
 \">> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
-\">> GIT do not download huge LFS files when git lfs is enabled: GIT_LFS_SKIP_SMUDGE=1 git clone YOUR_REPO \" ${NL}\
-\">> GIT only get the last 1 revision (faster): git clone --depth=1 https://your-site-here/something.git \" ${NL}\
-\">> GIT discard ALL local changes: git reset --hard origin/master \" ${NL}\
-\">> GIT fix an HTTP repo to SSH: git remote set-url origin git@github.com:RepoNameHere/ProjName.git \" ${NL}\
-\">> GIT see old version of file (example: ~4 = 4 revisons ago): git show HEAD~4:./some_file.txt \" ${NL}\
-\">> GIT delete a REMOTE branch: git push origin --delete BRANCHNAME (not delete, surprisingly) \" ${NL}\
-\">> GIT list files in a branch: git ls-tree -r -l BRANCHNAME \" ${NL}\
-\">> GIT what changed between branches?: git diff --summary BRANCH1 BRANCH2 \" ${NL}\
-\">> GIT GUI and 'when was a branch made from master': gitk --all --select-commit=\\\$(git merge-base YOURBRANCH master)  \" ${NL}\
-\">> GIT when branch was last used (MINIMAL): for BRANCH in \\\$(git branch -r | grep -v 'HEAD'); do echo -e \\\$(git show --format='%ci %cr' \\\$BRANCH | head -n 1) \\\\\\\\t\\\$BRANCH; done | sort -r \" ${NL}\
-\">> GIT when branch was last used AND last commit (fancy): git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \" ${NL}\
+\">> AWK: Get only FIRST line with a unique occurrence in column 1. Does not require sorting: cat FILE | awk -F'\\t' '!_[\\\$1]++' (assumes separator is tab) \" ${NL}\
+\">> AWK FILTER based on numeric value: filter based on a number: cat test | awk '{ if (\\\$1 >= 900 && \\\$1 > 0) print; }' \" ${NL}\
+\">> GIT: do not download huge LFS files when git lfs is enabled: GIT_LFS_SKIP_SMUDGE=1 git clone YOUR_REPO \" ${NL}\
+\">> GIT: only get the last 1 revision (faster): git clone --depth=1 https://your-site-here/something.git \" ${NL}\
+\">> GIT: discard ALL local changes: git reset --hard origin/master \" ${NL}\
+\">> GIT: fix an HTTP repo to SSH: git remote set-url origin git@github.com:RepoNameHere/ProjName.git \" ${NL}\
+\">> GIT: see old version of file (example: ~4 = 4 revisons ago): git show HEAD~4:./some_file.txt \" ${NL}\
+\">> GIT: delete a REMOTE branch: git push origin --delete BRANCHNAME (not delete, surprisingly) \" ${NL}\
+\">> GIT: list files in a branch: git ls-tree -r -l BRANCHNAME \" ${NL}\
+\">> GIT: what changed between branches?: git diff --summary BRANCH1 BRANCH2 \" ${NL}\
+\">> GIT: GUI and 'when was a branch made from master': gitk --all --select-commit=\\\$(git merge-base YOURBRANCH master)  \" ${NL}\
+\">> GIT: when branch was last used (MINIMAL): for BRANCH in \\\$(git branch -r | grep -v 'HEAD'); do echo -e \\\$(git show --format='%ci %cr' \\\$BRANCH | head -n 1) \\\\\\\\t\\\$BRANCH; done | sort -r \" ${NL}\
+\">> GIT: when branch was last used AND last commit (fancy): git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \" ${NL}\
 \">> TERM: Get terminal width/height: tput cols  or  tput lines \" ${NL}\
 \">> BACKUPS: Check for changed files of a certain name: grep -E '>f.' /it/backup/log/*.log | grep YOURNAME \" ${NL}\
 \">> UNIX/FILE: Add filename to top of (copy of) files. for f in FILES*; do echo \\\$f | cat - $f > NEW_\\\$f ; done \" ${NL}\
 \">>           ...or if you will later paste/join those: for f in SPLIT*.diff; do echo \\\$f | cat - \\\$f | table-no-ragged.py - > NEW_\\\$f; done \" ${NL}\
-\">> UNIX: convert RELATIVE symlinks to ABSOLUTE PATHS: for fff in *; do FULL=\\\$(readlink -f \\\$fff); ln -sf \\\$FULL \\\$fff ; done \" ${NL}\
-\">> UNIX: 1) double-dereference symlinks, showing their final targets: find -L . -type f -exec readlink -f {} \\\; \" ${NL}\
-\">> UNIX: 2) double-dereference symlinks, showing their final targets: for f in * ; do echo -e \\\$f\\\"\\t\\\"\\\$(readlink -f \\\$f); done   \" ${NL}\
-\">> UNIX: Just delete symlinks find DIRNAME/ -type l -delete \" ${NL}\
-\">> UNIX: print orphaned/broken symlinks: find . -type l -exec sh -c \\\"file -b {} | grep -q ^broken\\\" \; -print \" ${NL}\
+\">> UNIX: SYMLINKS: convert RELATIVE symlinks to ABSOLUTE PATHS: for fff in *; do FULL=\\\$(readlink -f \\\$fff); ln -sf \\\$FULL \\\$fff ; done \" ${NL}\
+\">> UNIX: SYMLINKS: 1) double-dereference symlinks, showing their final targets: find -L . -type f -exec readlink -f {} \\\; \" ${NL}\
+\">> UNIX: SYMLINKS: 2) double-dereference symlinks, showing their final targets: for f in * ; do echo -e \\\$f\\\"\\t\\\"\\\$(readlink -f \\\$f); done   \" ${NL}\
+\">> UNIX: SYMLINKS: Just delete ALL symlinks: find DIRNAME/ -type l -delete \" ${NL}\
+\">> UNIX: SYMLINKS: print orphaned/broken symlinks: find . -type l -exec sh -c \\\"file -b {} | grep -q ^broken\\\" \; -print \" ${NL}\
+\">> UNIX: SYMLINKS: set up symlinks from TimeForScience: ln -sfn ~/TimeForScience/Config/Alex_Williams/.??* ~/ \" ${NL}\
+\">> UNIX: SYMLINKS: executables: for f in \\\$(find PATH -maxdepth 1 -perm -111 -type f); do ln -s \\\$f ./; done \" ${NL}\
 \">> UNIX: total file size for files with a certain extension (Here, jpg): find . -type f -iname '*.jpg' -print0 | du -ch --files0-from=- \" ${NL}\
 \">> UNIX: list files w/modified time MORE THAN one week ago: find . -mtime +7 \" ${NL}\
 \">> UNIX: list files w/modified time LESS THAN one week ago: find . -mtime -7 \" ${NL}\
 \">> UNIX: list files w/modified time two days ago: find . -mtime 2 \" ${NL}\
 \">> UNIX: list files w/modified time between 6 and 9 minutes ago: find . -mmin +5 -mmin -10 \" ${NL}\
 \">> UNIX: list ONLY dot files, no .. or up a directory: ls -l .??* \" ${NL}\
-\">> UNIX: set up symlinks from Mercurial/TimeForScience: ln -sfn ~/TimeForScience/Config/Alex_Williams/.??* ~/ \" ${NL}\
-\">> UNIX: symlink executables: for f in \\\$(find PATH -maxdepth 1 -perm -111 -type f); do ln -s \\\$f ./; done \" ${NL}\
 \">> UNIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
 \">> UNIX: IO nice (low-priority): ionice -c2 -n7 -pPROCID <-- -n7: lowest non-idle priority. PROCID is the PID.\" ${NL}\
 \">> UNIX: IO nice (lowest-priority): ionice -c3 -pPROCID  <-- -c3: IDLE priority; doesn't slow anyone else down.\" ${NL}\
 \">> UNIX: IO nice for a user \\\$THEUSER: SSS=\\\$(ps -fu \\\$THEUSER | perl -pe 's/[ ]+/\t/g' | cut -f 2 | tail -n +2); for pid in \\\$SSS ; do echo 'PID' \\\$pid; sudo ionice -c3 -p \\\$pid ; sudo renice +10 -p \\\$pid; done\" ${NL}\
 \">> UNIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
-\">> UNIX GREP: find text in a file VERBATIM, like join: grep -w -f KEYFILE.txt search_in_file.txt  (remove the '-w' to allow PARTIAL matches as well. You can use '-E' to allow regular expressions in the file too!)\" ${NL}\
-\">> UNIX GREP: filter files based on presence of text: mkdir YES NO; for f in *.txt; do if [[ \\\"\\\$(grep 'YOUR_STRING_HERE' \\\$f | wc -l)\\\" -ne \\\"0\\\" ]]; then mv \\\$f yes/; else mv \\\$f no/; fi ; done \" ${NL}\
-\">> AWK FILTER based on numeric value: filter based on a number: cat test | awk '{ if (\\\$1 >= 900 && \\\$1 > 0) print; }' \" ${NL}\
 \">> UNIX: Check Linux version: cat /etc/*-release \" ${NL}\
 \">> UNIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
 \">> UNIX: Rsync transfer files: rsync --dry-run -R -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
@@ -282,6 +279,9 @@ alias cheat="echo \
 \">> UNIX/WGET/TRICKLE: Rate limit any command to 500kbps (-d = down, -u = up): sudo trickle -d 500 -u 500 ncftp 'your_ftp_site_here' \" ${NL}\
 \">> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
 \">> UNIX/TOP/USAGE/HTOP: CPU usage by user: top -b -n 1 -u \\\$USER | awk 'NR>7 { sum += \\\$9; } END { print sum; }' \" ${NL}\
+\">> UNIX GREP: filter files based on presence of text: mkdir YES NO; for f in *.txt; do if [[ \\\"\\\$(grep 'YOUR_STRING_HERE' \\\$f | wc -l)\\\" -ne \\\"0\\\" ]]; then mv \\\$f yes/; else mv \\\$f no/; fi ; done \" ${NL}\
+\">> GREP: find text in a file VERBATIM, like join: grep -w -f KEYFILE.txt search_in_file.txt  (remove the '-w' to allow PARTIAL matches as well. You can use '-E' to allow regular expressions in the file too!)\" ${NL}\
+\">> GREP Count occurrences of a match per line: cat FILE | grep -o -n SEARCHTERM | cut -d : -f 1 | uniq -c \" ${NL}\
 \">> QSUB/QUEUE/PBS submit job: echo 'echo \\\"hello I am a test job\\\"' | qsub -q Bio -W group_list=bioqueue ; sleep 10; cat STDIN*; \" ${NL}\
 \">> QSUB/QUEUE/PBS: Delete all your jobs one by one: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
 \">> QSUB/QUEUE/PBS: restart torque: sudo service pbs_sched stop ; sudo service pbs_mom stop ; sudo service pbs_server stop ; sudo /bin/rm /var/lock/subsys/pbs_server ; sudo service pbs_sched start ; sudo service pbs_mom start ; sudo service pbs_server start ; qstat \" ${NL}\
@@ -315,12 +315,12 @@ alias cheat="echo \
 \">> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x   (this is the command 'sudoshowoff')\" ${NL}\
 \">> GNU FIND and DELETE a file (dangerous): find . -name SOMEFILE -delete \" ${NL}\
 \">> UNIX/Perl fast sort with ONE header line: cat FILE | perl -e 'print scalar (<>); print sort <>' > OUTFILE \" ${NL}\
-\">> Perl: REGEXP multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \\\$ work \" ${NL}\
-\">> Perl: replace IN PLACE in a file, with backups for \\\$file in FILES; do perl -p -i.bak -e 's/STRING_TO_REPLACE/NEW_STRING/g' \\\$file; done  \" ${NL}\
-\">> Perl/web: Chrome web form non-breaking space (ASCII 160) is [\\xA0] (or 'use feature qw(unicode_strings);') \" ${NL}\
-\">> Perl: CPAN invocation: sudo perl -MCPAN -e shell \" ${NL}\
-\">> Perl: CPAN upgrade all WITHOUT prompting: PERL_MM_USE_DEFAULT=1 && sudo perl -MCPAN -e shell >> then o conf build_requires_install_policy yes  ; o conf prerequisites_policy 'follow'  ; o conf commit ;  upgrade /(.\\*)/\\\" \" ${NL}\
-\">> Perl: Backreferences/does something show up twice on a line: perl -n -e 'print ((\\\$_ =~ /\b(Something\d+)\s.\g1/) ? qq{match: \\\$1\\n} : qq{Nope\\n});' \" ${NL}\
+\">> PERL: REGEXP multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \\\$ work \" ${NL}\
+\">> PERL: replace IN PLACE in a file, with backups for \\\$file in FILES; do perl -p -i.bak -e 's/STRING_TO_REPLACE/NEW_STRING/g' \\\$file; done  \" ${NL}\
+\">> PERL: or WEB: Chrome web form non-breaking space (ASCII 160) is [\\xA0] (or 'use feature qw(unicode_strings);') \" ${NL}\
+\">> PERL: CPAN invocation: sudo perl -MCPAN -e shell \" ${NL}\
+\">> PERL: CPAN upgrade all WITHOUT prompting: PERL_MM_USE_DEFAULT=1 && sudo perl -MCPAN -e shell >> then o conf build_requires_install_policy yes  ; o conf prerequisites_policy 'follow'  ; o conf commit ;  upgrade /(.\\*)/\\\" \" ${NL}\
+\">> PERL: Backreferences/does something show up twice on a line: perl -n -e 'print ((\\\$_ =~ /\b(Something\d+)\s.\g1/) ? qq{match: \\\$1\\n} : qq{Nope\\n});' \" ${NL}\
 \">> EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
 \">> EMACS: install new packages: list-packages \" ${NL}\
 \">> EMACS: show variable: describe-variable \" ${NL}\
@@ -345,17 +345,17 @@ alias cheat="echo \
 \">> RNASEQ TOPHAT/rename TEST: for f in *; do echo \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
 \">> RNASEQ TOPHAT/rename RUN : for f in *; do   mv \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
 \">> RNASEQ: Truncate a fastq file to length 19 without using fastx-trimmer: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
-\">> Obtain SRA sequence from NCBI: prefetch --verbose SRR__whateverID__ \" ${NL}\
+\">> SRA: Obtain SRA sequence from NCBI: prefetch --verbose SRR__whateverID__ \" ${NL}\
 \">> SRA->FASTQ: fastq-dump --gzip SRR1234.sra    (<-- creates new file 'SRR1234.fastq.gz') \" ${NL}\
 \">> MINION LONG READ SEQ: FAST5 to FASTQ: Make a single FASTQ out of all FAST5s in each of the 'barcode' subdirectories (assumes the file structure is: minion/barcode01/batch9988/file.fast5): for bar in barcode*; do final=ToFQ.\\\$bar.final.fq.gz; /bin/rm -f \\\$final; for f in \\\${bar}/*/*.fast5; do echo \\\"Handling \\\$f\\\"; poretools fastq \\\$f | gzip >> \\\$final; done; done \" ${NL}\
 \">> BLAST: DNA pair-wise similarity for all sequences in a fasta file:   makeblastdb -in REF.fa -db nucl  &&  blastn -outfmt 6 -db REF.fa -query REF.fa -out results.out \" ${NL}\
 \">> BLAST: extract DATABASE sequences back to FASTA: In the directory with database files starting with the prefix 'nt_your_prefix_whatever', blastdbcmd -db nt_your_prefix_whatever -entry all -out - | gzip > all_sequences.fasta  \" ${NL}\
 \">> DNA reverse-complement: perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
 \">> APACHE error log: sudo less -S /var/log/apache2/error.log \" ${NL}\
-\">> MacOS DNS woes: sudo dscacheutil -flushcache \" ${NL}\
-\">> MacOS Dictionary: /usr/share/dict/words \" ${NL}\
-\">> MacOS why isn't the screensaver working: pmset -g (see 'sleep' in there), then pmset -g assertions \" ${NL}\
-\">> MacOS Image type convert: mkdir -p PNGS_TO_JPEG; sips -s format jpeg *.png --out PNGS_TO_JPEG \" ${NL}\
+\">> MAC: DNS woes: sudo dscacheutil -flushcache \" ${NL}\
+\">> MAC: Dictionary: /usr/share/dict/words \" ${NL}\
+\">> MAC: why isn't the screensaver working: pmset -g (see 'sleep' in there), then pmset -g assertions \" ${NL}\
+\">> MAC: Image type convert: mkdir -p PNGS_TO_JPEG; sips -s format jpeg *.png --out PNGS_TO_JPEG \" ${NL}\
 \">> COPROC: coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ${NL}\
 \">> LINES: RANDOM subset (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'print if (rand() < 0.5);' theFile.txt \" ${NL}\
 \">> LINES: REPEATABLE RANDOM subset: perl -e 'srand(123456); while(<>){ print if (rand() < 0.5);}' theFile.txt \" ${NL}\
@@ -365,8 +365,6 @@ alias cheat="echo \
 \">> LINES/AWK: Count num columns in file: awk -F '\t' '{print NF}' \" ${NL}\
 \">> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">> LINES Count chars on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
-\">> AWK: Get only FIRST line with a unique occurrence in column 1. Does not require sorting: cat FILE | awk -F'\\t' '!_[\\\$1]++' (assumes separator is tab) \" ${NL}\
-\">> GREP Count occurrences of a match per line: cat FILE | grep -o -n SEARCHTERM | cut -d : -f 1 | uniq -c \" ${NL}\
 "
 
 # Shell navigation/commands
