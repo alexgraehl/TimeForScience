@@ -187,7 +187,7 @@ alias cheat="echo \
 \" \" ${NL}\
 \">> BIOM format: convert FROM BIOM   : biom convert -i INPUT.biom -o TABDELIM.txt  --to-tsv  --header-key=taxonomy \" ${NL}\
 \">> BIOM format: convert BACK TO BIOM: biom convert -i TABIN.txt  -o OTUTABLE.biom --to-hdf5 --table-type=\\\"OTU table\\\" --process-obs-metadata taxonomy \" ${NL}\
-\">> R: List (same # elements per item) --> Data frame (list to data.frame): do.call(rbind.data.frame, YOUR_LIST_HERE   \" ${NL}\
+\">> R: List (same # elements per item) --> Data frame (list to data.frame / list to table): do.call(rbind.data.frame, YOUR_LIST_HERE)   \" ${NL}\
 \">> R: Save copy of figure as pdf: dev.copy2pdf() \" ${NL}\
 \">> R: Convert columns of a dataframe to factors (from char): fact.df   <- char.df; fact.df[] <- lapply(char.df[], as.factor) \" ${NL}\
 \">> R: Prevent blank page in PDF: pdf(..., onefile=FALSE) \" ${NL}\
