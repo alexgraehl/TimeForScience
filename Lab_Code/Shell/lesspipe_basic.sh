@@ -1,0 +1,1 @@
+../../Config/1_Shell_Config/lesspipe_basic.sh
