@@ -43,7 +43,6 @@ def scrub_name(s):
 def populate_OrderedDict_with_names(filename):
     # https://docs.python.org/3/library/collections.html#collections.OrderedDict
     sss = OrderedDict()
-
     print("Opening file " + filename + "...")
     with open_compressed_agw(filename, 'rt') as fff:
         for linenum,line in enumerate(fff):
@@ -54,7 +53,6 @@ def populate_OrderedDict_with_names(filename):
                     sys.stder.write("[Warning]: DUPLICATED RECORD NAME: the record name <" + str(xid) + "> appeared TWICE, with the second appearance on line number <" + str(linenum) + "> in file <" + filename + ">. Continuing anyway...\n")
                     pass
                 sss[xid] = True
-                #print("Got this read: " + xid)
                 pass
             pass
         pass
@@ -90,7 +88,6 @@ def write_fastqs_in_set(infile, bothset, destname, verbose):
     return (n_printed, n_omitted)
 
 
-
 def main():
     PAIR_PLACEHOLDER_SYMBOL='@@@'
     parser = argparse.ArgumentParser(description="%(prog)s: fastq filterer in python 3. Removes any missing partial pairs, e.g. ReadA in forward pair file only, but ReadB in reverse pair file only---those would be removed.",
@@ -112,8 +109,8 @@ def main():
         pass
     dict1 = populate_OrderedDict_with_names(fq1)
     dict2 = populate_OrderedDict_with_names(fq2)
-    if args.verbose: sys.stderr.write("Num records in file 1: " + str(len(dict1)) + "\n")
-    if args.verbose: sys.stderr.write("Num records in file 2: " + str(len(dict2)) + "\n")
+    if args.verbose: sys.stderr.write("Num records in file 1 (" + str(fq1) + "): " + str(len(dict1)) + "\n")
+    if args.verbose: sys.stderr.write("Num records in file 2 (" + str(fq2) + "): " + str(len(dict2)) + "\n")
     files_have_all_matching_reads = (list(dict1.keys()) == list(dict2.keys()))
     if     files_have_all_matching_reads and args.verbose: sys.stderr.write("Files have matching read names, in the same order! Perfect.\n")
     if not files_have_all_matching_reads and args.verbose: sys.stderr.write("Files did NOT have all matching reads. Only printing matches.\n")
@@ -127,7 +124,7 @@ def main():
     else:
         call(["ln", "-s", os.path.realpath(fq1), out1]) # just symlink... don't re-write the file
         call(["ln", "-s", os.path.realpath(fq2), out2]) # just symlink... don't re-write the file
-        sys.stderr.write("Generated two ABSOLUTE PATH symlinks: <" + out1 + "> and <" + out2 + ">\n")
+        sys.stderr.write("fastq_remove_unapired_reads has Generated two ABSOLUTE PATH symlinks: <" + out1 + "> and <" + out2 + ">\n")
         pass
     return # end of 'main'
 
