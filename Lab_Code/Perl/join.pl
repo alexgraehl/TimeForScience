@@ -61,7 +61,7 @@ my $numWeirdLineLengths    = 0;
 my ($keyCol1,$keyCol2,$keyBoth) = (undef, undef, undef); # indexed from ONE rather than 0!
 my ($delim1,$delim2)  = ($DEFAULT_DELIM, $DEFAULT_DELIM); # input deilmiter for files 1 and 2
 my ($delimBoth, $outDelim) = (undef, undef); # input delimiter
-my $stringWhenNoMatch = undef;
+my $stringWhenNoMatch = undef; # GLOBAL
 my $allowEmptyKey     = 0; # whether we allow a TOTALLY EMPTY value to be a key (default: no)
 my $numHeaderLines    = 0;
 my $multiJoinType     = undef;
@@ -137,9 +137,7 @@ sub is_line_array_too_weird_to_use(\@$$$) {
 		return 1; # Disqualify this line, since it is TOTALLY EMPTY
 	} elsif (scalar(@$lineArrPtr) < $keyColIndexedFromOne) { # The line was SHORTER than the demanded key column! $keycol is indexed from 1, not 0;
 		maybeWarn($numMissingKeyCols++, $MAX_MISSING_KEY_COLS_TO_REPORT, "line $lnum was missing the key column in file <$filename>. (Key column: $keyColIndexedFromOne, Columns on line: " . scalar(@$lineArrPtr) . ").");
-		# Disqualify this line, since it has no key!
-		#$key = "";  # totally blank line maybe? Or at least, no key.
-		#@valArr = ();
+		# Disqualify this line, since it has no key!		#$key = "";  # totally blank line maybe? Or at least, no key.		#@valArr = ();
 		return 1; # too weird
 	} else {
 		return 0; # not too weird
@@ -153,14 +151,15 @@ sub handleMultiJoin($$$$$$) {
 	my %keysHash              = (); # key = the keys seen in ALL files, value = order that this key was added (0 is the first key, 1 is the second, etc...)
 	my %ocKeyHash             = (); # Maps keys back to their ORIGINAL CASE versions, in case we were doing case-insensitive (case insensitive) key output.
 	my @keysInOrder           = ();
-	
 	($mergeType =~ m/^(${UNION_STR}|${INTERSECT_STR}|${SETDIFF_STR})$/i) or die "Programming error: multi-intersection type must be '$INTERSECT_STR' or '$UNION_STR'! But it was this: $mergeType";
 	my $filenameHeaderDelim = "::"; # example:  "Filename1::headerCol1   Filename2::headerCol2"
-	my $na = (defined($stringWhenNoMatch)) ? $stringWhenNoMatch : ""; # use a blank value if (global) $stringWhenNoMatch is not defined
+	my $pad_out_ragged_char = ""; # use this value to pad out "ragged" rows
+	my $no_match_char       = (defined($stringWhenNoMatch)) ? $stringWhenNoMatch : ""; # use a blank value if (global) $stringWhenNoMatch is not defined
+	my $definitely_must_print_if_no_match = (defined($stringWhenNoMatch)); # This happens if the user MANUALLY specifies "-ob" or "-o SOMETHING"
 	my %headHash = ();
 	my $is_intersection     = ($mergeType eq ${INTERSECT_STR});
 	my $is_union            = ($mergeType eq ${UNION_STR});
-	my $is_setdiff         = ($mergeType eq ${SETDIFF_STR});
+	my $is_setdiff          = ($mergeType eq ${SETDIFF_STR});
 	my %numFilesWithKeyHash = (); # Counts the number of files that we saw this line in. Only used if this is an intersection and not a union
 	my $numFilesOpened      = 0;
 	my $numFilesExpected    = scalar(@$filenameArrPtr);
@@ -261,7 +260,7 @@ sub handleMultiJoin($$$$$$) {
 		for my $filename (@filesToCheckForPrinting) {
 			my $thisHeadArrPtr = \@{${$headHash{$filename}}[$headerIndex]};
 			my $numElemsToPad = $longestLineInFileHash{$filename} - scalar(@$thisHeadArrPtr);
-			push(@head, @$thisHeadArrPtr, ($na)x$numElemsToPad);
+			push(@head, @$thisHeadArrPtr, ($pad_out_ragged_char)x$numElemsToPad);
 		}
 		print(join($outDelim, @head)."\n");
 	}
@@ -286,11 +285,20 @@ sub handleMultiJoin($$$$$$) {
 			my @outLine     = ($printableKey); # output line. starts with just the key and nothing else
 			foreach my $filename (@filesToCheckForPrinting) {
 				if (exists($datHash{$filename}{$k})) {
+					# This is padding INSIDE a single file, to make sure it has non-ragged rows
 					my $numElemsToPad = $longestLineInFileHash{$filename} - scalar(@{$datHash{$filename}{$k}});
-					push(@outLine, @{$datHash{$filename}{$k}}, ($na)x$numElemsToPad);
+					push(@outLine, @{$datHash{$filename}{$k}}, ($pad_out_ragged_char)x$numElemsToPad);
 				} else {
-					# This specific file didn't have this key!
-					push(@outLine, ($na)x$longestLineInFileHash{$filename});
+					# The other file DID NOT HAVE THIS KEY
+					#if ($definitely_must_print_if_no_match && $numElemsToPad == 0) {
+					#	if ($stringWhenNoMatch eq "") {
+					#		warn_once("WARNING: your '-ob' or other blank output is NOT going to do anything useful since the number of elements to pad is zero!");
+					#	} else {
+					#		warn_once("WARNING: modifiying so at least one element is padded!");
+					#		$numElemsToPad = 0;
+					#	}
+					#}
+					push(@outLine, ($stringWhenNoMatch)x$longestLineInFileHash{$filename});
 				}
 			}
 			print join($outDelim, @outLine), "\n"; # <-- somehow this results in "uninitialized value" warning sometimes...
@@ -298,6 +306,20 @@ sub handleMultiJoin($$$$$$) {
 	}
 } # end of handleMultiJoin(...)
 # ========================== MAIN PROGRAM HERE
+
+my %WARN_HASH = ();
+sub warn_n_times_max($$) {
+	my ($msg, $max_warnings) = @_;
+	if (!exists($WARN_HASH{$msg})) {
+		$WARN_HASH{$msg} = 0;
+	} elsif ($WARN_HASH{$msg} < $max_warnings) {
+		$WARN_HASH{$msg} += 1;
+		warn($msg);
+	} else {
+		# nothing, already reached the maximum warnings
+	}
+}
+sub warn_once($) { return(warn_n_times_max($_[0], 1)); }
 
 sub sanitized_version_of_no_match_string($) {
 	my ($na) = @_;
@@ -364,10 +386,8 @@ sub main() { # Main program
 	}
 	($keyCol1 =~ m/[0-9]+/ && $keyCol1 >= 0) or quitWithUsageError("[ERROR]: Key1 (-1 argument) to join.pl (which was specified as '$keyCol1') CANNOT BE ZERO or less than zero! These indices are numbered from ONE and not zero!");
 	($keyCol2 =~ m/[0-9]+/ && $keyCol2 >= 0) or quitWithUsageError("[ERROR]: Key2 (-2 argument) to join.pl (which you specified as '$keyCol2') CANNOT BE ZERO or less than zero! These indices are numbered from ONE and not zero!");
-
 	## ================ SET SOME DEFAULT VALUES ============================
 	if (defined($delimBoth)) { ($delim1, $delim2) = ($delimBoth, $delimBoth); } # If "delimBoth" was specified, then set both of the input delimiters accordingly.
-
 	if (!defined($outDelim)) { # Figure out what the output delimiter should be, if it wasn't explicitly specified.
 		if ($delim1 eq $delim2) { $outDelim = $delim1; } # default: set the output delim to whatever the input delim was
 		else { $outDelim = $DEFAULT_DELIM; } # otherwise, set it to the default delimiter
@@ -377,6 +397,8 @@ sub main() { # Main program
 	$stringWhenNoMatch = sanitized_version_of_no_match_string($stringWhenNoMatch);
 	handleMultiJoin($keyCol1, $keyCol2, \@files, $multiJoinType, $delim1, $delim2);
 	($numDupeKeysMultiJoin > 0) and verboseWarnPrint("$numDupeKeysMultiJoin duplicate keys were skipped in the joining process.");
+	warn("Hey there seems to be a problem in the '-o' option right now! Do not trust this script.");
+	warn("Hey there seems to be a problem in the '-o' option right now! Do not trust this script.");
 	warn("Hey there seems to be a problem in the '-o' option right now! Do not trust this script.");
 }
 
@@ -426,7 +448,10 @@ OPTIONS:
 -o FILLER: Print keys even if they do not have a match in FILE2: use FILLER
           as the filler text to print for missing values not present in FILE2.
           Example:  join -o "0.0" FILE1.txt FILE2.txt > OUTPUT_with_zeros.txt
---ob: Set a blank value for the FILLER above. Same as -o ''.
+          Note: if file 2 has NO values at all (e.g. it is a one-column file of just keys),
+          then this key will still be output for non-matching files.
+  --ob: Set a blank value for the FILLER above. Same as -o ''.
+          Warning: Unhelpful if file 2 only has one column!
 -h INT: Number of header lines to print verbatim (without joining) from FILE1. (default: 0)
           If you want filenames in the header, also specify the "--fnh" option.
 --fnh or --filename-in-header: Print the filename in the header. Very useful!
