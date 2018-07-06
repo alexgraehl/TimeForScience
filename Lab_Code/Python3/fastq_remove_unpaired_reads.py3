@@ -23,9 +23,15 @@ from subprocess import call
 # import ipdb; ipdb.set_trace()
 import argparse
 
-def open_compressed_agw(filename, mode):
+def open_compressed_agw(filename, mode, verbose=False):
+    if verbose: sys.stderr.write("[fastq_remove_unpaired_reads.py3]: Parsing maybe-compressed file named: " + str(filename) + "\n")
     if re.search(r"[.](gz|gzip|Z)$", filename, flags=re.IGNORECASE):
-        return gzip.open(filename=filename, mode=mode)
+        try:
+            return gzip.open(filename=filename, mode=mode)
+        except OSError as e:
+            sys.stderr.write("Hey! Note from Alex here: this MAY BE A PROBLEM with python having issues with certain gzip format files. try 'gzip --test' on that file! See here: https://stackoverflow.com/questions/4928560/how-can-i-work-with-gzip-files-which-contain-extra-data")
+            # you can consider running 'gzip --test' on that file to see if it has 'trailing garbage' data
+            raise # re-raise
     if re.search(r"[.](bz2|bzip2)$", filename, flags=re.IGNORECASE):
         return bz2.BZ2File(filename=filename, mode=mode)
     else:
@@ -40,11 +46,11 @@ def scrub_name(s):
     s3 = re.sub(r"[/][12]", "/_ANY_", s2)
     return s3
 
-def populate_OrderedDict_with_names(filename):
+def populate_OrderedDict_with_names(filename, verbose=False):
     # https://docs.python.org/3/library/collections.html#collections.OrderedDict
     sss = OrderedDict()
-    print("Opening file " + filename + "...")
-    with open_compressed_agw(filename, 'rt') as fff:
+    if verbose: sys.stderr.write("[fastq_remove_unpaired_reads.py3]: Opening file named --> " + str(filename) + "\n")
+    with open_compressed_agw(filename, 'rt', verbose=verbose) as fff:
         for linenum,line in enumerate(fff):
             if (linenum % 4 == 0):
                 xid = scrub_name(line)
@@ -107,8 +113,8 @@ def main():
     for f in [fq1, fq2]:
         if not os.path.isfile(f): raise Exception("Failed to find input file <"+f+">")
         pass
-    dict1 = populate_OrderedDict_with_names(fq1)
-    dict2 = populate_OrderedDict_with_names(fq2)
+    dict1 = populate_OrderedDict_with_names(fq1, verbose=args.verbose)
+    dict2 = populate_OrderedDict_with_names(fq2, verbose=args.verbose)
     if args.verbose: sys.stderr.write("Num records in file 1 (" + str(fq1) + "): " + str(len(dict1)) + "\n")
     if args.verbose: sys.stderr.write("Num records in file 2 (" + str(fq2) + "): " + str(len(dict2)) + "\n")
     files_have_all_matching_reads = (list(dict1.keys()) == list(dict2.keys()))
