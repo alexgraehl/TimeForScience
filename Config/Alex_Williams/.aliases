@@ -1307,7 +1307,7 @@ function bbq { # bsub, be quick!
     : "${a_blue_bold}:=${cpre}[1;34m}"
     : "${a_green}:=${cpre}[32m}"
     echo -e "${a_blue_bold}BSS${a_end_color}: ${a_blue_bold}B${a_end_color}sub ${a_blue_bold}B${a_end_color}e ${a_blue_bold}Q${a_end_color}uick!"
-    if [[ "$#" != 1 ]] ; then { echo -e "\n[:ERR:] BBQ: You must specify EXACTLY ONE command to add to the queue run---put your command in quotes! Example:  bbq \"ls -al\"  "; return; } fi
+    if [[ "$#" != 1 ]] ; then echo -e "\n[:ERR:] BBQ: You must specify EXACTLY ONE command to add to the queue run---put your command in quotes! Example:  bbq \"ls -al\"  "; return;  fi
     cmd=$1
     ttt=$(mktemp --suffix=".${USER}.bsub.sh")
     jobname="Q_${USER}_$(date +%s)"
@@ -1341,6 +1341,28 @@ function delete_android_file_transfer_on_mac() {
        "${HOME}/Library/Application Support/Google/Android File Transfer/Android File Transfer Agent DISABLED.app"
     osascript -e 'tell application "System Events" to delete every login item whose name is "Android File Transfer Agent"'
     echo "Done disabling it. Note that the files have been RENAMED, and not totally deleted!"
+}
+
+
+function gitstory() {
+    if [[ "$#" != 1 ]] ; then
+	echo -e "[:ERR:] You must specify EXACTLY ONE filename."; return;
+    fi
+    F=$1
+    if [[ ! -f $F ]]; then
+	echo -e "[:ERR:] Apparently your specified file was not found??? Check this file: $F"; return;
+    fi
+
+    echo "[:OK:] Checking the last few checked-into-git versions of <$F>..."
+    filebase=$(basename -- "$F")
+    extension="${filebase##*.}"
+    filepre="${filebase%.*}"
+    git show HEAD~1:$F > $filebase.01.git.old_from_git_1_rev_back.01.${extension}
+    git show HEAD~2:$F > $filebase.02.git.older_2_revisions__back.02.${extension}
+    git show HEAD~4:$F > $filebase.04.git.older_4_revisions__back.04.${extension}
+    git show HEAD~8:$F > $filebase.08.git.older_8_revisions__back.08.${extension}
+    echo "[:OK:] Generated a bunch of '.git.old' files"
+    echo "[:FYI:] If you're looking for something really specific, remember you can use:  git log -p FILENAME | less -S"
 }
 
 	
