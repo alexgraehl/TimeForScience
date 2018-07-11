@@ -35,16 +35,16 @@ fi
 
 echo -e "${a_echo_color}[:FYI:] Loading bash-aliases...${a_end_color}"
 
-CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR}" # <-- Multiple **space-delimited** directories can be here
+CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR} ${HOME}/workspace/0_CODE" # <-- Multiple **space-delimited** directories can be here
 if [[ -n "${isMac}" ]] ; then ## It *is* a mac!
-    function ff { ## Searches certain source directories, and the current directory (and any subdirectories!)
+    function g { ## Searches certain source directories, and the current directory (and any subdirectories!)
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
 	    "$@" ${CODE_DIRS_FOR_GREPPING} ./
     }
     alias zcat="gzip --decompress --stdout" # The Mac doesn't have the gzip-handling zcat (AKA gzcat)
 else
     ## Not a Mac!
-    function ff {     ## Annoyingly, grep is different between mac/unix
+    function g {     ## Annoyingly, grep is different between mac/unix
 	cmd=(	grep --color=always -T \
 	    --ignore-case \
 	    --recursive \
@@ -651,7 +651,7 @@ function science {
 	WSPRE="${HOME}/workspace/0_CODE"
 	[[ -d "${WSPRE}" ]] || { echo "Failure! Missing expected directory: ${WSPRE}"; return 99; }
 	for f in "${GD}"/**/W_*.Rmd; do
-	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "Git-ifying ${f} --> ${h}...";
+	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "[:OK:] Copying from the web directory to a GIT directory, specifically: ${f} --> ${h}...";
 	    \cp -f "${f}" "${h}"
 	done
     fi
