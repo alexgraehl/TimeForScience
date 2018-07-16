@@ -265,7 +265,8 @@ alias cheat="echo \
 \">> UNIX: list files w/modified time MORE THAN one week ago: find . -mtime +7 \" ${NL}\
 \">> UNIX: list files w/modified time LESS THAN one week ago: find . -mtime -7 \" ${NL}\
 \">> UNIX: list files w/modified time two days ago: find . -mtime 2 \" ${NL}\
-\">> UNIX: did your arrow keys stop working in 'less' within 'screen'? Detach the screen (modifier+d), then run 'reset' on the command line in the outer shell. \" ${NL}\
+\">> UNIX SCREEN: did your arrow keys stop working in 'less' within 'screen'? Detach the screen (modifier+d), then run 'reset' on the command line in the outer shell. \" ${NL}\
+\">> UNIX SCREEN: full screen a tiny window: modifier + F (capital F) for 'fill'. \" ${NL}\
 \">> UNIX: list files w/modified time between 6 and 9 minutes ago: find . -mmin +5 -mmin -10 \" ${NL}\
 \">> UNIX: list ONLY dot files, no .. or up a directory: ls -l .??* \" ${NL}\
 \">> UNIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
