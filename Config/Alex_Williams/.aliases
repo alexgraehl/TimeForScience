@@ -874,7 +874,7 @@ function mvln { # move and then make an ALIAS in the current location, leaving a
     if [[ -d "${DEST}" ]]; then # target is a directory
 	DEST="${DEST%/}/${SOURCE}" # remove trailing slash. This is OK even with '/' (root), since we always insert a slash at the end no matter what
     fi
-    mv "${SOURCE}" "${DEST}"  && ln -s "${DEST}" "${SOURCE}" && echo -e "Moved ${a_green}${SOURCE} -> ${DEST}${a_end_color} and left a symlink at ${a_cyan}${SOURCE}${a_end_color}"
+    mv "${SOURCE}" "${DEST}"  && ln -s "${DEST}" "${SOURCE}" && echo -e "Moved ${a_green}${SOURCE} ${a_yellow}-> ${a_green}${DEST}${a_end_color} and left a symlink at ${a_cyan}${SOURCE}${a_end_color}"
 }
 
 #function neararchive { # usage: cd /work/projects/your-project  then: "neararchive myproj-1234-rna-mouse"  --> will move things to the nearline storage and symlink them back
