@@ -1275,14 +1275,19 @@ function syncweb {
 #}
 
 function bsubtemp {
-    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] Please specify a job name! Note that you probably also want to send this output to STDOUT, so e.g. 'bsubtemp MYJOB > job.sub.sh'"; return 1; fi
+    if (( "$#" < 1 )) ; then echo -e "[:ERR:]] Please specify a job name! Note that you probably also want to send this output to STDOUT, so e.g. 'bsubtemp MYJOB > job.sub.sh'"; return 1; fi
+    if [[ "$#" == 2 ]] ; then
+	MEM=$2
+    else
+	MEM=4  # gigabytes
+    fi
     JJJ=${1/ /_} # spaces --> '_'
     echo -e "#!/bin/bash"
     echo -e "set -euo pipefail; shopt -s nullglob; shopt -s globstar;"
     echo -e "#BSUB -L /bin/bash                # Ensure that we are using BASH"
     echo -e "#BSUB -R 'span[hosts=1]'          # No splitting across hosts"
     echo -e "#BSUB -q medium                   # short=2 hours, medium=24 hours"
-    echo -e "#BSUB -R 'rusage[mem=4]'          # In GB"
+    echo -e "#BSUB -R 'rusage[mem=${MEM}]'     # In GB"
     echo -e "#BSUB -n 1                        # N threads"
     echo -e "#BSUB -J ${JJJ}"
     echo -e "#BSUB -o ${JJJ}-%J-%I.bsub.log.out   # or '-oo' to OVERWRITE (instead of appending)"
@@ -1308,8 +1313,14 @@ function bbq { # bsub, be quick!
     : "${a_blue_bold}:=${cpre}[1;34m}"
     : "${a_green}:=${cpre}[32m}"
     echo -e "${a_blue_bold}BSS${a_end_color}: ${a_blue_bold}B${a_end_color}sub ${a_blue_bold}B${a_end_color}e ${a_blue_bold}Q${a_end_color}uick!"
-    if [[ "$#" != 1 ]] ; then echo -e "\n[:ERR:] BBQ: You must specify EXACTLY ONE command to add to the queue run---put your command in quotes! Example:  bbq \"ls -al\"  "; return;  fi
+    if [[ "$#" < 1 || "$#" > 2 ]] ; then echo -e "\n[:ERR:] BBQ: You must specify EXACTLY ONE command to add to the queue run---put your command in quotes! Example:  bbq \"ls -al\"  "; return;  fi
     cmd=$1
+    
+    if (( "$#" >= 2 )); then
+	mem=$2
+    else
+	mem=4 # GB
+    fi
     ttt=$(mktemp --suffix=".${USER}.bsub.sh")
     jobname="Q_${USER}_$(date +%s)"
     echo       -e "(Remember that backslashes in your command may need to be doubled.)"
@@ -1318,10 +1329,10 @@ function bbq { # bsub, be quick!
     echo       -e "Command to run:  ${a_bold_blue}"
     printf "%s\n" "${cmd}"
     echo       -e "\n${a_end_color}"
-    bsubtemp "${jobname}"    >| ${ttt}
-    printf "%s\n" ""         >> ${ttt}
-    printf "%s\n" "${cmd}"   >> ${ttt}
-    printf "%s\n" ""         >> ${ttt}
+    bsubtemp "${jobname}" ${mem}    >| ${ttt}
+    printf "%s\n" ""                >> ${ttt}
+    printf "%s\n" "${cmd}"          >> ${ttt}
+    printf "%s\n" ""                >> ${ttt}
     #bsub -K   -q 'short' < ${ttt}
     echo -e "Running the job here locally... blocking until it finishes!"
     echo -e "(You probably want to be running this job in SCREEN or TMUX.)"
