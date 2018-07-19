@@ -1356,11 +1356,11 @@ function bbq() { # bsub, be quick!
     echo -e "You can check the BSUB command with -->  ${a_blue_bold}less -S ${ttt}${a_end_color}"
     echo -e "${a_green}[WAITING FOR JOB \"${jobname}\"... DO NOT CTRL-C THIS JOB!]${a_end_color}"
     echo -e "${a_green}[WARNING: IF YOU CTRL-C, THE QUEUE JOB IS ABORTED, EVEN IF IT IS RUNNING!]${a_end_color}"
+    echo -e "${a_green}View the output LIVE with: tail -f PROJECT_ID_HERE.bsub.log.err <-- only works for ONE file at a time${a_end_color}"
     bsub -K < ${ttt}
     echo -e "${a_green}[DONE]${a_end_color}"
 }
 
-    
 function delete_android_file_transfer_on_mac() {
     PID=$(ps -fe | grep "[A]ndroid File Transfer Agent" | awk '{print $2}')
     if [[ -n ${PID} ]]; then kill ${PID}; fi;
