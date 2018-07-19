@@ -1281,6 +1281,10 @@ function bsubtemp {
     else
 	MEM=4  # gigabytes
     fi
+    if ! agw_is_numeric "${MEM}"; then
+	echo "[:ERR:] Your second argument, if included, MUST be an integer (the amount of RAM to request, in GB)! Your argument was this: ${mem}" >&2;
+	return 1;
+    fi
     JJJ=${1/ /_} # spaces --> '_'
     echo -e "#!/bin/bash"
     echo -e "set -euo pipefail; shopt -s nullglob; shopt -s globstar;"
@@ -1302,7 +1306,16 @@ function bsubtemp {
     # 'bhist' has more info too: # bhist -w -l -a -n 99 769084 | less -S
 }
 
-function bbq { # bsub, be quick!
+function agw_is_numeric() {
+    numeric_regex='^[0-9]+$'
+    if [[ "$1" =~ ${numeric_regex} ]]; then
+	return 0 # IS a number (0 is 'good' in bash)
+    else
+	return 1 # NOT a number
+    fi
+}
+
+function bbq() { # bsub, be quick!
     # Usage:   bbq "my command here"
     # Note:    * Outputs log files to THE CURRENT DIRECTORY!
     #          * Makes a temp file using 'mktemp'
@@ -1318,6 +1331,10 @@ function bbq { # bsub, be quick!
     
     if (( "$#" >= 2 )); then
 	mem=$2
+	if ! agw_is_numeric "${mem}"; then
+	    echo "[:ERR:] Your second argument, if included, MUST be an integer (the amount of RAM to request, in GB)! Your argument was this: ${mem}" >&2;
+	    return 1;
+	fi
     else
 	mem=4 # GB
     fi
