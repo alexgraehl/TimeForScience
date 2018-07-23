@@ -14,3 +14,6 @@ if [[ -f "$HOME/.modules" ]]; then
     time source "$HOME/.modules"
     echo "[:FYI:] Modules are done loading"
 fi
+
+# added by Anaconda3 5.2.0 installer
+export PATH="/anaconda3/bin:$PATH"
