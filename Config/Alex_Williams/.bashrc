@@ -348,7 +348,7 @@ export  CVSEDITOR="emacs -nw"
 export SVN_EDITOR="emacs -nw"
 export     EDITOR="emacs -nw"
 
-export HUE_BASE_IP="192.168.1.222"
+export HUE_BASE_IP="10.0.0.9"
 # Keybindings: Add IJKL navigation to supplement/replace the arrow keys
 bind "\M-J:backward-word"
 bind "\M-L:forward-word"
