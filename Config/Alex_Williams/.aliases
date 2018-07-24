@@ -1349,9 +1349,9 @@ function bbq() { # bsub, be quick!
     echo       -e "(Remember that backslashes in your command may need to be doubled.)"
     echo       -e "(Remember that DOLLAR SIGNS MUST BE ESCAPED! So use \\$ instead of '$'.)"
     echo       -e "Submitting this (temporary) script: ${a_blue_bold}${ttt}${a_end_color}"
-    echo       -e "Command to run:  ${a_bold_blue}"
+    echo       -e "Command to run:"
     printf "%s\n" "${cmd}"
-    echo       -e "\n${a_end_color}"
+    echo       -e ""
     bsubtemp "${jobname}" ${mem}    >| ${ttt}
     printf "%s\n" ""                >> ${ttt}
     printf "%s\n" "${cmd}"          >> ${ttt}
