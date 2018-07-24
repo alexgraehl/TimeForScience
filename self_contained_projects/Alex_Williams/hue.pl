@@ -1,10 +1,7 @@
 #!/usr/bin/perl -w
 
-# The 'curl' part of the code (the command that controls the lights over the network) is from:
-#   * http://www.everyhue.com/vanilla/discussion/136/perl-script-to-control-hue-light
-
-use strict;
-use warnings;
+# The 'curl' part of the code (the command that controls the lights over the network) is from: http://www.everyhue.com/vanilla/discussion/136/perl-script-to-control-hue-light
+use strict;  use warnings;
 
 use Getopt::Long;
 use Term::ANSIColor;
@@ -25,7 +22,6 @@ if ($pingExitCode != 0) {
     print STDERR "\n"; # <-- prevents the red background from continuing to the next line
 }
 
-
 sub quitWithUsageError($) { print($_[0] . "\n"); printUsage(); print($_[0] . "\n"); }
 sub printUsageAndQuit() { printUsage(); exit(1); }
 sub printUsage() {    print STDOUT <DATA>; exit(0); }
@@ -33,8 +29,6 @@ sub printUsage() {    print STDOUT <DATA>; exit(0); }
 sub sleepFloat($) { # input: a decimal amount of seconds to sleep!
     Time::HiRes::usleep(int($_[0] * 1_000_000)); # <-- one million microseconds are in one second
 }
-
-
 
 my $MAX_LOGIN_ATTEMPTS = ($DEBUG) ? 1 : 10; # how many times to try to connect to the light before skipping it. Default: 10 attempts, unless we are debugging, in which case set it to 1 just to make things easier to check.
 my $HUE_MAX = 65535; # Values of HUE can be [0-65535]
@@ -51,7 +45,6 @@ my $val100 = undef;
 my $hue65535 = undef; # This is the number that the hue *actually* accepts. Defualt hue is 0, which is red.
 my $sat255   = undef;
 my $val255   = undef;
-
 
 my $transitionInSeconds = undef;
 my $off = 0;
@@ -194,7 +187,6 @@ if ($off) {
     exit(0); # <-- important!
 }
 
-
 if ($doRainbow) {
     print "RAINBOW\n";
     my $rainbowHue = 0;
@@ -285,30 +277,28 @@ setLights($baseIP, $deviceType, $user, $hue65535, $sat255, $val255, $transitionI
 
 __DATA__
 
-Hue Setter.
+hue.pl hue lights setter.
 
 Example usage:
    hue.pl --red -n 1,3
   Set lights 1 and 3  to red.
 
   hue.pl --rainbow
-  Set the rainbow color-changing mode.
-  Requires that this program continue running!
+  Set the rainbow color-changing mode for all lights.
 
-Other special modes. These all require that the program continue running:
+Special modes, like '--rainbow' require the script to continue running.
 
---rainbow: rainbow
---fireplace: red/yellow slow changes
---flicker: Like the flickering of a monitor or TV
---horrid: red/blue "emergency light" flashing
-  
+List of special modes:
+  --rainbow: rainbow
+  --fireplace: red/yellow slow changes
+  --flicker: Like the flickering of a monitor or TV
+  --horrid: red/blue "emergency light" flashing
+
 -n (comma delimited numeric list): which lights to change
   e.g.     -n 1,3,4 (no spaces)
 
   --off: Turn lights off
 
-  
-  
   --hue or -h (0 to 360)  (0 = red, 90 = yellow, etc...)
   --sat or -s (0 to 100)  (saturation -- 0 = white, 100 = saturated)
   --val or -s (0 to 100)  (brightness: 0 = darkes)
