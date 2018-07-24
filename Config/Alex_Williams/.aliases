@@ -649,13 +649,18 @@ function scienceboth {
 function science {
     # Manually copy a bunch of GOOGLE CODE controlled files
     GD="${HOME}/GOOG/Alex_All_Projects"
+    WSPRE="${HOME}/workspace/0_CODE"
     if [[ -d "${GD}" ]]; then
-	WSPRE="${HOME}/workspace/0_CODE"
 	[[ -d "${WSPRE}" ]] || { echo "Failure! Missing expected directory: ${WSPRE}"; return 99; }
 	for f in "${GD}"/**/W_*.Rmd; do
-	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "[:OK:] Copying from the web directory to a GIT directory, specifically: ${f} --> ${h}...";
+	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "[:OK:] Copying from the Google Drive directory to a GIT directory, specifically: ${f} --> ${h}...";
 	    \cp -f "${f}" "${h}"
 	done
+    fi
+    WEBO="${HOME}/web"
+    if [[ -d "${WEBO}" && -d "${WSPRE}" ]]; then
+	echo "[:OK:] Copying web files to a GIT directory..."
+	\cp -f ${WEBO}/index.html ${WSPRE}/web/
     fi
     # ================== Done with this Google code stuff ==============
     scienceboth "${TIME_FOR_SCIENCE_DIR}"
