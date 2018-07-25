@@ -23,6 +23,9 @@ print0=function(...){print(paste0(...))}; system0=function(...){print0("[SYSTEM 
 file.nonzero.exists=function(f){return(file.exists(f)&&file.info(f)$size>0)}
 GLOBAL_ERRORS <- c("")
 errlog <- function(...) { msg=paste0(...);print0(msg);warning(msg); GLOBAL_ERRORS <<- append(GLOBAL_ERRORS, msg); }
+library("dplyr")
+library("readr")
+library("tibble")
 # ======================================================================================
 
 
