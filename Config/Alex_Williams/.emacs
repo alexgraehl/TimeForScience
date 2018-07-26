@@ -229,7 +229,7 @@
 
 (if (system-type-is-darwin)
     (progn
-      (setq should-load-ess nil) ; don't load R syntax highlighting
+      (setq should-load-ess t) ; don't load R syntax highlighting
       ))
 
 (if (system-type-is-gnu)

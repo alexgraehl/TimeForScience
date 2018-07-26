@@ -15,7 +15,8 @@ if (!exists("print.agw")) {
 }
 
 # ======================================================================================
-if (interactive()) { options(error=recover, max.print=1000) } else { options(error=traceback) } # useful even non-interactively
+if (interactive()) { options(error=recover, max.print=1000) } else { options(error=NULL) } # useful even non-interactively
+# Error = traceback DOES NOT STOP THE SCRIPT
 options(stringsAsFactors=F, menu.graphics=F) # for top of file
 # ======================================================================================
 # Common functions
