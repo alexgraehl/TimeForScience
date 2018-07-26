@@ -21,6 +21,7 @@ options(stringsAsFactors=F, menu.graphics=F) # for top of file
 # Common functions
 print0=function(...){print(paste0(...))}; system0=function(...){print0("[SYSTEM CALL]: ",...);system(paste0(...))}
 file.nonzero.exists=function(f){return(file.exists(f)&&file.info(f)$size>0)}
+first_existing=function(...){for(x in list(...)){if(file.exists(x)){return(x)}};return(NA)}
 GLOBAL_ERRORS <- c("")
 errlog <- function(...) { msg=paste0(...);print0(msg);warning(msg); GLOBAL_ERRORS <<- append(GLOBAL_ERRORS, msg); }
 library("dplyr")
