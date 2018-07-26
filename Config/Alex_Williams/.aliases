@@ -241,7 +241,8 @@ alias cheat="echo \
 \">> AWK FILTER based on numeric value: filter based on a number: cat test | awk '{ if (\\\$1 >= 900 && \\\$1 > 0) print; }' \" ${NL}\
 \">> GIT: do not download huge LFS files when git lfs is enabled: GIT_LFS_SKIP_SMUDGE=1 git clone YOUR_REPO \" ${NL}\
 \">> GIT: only get the last 1 revision (faster): git clone --depth=1 https://your-site-here/something.git \" ${NL}\
-\">> GIT: discard ALL local changes: git reset --hard origin/master \" ${NL}\
+\">> GIT: discard/revert ALL local changes TO ALL FILES: DANGER >> git reset --hard origin/master << DANGER \" ${NL}\
+\">> GIT: discard/revert local changes to JUST ONE FILE: git checkout -- FILENAME_HERE \" ${NL}\
 \">> GIT: fix an HTTP repo to SSH: git remote set-url origin git@github.com:RepoNameHere/ProjName.git \" ${NL}\
 \">> GIT: see old version of file (example: ~4 = 4 revisons ago): git show HEAD~4:./some_file.txt \" ${NL}\
 \">> GIT: delete a REMOTE branch: git push origin --delete BRANCHNAME (not delete, surprisingly) \" ${NL}\
