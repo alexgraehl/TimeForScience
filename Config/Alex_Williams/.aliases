@@ -203,7 +203,7 @@ alias cheat="echo \
 \">> R: Perpendicular axis labels: las=2 (1=horiz, 3=vertical) \" ${NL}\
 \">> R: draw beyond graph region: par(xpd=T/F/NA) \" ${NL}\
 \">> R: square plot: par(pty='s') \" ${NL}\
-\">> R: nice heatmap: library(pheatmap); pheatmap(DATA, border=NA);   \" ${NL}\
+\">> R: nice heatmap: library(pheatmap); pheatmap(DATA, border=NA, cluster_rows=T, cluster_cols=F, main='Heatmap', fontsize_col=9, fontsize_row=9, display_numbers=T, fontsize_number=4);   \" ${NL}\
 \">> R: find attributes of a variable: attr(x, 'theAttribute'); Works when names()/attributes() fails! \" ${NL}\
 \">> R: inspect object: str(...) \" ${NL}\
 \">> R: totally blank plot: plot(c(0,1),c(0,1),ann=F,bty='n',type='n',xaxt='n',yaxt='n') \" ${NL}\
