@@ -55,6 +55,9 @@ my $doCarnival = 0;
 my $doHorrid = 0;
 my $doFireplace = 0;
 
+my $setRandomOnce = 0;
+
+
 GetOptions("help|?|man"       => sub { printUsageAndQuit(); }
 	   , "n=s"                => \$lightIDStringCommaDelim
 	   , "off"                => sub { $off = 1; }
@@ -71,10 +74,11 @@ GetOptions("help|?|man"       => sub { printUsageAndQuit(); }
 	   , "carnival!"           => \$doCarnival
 	   , "horrid!"             => \$doHorrid
 
-	   , "flicker!"             => \$doFlicker
+	   , "flicker!"            => \$doFlicker
 
 	   , "fire|fireplace!"             => \$doFireplace
 
+	   , "rand|random|randhue"      => \$setRandomOnce
 	   , "fast"    => sub { $transitionInSeconds = 0.15; }
 
 	   , "red"         => sub { $hue360 = 0; $sat100 = 100; $val100 = 100; }
@@ -96,7 +100,7 @@ GetOptions("help|?|man"       => sub { printUsageAndQuit(); }
 my @lights = ();
 
 if (!defined($lightIDStringCommaDelim)) {
-    @lights = (1,2,3); # all lights, assuming there are three <------------- HARD CODED HERE!
+    @lights = (1,2,3,4,5,6); # all lights, assuming there are up to 6... no idea how to ask which lights are available <------------- HARD CODED HERE!
 } else {
     @lights = split(",", $lightIDStringCommaDelim);
 }
@@ -114,6 +118,11 @@ if (defined($val100)) {    $val255   = int($val100 / 100.0 * $VAL_MAX); } # Conv
 (!defined($sat255) or ($sat255 >= 0 && $sat255 <= $SAT_MAX))     or die "The invalid saturation value \"$sat255\" was out of range (Valid range is from 0 to $SAT_MAX).";
 (!defined($val255) or ($val255 >= 0 && $val255 <= $VAL_MAX))     or die "The invalid value (brightness) value \"$val255\" was out of range (Valid range is from 0 to $VAL_MAX).";
 
+sub getRandHue() {
+	my $hrand += int(rand($HUE_MAX)); # randomly(ish) change the hue, but ensure that it changes by at least (max/8)
+	return (($hrand <= $HUE_MAX) ? $hrand : $HUE_MAX);
+}
+
 sub logIntoBaseStation($$$) {
     my ($baseIP, $deviceType, $user) = @_;
     for (my $count = 0; $count < $MAX_LOGIN_ATTEMPTS; $count++) {
@@ -128,12 +137,13 @@ sub logIntoBaseStation($$$) {
 sub setLights(     $$$$$$$@) {
     my($baseIP, $deviceType, $user, $hue, $sat, $brightness, $ttime, @lightNumArray) = @_;
     for my $lnum (@lightNumArray) {
-	setSingleLight($baseIP, $deviceType, $user, $hue, $sat, $brightness, $ttime, $lnum);
+	    setSingleLight($baseIP, $deviceType, $user, $hue, $sat, $brightness, $ttime, $lnum);
     }
 }
 
 sub setSingleLight($$$$$$$$) {
     my($baseIP, $deviceType, $user, $hue, $sat, $brightness, $ttime, $lightNum) = @_;
+    if (defined($hue) and ($hue != int($hue))) { die "You passed in a non-integer hue value! You passed in this value: $hue "; }
 
     my $hueStr = (defined($hue)) ? qq{\"hue\":$hue,} : qq{};
     my $satStr = (defined($sat)) ? qq{\"sat\":$sat,} : qq{};
@@ -187,6 +197,13 @@ if ($off) {
     exit(0); # <-- important!
 }
 
+if ($setRandomOnce) {
+	foreach my $lightNum (@lights) {
+		setSingleLight($baseIP, $deviceType, $user, getRandHue(), $sat100, $val100, $transitionInSeconds, $lightNum);
+	}
+	exit(0);
+}
+
 if ($doRainbow) {
     print "RAINBOW\n";
     my $rainbowHue = 0;
@@ -206,13 +223,13 @@ if ($doCarnival) {
     my $hhh = 0;
     my $carnivalTransitionTime = defined($transitionInSeconds) ? $transitionInSeconds : 0.1; # default carnival transition time is 0.1 seconds, unless this is specifically overridden
     while (1) {
-	# INFINTE LOOP!
-	$hhh += int(($HUE_MAX / 8) + rand($HUE_MAX / 2)); # randomly(ish) change the hue, but ensure that it changes by at least (max/8) 
-	if ($hhh > $HUE_MAX) { $hhh = min($hhh - $HUE_MAX, $HUE_MAX); }
-	setLights($baseIP, $deviceType, $user, int($hhh), $sat255, $val255, $carnivalTransitionTime, @lights);
-	my $sleepTime = max($carnivalTransitionTime, $MIN_SECONDS_BETWEEN_UPDATES);
-	sleepFloat($sleepTime+0.01);
-	#print $hhh . "\t";
+	    # INFINTE LOOP!
+	    $hhh += int(($HUE_MAX / 8) + rand($HUE_MAX / 2)); # randomly(ish) change the hue, but ensure that it changes by at least (max/8) 
+	    if ($hhh > $HUE_MAX) { $hhh = min($hhh - $HUE_MAX, $HUE_MAX); }
+	    setLights($baseIP, $deviceType, $user, int($hhh), $sat255, $val255, $carnivalTransitionTime, @lights);
+	    my $sleepTime = max($carnivalTransitionTime, $MIN_SECONDS_BETWEEN_UPDATES);
+	    sleepFloat($sleepTime+0.01);
+	    #print $hhh . "\t";
     }
 }
 
@@ -234,16 +251,13 @@ if ($doHorrid) {
 if ($doFlicker) {
     print "FLICKER\n"; # like a flickering CRT monitor
     for (my $i = 0; ; $i++) { # <-------------- INFINITE LOOP
-	my $sceneTransitionSpeed = 0.15 + rand(0.6); # The "flicker" speed is between 0.1 and 0.6 seconds
-	my $sceneLength = (rand(8.0) + 0.5) * ($sceneTransitionSpeed*$sceneTransitionSpeed); # Each scene is at least 1 second, but could be shorter
+	my $sceneTransitionSpeed = 0.05 + rand(0.5); # The "flicker" speed is between 0.05 and 0.55 seconds
+	my $sceneLength = (rand(8.0) + 0.5) * ($sceneTransitionSpeed*$sceneTransitionSpeed); # Each scene is at least 1 second, but could be longer maybe?
 	my $lengthSoFar = 0;
 	for (my $lengthSoFar = 0; $lengthSoFar <= $sceneLength; ) {
-	    
 	    my $fh = int((210+rand(40))/360*$HUE_MAX); # acceptable hue range on the 360 scale is from 180 to 260 (blues)
-
 	    if (rand(1.0) < 0.02) { $fh = 0; } # 2% chance of setting the hue to red!
 	    elsif (rand(1.0) < 0.02) { $fh = 120; } # ~2% chance of setting the hue to yellow!
-
 	    my $fs = int((rand(0.5)+0.5)*$SAT_MAX); # saturation can vary from 0.5 to 1.0.
 	    my $fv = int((rand(0.4)+0.6)*$VAL_MAX); # value can vary from 0.4 to 1.0
 	    setLights($baseIP, $deviceType, $user, $fh, $fs, $fv, $sceneTransitionSpeed, @lights);
@@ -294,6 +308,9 @@ List of special modes:
   --flicker: Like the flickering of a monitor or TV
   --horrid: red/blue "emergency light" flashing
 
+Single-invocation random mode:
+  --random: Randomly sets the hue for all lights, once. Does not keep running.
+  
 -n (comma delimited numeric list): which lights to change
   e.g.     -n 1,3,4 (no spaces)
 
