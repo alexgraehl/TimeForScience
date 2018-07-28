@@ -661,7 +661,7 @@ function science {
     fi
     WEBO="${HOME}/web"
     if [[ -d "${WEBO}" && -d "${WSPRE}" ]]; then
-	echo "[:OK:] Copying web files to a GIT directory..."
+	echo "[:OK:] Copying web files to a GIT directory... these should be separate from any other version-controlled versions of these files, so it should be safe to copy the web files here and not accidentally overwrite any other code!"
 	\cp -f ${WEBO}/index.html ${WSPRE}/web/
     fi
     # ================== Done with this Google code stuff ==============
