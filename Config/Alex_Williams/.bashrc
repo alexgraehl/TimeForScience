@@ -300,10 +300,15 @@ function parse_git_dirty {
 
 case "$COMPYNAME"
 in
-    zzz*|*GYFH|Mac*|Slithereens|Capsid)
+    *rescom*)
 	#export PS1="${PRE_PS1}"
 	# 37;44m is white on a BLUE background
 	export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;42m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]${COMPYSHORT}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
+	;;
+    zzz*|*GYFH|Mac*|Slithereens|Capsid)
+	#export PS1="${PRE_PS1}"
+	# 37;41m is white on a RED background
+	export PS1="\[\e[37;41m\]\t\[\e[m\]\[\e[37;42m\]\`parse_git_branch\`\[\e[m\]\[\e[41m\][\[\e[m\]\[\e[37;41m\]${COMPYSHORT}\[\e[m\]\[\e[41m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
 	#export PS1="${PRE_PS1}\[${POWDER_BLUE}\].mac\$\[${NORMAL}\] " # we are on a mac laptop probably
 	;;
     *) ## Otherwise...
