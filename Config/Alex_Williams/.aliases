@@ -672,6 +672,16 @@ function science {
 
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
 
+function rmd {
+    if [[ "$#" != 1 ]]; then echo -e "[:ERR:] the 'rmd'-ify command needs exactly one filename argument."; return 1; fi
+    FILE_TO_RENDER=$1
+    if [[ ! ${FILE_TO_RENDER} =~ .*Rmd ]]; then echo -e "[:HEY:] Your file to render, <${FILE_TO_RENDER}>, did not end in '.Rmd'!!"; return 1; fi
+    if [[ ! -f "${FILE_TO_RENDER}" ]]    ; then echo -e "[:HEY:] Your file to render, <${FILE_TO_RENDER}>, did not appear to exist!"; return 1; fi
+    rmd_cmd="Rscript -e 'library(rmarkdown); rmarkdown::render(\"${FILE_TO_RENDER}\", \"html_document\")'  "
+    echo "[:OK:] Running this command: " ${rmd_cmd}
+    eval ${rmd_cmd}
+}
+
 alias agwcom='ssh ${AGW_SSH_OPTIONS}   ${AGWCOM_USERNAME}@${AGWCOM_URL}'
 
 alias nami=' ssh ${AGW_SSH_OPTIONS} -i ~/Dropbox/metaquery-dev.pem bitnami@52.53.252.164'
