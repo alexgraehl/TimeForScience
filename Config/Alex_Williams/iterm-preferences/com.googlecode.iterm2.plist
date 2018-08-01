@@ -24,6 +24,8 @@
 	<integer>50</integer>
 	<key>BadgeTopMargin</key>
 	<integer>50</integer>
+	<key>CommandSelection</key>
+	<false/>
 	<key>Default Bookmark Guid</key>
 	<string>9F128B9A-CAEC-4D6D-ABD4-0E99B5AD4D5D</string>
 	<key>DimOnlyText</key>
@@ -82,15 +84,15 @@
 		<integer>1</integer>
 	</dict>
 	<key>NSWindow Frame SUStatusFrame</key>
-	<string>1470 -107 400 129 0 0 2560 1417 </string>
+	<string>-758 16 400 129 -1440 -496 1440 877 </string>
 	<key>NSWindow Frame SUUpdateAlert</key>
 	<string>410 363 620 392 0 0 1440 877 </string>
 	<key>NSWindow Frame SessionsPreferences</key>
 	<string>269 126 606 469 0 0 1440 877 </string>
 	<key>NSWindow Frame SharedPreferences</key>
-	<string>1332 680 796 473 0 0 2560 1417 </string>
+	<string>486 301 796 473 0 0 1440 878 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>197 47 1625 939 0 0 2560 1417 </string>
+	<string>0 0 1440 878 0 0 1440 878 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
 	<string>176 70 585 452 0 0 1440 877 </string>
 	<key>NSWindow Frame iTerm Window 2</key>
@@ -1823,6 +1825,8 @@
 			<string>/Users/alexgw</string>
 		</dict>
 	</array>
+	<key>NoSyncCommandHistoryHasEverBeenUsed</key>
+	<true/>
 	<key>NoSyncHaveUsedCopyMode</key>
 	<true/>
 	<key>NoSyncHaveWarnedAboutPasteConfirmationChange</key>
@@ -1868,7 +1872,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2018-07-09T04:42:22Z</date>
+	<date>2018-07-31T00:29:56Z</date>
 	<key>SUSendProfileInfo</key>
 	<false/>
 	<key>ShowFullScreenTabBar</key>
@@ -1907,7 +1911,7 @@
 	<key>findRegex_iTerm</key>
 	<false/>
 	<key>iTerm Version</key>
-	<string>3.1.6</string>
+	<string>3.1.7</string>
 	<key>kCPKSelectionViewPreferredModeKey</key>
 	<integer>7</integer>
 	<key>kCPKSelectionViewShowHSBTextFieldsKey</key>
