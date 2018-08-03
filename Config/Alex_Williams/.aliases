@@ -398,24 +398,27 @@ function scienceboth {
 }
 function science {
     # Manually copy a bunch of GOOGLE CODE controlled files
+    
     GD="${HOME}/GOOG/Alex_All_Projects"
     WSPRE="${HOME}/workspace/0_CODE"
+    scienceboth "${HOME}/workspace/0_CODE" # sync these files before overwriting the local W_...Rmd ones
+    
     if [[ -d "${GD}" ]]; then
 	[[ -d "${WSPRE}" ]] || { echo "Failure! Missing expected directory: ${WSPRE}"; return 99; }
 	for f in "${GD}"/**/W_*.Rmd; do
-	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "[:OK:] Copying from the Google Drive directory to a GIT directory, specifically: ${f} --> ${h}...";
+	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "[:OK:] Copying any .Rmd files from the Google Drive directory to a GIT directory (these will OVERWRITE existing files!): ${f} --> ${h}...";
 	    \cp -f "${f}" "${h}"
 	done
     fi
     WEBO="${HOME}/web"
     if [[ -d "${WEBO}" && -d "${WSPRE}" ]]; then
-	echo "[:OK:] Copying web files to a GIT directory... these should be separate from any other version-controlled versions of these files, so it should be safe to copy the web files here and not accidentally overwrite any other code!"
+	echo "[:OK:] Copying web files to a GIT directory..."
 	\cp -f ${WEBO}/index.html ${WSPRE}/web/
     fi
     # ================== Done with this Google code stuff ==============
     scienceboth "${TIME_FOR_SCIENCE_DIR}"
-    scienceboth "${HOME}/workspace/git_0_CODE"
-    scienceboth "${HOME}/workspace/0_CODE"
+    #scienceboth "${HOME}/workspace/git_0_CODE"
+    scienceboth "${HOME}/workspace/0_CODE" # Sync AGAIN after copying
 }
 
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
