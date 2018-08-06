@@ -1073,7 +1073,7 @@ function bsubtemp {
     echo -e ''
     echo -e ": \"\${LSB_JOBID:=}\" # set undefined job ID to empty"
     echo -e "if [[ -z \"\${LSB_JOBID}\" ]]; then"
-    echo -e "    echo \"This is being run on the command line, not being submitted by bsub < scriptname.sh\"; "
+    echo -e "    echo \"[:ERR:] ERROR: You should NOT run this as a script, but rather submit it as:   bsub < scriptname.sh      <-- note: the '<' is incredibly important! Do not omit it.\"; "
     echo -e "    exit 1; "
     echo -e "fi"
     echo ''
