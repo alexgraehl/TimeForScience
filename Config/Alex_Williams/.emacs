@@ -5,14 +5,10 @@
 ;; NOTE: IF YOU NOTICE THAT EMACS TAKES 2 seconds to open a file when you start it up AND you are using TMUX
 ;; THEN HERE IS THE SOLUTION: set your $TERM to screen-256color instead of xterm-256color
 ;; Then it will work! See here: https://bbs.archlinux.org/viewtopic.php?id=113566
-
-;; I wonder if someone can help me figure this out. I've started recently using emacs in daemon mode, and calling emacsclient from inside tmux. The problem is that there's a short delay (around 2 seconds) when I do this, before the file is opened.
-;; Specifically, from within a tmux client, calling "emacsclient -t filename" loads the emacs frame instantly inside the terminal emulator, displaying the scratch buffer. I then have to wait a second or two before it loads the file. This is annoying.
 ;; Changing any of these variables seems to fix it: No tmux means that it works instantly. Also "emacsclient -c filename" opens a new window displaying the file instantly. It's a specific combination of starting the terminal version of emacs from within tmux that's triggering the delay. Also, any subsequent C-x C-f open that file instantly. It's just the first time.
 
 ;; My TERM was set to xterm-256color inside tmux.
 ;; I changed that to screen-256color, and it immediately fixed the problem.
-                                      
 ;; Now I set my TERM in my .bashrc to xterm-256color unless $TMUX is set,
 ;; in which case, screen-256color.
 
@@ -47,13 +43,13 @@
 ;; configure it with additional packages (assuming you're already an expert)
 ;; See here: http://ergoemacs.org/emacs/emacs_package_system.html
 
-(when (>= emacs-major-version 24)
-  (require 'package)
-  (package-initialize)
-  (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
-  (message "Loaded the other packages! Run M-x list-packages to install them.")
-  (message "Note: packages go into ~/.emacs.d/elpa/")
-  )
+;(when (>= emacs-major-version 24)
+;  (require 'package)
+;  (package-initialize)
+;  (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
+;  (message "Loaded the other packages! Run M-x list-packages to install them.")
+;  (message "Note: packages go into ~/.emacs.d/elpa/")
+;  )
 ;; The code above may also require you to run 'package-initialize' for unknown reasons
 ;; Then you can  use M-x list-packages to get:
 ;;   jedi -- python autocomplete: (also see http://jedi.jedidjah.ch/en/latest/)
@@ -1023,27 +1019,6 @@ current line."
  '(completion-ignore-case t)
  '(apropos-do-all t))
 
-
-;; (when (require 'browse-kill-ring nil t)
-
-;;     ;; string separating entries in the `separated' style
-;;     (setq browse-kill-ring-separator
-;;           "\n--separator------------------------------")
-
-;;     ;; temporarily highlight the inserted `kill-ring' entry
-;;     (setq browse-kill-ring-highlight-inserted-item t)
-
-;;     ;; face in which to highlight the `browse-kill-ring-separator'
-;;     (defface separator-face '((t (:foreground "Blueviolet" :weight bold))) nil)
-;;                                         ; slate gray
-;;     (setq browse-kill-ring-separator-face 'separator-face)
-
-;;     ;; use `M-y' to invoke `browse-kill-ring'
-;;     (browse-kill-ring-default-keybindings))
-
-
-
-
 ;(defun my-disable-here-document ()
 ;  (local-set-key "<" 'self-insert-command)
 ;  (global-set-key "<" 'self-insert-command))
@@ -1051,13 +1026,11 @@ current line."
 ;(add-hook 'sh-mode-hook 'my-disable-here-document)
 (add-hook 'sh-mode-hook (lambda () (sh-electric-here-document-mode -1))) ;; Prevent entering '<<<' from also inserting an EOF. Very annoying!
 
-
 (add-hook 'python-mode-hook
 	  (lambda () (setq indent-tabs-mode nil) ;; whatever you do, don't let python use tabs!
 	    (setq electric-indent-mode t) ;; nil = turn off electric indent mode because that breaks pasting in code
 	    (setq python-indent-offset 4)
 	    ))
-
 
 (defun iswitchb-local-keys ()
   (mapc (lambda (K) 
