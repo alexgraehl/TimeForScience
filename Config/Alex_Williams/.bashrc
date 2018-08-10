@@ -300,20 +300,14 @@ function parse_git_dirty {
 
 case "$COMPYNAME"
 in
-    *rescom*)
-	#export PS1="${PRE_PS1}"
-	# 37;44m is white on a BLUE background
-	export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;42m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]${COMPYSHORT}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
-	;;
     zzz*|*GYFH|Mac*|Slithereens|Capsid)
-	#export PS1="${PRE_PS1}"
-	# 37;41m is white on a RED background
-	export PS1="\[\e[37;41m\]\t\[\e[m\]\[\e[37;42m\]\`parse_git_branch\`\[\e[m\]\[\e[41m\][\[\e[m\]\[\e[37;41m\]${COMPYSHORT}\[\e[m\]\[\e[41m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
+	# 37;41m is white on a GREEN (42) background. Red would be ;41m
+	export PS1="\[\e[37;42m\]\t\[\e[m\]\[\e[37;41m\]\`parse_git_branch\`\[\e[m\]\[\e[42m\][\[\e[m\]\[\e[37;42m\]${COMPYSHORT}\[\e[m\]\[\e[42m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
 	#export PS1="${PRE_PS1}\[${POWDER_BLUE}\].mac\$\[${NORMAL}\] " # we are on a mac laptop probably
 	;;
     *) ## Otherwise...
-	export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;42m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[39;46m\]${COMPYSHORT}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
-	#export PS1="--> ${PRE_PS1}" # change the name for things we think are remote servers
+	# 37;44m is white on blue
+	export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;41m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]${COMPYSHORT}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
 	;;
 esac
 
@@ -395,14 +389,6 @@ umask u=rwx,g=rwx,o=rx # <-- give users and groups full access to files I create
 # export documents="${HOME}/Documents"
 # export dropbox="${HOME}/Dropbox"
 
-
-
-
-
-
-
-
-
 # ==============================================================
 # From here: https://gist.github.com/pablete/5871811
 # Changing iTerm2 color in MacOSX when SSHing (so you know at a glance that you're no longer in Kansas)
@@ -425,14 +411,7 @@ function colorssh() {
 }
 
 alias ssh="colorssh"
-
 # This would be easy to extend to check if a theme with the name of the server exists and set it, and
 # fall back to the SSH theme. This way you can have different colors for different remote environments
 # (per project, production, staging, etc.)
 # ==============================================================
-
-
-
-
-
-
