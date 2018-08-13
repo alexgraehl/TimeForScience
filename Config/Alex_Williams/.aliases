@@ -187,12 +187,15 @@ P_L_A_C_E__H_O_L_D_E_R
 |[.]cache
 |[.]cache
 |[.]CFUserTextEncoding\$
+|[.]conda.*[/]\$
+|[.]condarc
 |[.]config
 |[.]cups
 |[.]dbfseventsd.*[=]\$
 |[.]dbus.*[/]\$
 |[.]DocumentRevisions-V100.*[/]\$
 |[.]dropbox
+|[.]DS_Store
 |[.]emacs[.]?[d]?
 |[.]file\$
 |[.]fontconfig.*[/]\$
@@ -206,6 +209,8 @@ P_L_A_C_E__H_O_L_D_E_R
 |[.]inputrc
 |[.]InstallAnywhere.*[/]\$
 |installer[.]failurerequests
+|[.]iterm2.*[/]\$
+|[.]iterm2_shell_integration.bash
 |[.]jalview_properties
 |[.]jenv
 |[.]jswingreader
@@ -220,16 +225,17 @@ P_L_A_C_E__H_O_L_D_E_R
 |[.]OSInstallerMessages\$
 |[.]PKInstallSandboxManager.*[/]\$
 |[.]python_history
-|[.]RData
+|[\d\dm|\s][.]R.*[/]\$
 |[.]Rhistory.*\$
 |Rlib.*[/]
+|[\d\dm|\s][.]RData
 |[.]rstudio.*[/]\$
 |[.]rstudio-desktop
 |[.]screenrc
 |[.]serverauth
 |[.]Spotlight-V100.*[/]\$
 |[.]ssh.*[/]
-|\sShares.*[/]\$
+|[\d\dm|\s]Shares.*[/]\$
 |[.]subversion
 |[.]t_coffee
 |TimeForScience.*[/]
@@ -240,9 +246,12 @@ P_L_A_C_E__H_O_L_D_E_R
 |[.]vamsas
 |Velocity_ini[.]txt
 |[.]viminfo
+|[\d\dm|\s]vc.*[/]
 |[.]vol.*/\$
 |[.]VolumeIcon.icns
+|[.]wget-hsts
 |[.]Xauthority
+|[.]zoomus
 )(.*)\$!\$1\$2\$3\ [:H:]!"xx
 	unset CLICOLOR_FORCE
     }
