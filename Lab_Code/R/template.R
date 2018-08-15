@@ -20,14 +20,14 @@ if (interactive()) { options(error=recover, max.print=1000) } else { options(err
 options(stringsAsFactors=F, menu.graphics=F) # for top of file
 # ======================================================================================
 # Common functions
-print0=function(...){print(paste0(...))}; system0=function(...){print0("[SYSTEM CALL]: ",...);system(paste0(...))}
-file.nonzero.exists=function(f){return(file.exists(f)&&file.info(f)$size>0)}
-first_existing=function(...){for(x in list(...)){if(file.exists(x)){return(x)}};return(NA)}
+print0<-function(...){print(paste0(...))};
+system0<-function(...){m=paste0(...);print0("[SYSTEM]: ",m);system(m)}
+file.nonzero.exists <-function(f){return(file.exists(f)&&file.info(f)$size>0)}
+first_existing <- function(...){for(x in list(...)){if(file.exists(x)){return(x)}};return(NA)}
+devclear       <- function() { while (!is.null(dev.list())) { dev.off() } }
 GLOBAL_ERRORS <- c("")
 errlog <- function(...) { msg=paste0(...);print0(msg);warning(msg); GLOBAL_ERRORS <<- append(GLOBAL_ERRORS, msg); }
-library("dplyr")
-library("readr")
-library("tibble")
+library("dplyr"); library("readr"); library("tibble")
 # ======================================================================================
 
 
