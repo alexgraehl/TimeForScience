@@ -414,8 +414,8 @@ function science {
     
     if [[ -d "${GD}" ]]; then
 	[[ -d "${WSPRE}" ]] || { echo "Failure! Missing expected directory: ${WSPRE}"; return 99; }
-	for f in "${GD}"/**/W_*.Rmd; do
-	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "[:OK:] Copying any .Rmd files from the Google Drive directory to a GIT directory (these will OVERWRITE existing files!): ${f} --> ${h}...";
+	for f in "${GD}"/**/W_*.Rmd "${GD}"/**/W_*.R; do
+	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "[:OK:] Copying any R and .Rmd files from the Google Drive directory to a GIT directory (these will OVERWRITE existing files!): ${f} --> ${h}...";
 	    \cp -f "${f}" "${h}"
 	done
     fi
