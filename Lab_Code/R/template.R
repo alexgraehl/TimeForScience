@@ -22,6 +22,7 @@ options(stringsAsFactors=F, menu.graphics=F) # for top of file
 # Common functions
 print0<-function(...){print(paste0(...))};
 system0<-function(...){m=paste0(...);print0("[SYSTEM]: ",m);system(m)}
+mandate<-function(x,...){if(!x){msg=paste0(...);warning(msg);stop(msg)}}
 file.nonzero.exists <-function(f){return(file.exists(f)&&file.info(f)$size>0)}
 first_existing <- function(...){for(x in list(...)){if(file.exists(x)){return(x)}};return(NA)}
 devclear       <- function() { while (!is.null(dev.list())) { dev.off() } }
