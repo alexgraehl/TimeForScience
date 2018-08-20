@@ -32,3 +32,22 @@ library("dplyr"); library("readr"); library("tibble")
 # ======================================================================================
 
 
+
+# Convenient functions for making tables in knitr documents
+# Remember to enclose in an .Rmd in ```{r results="markdown"} ... ```
+agw_dtfile    <- function(file, caption=NULL, ...) {
+     require("readr")
+     if (is.null(caption)) { caption = paste0("Data table: ", basename(file)) }
+     if (grepl("[.](tsv|tab)", file, ignore.case=T)) { x = readr::read_tsv(file) }
+     else if (grepl("[.]csv", file, ignore.case=T))  { x = readr::read_csv(file)  }
+     else { warning("Couldn't guess the file type from the extension (trying tab-delim)."); x = readr::read_tsv(file) }
+     agw_datatable(data=x, caption=caption, ...)
+}
+agw_datatable <- function(data, caption="Data Table", pageLength=10, options=NULL, ...) {
+  require("DT"); # install.packages("DT")
+  if (is.null(data) || is.na(data)) { stop("Your data to 'agw_datatable' was NULL or NA!") }
+  if (is.null(options)) { options=list(pageLength=pageLength, lengthMenu=c(pageLength,50,200,999), autoWidth=TRUE) }
+  numeric_colnames = colnames(data)[sapply(data, function(ccc) { return(is.numeric(ccc) && !is.integer(ccc))})] # find which columns are NUMERIC but not integers so we can round them
+  SIGNIF_DIGITS = 4
+  DT::datatable(data=data, caption=caption, filter=list(position='top',plain=TRUE),  rownames=FALSE, options=options, ...) %>% formatSignif(numeric_colnames, SIGNIF_DIGITS)   #style="bootstrap", . Note: works fine with NULL (c()) numeric_colnames input
+}
