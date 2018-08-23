@@ -425,6 +425,7 @@ function science {
     if [[ -d "${WEBO}" && -d "${WSPRE}" ]]; then
 	echo "[:OK:] Copying web files to a GIT directory..."
 	\cp -f ${WEBO}/index.html ${WSPRE}/web/
+	\cp -f ${WEBO}/projects/*.html ${WSPRE}/web/projects/
     fi
     # ================== Done with this Google code stuff ==============
     scienceboth "${TIME_FOR_SCIENCE_DIR}"
