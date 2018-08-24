@@ -1286,7 +1286,7 @@ alias cheat="echo \
 \">> R: read from clipboard: y=data.matrix(read.delim(pipe(\\\"pbpaste\\\"))); \" ${NL}\
 \">> R: install package from BIOCONDUCTOR without root: source('http://www.bioconductor.org/biocLite.R'); biocLite(lib=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), lib.loc=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), pkgs=c('PACKAGENAMEHERE')) \" ${NL}\
 \">> R: install package from CRAN without root: install.packages(repos='http://cran.cnr.berkeley.edu/', dependencies=TRUE, lib=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), pkgs=c('PACKAGENAMEHERE')) \" ${NL}\
-\">> R: split tab-delim fields into a TABLE: tempsplits = sapply(gene_blast_hits_initial$refgenome_id, strsplit, '\t'); final.tib = as_tibble(do.call(rbind, lapply(tempsplits, rbind)));     \" ${NL}\
+\">> R: split tab-delim fields into a TABLE: tempsplits = sapply(YOUR_CHAR_DATA_OF_INTEREST, strsplit, '\t'); final.tib = as_tibble(do.call(rbind, lapply(tempsplits, rbind)));     \" ${NL}\
 \" \" ${NL}\
 \">> GZIP: verify files: for f in **/*.gz; do gunzip --test -v \\\$f ; done; \" ${NL}\
 \">> LINE WRAP: wrap lines at 80 chars, preserving/ignoring word boundaries: fold -w 80 -s text.txt (omit -s to cut words) \" ${NL}\
