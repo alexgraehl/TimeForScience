@@ -1,0 +1,81 @@
+---
+# Either click the "Knit" buttin in RStudio, or else:
+# Debugging:
+# POSSIBLE ISSUE: You see "Error in eval... object 'opts_chunk' not found" when you Knit
+# SOLUTION: put 'require(knitr)' before your 'opts_chunk' statement
+# POSSIBLE ISSUE: Your HTML is being generated, but no PDFs.
+# SOLUTION: Debug this by removing the 'html_document' part of the header. Then you'll get the real error message. If you're on a Mac, probably the issue is that you need TexLive for Mac (http://tug.org/mactex/ <-- takes a few hours to download)
+title: "[Project] Description____________________________________________"
+author: "___________________Author Here__________________________________"
+date: '`r Sys.Date()` (Started _____INSERT_DATE_HERE_________)'
+# runtime: shiny
+# see figure settings below, in 'opts_chunk$set'
+output:
+  html_document:
+    css: ~/workspace/0_CODE/1750_haiyin_Rmd.css
+    toc: yes
+    toc_depth: 4
+    self_contained: true
+    code_folding: hide
+    fig_caption: yes
+    fig_width: 20
+    fig_height: 5 
+  pdf_document:
+    toc: yes
+    toc_depth: '4'
+---
+
+```{r setup, results="hide"}
+# include=FALSE --> evaluated, but neither the code nor its output displayed.
+library("knitr") # Required to avoid "'opts_chunk' not found"
+library("tibble")
+library("dplyr")
+library("reshape2")
+library("markdown")
+library("DT") # install.packages("DT"): Data table library for making interactive HTML tables. Documentation: https://rstudio.github.io/DT/
+knitr::opts_chunk$set(dev='png', fig.align='center', fig.width=12, fig.height=5, out.width='1600px', fig.pos='htbp', echo=FALSE, results='hide', cache=FALSE, message=FALSE)
+knitr::opts_knit$set(stop_on_error=2L)
+
+agw_dtfile    <- function(file, caption=NULL, ...) {
+  if (is.null(caption)) { caption = paste0("Data table: ", basename(file)) }
+  if (grepl("[.](tsv|tab)", file, ignore.case=T)) {
+    x = readr::read_tsv(file)
+  } else if (grepl("[.]csv", file, ignore.case=T)) {
+    x = readr::read_csv(file)
+  } else {
+    warning("Couldn't guess the file type from the extension.")
+    x = readr::read_tsv(file)
+  }
+  agw_datatable(data=x, caption=caption, ...)
+}
+
+agw_datatable <- function(data, caption="Data Table", pageLength=10, options=NULL, ...) {
+  require("DT"); # install.packages('DT')
+  if (is.null(data) || is.na(data)) { warning("Failure in data table--NA or NULL was passed in!"); stop("Something is messed up, your data to 'agw_datatable' is NULL or NA.") }
+  if (is.null(options)) { options=list(pageLength=pageLength, lengthMenu=c(pageLength,50,200,999), autoWidth=TRUE) }
+  numeric_colnames = colnames(data)[sapply(data, function(ccc) { return(is.numeric(ccc) && !is.integer(ccc))})] # find which columns are NUMERIC but not integers so we can round them
+  SIGNIF_DIGITS = 4
+  DT::datatable(data=data, caption=caption, filter=list(position='top',plain=TRUE),  rownames=FALSE, options=options, ...) %>% formatSignif(numeric_colnames, SIGNIF_DIGITS)   #style="bootstrap",
+}
+```
+
+# Project Summary:
+  * Samples
+
+
+```{r , results="markdown", echo=F, error=TRUE, message=TRUE, warning=TRUE, cache=FALSE}
+#agw_dtfile("./some_data.tsv", caption="This is a table of data")
+#agw_datatable(a_tibble, caption="Data table from a tibble.")
+set.seed(123)
+hist(rnorm(100), col="red")
+
+agw_datatable(data.frame(A=rnorm(10), B=runif(10)), caption="Sample Data", pageLength=7)
+```
+
+
+```{r, include=F}
+#  Comments
+```
+
+
+
