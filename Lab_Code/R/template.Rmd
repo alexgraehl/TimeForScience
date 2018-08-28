@@ -25,8 +25,7 @@ output:
     toc_depth: '4'
 ---
 
-```{r setup, results="hide"}
-# include=FALSE --> evaluated, but neither the code nor its output displayed.
+```{r setup, include=FALSE} # include=FALSE --> evaluated, but neither the code nor its output displayed.
 library("knitr") # Required to avoid "'opts_chunk' not found"
 library("tibble")
 library("dplyr")
@@ -64,6 +63,10 @@ agw_datatable <- function(data, caption="Data Table", pageLength=10, options=NUL
 
 
 ```{r , results="markdown", echo=F, error=TRUE, message=TRUE, warning=TRUE, cache=FALSE}
+
+# Command to get a bunch of PNG figures in a format where you can insert them here:
+#          ls -1 YOURDIRECTORY/*.png | perl -pe 's/^/   * ![](/' | perl -pe 's/$/)/'
+
 #agw_dtfile("./some_data.tsv", caption="This is a table of data")
 #agw_datatable(a_tibble, caption="Data table from a tibble.")
 set.seed(123)
