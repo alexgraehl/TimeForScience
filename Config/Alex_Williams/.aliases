@@ -38,7 +38,7 @@ echo -e "${a_echo_color}[:FYI:] Loading bash-aliases...${a_end_color}"
 CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR} ${HOME}/workspace/0_CODE" # <-- Multiple **space-delimited** directories can be here
 if [[ -n "${isMac}" ]] ; then ## It *is* a mac!
     function g { ## Searches certain source directories, and the current directory (and any subdirectories!)
-	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
+	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude="*.html" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" --exclude="Annotation*.txt" \
 	    "$@" ${CODE_DIRS_FOR_GREPPING} ./
     }
     alias zcat="gzip --decompress --stdout" # The Mac doesn't have the gzip-handling zcat (AKA gzcat)
@@ -50,9 +50,10 @@ else
 	    --recursive \
 	    --extended-regexp \
 	    --line-number --with-filename \
-	    --exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="CVS" --exclude-dir="[bB]ackup*" \
+	    --exclude-dir="Mothballed" --exclude-dir="\.hg" --exclude-dir="\.git" --exclude-dir="CVS" --exclude-dir="[bB]ackup*" \
 	    --binary-files=without-match \
-	    --include=*.R --include=*.pl --include=*.pm --include=*.py --include=*.sh --include=*.py )
+	    --include=*.R --include=*.pl --include=*.pm --include=*.py --include=*.sh --include=*.py
+	    --exclude=*.html --exclude=*.gslides --exclude=*.gdoc --exclude=*.gsheet )
 	cmd=( "${cmd[@]}" "$@" ${CODE_DIRS_FOR_GREPPING} ) # some weird array format
 	"${cmd[@]}" # <- Actually execute. See http://unix.stackexchange.com/questions/131766/why-does-my-shell-script-choke-on-whitespace-or-other-special-characters
     }

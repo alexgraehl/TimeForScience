@@ -1940,6 +1940,12 @@ pairs.agw <- function(data, groups.vec=NULL, main="Pairs plot. Red points = with
 ### 
 ### ===============================================================================
 
+agwWriteDNAStringSetNoLinebreaks <- function(dss, file) { # Writes a DNAStringSet such that each sequence is only ONE line
+  stopifnot("DNAStringSet" %in% class(dss)); stopifnot(is.character(file))
+  if (is.null(names(dss))) { stop("Hey, you should set the 'names(...)' of your DNAStringSet, so that we can make named fasta records!") }
+  cat( paste0(">", names(dss), "\n", as.character(dss))   , file=file, sep="\n")
+}
+
 
 plot_of_character_frequency_by_position <- function(summarizedCountsFile) {
           # Makes a line plot showing the base frequency by base *position*.
