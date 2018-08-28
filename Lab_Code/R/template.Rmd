@@ -6,7 +6,7 @@
 # POSSIBLE ISSUE: Your HTML is being generated, but no PDFs.
 # SOLUTION: Debug this by removing the 'html_document' part of the header. Then you'll get the real error message. If you're on a Mac, probably the issue is that you need TexLive for Mac (http://tug.org/mactex/ <-- takes a few hours to download)
 title: "[Project] Description____________________________________________"
-author: "___________________Author Here__________________________________"
+author: "___________________Author__________________________________"
 date: '`r Sys.Date()` (Started _____INSERT_DATE_HERE_________)'
 # runtime: shiny
 # see figure settings below, in 'opts_chunk$set'
@@ -25,7 +25,12 @@ output:
     toc_depth: '4'
 ---
 
+<<<<<<< HEAD
 ```{r setup, include=FALSE} # include=FALSE --> evaluated, but neither the code nor its output displayed.
+=======
+```{r setup, include=FALSE}
+# include=FALSE --> evaluated, but neither the code nor its output displayed.
+>>>>>>> 8353a35b23875b2d23ddddd05ae2e58abd2d7fcf
 library("knitr") # Required to avoid "'opts_chunk' not found"
 library("tibble")
 library("dplyr")
