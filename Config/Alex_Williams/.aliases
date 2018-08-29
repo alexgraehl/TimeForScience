@@ -1428,7 +1428,7 @@ alias cheat="echo \
 \">> MAC: Dictionary: /usr/share/dict/words \" ${NL}\
 \">> MAC: why isn't the screensaver working: pmset -g (see 'sleep' in there), then pmset -g assertions \" ${NL}\
 \">> MAC: Image type convert: mkdir -p PNGS_TO_JPEG; sips -s format jpeg *.png --out PNGS_TO_JPEG \" ${NL}\
-\">> Github solve 'Your push would publish a private email address': git config --global user.email 'YOURGITHUB_USERNAME_GOES_HERE@users.noreply.github.com'; git commit --amend --reset-author; git push \" ${NL}\
+\">> Github solve 'Your push would publish a private email address': git config --global user.email 'YOURGITHUB_USERNAME_GOES_HERE@users.noreply.github.com'; git commit --amend --reset-author; git push ; (and make sure you don't have a .git/config that overrides this setting)\" ${NL}\
 \">> COPROC: coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ${NL}\
 \">> LINES: RANDOM subset (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'print if (rand() < 0.5);' theFile.txt \" ${NL}\
 \">> LINES: REPEATABLE RANDOM subset: perl -e 'srand(123456); while(<>){ print if (rand() < 0.5);}' theFile.txt \" ${NL}\
