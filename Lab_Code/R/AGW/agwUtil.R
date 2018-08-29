@@ -2088,6 +2088,161 @@ plotSplot <- function(x, y, main=NULL, xlab=NULL, ylab=NULL, log=TRUE, xlim=NULL
 }
 
 
+wget_if_missing <- function(filename, url, verbose=T, comment='') {
+  exitcode = 0
+  if (file.exists(filename)) {
+    if (verbose) { print(paste0("[Not redownloading] existing file: ", filename)); }
+    return(TRUE)
+  } else {
+    exitcode = system(paste0('wget "', url, '" --output-document="', filename, '"'))
+  }
+  return(file.exists(filename) && (exitcode == 0))
+}
+
+system_if_missing <- function(results.vec, ...) {
+  # results.vec: result files
+  if (all(file.exists(results.vec))) {
+    print(paste0("[Not regenerating existing files]: ", paste(results.vec, collapse=", "))); return(TRUE);
+  }
+  return(system(...))
+}
+
+agw_datatable <- function(data, caption="Data Table", options=NULL, ...) {
+  require("DT"); # install.packages('DT')
+  if (is.null(data) || is.na(data)) { warning("Failure in data table--NA or NULL was passed in!"); stop("Something is messed up, your data to 'agw_datatable' is NULL or NA.") }
+  if (is.null(options)) { options=list(pageLength=20, lengthMenu=c(20,50,200,999), autoWidth=TRUE) }
+  DT::datatable(data=data, caption=caption, filter=list(position='top',plain=TRUE),  rownames=FALSE, options=options, ...)   #style="bootstrap",
+}
+
+agw_read_blast_out6_into_tibble <- function(filename) {      # Reads a blastn '--outfmt 6' output file into a tibble
+  require("tibble"); require("readr")  # install.packages("readr") # install.packages("tibble")
+  cnames <- c("query_id", "refgenome_id", "perc_ident", "align_length", "n_mismatch", "n_gapopen", "query_start", "query_end", "refgenome_start", "refgenome_end", "evalue", "bit_score")
+  btib <- readr::read_tsv(filename, comment="#", na="", col_names=cnames)
+  return(btib)
+}
+
+agw_read_bed_into_tibble <- function(filename) {
+     library("tibble"); library("dplyr") # install.packages("tibble")
+     # probably should be read_tsv
+     x <- as_tibble(read.table(filename, sep="\t", comment.char='', quote='', header=F, na.strings="", stringsAsFactors=F))
+     # Example:  L1PA15	3375	3764	orf	0	-
+     #           L1PA15	3820	4179	orf	0	+
+     stopifnot(ncol(x) >= 3)
+     bedtib <- tibble(chrom    = pull(x[,1])
+                   ,  start = as.integer(pull(x[,2]))
+                ,    end = as.integer(pull(x[,3]))
+               ,  width = abs(as.integer(pull(x[,3])) - as.integer(pull(x[,2]))) # BED is 0-based, so you just subtract (end-start) (see: https://github.com/arq5x/bedtools2/blob/master/docs/content/overview.rst
+             ,   name = if(ncol(x)>=4) {            pull(x[,4])  } else { rep("NA", times=nrow(x)) } # name is optional. Default: "NA" (string! Not the R NA special value)
+            ,  score = if(ncol(x)>=5) { as.integer(pull(x[,5])) } else { rep(0   , times=nrow(x)) } # score is optional. Default: 0.
+            , strand = if(ncol(x)>=6) {            pull(x[,6])  } else { rep('.' , times=nrow(x)) } # strand is optional. '.' means no data
+              )
+     return(bedtib)
+}
+
+agw_convert_blast_tibble_into_bed <- function(x) {
+  # Converts one of the "blast" data structures (from 'read_blast_out6_into_tibble') above into a tibble
+  return(tibble("chrom"=x$refgenome_id
+             , "start"  = x$refgenome_start
+             , "end"    = x$refgenome_end
+             , "width"  = abs(x$refgenome_end - x$refgenome_start)+1 # looks like 1-100 means "all 100 bp", so we add one here. UNLIKE "read_bed_into_tibble!"
+             , "name"   = x$query_id
+             , "score"  = rep(1000, times=nrow(x))
+             , "strand" = rep('.' , times=nrow(x))
+             ))
+}
+
+agw_bed_plot <- function(bed_tibble, annot_tib=NULL, genome_len_table=NULL, title="", display_names=TRUE, left_label_space_in_bp=1000) {
+  library("ggplot2") # install.packages("ggplot2")
+  BAND_HEIGHT_IN_UNITS     = 1.0    # larger regions for each bar
+  BAND_FRACTION_SPACE_USED = 0.50   # larger number = fatter bars
+  ##MAX_Y_ADJUSTMENT_FOR_ANNOTATION = 0.1 # move the ORFs around a little
+  #INTRON_FRACTION_OF_EXON  = 0.85
+  LABEL_SPACING_ON_LEFT_IN_BASE_UNITS  = 50
+  LABEL_SPACING_ON_RIGHT_IN_BASE_UNITS = LABEL_SPACING_ON_LEFT_IN_BASE_UNITS
+  LABEL_MAX_LEFT_EXTENT_IN_BASES       = left_label_space_in_bp # this is very specific to the exact size of the plot unfortunately, so it will need to be auto-set some other way if we aren't looking at repetitive elements
+
+  # The bed_tibble shows the elements you want to plot onto the chromosomes (given in the 'chrom' field of the bed tibble). This is used to visualize BLAST hits.
+  # The genome_len_table, if present, shows how long the chromosomes are.
+  # The annot_tib, if present, shows the features on your chromosomes.
+  bed2 = as_tibble(merge(bed_tibble, genome_len_table, by="chrom", all=F, sort=F))
+  bed2[["chrom_idx"]]      = as.integer(as.factor(bed2[["chrom"]]))
+  bed2[["y1"]]             = bed2[["chrom_idx"]] * BAND_HEIGHT_IN_UNITS
+  bed2[["y2"]]             = bed2[["y1"]] + BAND_FRACTION_SPACE_USED*BAND_HEIGHT_IN_UNITS #*ifelse(is.null(annot_tib), 1.0, INTRON_FRACTION_OF_EXON)
+  bed2[["name_truncated"]] = agw_truncate_text(bed2[["name"]])
+
+  if (!is.null(annot_tib)) {
+    annot2 <- as_tibble(merge(annot_tib, bed2, by="chrom", all=F, sort=F, suffixes=c("", ".bed")))
+    annot2[["name_truncated"]] = agw_truncate_text(annot2[["name"]])
+    #annot2[["y2"]] = annot2[["y1"]] + BAND_FRACTION_SPACE_USED*BAND_HEIGHT_IN_UNITS #*(annotation_y_adjustments)
+    orf_add_gene_features = geom_rect(data=annot2, mapping=aes(xmin=start, xmax=end, ymin=y1, ymax=y2), color=NA, fill="black", alpha=0.15) # ORF ALPHA
+  } else {
+    orf_add_gene_features = NULL
+  }
+  
+  bigchroms = data.frame(chrom=bed2$chrom, x1=0, x2=bed2[["chromsize"]], y1=bed2$y1, y2=bed2$y2)[ !duplicated(bed2$y1), ] # the FULL "chromosomes"
+  DEFAULT_NAME_COLOR = "#444444" # dark gray
+  element_colors = rep(DEFAULT_NAME_COLOR, times=length(bigchroms$chrom))
+  element_colors[grepl("^Alu" , bigchroms$chrom, perl=T)  ] = "#00FF00" # green
+  # ddd = data.frame(x1=c(10,40,60),y1=c(10,50, 10),x2=c(30,45, 70),y2=c(20,59, 20),wid=c(5,10, 15), widfil=c("ZZred","AAblue","CCorange"), stringsAsFactors=F);   z = ggplot() + geom_rect(data=ddd, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2, fill=widfil)) + scale_fill_manual(values=c("red", "blue", "orange")[order(ddd$widfil)] ); print(z)
+  text_data = bigchroms
+  
+  UNSET_COLOR          = "#FF00FF"
+  WIDTH_90_PLUS_COLOR  = "#FF0000" # bright red
+  WIDTH_80_90_COLOR    = "#EEBB00" # orange-yellow
+  WIDTH_UNDER_80_COLOR = "#6778FF" #blue-ish
+  #elem_color_levels = c(UNSET_COLOR, WIDTH_90_PLUS_COLOR, WIDTH_80_90_COLOR, WIDTH_UNDER_80_COLOR)
+  fillcats=c("UNSET", "90+ bp", "80-90 bp", "<80 bp")
+  fillcolors=c(UNSET_COLOR, WIDTH_90_PLUS_COLOR, WIDTH_80_90_COLOR, WIDTH_UNDER_80_COLOR)
+  names(fillcolors) <- fillcats
+  
+  bed2[["fillcategories"]] <- rep(fillcats[1], times=nrow(bed2))
+  bed2[["fillcategories"]][ bed2[["width"]] >= 90                        ]   <- fillcats[2]
+  bed2[["fillcategories"]][ bed2[["width"]] >= 80 & bed2[["width"]] < 90 ]   <- fillcats[3]
+  bed2[["fillcategories"]][                         bed2[["width"]] < 80 ]   <- fillcats[4] # this is SUPER order dependent!!! ggplot is crazy sometimes
+  #browser()
+  # y1 is the BOTTOM, y2 is the TOP
+  ggplot() + 
+    scale_x_continuous(name="Position within the element", limits=c(0-LABEL_MAX_LEFT_EXTENT_IN_BASES, NA)) + 
+    scale_y_continuous(name="", breaks=NULL) +
+    geom_rect(data=bigchroms, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), color="black", alpha=0.3) +
+    orf_add_gene_features +
+    geom_rect(data=bed2, mapping=aes(xmin=start, xmax=end, ymin=y1, ymax=y2, fill=fillcategories), alpha=1.0) +
+    scale_fill_manual("Probe size (bp)", values=fillcolors) +
+    geom_rect(data=bigchroms, mapping=aes(xmin=x1, xmax=x2, ymin=y1, ymax=y2), color="black", alpha=0.0) +
+    geom_text(data=bed2, aes(x=start, y=y2, label=name_truncated), hjust=0.0, vjust=-0.5, size=2, angle=0) + # <-- PROBE labels. To rotate: vjust=1.0 and angle=90 and hjust=-0.05
+    #geom_text(data=bigchroms, aes(x=x1, y=y1+(y2-y1)/2, label=chrom), size=2, hjust=1.0) +
+    geom_text(data=text_data, aes(x=x2+LABEL_SPACING_ON_RIGHT_IN_BASE_UNITS, y=y1+(y2-y1)/2, label=paste0(x2, " bp")), color="blue", size=3, hjust=0.0, angle=0) +
+    geom_label(data=bigchroms, aes(x=x1-LABEL_SPACING_ON_LEFT_IN_BASE_UNITS, y=y1+(y2-y1)/2, label=chrom), fill=element_colors, color="white", fontface="bold", hjust=1.0, size=4) +
+    ggtitle("Probes (red). Dark regions have annotation.")
+}
+
+agw_truncate_text <- function(s, n=20, more_char="…") {
+  stopifnot(n >= 2)
+  truncated = sapply(s, function(sub_s) {
+    sarr = unlist(strsplit(as.character(sub_s), split=''))
+    if (length(sarr) <= n) {  return(as.character(sub_s)) # just return the original
+    } else {                  return(paste0(paste0(head(sarr, n=(n-1)), collapse=''), more_char))  }
+  })
+  return(unname(truncated))
+}
+
+agw_summarize_blast <- function(blast_result_object, reference_fasta, reference_annot_tib, display_names=TRUE, left_label_space_in_bp=1000) {
+  library("Biostrings")
+  refgen.ss <- Biostrings::readDNAStringSet(filepath=reference_fasta)
+  if (nrow(blast_result_object) <= 0) { browser(); }
+  bed <- agw_convert_blast_tibble_into_bed(blast_result_object)
+  MAX_LEN_FALLBACK <- max(bed$end)
+  uniq_chrom_names <- as.character(unique(bed$chrom)) # or levels, since it's a factor
+  chrom_lengths.vec <- sapply(uniq_chrom_names, function(x) {
+    if (x %in% names(refgen.ss)) { return(width(refgen.ss[x])) }
+    else { return(MAX_LEN_FALLBACK); }    })
+  #chrom_lengths2.vec <- ifelse(uniq_chrom_names %in% names(refgen.ss), yes=width(refgen.ss[uniq_chrom_names]), no=MAX_LEN_AS_FALLBACK)
+  #stopifnot(all(chrom_lengths.vec == chrom_lengths2.vec))
+  genome_dat <- data.frame("chrom"=uniq_chrom_names, "chromsize"=chrom_lengths.vec)
+  agw_bed_plot(bed_tibble=bed, annot_tib=reference_annot_tib, genome_len_table=genome_dat, display_names=display_names, left_label_space_in_bp=left_label_space_in_bp)
+}
+
+
 ### ===============================================================================
 ### 
 ### ===============================================================================
