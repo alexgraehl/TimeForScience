@@ -1102,6 +1102,10 @@ function agw_is_numeric() {
     fi
 }
 
+
+# Logs you into a fast interactive node
+alias qrsh='bsub -q long -n 16 -R '\''span[hosts=1] rusage[mem=4]'\'' -Is bash' # usage: qrsh "ls"
+
 function bbq() { # bsub, be quick!
     # Usage:   bbq "my command here"
     # Note:    * Outputs log files to THE CURRENT DIRECTORY!
