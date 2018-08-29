@@ -18,8 +18,8 @@ output:
     self_contained: true
     code_folding: hide
     fig_caption: yes
-    fig_width: 20
-    fig_height: 5 
+    fig_width: 16
+    fig_height: 8 
   pdf_document:
     toc: yes
     toc_depth: '4'
@@ -37,7 +37,7 @@ library("dplyr")
 library("reshape2")
 library("markdown")
 library("DT") # install.packages("DT"): Data table library for making interactive HTML tables. Documentation: https://rstudio.github.io/DT/
-knitr::opts_chunk$set(dev='png', fig.align='center', fig.width=12, fig.height=5, out.width='1600px', fig.pos='htbp', echo=FALSE, results='hide', cache=FALSE, message=FALSE)
+knitr::opts_chunk$set(dev='png', fig.align='center', fig.width=16, fig.height=8, out.width='2000px', fig.pos='htbp', echo=FALSE, results='hide', cache=FALSE, message=FALSE)
 knitr::opts_knit$set(stop_on_error=2L)
 
 agw_dtfile    <- function(file, caption=NULL, ...) {
