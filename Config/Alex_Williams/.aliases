@@ -992,13 +992,6 @@ function setunion {
     cat "$1" "$2" | sort -u
 }
 
-function syncweb {
-    mv -f ${HOME}/workspace/W_*.html  ${HOME}/web/projects/
-    mv -f ${HOME}/workspace/W_*.Rmd  ${HOME}/web/projects/
-}
-
-
-
 
 #function checkbackup {
 #    # checks the MOST RECENT file in /it/backup/log, and gives you the last 10 lines from that file
