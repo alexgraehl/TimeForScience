@@ -415,3 +415,14 @@ alias ssh="colorssh"
 # fall back to the SSH theme. This way you can have different colors for different remote environments
 # (per project, production, staging, etc.)
 # ==============================================================
+
+
+
+__bp_interactive_mode # <-- only run in order to get its exit status
+if [[ "$?" == "0" ]]; then
+    echo -n ''
+    # no problems
+else
+    echo "[:HEY:] Unsetting the PROMPT_COMMAND, because this machine doesn't appear to support it. See the ~/.bashrc for details."
+    unset PROMPT_COMMAND
+fi
