@@ -1419,8 +1419,8 @@ alias cheat="echo \
 \">> SRA->FASTQ: fastq-dump --gzip SRR1234.sra    (<-- creates new file 'SRR1234.fastq.gz') \" ${NL}\
 \">> MINION LONG READ SEQ: FAST5 to FASTQ: Make a single FASTQ out of all FAST5s in each of the 'barcode' subdirectories (assumes the file structure is: minion/barcode01/batch9988/file.fast5): for bar in barcode*; do final=ToFQ.\\\$bar.final.fq.gz; /bin/rm -f \\\$final; for f in \\\${bar}/*/*.fast5; do echo \\\"Handling \\\$f\\\"; poretools fastq \\\$f | gzip >> \\\$final; done; done \" ${NL}\
 \">> BLAST: Extract all info (sequence names and FASTA sequence) from a database: blastdbcmd -entry all -db YOUR_DATABASE_PREFIX \" ${NL}\
-\">> BLAST: DNA pair-wise similarity for all sequences in a fasta file:   makeblastdb -in REF.fa -db nucl  &&  blastn -outfmt 6 -db REF.fa -query REF.fa -title 'BLAST index' -out results.out \" ${NL}\
-\">> BLAST: MakeblastDB on COMPRESSED gzip input fasta: gunzip -c GENOME.fasta.gz | makeblastdb -in - -title 'OUTPUTNAME' -db nucl -out OUTFILEPREFIX  \" ${NL}\
+\">> BLAST: DNA pair-wise similarity for all sequences in a fasta file:   makeblastdb -in REF.fa -dbtype nucl  &&  blastn -outfmt 6 -db REF.fa -query REF.fa -title 'BLAST index' -out results.out \" ${NL}\
+\">> BLAST: MakeblastDB on COMPRESSED gzip input fasta: gunzip -c GENOME.fasta.gz | makeblastdb -in - -title 'OUTPUTNAME' -dbtype nucl -out OUTFILEPREFIX  \" ${NL}\
 \">> BLAST: extract DATABASE sequences back to FASTA: In the directory with database files starting with the prefix 'nt_your_prefix_whatever', blastdbcmd -db nt_your_prefix_whatever -entry all -out - | gzip > all_sequences.fasta  \" ${NL}\
 \">> DNA reverse-complement: perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
 \">> APACHE error log: sudo less -S /var/log/apache2/error.log \" ${NL}\
