@@ -1440,6 +1440,7 @@ alias cheat="echo \
 \">> LINES: Range from N to M, inclusive (starts at 1):  sed -n N,Mp INPUTFILE  or  for a HUGE file: sed -n '(N+1)q;N,Mp' <-- quit on line (N+1) \" ${NL}\
 \">> LINES: Every Nth line, starting with line Y (starts at 1, not 0): awk 'NR%X==Y' FILE. So getting line 1,3,5,7,9 is awk 'NR%2==1'. FASTQ example: sequences only is awk 'NR%4==2'\" ${NL}\
 \">> LINES/AWK: Count num columns in file: awk -F '\t' '{print NF}' \" ${NL}\
+\">> UNIX/LINES/AWK re-order columns: cat FILE | awk 'BEGIN {OFS = \\\"\t\\\"}; {print \\\$1,\\\$4,\\\$2,\\\$11}' \" ${NL}\
 \">> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">> LINES Count chars on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
 "
