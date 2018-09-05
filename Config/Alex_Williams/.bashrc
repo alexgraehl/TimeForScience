@@ -417,12 +417,14 @@ alias ssh="colorssh"
 # ==============================================================
 
 
-
-__bp_interactive_mode # <-- only run in order to get its exit status
-if [[ "$?" == "0" ]]; then
-    echo -n ''
-    # no problems
-else
-    echo "[:HEY:] Unsetting the PROMPT_COMMAND, because this machine doesn't appear to support it. See the ~/.bashrc for details."
-    unset PROMPT_COMMAND
+if [[ ! "${isMac}" == "1" ]]; then
+    # Only do this on not-a-mac
+    __bp_interactive_mode # <-- only run in order to get its exit status
+    if [[ "$?" == "0" ]]; then
+	echo -n ''
+	# no problems
+    else
+	echo "[:HEY:] Unsetting the PROMPT_COMMAND, because this machine doesn't appear to support it. See the ~/.bashrc for details."
+	unset PROMPT_COMMAND
+    fi
 fi
