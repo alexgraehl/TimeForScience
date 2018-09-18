@@ -1292,6 +1292,7 @@ alias cheat="echo \
 \">> R: read from clipboard: y=data.matrix(read.delim(pipe(\\\"pbpaste\\\"))); \" ${NL}\
 \">> R: install package from BIOCONDUCTOR without root: source('http://www.bioconductor.org/biocLite.R'); biocLite(lib=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), lib.loc=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), pkgs=c('PACKAGENAMEHERE')) \" ${NL}\
 \">> R: install package from CRAN without root: install.packages(repos='http://cran.cnr.berkeley.edu/', dependencies=TRUE, lib=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), pkgs=c('PACKAGENAMEHERE')) \" ${NL}\
+\">> R: BED->GRanges: BED file to GeneRanges / GenomicRanges / GRanges object: use 'rtracklayer': library(rtracklayer); gr = rtracklayer::import(rmsk_bed, format='bed'); stopifnot('GRanges' %in% (class(gr))[1]); stopifnot(all(start(gr)<=end(gr))) \" ${NL}\
 \">> R/DPLYR/TIBBLE: split tab-delim fields into a TABLE: tempsplits = sapply(YOUR_CHAR_DATA_OF_INTEREST, strsplit, '\t'); final.tib = as_tibble(do.call(rbind, lapply(tempsplits, rbind)));     \" ${NL}\
 \">> R/DPLYR/TIBBLE: Mutate only CERTAIN columns: my.tib %>% mutate_at(vars(matches('(snakes|cakes)')), funs(log2(1 + .) )) \" ${NL}\
 \">> R/DPLYR/TIBBLE: Aggregate rows in a tibble: mytib %>% group_by(VALUE) %>% summarize(x=mean(OTHERVALUE)) \" ${NL}\
