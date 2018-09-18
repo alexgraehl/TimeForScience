@@ -80,7 +80,7 @@ function hunt { # cd into a directory with a script
 function cto { # Like CD, but lets you go to a FILE as well.
     if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] 'cto' requires EXACTLY ONE file/directory name!"; return 1; fi
     if [[ -d "$1" ]] ; then cd "$1" ; return 0; fi # it's already a directory, change to it!
-    cd $(dirname "$1")
+    cd "$(dirname "$1")"
 }
 
 alias igv='/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/bin/java -jar /Applications/IGV_2.4.10.app/Contents/Java/igv.jar'
