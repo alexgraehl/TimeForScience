@@ -99,7 +99,7 @@ my %aa_colors = ( 'F' => $PHE
 		  , 'W' => $TRP
 		  , 'R' => $ARG
 		  , 'G' => $GLY
-		  , 'X' => $XXX
+		  , 'X' => $XXX, '*' => $XXX, '-' => $XXX
 		);
 my $aa_candidate_string = join("", sort(keys(%aa_colors)));
 
