@@ -34,10 +34,13 @@ echo "[:FYI:]: To list all modules: module avail 2>| LIST.TXT"
 #      apps/ngs-pipeline-tools \
 #      apps/python3 \
 
-module add apps/R \
+# old one was apps/R/stable
+
+module add apps/R/stable \
 	apps/bedtools \
 	apps/emacs/24.5 \
 	apps/git \
+	apps/ncbi-blast \
 	apps/samtools \
         apps/seq-utils \
 	apps/python3 \

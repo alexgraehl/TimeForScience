@@ -1249,6 +1249,7 @@ alias cheat="echo \
 \">> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
 \">> DIFF with side-by-side and line numbers: sdiff -l file1.txt file2.txt | cat -n | grep -v -e '(${DLR}'  \" ${NL}\
 \" \" ${NL}\
+\">> BASH startup with LITERALLY NO user configuration / clean startup / no .bashrc / no init:  env -i bash --norc --noprofile      \" ${NL}\
 \">> BASH script header (2 lines): #!/bin/bash __NEWLINE__ set -euo -o pipefail; shopt -s nullglob; shopt -s globstar; set -o xtrace; \" ${NL}\
 \">> BASH in MAKEFILE: In a Make rule, you can use a bash loop like so, with THREE slashes before a quote and SLASH-DOLLAR-DOLLAR instead of a dollar sign to access BASH variables. Example:  bash -c ${DQ}for fff in */*; do echo -e ${BS}${BS}${BS}${DQ}${BS}${DLR}${DLR}fff${BS}${BS}${BS}${DQ}; done; echo -e ${BS}${BS}${BS}${DQ}This goes in a makefile.${BS}${BS}${BS}${DQ}; ${DQ} \" ${NL}\
 \">> BASH: Literal tab: \$'\\t' (example: join -t \$'\\t' to join on tabs) or \\\$(echo -en '\\t') . In MAKE: printf '\\t' \" ${NL}\
