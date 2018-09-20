@@ -1,38 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 '''
-This script should work on both python2
-                            AND python3 directly,
-    as long as you have the 'future' module installed! (e.g.: "pip install future")
-See here for details on making a python 2/3 script: http://python-future.org/compatible_idioms.html
+This script require python3
 
-Requires at least python 2.7+ due to 'argparse' (which is not in python 2.6).
-
-As a programmer, the main thing to watch out for is that you must use
-            "future.utils.iteritems( mydictionary )" to iterate over a dictionary
-            instead of "mydictionary.iteritems()"
-            (You can make this shorter with 'from future.utils import iteritems as YOUR_NAME_HERE')
-
-Almost everything else "just works."
-
-Try it out with both versions of python:
-        python2 ./template.py some_filename x y z
         python3 ./template.py some_filename x y z
 
 '''
-# =================== These are part of the modules that handle python 2/3 compatibility ==================
-from __future__ import print_function
-from __future__ import division
-from __future__ import unicode_literals
-import future          # pip install future
-import future.utils    # (installed with above)    #from future.utils import iteritems
-import future.builtins # pip install future
-from   future.builtins import range # example: mylist = list(range(5))     assert mylist == [0, 1, 2, 3, 4]
-import past     # pip install future
-#import six           # pip install six  Useful for: if isinstance(value, six.string_types):
-try:   basestring
-except NameError:   basestring = str  # useful for 'isinstance(value, basestring)'
-# ================ Below are the NORMAL modules that you'd want for regular programming ====================
-
 # import ipdb; ipdb.set_trace()
 import argparse
 import os
@@ -96,13 +68,15 @@ def main():
 
     #pdb.set_trace()
     d = dict()
-    for k,v in future.utils.iteritems(d): # <-- python 2/3-compatible version of 'iteritems'
-        print(str(k) + str(v))
+    d['a'] = 1
+    d['b'] = 2
+    for k,v in d.items():
+        print(f"""Key printing:   {k} = {v}""")
         pass
 
     byte_str = b'This is a BYTE string, not a unicode one! We rarely want to use this feature.'
 
-    assert isinstance("mystring", basestring), "Uh oh, something went wrong if this gets triggered"
+    assert isinstance("mystring", str), "Uh oh, something went wrong if this gets triggered"
     
     #
     print("Handled the command line arguments!")
