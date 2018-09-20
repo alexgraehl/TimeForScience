@@ -60,6 +60,18 @@ else
     }
 fi
 
+function maketemplate() {
+    DEST=./Makefile
+    if [[ -e "${DEST}" ]]; then
+	echo "[:ERR:] CANNOT copy a makefile here---there is already one here! Refusing to overwrite it."
+	return 1
+    else
+	echo "[:OK:] Copied a new makefile template to ${DEST}"
+	cp -i `which template.mak` "${DEST}"
+    fi
+
+}
+
 function agw_cmd_exists() { # Check if a command exists
     #command -v "$1" &>/dev/null #|| { echo >&2 "I require foo but it's not installed.  Aborting."; exit 1; }
     type "$1" &> /dev/null
