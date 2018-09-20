@@ -91,8 +91,93 @@ STANDARD.PLOT.HEIGHT = 750
 
 MAKE.AGW.SUBDIR = "make.tmp"
 
+
+
+# Common functions
+print0<-function(...){print(paste0(...))};
+
+system0<-function(...){m=paste0(...);print0("[SYSTEM]: ",m);system(m)}
+
+mandate<-function(x,...){if(!x){msg=paste0(...);warning(msg);stop(msg)}}
+
+file.nonzero.exists <-function(f){return(file.exists(f)&&file.info(f)$size>0)}
+
+first_existing <- function(...){for(x in list(...)){if(file.exists(x)){return(x)}};return(NA)}
+
+devclear       <- function() { while (!is.null(dev.list())) { dev.off() } }
+
+
+
+# ============= SALMON ================
+read_multiple_salmon_quant_sf_files <- function(filevec, verbose=T) { # read one (or multiple) salmon quant.sf files (from the filesystem) into a tibble
+     # Reads a set of 'quant.sf' or 'quant.sf.gz' files that are SALMON aligner output.
+     # Returns a 'tibble' table. The first three columns are common annotation, the remainder are counts / TPMs for each input file.
+     # Requires that the quant.sf files have THE SAME IDs in the same order!
+     # EXAMPLE USAGE:
+     #    the_quants = list.files(path="/path/to/quant/files/1807m_testing", pattern="quant[.]sf*", recursive=T, full.names=TRUE)
+     #    out_tib = read_multiple_salmon_quant_sf_files(filevec=the_quants, verbose=TRUE)
+     library(tibble); library(dplyr)
+     stopifnot(is.character(filevec))
+     md5.vec <- NULL
+     all_tib <- NULL # <-- the eventual result value
+     n_files_read = 0
+     for (f in filevec) {
+          if (verbose) { print(paste0("Reading file <", f, "> (", 1+n_files_read, " of ", length(filevec), ")...")) }
+          tib = readr::read_tsv(f) # <-- can read GZ files too
+          n_files_read = n_files_read + 1
+          stopifnot(ncol(tib) == 5) # 5 columns
+          stopifnot(colnames(tib)[4:5] == c("TPM", "NumReads")) # expected colum names
+          NAME_SEPARATOR = "|"
+          colnames(tib)[4:5] = paste0(f, NAME_SEPARATOR, c("TPM", "RAW_READS")) # <-- change colnames! Put the filename in front, like "filename|TPM" and "file2|NumReads"
+          if (is.null(md5.vec)) { md5.vec = pull(tib, Name) }
+          stopifnot(length(md5.vec) == nrow(tib))
+          stopifnot(all(md5.vec == pull(tib, Name)))
+          if (is.null(all_tib)) {
+               # Gotta include ALL the rows
+               all_tib = tib
+          } else {
+               all_tib = dplyr::bind_cols(all_tib, tib[, 4:5])
+          }
+     }
+     if (verbose) { print(paste0("Read a total of ", length(filevec), " quant.sf files...")) }
+     return (all_tib)
+}
+
+
+
+
+
+# ==================== KNITR ===================
+# Convenient functions for making tables in knitr documents
+# Remember to enclose in an .Rmd in ```{r results="markdown"} ... ```
+agw_dtfile    <- function(file, caption=NULL, ...) {
+     require("readr")
+     if (is.null(caption)) { caption = paste0("Data table: ", basename(file)) }
+     if (grepl("[.](tsv|tab)", file, ignore.case=T)) { x = readr::read_tsv(file) }
+     else if (grepl("[.]csv", file, ignore.case=T))  { x = readr::read_csv(file)  }
+     else { warning("Couldn't guess the file type from the extension (trying tab-delim)."); x = readr::read_tsv(file) }
+     agw_datatable(data=x, caption=caption, ...)
+}
+
+agw_datatable <- function(data, caption="Data Table", pageLength=10, options=NULL, ...) {
+     require("DT"); # install.packages("DT")
+     if (is.null(data) || is.na(data)) { stop("Your data to 'agw_datatable' was NULL or NA!") }
+     if (is.null(options)) { options=list(pageLength=pageLength, lengthMenu=c(pageLength,50,200,999), autoWidth=TRUE) }
+     numeric_colnames = colnames(data)[sapply(data, function(ccc) { return(is.numeric(ccc) && !is.integer(ccc))})] # find which columns are NUMERIC but not integers so we can round them
+     SIGNIF_DIGITS = 4
+     DT::datatable(data=data, caption=caption, filter=list(position='top',plain=TRUE),  rownames=FALSE, options=options, ...) %>% formatSignif(numeric_colnames, SIGNIF_DIGITS)   #style="bootstrap", . Note: works fine with NULL (c()) numeric_colnames input
+}
+
+
+
+
+
+
+
 ## ====================================
 join.left.outer.agw <- function(left.mat, right.mat, both.key, left.key, right.key, silent=FALSE) {
+
+     # Don't use this, use DPLYR instead!
      ## This is like an SQL "left outer join" . Look it up on google for more details!
      ## It always returns the data from left.mat, no matter whether it has a key in right.mat or not.
      ## Accepts the special name "rownames()", which means that instead of looking for a column index,

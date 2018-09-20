@@ -51,3 +51,9 @@ agw_datatable <- function(data, caption="Data Table", pageLength=10, options=NUL
   SIGNIF_DIGITS = 4
   DT::datatable(data=data, caption=caption, filter=list(position='top',plain=TRUE),  rownames=FALSE, options=options, ...) %>% formatSignif(numeric_colnames, SIGNIF_DIGITS)   #style="bootstrap", . Note: works fine with NULL (c()) numeric_colnames input
 }
+
+
+
+
+
+
