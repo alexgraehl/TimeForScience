@@ -1321,6 +1321,8 @@ alias cheat="echo \
 \">> R/DPLYR/TIBBLE: split tab-delim fields into a TABLE: tempsplits = sapply(YOUR_CHAR_DATA_OF_INTEREST, strsplit, '\t'); final.tib = as_tibble(do.call(rbind, lapply(tempsplits, rbind)));     \" ${NL}\
 \">> R/DPLYR/TIBBLE: Mutate only CERTAIN columns: my.tib %>% mutate_at(vars(matches('(snakes|cakes)')), funs(log2(1 + .) )) \" ${NL}\
 \">> R/DPLYR/TIBBLE: Aggregate rows in a tibble: mytib %>% group_by(VALUE) %>% summarize(x=mean(OTHERVALUE)) \" ${NL}\
+\">> R/DPLYR/TIBBLE: tibble to data frame with rownames:    df  = tibble::column_to_rownames(as.data.frame(tib), var='COLUMN_NAME_THAT_BECOMES_ROWNAME')  \" ${NL}\
+\">> R/DPLYR/TIBBLE: data frame (with rownames) to tibble:  tib = tibble::rownames_to_column(df, 'New_Column_Name_From_Rowname') \" ${NL}\
 \" \" ${NL}\
 \">> GZIP: verify files: for f in **/*.gz; do gunzip --test -v \\\$f ; done; \" ${NL}\
 \">> LINE WRAP: wrap lines at 80 chars, preserving/ignoring word boundaries: fold -w 80 -s text.txt (omit -s to cut words) \" ${NL}\
