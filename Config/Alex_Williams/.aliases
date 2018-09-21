@@ -72,6 +72,18 @@ function maketemplate() {
 
 }
 
+function fishldrtemplate() {
+    DEST=./C10_fishldr_template.cfg.R
+    if [[ -e "${DEST}" ]]; then
+	echo "[:ERR:] CANNOT copy the fishLDR template to this location---there is already one here! Refusing to overwrite it."
+	return 1
+    else
+	echo "[:OK:] Copied a new fishLDR template to ${DEST}"
+	cp -i "${HOME}/workspace/0_CODE/fishldr_example.cfg.R" "${DEST}"
+    fi
+
+}
+
 function agw_cmd_exists() { # Check if a command exists
     #command -v "$1" &>/dev/null #|| { echo >&2 "I require foo but it's not installed.  Aborting."; exit 1; }
     type "$1" &> /dev/null
@@ -971,7 +983,7 @@ function j1 {
 	echo -e "[:FYI:] To cancel ALL jobs in an array --> bkill -J \"JOBNAME*\" <-- be careful!"
     fi
     echo -e "${a_blue_bold}Current & finished-within-the-last-hour jobs:${a_end_color}"      # memlimit:3 run_time:6 time_left:5 job_group:10 from_host:12 
-    JOB_TEXT=$(bjobs -a -o "jobid:8 stat:4 job_name:48 user:4 queue:3 cpu_used:6 max_mem:3 exec_host:18 submit_time:12 finish_time:12 delimiter='|'" 2>&1)
+    JOB_TEXT=$(bjobs -a -o "jobid:8 stat:4 job_name:80 user:4 queue:3 cpu_used:6 max_mem:3 exec_host:18 submit_time:12 finish_time:12 delimiter='|'" 2>&1)
     JOB_TEXT=$(echo -e "${JOB_TEXT}" | perl -pe "s/^(.*[|]RUN.*)\$/${a_ok_color}\$1${a_end_color}/g")
     JOB_TEXT=$(echo -e "${JOB_TEXT}" | perl -pe "s/^(.*[|]DONE.*)\$/${a_orange136}\$1${a_end_color}/g")
     JOB_TEXT=$(echo -e "${JOB_TEXT}" | perl -pe "s/^(.*[|]EXIT.*)\$/${a_err_color}\$1${a_end_color}/g")

@@ -32,7 +32,6 @@ library("dplyr"); library("readr"); library("tibble")
 # ======================================================================================
 
 
-
 # Convenient functions for making tables in knitr documents
 # Remember to enclose in an .Rmd in ```{r results="markdown"} ... ```
 agw_dtfile    <- function(file, caption=NULL, ...) {
