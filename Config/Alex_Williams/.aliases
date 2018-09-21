@@ -1297,7 +1297,7 @@ alias cheat="echo \
 \">> R: heatmap colors: COOL: black->blue->cyan->yellow:  grDevices::colorRampPalette(c('black', 'blue', '#0099FF', 'yellow'))(n=10)                        <-- note the 10 here \" ${NL}\
 \">> R: heatmap colors: COOL, longer ramp:                grDevices::colorRampPalette(c('black', '#000066', 'blue', '#0099FF', '#BBCC00', 'yellow'))(n=10)  <-- note the 10 here \" ${NL}\
 \">> R: heatmap colors: WARM: black->red->orange->yellow: grDevices::colorRampPalette(c('black', 'red', 'yellow'))(n=10)                                    <-- note the 10 here \" ${NL}\
-\">> R: nice heatmap: library(pheatmap); pheatmap(DATA, border=NA, cluster_rows=T, cluster_cols=F, main='Heatmap', fontsize_col=9, fontsize_row=9, display_numbers=T, fontsize_number=4);   \" ${NL}\
+\">> R: nice heatmap: library(pheatmap); pheatmap(DATA,  color=grDevices::colorRampPalette(c('black', 'red', 'yellow'))(n=10),   border=NA,  cluster_rows=T,  cluster_cols=F,  main='Heatmap',  fontsize_col=9,  fontsize_row=9,  display_numbers=T,  fontsize_number=4);   \" ${NL}\
 \">> R: pheatmap with ROW labels (the trick is that the *rownames* must match, which is not true for column annotation!): library(pheatmap); m=matrix(rnorm(100),ncol=5); rownames(m) <- paste('R',1:nrow(m)); rannot=data.frame('RANNOT1'=c(rep('A',10), rep('B',7), rep('C',3)), row.names=rownames(m)); pheatmap(m, annotation_row=rannot, annotation_colors=list('RANNOT1'=c('A'='red','B'='blue','C'='green')));   \" ${NL}\
 \">> R: find attributes of a variable: attr(x, 'theAttribute'); Works when names()/attributes() fails! \" ${NL}\
 \">> R: inspect object: str(...) \" ${NL}\
