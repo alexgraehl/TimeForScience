@@ -1326,6 +1326,7 @@ alias cheat="echo \
 \">> R/DPLYR/TIBBLE: Aggregate multiple rows BY A PASSED-IN-VARIABLE in a tibble (way 3 of 3, probably the best) if you also want the N elements in each group (n()): mytib %>% group_by(MYGRPCOL) %>% mutate(NCOUNT=n()) %>% group_by(MYGRPCOL, NCOUNT) %>% summarize_at(vars(matches('^COUNT_')), funs('FINALSUM'=sum, 'FINALMEAN'=mean)) %>% ungroup() \" ${NL}\
 \">> R/DPLYR/TIBBLE: tibble to data frame with rownames:    df  = tibble::column_to_rownames(as.data.frame(tib), var='COLUMN_NAME_THAT_BECOMES_ROWNAME')  \" ${NL}\
 \">> R/DPLYR/TIBBLE: data frame (with rownames) to tibble:  tib = tibble::rownames_to_column(df, 'New_Column_Name_From_Rowname') \" ${NL}\
+\">> R/DPLYR/TIBBLE: set rownames in dplyr in a data frame:  tib %>% \\\`rownames<-\\\`( YOUR_ROWNAME_VEC )  <-- note the parenthese and backticks! \" ${NL}\
 \" \" ${NL}\
 \">> GZIP: verify files: for f in **/*.gz; do gunzip --test -v \\\$f ; done; \" ${NL}\
 \">> LINE WRAP: wrap lines at 80 chars, preserving/ignoring word boundaries: fold -w 80 -s text.txt (omit -s to cut words) \" ${NL}\
