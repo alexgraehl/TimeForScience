@@ -1,12 +1,12 @@
 ---
-# Either click the "Knit" buttin in RStudio, or else:
+# Click the "Knit" buttin in RStudio.
 # Debugging:
 # POSSIBLE ISSUE: You see "Error in eval... object 'opts_chunk' not found" when you Knit
 # SOLUTION: put 'require(knitr)' before your 'opts_chunk' statement
 # POSSIBLE ISSUE: Your HTML is being generated, but no PDFs.
 # SOLUTION: Debug this by removing the 'html_document' part of the header. Then you'll get the real error message. If you're on a Mac, probably the issue is that you need TexLive for Mac (http://tug.org/mactex/ <-- takes a few hours to download)
-title: "[Project] Description____________________________________________"
-author: "___________________Author__________________________________"
+title: "[Project] ______________________________________________________P"
+author: "Author_____________________________________A"
 date: '`r Sys.Date()` (Started _____INSERT_DATE_HERE_________)'
 # runtime: shiny
 # see figure settings below, in 'opts_chunk$set'
@@ -25,29 +25,21 @@ output:
     toc_depth: '4'
 ---
 
-<<<<<<< HEAD
-```{r setup, include=FALSE} # include=FALSE --> evaluated, but neither the code nor its output displayed.
-=======
 ```{r setup, include=FALSE}
 # include=FALSE --> evaluated, but neither the code nor its output displayed.
->>>>>>> 8353a35b23875b2d23ddddd05ae2e58abd2d7fcf
-library("knitr") # Required to avoid "'opts_chunk' not found"
-library("tibble")
-library("dplyr")
-library("reshape2")
-library("markdown")
-library("DT") # install.packages("DT"): Data table library for making interactive HTML tables. Documentation: https://rstudio.github.io/DT/
+library(knitr) # Required to avoid "'opts_chunk' not found"
+library(reshape2); library(tibble); library(dplyr); library(readr); # order matters for reshape/tibble
+library(markdown)
+library(DT) # install.packages("DT"): Data table library for making interactive HTML tables. Documentation: https://rstudio.github.io/DT/
 knitr::opts_chunk$set(dev='png', fig.align='center', fig.width=16, fig.height=8, out.width='2000px', fig.pos='htbp', echo=FALSE, results='hide', cache=FALSE, message=FALSE)
 knitr::opts_knit$set(stop_on_error=2L)
 
-agw_dtfile    <- function(file, caption=NULL, ...) {
+agw_dtfile    <- function(file, caption=NULL, ...) { # Makes a data table from a filename
   if (is.null(caption)) { caption = paste0("Data table: ", basename(file)) }
-  if (grepl("[.](tsv|tab)", file, ignore.case=T)) {
-    x = readr::read_tsv(file)
-  } else if (grepl("[.]csv", file, ignore.case=T)) {
-    x = readr::read_csv(file)
+  if (grepl("[.](tsv|tab)", file, ignore.case=T)) {      x = readr::read_tsv(file)
+  } else if (grepl("[.]csv", file, ignore.case=T)) {     x = readr::read_csv(file)
   } else {
-    warning("Couldn't guess the file type from the extension.")
+    warning("Couldn't guess the file type from the extension--trying TAB-delimited.")
     x = readr::read_tsv(file)
   }
   agw_datatable(data=x, caption=caption, ...)
@@ -58,14 +50,13 @@ agw_datatable <- function(data, caption="Data Table", pageLength=10, options=NUL
   if (is.null(data) || is.na(data)) { warning("Failure in data table--NA or NULL was passed in!"); stop("Something is messed up, your data to 'agw_datatable' is NULL or NA.") }
   if (is.null(options)) { options=list(pageLength=pageLength, lengthMenu=c(pageLength,50,200,999), autoWidth=TRUE) }
   numeric_colnames = colnames(data)[sapply(data, function(ccc) { return(is.numeric(ccc) && !is.integer(ccc))})] # find which columns are NUMERIC but not integers so we can round them
-  SIGNIF_DIGITS = 4
-  DT::datatable(data=data, caption=caption, filter=list(position='top',plain=TRUE),  rownames=FALSE, options=options, ...) %>% formatSignif(numeric_colnames, SIGNIF_DIGITS)   #style="bootstrap",
+  SIG_DIGITS = 4
+  DT::datatable(data=data, caption=caption, filter=list(position='top',plain=TRUE),  rownames=FALSE, options=options, ...) %>% formatSignif(numeric_colnames, SIG_DIGITS)   #style="bootstrap",
 }
 ```
 
 # Project Summary:
   * Samples
-
 
 ```{r , results="markdown", echo=F, error=TRUE, message=TRUE, warning=TRUE, cache=FALSE}
 
@@ -79,7 +70,6 @@ hist(rnorm(100), col="red")
 
 agw_datatable(data.frame(A=rnorm(10), B=runif(10)), caption="Sample Data", pageLength=7)
 ```
-
 
 ```{r, include=F}
 #  Comments

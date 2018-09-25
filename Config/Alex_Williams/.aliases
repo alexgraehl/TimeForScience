@@ -60,29 +60,51 @@ else
     }
 fi
 
-function maketemplate() {
-    DEST=./Makefile
+function template() {
+    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] 'template ___' requires EXACTLY ONE file/directory suffix!"; return 1; fi
+    EX=$1
+    case "${EX}" in 
+	[Mm]ak*) SRC=`which template.mak`; DEST="Makefile" ;;
+	fishldr*)      SRC="${HOME}/workspace/0_CODE/fishldr_example.cfg.R"        DEST="./C10_fishldr_template.cfg.R" ;;
+	[Rr][Mm][Dd]*) SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.Rmd"       DEST="./template.Rmd"        ;;
+	[Rr])          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.R"         DEST="./template.R"          ;;
+	py*2)          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python/template.py"   DEST="./template_python2.py" ;;
+	py*3)          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python3/template.py3" DEST="./template_python3.py" ;;
+	bash | sh)          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Shell/template.sh"    DEST="./template.sh" ;;
+	*) echo -e "[:ERR:] template did not understand what type of file you requested: the extension you supplied was <${EX}>." ; return 1 ;;
+    esac
     if [[ -e "${DEST}" ]]; then
-	echo "[:ERR:] CANNOT copy a makefile here---there is already one here! Refusing to overwrite it."
+	echo "[:ERR:] Refusing to overwrite the existing file '${DEST}'."
 	return 1
     else
-	echo "[:OK:] Copied a new makefile template to ${DEST}"
-	cp -i `which template.mak` "${DEST}"
+	cp -i "${SRC}" "${DEST}"
+	echo "[:OK:] Copied a new '${EX}' template to <${DEST}>."
     fi
-
 }
 
-function fishldrtemplate() {
-    DEST=./C10_fishldr_template.cfg.R
-    if [[ -e "${DEST}" ]]; then
-	echo "[:ERR:] CANNOT copy the fishLDR template to this location---there is already one here! Refusing to overwrite it."
-	return 1
-    else
-	echo "[:OK:] Copied a new fishLDR template to ${DEST}"
-	cp -i "${HOME}/workspace/0_CODE/fishldr_example.cfg.R" "${DEST}"
-    fi
-
-}
+#function maketemplate() {
+#    DEST=./Makefile
+#    if [[ -e "${DEST}" ]]; then
+#	echo "[:ERR:] CANNOT copy a makefile here---there is already one here! Refusing to overwrite it."
+#	return 1
+#    else
+#	echo "[:OK:] Copied a new makefile template to ${DEST}"
+#	cp -i `which template.mak` "${DEST}"
+#    fi
+#
+#}
+#
+#function fishldrtemplate() {
+#    DEST=./C10_fishldr_template.cfg.R
+#    if [[ -e "${DEST}" ]]; then
+#	echo "[:ERR:] CANNOT copy the fishLDR template to this location---there is already one here! Refusing to overwrite it#."
+#	return 1
+#    else
+#	echo "[:OK:] Copied a new fishLDR template to ${DEST}"
+#	cp -i "${HOME}/workspace/0_CODE/fishldr_example.cfg.R" "${DEST}"
+#    fi
+#
+#}
 
 function agw_cmd_exists() { # Check if a command exists
     #command -v "$1" &>/dev/null #|| { echo >&2 "I require foo but it's not installed.  Aborting."; exit 1; }
