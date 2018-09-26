@@ -712,6 +712,10 @@ function mvln { # move and then make an ALIAS in the current location, leaving a
 	DEST="${DEST%/}/${SOURCE}" # remove trailing slash. This is OK even with '/' (root), since we always insert a slash at the end no matter what
     fi
     mv "${SOURCE}" "${DEST}"  && ln -s "${DEST}" "${SOURCE}" && echo -e "Moved ${a_green}${SOURCE} ${a_yellow}-> ${a_green}${DEST}${a_end_color} and left a symlink at ${a_cyan}${SOURCE}${a_end_color}"
+    if [[ $? != 0 ]]; then
+	echo -e "[:ERR:] Google Drive (or whatever the filesystem is that is complaining about symlinks) does NOT support cross-filesystem symlinks, so although we did successfully MOVE your file, we were unable to create a symlink. Your file was moved to this location --> ${DEST} "
+	return 1;
+    fi
 }
 
 #function neararchive { # usage: cd /work/projects/your-project  then: "neararchive myproj-1234-rna-mouse"  --> will move things to the nearline storage and symlink them back
