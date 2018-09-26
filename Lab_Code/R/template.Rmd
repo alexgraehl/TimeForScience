@@ -36,8 +36,8 @@ knitr::opts_knit$set(stop_on_error=2L)
 
 agw_dtfile    <- function(file, caption=NULL, ...) { # Makes a data table from a filename
   if (is.null(caption)) { caption = paste0("Data table: ", basename(file)) }
-  if (grepl("[.](tsv|tab)", file, ignore.case=T)) {      x = readr::read_tsv(file)
-  } else if (grepl("[.]csv", file, ignore.case=T)) {     x = readr::read_csv(file)
+  if (grepl("[.](tsv|tab)", file, ignore.case=T)) {      x = readr::read_tsv(file, col_types=cols()) # suppress printing column types
+  } else if (grepl("[.]csv", file, ignore.case=T)) {     x = readr::read_csv(file, col_types=cols()) # suppress printing column types
   } else {
     warning("Couldn't guess the file type from the extension--trying TAB-delimited.")
     x = readr::read_tsv(file)
@@ -71,9 +71,12 @@ hist(rnorm(100), col="red")
 agw_datatable(data.frame(A=rnorm(10), B=runif(10)), caption="Sample Data", pageLength=7)
 ```
 
+
 ```{r, include=F}
 #  Comments
 ```
 
-
+<!--- note that you can
+ comment out even the ```{r... }``` code with
+HTML comments -->
 
