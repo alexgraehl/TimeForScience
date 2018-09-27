@@ -14,6 +14,11 @@ if (!exists("print.agw")) {
      warning("Error -- can't find Alex's R utilities on the filesystem.")
 }
 
+#source("~willia51/workspace/0_CODE/common/common.R")
+#source("~willia51/workspace/0_CODE/common/multi_array_experiment.R")
+#source("~willia51/workspace/0_CODE/common/paths.R")
+#source("~willia51/workspace/0_CODE/common/salmon_quant.R")
+
 # ======================================================================================
 if (interactive()) { options(error=recover, max.print=1000) } else { options(error=NULL) } # useful even non-interactively
 # Error = traceback DOES NOT STOP THE SCRIPT
@@ -51,8 +56,8 @@ agw_datatable <- function(data, caption="Data Table", pageLength=10, options=NUL
   DT::datatable(data=data, caption=caption, filter=list(position='top',plain=TRUE),  rownames=FALSE, options=options, ...) %>% formatSignif(numeric_colnames, SIGNIF_DIGITS)   #style="bootstrap", . Note: works fine with NULL (c()) numeric_colnames input
 }
 
-
-
+#library(reshape2)
+library(dplyr); library(readr); library(tibble)
 
 
 
