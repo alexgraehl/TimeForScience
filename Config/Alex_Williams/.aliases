@@ -1303,7 +1303,7 @@ alias cheat="echo \
 \" \" ${NL}\
 \">> BIOM format: convert FROM BIOM   : biom convert -i INPUT.biom -o TABDELIM.txt  --to-tsv  --header-key=taxonomy \" ${NL}\
 \">> BIOM format: convert BACK TO BIOM: biom convert -i TABIN.txt  -o OTUTABLE.biom --to-hdf5 --table-type=\\\"OTU table\\\" --process-obs-metadata taxonomy \" ${NL}\
-\">> R / Rmd / Knit: script -e 'library(rmarkdown); rmarkdown::render(\\\"/path/to/the.Rmd\\\", \\\"html_document\\\")'   \" ${NL}\
+\">> R: RMD/KNITR: script -e 'library(rmarkdown); rmarkdown::render(\\\"/path/to/the.Rmd\\\", \\\"html_document\\\")'   \" ${NL}\
 \">> R: List (same # elements per item) --> Data frame (list to data.frame / list to table): do.call(rbind.data.frame, YOUR_LIST_HERE)   \" ${NL}\
 \">> R: Save copy of figure as pdf: dev.copy2pdf() \" ${NL}\
 \">> R: Convert columns of a dataframe to factors (from char): fact.df   <- char.df; fact.df[] <- lapply(char.df[], as.factor) \" ${NL}\
@@ -1311,39 +1311,38 @@ alias cheat="echo \
 \">> R: Aggregate rows / average rows with same name (mean): mAGG <- t(sapply(by(MAT,rownames(MAT),colMeans),identity)) \" ${NL}\
 \">> R: Read bzip/gz file:  x <- read.table(bzfile(\\\"name.bz2\\\") or gzfile(...) \" ${NL}\
 \">> R: Read from stdin:    x <- read.table(pipe(\\\"cat something name.bz2 | bunzip2\\\") \" ${NL}\
-\">> R: Pick CRAN mirror, no GUI popup (install.packages): chooseCRANmirror(graphics=F) \" ${NL}\
-\">> R: Install package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
 \">> R: traceback() - to properly debug. Also: options(error=recover()) \" ${NL}\
 \">> R: t.test failing? Use tryCatch: tryCatch(something, error=function() { return('NA'); }); \" ${NL}\
 \">> R: Need to un-list things? Use unlist! \" ${NL}\
-\">> R: Perpendicular axis labels: las=2 (1=horiz, 3=vertical) \" ${NL}\
-\">> R: draw beyond graph region: par(xpd=T/F/NA) \" ${NL}\
-\">> R: square plot: par(pty='s') \" ${NL}\
-\">> R: heatmap colors: color_function = grDevices::colorRampPalette(c('cyan', 'blue', 'black', 'red', 'yellow')); color_function(n=10) \" ${NL}\
-\">> R: heatmap colors: COOL: black->blue->cyan->yellow:  grDevices::colorRampPalette(c('black', 'blue', '#0099FF', 'yellow'))(n=10)                        <-- note the 10 here \" ${NL}\
-\">> R: heatmap colors: COOL, longer ramp:                grDevices::colorRampPalette(c('black', '#000066', 'blue', '#0099FF', '#BBCC00', 'yellow'))(n=10)  <-- note the 10 here \" ${NL}\
-\">> R: heatmap colors: WARM: black->red->orange->yellow: grDevices::colorRampPalette(c('black', 'red', 'yellow'))(n=10)                                    <-- note the 10 here \" ${NL}\
-\">> R: nice heatmap: library(pheatmap); pheatmap(DATA,  color=grDevices::colorRampPalette(c('black', 'red', 'yellow'))(n=10),   border=NA,  cluster_rows=T,  cluster_cols=F,  main='Heatmap',  fontsize_col=9,  fontsize_row=9,  display_numbers=T,  fontsize_number=4);   \" ${NL}\
-\">> R: pheatmap with ROW labels (the trick is that the *rownames* must match, which is not true for column annotation!): library(pheatmap); m=matrix(rnorm(100),ncol=5); rownames(m) <- paste('R',1:nrow(m)); rannot=data.frame('RANNOT1'=c(rep('A',10), rep('B',7), rep('C',3)), row.names=rownames(m)); pheatmap(m, annotation_row=rannot, annotation_colors=list('RANNOT1'=c('A'='red','B'='blue','C'='green')));   \" ${NL}\
-\">> R: heatmap equivalent in ggplot: ggplot(data %>% mutate(VALUECOL=log2(VALUECOL)), aes(x=SAMPLENAME, y=GENENAME)) +  geom_tile(aes(fill=VALUECOL)) +  scale_fill_gradientn(colors=c('red','white','blue'), name='Description goes here') +  theme_minimal() +   theme(axis.text.x = element_text(angle=90, vjust=1, size=12, hjust=1)) \" ${NL}\
+\">> R: PLOT: Perpendicular axis labels: par(las=2) (1 = horiz, 3 = vertical) \" ${NL}\
+\">> R: PLOT: draw beyond the axes / off / outside the graph region: par(xpd=T/F/NA) \" ${NL}\
+\">> R: PLOT: square plot: par(pty='s') \" ${NL}\
+\">> R: PLOT: heatmap colors: color_function = grDevices::colorRampPalette(c('cyan', 'blue', 'black', 'red', 'yellow')); color_function(n=10) \" ${NL}\
+\">> R: PLOT: heatmap colors: COOL: black->blue->cyan->yellow:  grDevices::colorRampPalette(c('black', 'blue', '#0099FF', 'yellow'))(n=10)                        <-- note the 10 here \" ${NL}\
+\">> R: PLOT: heatmap colors: COOL, longer ramp:                grDevices::colorRampPalette(c('black', '#000066', 'blue', '#0099FF', '#BBCC00', 'yellow'))(n=10)  <-- note the 10 here \" ${NL}\
+\">> R: PLOT: heatmap colors: WARM: black->red->orange->yellow: grDevices::colorRampPalette(c('black', 'red', 'yellow'))(n=10)                                    <-- note the 10 here \" ${NL}\
+\">> R: PLOT: nice heatmap: library(pheatmap); pheatmap(DATA,  color=grDevices::colorRampPalette(c('black', 'red', 'yellow'))(n=10),   border=NA,  cluster_rows=T,  cluster_cols=F,  main='Heatmap',  fontsize_col=9,  fontsize_row=9,  display_numbers=T,  fontsize_number=4);   \" ${NL}\
+\">> R: PLOT: pheatmap with ROW labels (the trick is that the *rownames* must match, which is not true for column annotation!): library(pheatmap); m=matrix(rnorm(100),ncol=5); rownames(m) <- paste('R',1:nrow(m)); rannot=data.frame('RANNOT1'=c(rep('A',10), rep('B',7), rep('C',3)), row.names=rownames(m)); pheatmap(m, annotation_row=rannot, annotation_colors=list('RANNOT1'=c('A'='red','B'='blue','C'='green')));   \" ${NL}\
+\">> R: PLOT: heatmap equivalent in ggplot: ggplot(data %>% mutate(VALUECOL=log2(VALUECOL)), aes(x=SAMPLENAME, y=GENENAME)) +  geom_tile(aes(fill=VALUECOL)) +  scale_fill_gradientn(colors=c('red','white','blue'), name='Description goes here') +  theme_minimal() +   theme(axis.text.x = element_text(angle=90, vjust=1, size=12, hjust=1)) \" ${NL}\
+\">> R: PLOT: totally blank plot: plot(c(0,1),c(0,1),ann=F,bty='n',type='n',xaxt='n',yaxt='n') \" ${NL}\
+\">> R: multiply/divide/'sweep' a matrix by a vector, line by line / row by row: sweep(yourmatrix, 2, yourvec, '/'); stopifnot(ncol(yourmatrix)==length(yourvec)); <-- replace '/' with '*' to multiply \" ${NL}\i
 \">> R: find attributes of a variable: attr(x, 'theAttribute'); Works when names()/attributes() fails! \" ${NL}\
 \">> R: inspect object: str(...) \" ${NL}\
-\">> R: totally blank plot: plot(c(0,1),c(0,1),ann=F,bty='n',type='n',xaxt='n',yaxt='n') \" ${NL}\
-\">> R: cut things into bins, like a histogram: cut(...) \" ${NL}\
+\">> R: cut a data structure (e.g. a vector) into bins, like a histogram: cut(...) \" ${NL}\
 \">> R: factor -> Integers: unclass(...) \" ${NL}\
-\">> R: Perpendicular axis: par(las=2) (1 = horiz, 3 = vertical) \" ${NL}\
-\">> R: Draw BEYOND the axes / plot region: par(xpd=...) \" ${NL}\
-\">> R: sessionInfo(): show packages and versions of installed packages. ls('package:something') shows a summary of package contents, and help(library='packagename') will show package contents in more detail. '.libPaths()' shows lib dirs. \" ${NL}\
 \">> R: Collapse a list down to a basic vector: unlist(...) \" ${NL}\
 \">> R: Remove names from a structure: unname(...) \" ${NL}\
 \">> R: Resize terminal width / columns: options(width=Sys.getenv(\\\"COLUMNS\\\")) \" ${NL}\
 \">> R: write.table(DATA, file='x.txt', row.names=T, col.names=NA, sep='\t', quote=F)  \" ${NL}\
 \">> R: make libraries usable by non-root users: sudo chmod -R a+r /usr/local/lib/R ; sudo find /usr/local/lib/R -type d | sudo xargs chmod a+x \" ${NL}\
 \">> R: run in the queue: qplz \\\"R CMD BATCH script.R\\\" or RScript, but be sure to 'library(methods)' if you use horrendous Rscript \" ${NL}\
-\">> R: update all installed packages: update.packages(ask=FALSE, checkBuilt=TRUE) \" ${NL}\
-\">> R: read from clipboard: y=data.matrix(read.delim(pipe(\\\"pbpaste\\\"))); \" ${NL}\
-\">> R: install package from BIOCONDUCTOR without root: source('http://www.bioconductor.org/biocLite.R'); biocLite(lib=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), lib.loc=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), pkgs=c('PACKAGENAMEHERE')) \" ${NL}\
-\">> R: install package from CRAN without root: install.packages(repos='http://cran.cnr.berkeley.edu/', dependencies=TRUE, lib=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), pkgs=c('PACKAGENAMEHERE')) \" ${NL}\
+\">> R: Mac: read from clipboard: y=data.matrix(read.delim(pipe(\\\"pbpaste\\\"))); \" ${NL}\
+\">> R: PACKAGES: Pick CRAN mirror, no GUI popup (install.packages): chooseCRANmirror(graphics=F) \" ${NL}\
+\">> R: PACKAGES: Install package from source:  R CMD INSTALL packagename.tar.gz  (or use biocLite(...) or install.packages(...)) \" ${NL}\
+\">> R: PACKAGES: sessionInfo(): show packages and versions of installed packages. ls('package:something') shows a summary of package contents, and help(library='packagename') will show package contents in more detail. '.libPaths()' shows lib dirs. \" ${NL}\
+\">> R: PACKAGES: update all installed packages: update.packages(ask=FALSE, checkBuilt=TRUE) \" ${NL}\
+\">> R: PACKAGES: install package from BIOCONDUCTOR without root: source('http://www.bioconductor.org/biocLite.R'); biocLite(lib=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), lib.loc=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), pkgs=c('PACKAGENAMEHERE')) \" ${NL}\
+\">> R: PACKAGES: install package from CRAN without root: install.packages(repos='http://cran.cnr.berkeley.edu/', dependencies=TRUE, lib=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), pkgs=c('PACKAGENAMEHERE')) \" ${NL}\
 \">> R: BED->GRanges: BED file to GeneRanges / GenomicRanges / GRanges object: use 'rtracklayer': library(rtracklayer); gr = rtracklayer::import(rmsk_bed, format='bed'); stopifnot('GRanges' %in% (class(gr))[1]); stopifnot(all(start(gr)<=end(gr))) \" ${NL}\
 \">> R/DPLYR/TIBBLE: RENAME a column to a variable: tib %>% dplyr::rename(!!variable_goes_here := 'Literal_Column_Name_To_Replace'); <-- note that 'rename' and 'select' both can be overridden by other packages, and also have a dplyr variant with TOTALLY DIFFERENT BEHAVIOR     \" ${NL}\
 \">> R/DPLYR/TIBBLE: READR read QUIETLY / not verbose: readr::read_tsv(..., progress=F, col_types=cols()); <-- super non-intuitive way to suppress printing     \" ${NL}\
