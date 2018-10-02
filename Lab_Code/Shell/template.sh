@@ -16,3 +16,5 @@ need_executable() {
     return 0
 }
 
+echoerr() { echo "$@" 1>&2; }
+
