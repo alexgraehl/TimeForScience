@@ -57,7 +57,10 @@ agw_datatable <- function(data, caption="Data Table", pageLength=10, options=NUL
 }
 
 #library(reshape2)
-library(dplyr); library(readr); library(tibble)
-
+library(pheatmap)
+# library(ggplot2)
+library(viridis); # viridis::magma() / viridis::inferno() / viridis() color schemes. install.packages('virids')
+library(readr); library(tibble); library(dplyr)
+library(pryr); # pryr::object_size(obj1, obj2, ...)
 
 

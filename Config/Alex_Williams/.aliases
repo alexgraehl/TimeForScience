@@ -1325,7 +1325,7 @@ alias cheat="echo \
 \">> R: PLOT: pheatmap with ROW labels (the trick is that the *rownames* must match, which is not true for column annotation!): library(pheatmap); m=matrix(rnorm(100),ncol=5); rownames(m) <- paste('R',1:nrow(m)); rannot=data.frame('RANNOT1'=c(rep('A',10), rep('B',7), rep('C',3)), row.names=rownames(m)); pheatmap(m, annotation_row=rannot, annotation_colors=list('RANNOT1'=c('A'='red','B'='blue','C'='green')));   \" ${NL}\
 \">> R: PLOT: heatmap equivalent in ggplot: ggplot(data %>% mutate(VALUECOL=log2(VALUECOL)), aes(x=SAMPLENAME, y=GENENAME)) +  geom_tile(aes(fill=VALUECOL)) +  scale_fill_gradientn(colors=c('red','white','blue'), name='Description goes here') +  theme_minimal() +   theme(axis.text.x = element_text(angle=90, vjust=1, size=12, hjust=1)) \" ${NL}\
 \">> R: PLOT: totally blank plot: plot(c(0,1),c(0,1),ann=F,bty='n',type='n',xaxt='n',yaxt='n') \" ${NL}\
-\">> R: multiply/divide/'sweep' a matrix by a vector, line by line / row by row: sweep(yourmatrix, 2, yourvec, '/'); stopifnot(ncol(yourmatrix)==length(yourvec)); <-- replace '/' with '*' to multiply \" ${NL}\i
+\">> R: multiply/divide/'sweep' a matrix by a vector, line by line / row by row: sweep(yourmatrix, 2, yourvec, '/'); stopifnot(ncol(yourmatrix)==length(yourvec)); <-- replace '/' with '*' to multiply \" ${NL}\
 \">> R: find attributes of a variable: attr(x, 'theAttribute'); Works when names()/attributes() fails! \" ${NL}\
 \">> R: inspect object: str(...) \" ${NL}\
 \">> R: cut a data structure (e.g. a vector) into bins, like a histogram: cut(...) \" ${NL}\
@@ -1400,8 +1400,6 @@ alias cheat="echo \
 \">> UNIX: list files w/modified time MORE THAN one week ago: find . -mtime +7 \" ${NL}\
 \">> UNIX: list files w/modified time LESS THAN one week ago: find . -mtime -7 \" ${NL}\
 \">> UNIX: list files w/modified time two days ago: find . -mtime 2 \" ${NL}\
-\">> UNIX SCREEN: did your arrow keys stop working in 'less' within 'screen'? Detach the screen (modifier+d), then run 'reset' on the command line in the outer shell. \" ${NL}\
-\">> UNIX SCREEN: full screen a tiny window: modifier + F (capital F) for 'fill'. \" ${NL}\
 \">> UNIX: list files w/modified time between 6 and 9 minutes ago: find . -mmin +5 -mmin -10 \" ${NL}\
 \">> UNIX: list ONLY dot files, no .. or up a directory: ls -l .??* \" ${NL}\
 \">> UNIX: upgrade: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
@@ -1416,9 +1414,11 @@ alias cheat="echo \
 \">> UNIX/WGET/TRICKLE: Rate limit any command to 500kbps (-d = down, -u = up): sudo trickle -d 500 -u 500 ncftp 'your_ftp_site_here' \" ${NL}\
 \">> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
 \">> UNIX/TOP/USAGE/HTOP: CPU usage by user: top -b -n 1 -u \\\$USER | awk 'NR>7 { sum += \\\$9; } END { print sum; }' \" ${NL}\
+\">> UNIX SCREEN: did your arrow keys stop working in 'less' within 'screen'? Detach the screen (modifier+d), then run 'reset' on the command line in the outer shell. \" ${NL}\
+\">> UNIX SCREEN: full screen a tiny window: modifier + F (capital F) for 'fill'. \" ${NL}\
 \">> UNIX GREP: filter files based on presence of text: mkdir YES NO; for f in *.txt; do if [[ \\\"\\\$(grep 'YOUR_STRING_HERE' \\\$f | wc -l)\\\" -ne \\\"0\\\" ]]; then mv \\\$f yes/; else mv \\\$f no/; fi ; done \" ${NL}\
-\">> GREP: find text in a file VERBATIM, like join: grep -w -f KEYFILE.txt search_in_file.txt  (remove the '-w' to allow PARTIAL matches as well. You can use '-E' to allow regular expressions in the file too!)\" ${NL}\
-\">> GREP Count occurrences of a match per line: cat FILE | grep -o -n SEARCHTERM | cut -d : -f 1 | uniq -c \" ${NL}\
+\">> UNIX GREP: find text in a file VERBATIM, like join: grep -w -f KEYFILE.txt search_in_file.txt  (remove the '-w' to allow PARTIAL matches as well. You can use '-E' to allow regular expressions in the file too!)\" ${NL}\
+\">> UNIX GREP Count occurrences of a match per line: cat FILE | grep -o -n SEARCHTERM | cut -d : -f 1 | uniq -c \" ${NL}\
 \">> QSUB/QUEUE/PBS submit job: echo 'echo \\\"hello I am a test job\\\"' | qsub -q Bio -W group_list=bioqueue ; sleep 10; cat STDIN*; \" ${NL}\
 \">> QSUB/QUEUE/PBS: Delete all your jobs one by one: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
 \">> QSUB/QUEUE/PBS: restart torque: sudo service pbs_sched stop ; sudo service pbs_mom stop ; sudo service pbs_server stop ; sudo /bin/rm /var/lock/subsys/pbs_server ; sudo service pbs_sched start ; sudo service pbs_mom start ; sudo service pbs_server start ; qstat \" ${NL}\
@@ -1433,8 +1433,8 @@ alias cheat="echo \
 \">> UNIX/APTITUTDE: sudo aptitude update && sudo aptitude safe-upgrade <-- more assertive than apt-get upgrade.\" ${NL}\
 \">> UNIX/APT-GET: upgrade only EXISTING packages matching wildcard pattern: apt-get install --only-upgrade 'r-cran*' \" ${NL}\
 \">> UNIX/APT-GET: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
-\">> SSH/SHELL/LOGIN to a 'fresh' shell without loading bashrc or bash_profile: ssh -t user@server bash --norc --noprofile \" ${NL}\
-\">> SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub   to server ~/.ssh/authorized_keys \" ${NL}\
+\">> UNIX SSH/SHELL/LOGIN to a 'fresh' shell without loading bashrc or bash_profile: ssh -t user@server bash --norc --noprofile \" ${NL}\
+\">> UNIX SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub   to server ~/.ssh/authorized_keys \" ${NL}\
 \" \" ${NL}\
 \">> ZIP: Zip a folder: zip -r ARCHIVENAME FOLDER \" ${NL}\
 \">> BASH: Foreach/rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
@@ -1451,7 +1451,7 @@ alias cheat="echo \
 \">> XARGS/FIND: bzip all the bed/diff/count files that you can find: find . -type f \( -iname \\\"*.bed\\\" -o -iname \\\"*_tracking\\\" -o -iname \\\"*.diff\\\" -o -iname \\\"*.moa\\\" -o -iname \\\"*.fasta\\\" -o -iname \\\".fa\\\" -o -iname \\\"*.bed.count\\\" \) -print0 | xargs -0 bzip2 \" ${NL}\
 \">> CHMOD Make files readable, directories r+x (print0/-0 makes filenames with spaces work): sudo chmod -R a+r ./ ; sudo find ./ -type d -print0 | sudo xargs -0 chmod a+x   (this is the command 'sudoshowoff')\" ${NL}\
 \">> GNU FIND and DELETE a file (dangerous): find . -name SOMEFILE -delete \" ${NL}\
-\">> UNIX/Perl fast sort with ONE header line: cat FILE | perl -e 'print scalar (<>); print sort <>' > OUTFILE \" ${NL}\
+\">> PERL: fast sort with ONE header line: cat FILE | perl -e 'print scalar (<>); print sort <>' > OUTFILE \" ${NL}\
 \">> PERL: REGEXP multi-line search/replace: perl -00pe 's{thing1}{thing2}gxms' THE_FILE  <-- s lets '.' match newlines\; m makes ^ and \\\$ work \" ${NL}\
 \">> PERL: replace IN PLACE in a file, with backups for \\\$file in FILES; do perl -p -i.bak -e 's/STRING_TO_REPLACE/NEW_STRING/g' \\\$file; done  \" ${NL}\
 \">> PERL: or WEB: Chrome web form non-breaking space (ASCII 160) is [\\xA0] (or 'use feature qw(unicode_strings);') \" ${NL}\
@@ -1463,45 +1463,45 @@ alias cheat="echo \
 \">> EMACS: show variable: describe-variable \" ${NL}\
 \" \" ${NL}\
 \">> Convert SAM to BAM with QPLZ:  for SSS in **/*.sam; do qplz --background \\\"samtools view -bS \\\$SSS > \\\${SSS/.sam}.bam\\\" ; done \" ${NL}\
-\">> FASTA remove linebreaks from sequence (make one-line fasta sequences): cat file.fasta | awk '!/^>/{printf \\\"%s\\\", \\\$0; n=\\\"\n\\\"} /^>/{print n \\\$0; n=\\\"\\\"} END {printf\\\"%s\\\",n}' > out.fa \" ${NL}\
-\">> SEQ: fastq2fasta (fq2fa, fastq -> fasta): zcat FQ.fq.gz | awk '{if(NR%4==1) {printf(\\\">%s\n\\\",substr(\\\$0,2));} else if(NR%4==2) print;}' > FASTA.fa \" ${NL}\
-\">> SEQ: bcl2fastq: NCPU=4; bcl2fastq --fastq-compression-level 5 --barcode-mismatches 1 --no-lane-splitting -r $NCPU -d $NCPU -p $NCPU -w $NCPU --sample-sheet 'THIS_MUST_BE_VALID_NOT_MAC_FORMAT.csv'  --runfolder-dir=WEIRDLY_NAMED_160_NB01415_ABCDQBXX   (output goes to Data/Intensities/BaseCalls/*.fastq.gz) \" ${NL}\
-\">> FASTQ/FASTA subsample 500 reads randomly. Use -s1234 (random seed) so you can get the same reads in paired-end situations: seqtk sample -s1234 read1.fq.gz 500 | gzip > sub1.fq.gz \" ${NL}\
-\">> FASTQ sort by read ID:  zcat YOUR.fq.gz | paste - - - - | sort -k1,1g -t \\\" \\\" | tr \\\"\\t\\\" \\\"\\n\\\" | gzip > SORTED.fq.gz (or use 'fastq_sort_by_read_name.sh') \" ${NL}\
-\">> RNASEQ SAM --> BAM:  samtools view -bS in.sam > out.bam \" ${NL}\
-\">> RNASEQ BAM --> SAM:  samtools view -h  in.bam > out.sam \" ${NL}\
-\">> RNASEQ samtools view first read of pair only:  samtools view -f  64 file.bam \" ${NL}\
-\">> RNASEQ samtools view second read of pair only: samtools view -f 128 file.bam \" ${NL}\
-\">> RNASEQ sort SAM and setting the 'sorted' flag:  java -Xmx2g  -jar SortSam.jar INPUT=in.sam SORT_ORDER=coordinate OUTPUT=out_sorted.sam \" ${NL}\
-\">> RNASEQ View BAM header: samtools view -H  in.bam \" ${NL}\
-\">> RNASEQ Merge BAM files in subdirectories: for f in * ; do samtools merge \\\${f}_merged.bam \\\$f/*.bam; done \" ${NL}\
-\">> RNASEQ arbitrary text filtering in Perl on a BAM file: samtools view -h in.bam | perl -ne 'if (m/^@/) {print;} else { print if m/YOURCONDITIONHERE/; }' | samtools view -bS > filtered.bam  \" ${NL}\
-\">> RNASEQ remove non-primary and non-aligned reads: samtools view -b -F 0x104 in.bam > mapped_primary.bam \" ${NL}\
-\">> RNASEQ count primary (0x100) mapped (0x4) reads: samtools view -c -F 0x104 in.bam > COUNT.txt\" ${NL}\
-\">> RNASEQ Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ${NL}\
-\">> RNASEQ TOPHAT/rename TEST: for f in *; do echo \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
-\">> RNASEQ TOPHAT/rename RUN : for f in *; do   mv \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
-\">> RNASEQ: Truncate a fastq file to length 19 without using fastx-trimmer: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
-\">> SRA: Obtain SRA sequence from NCBI: prefetch --verbose SRR__whateverID__ \" ${NL}\
-\">> SRA->FASTQ: fastq-dump --gzip SRR1234.sra    (<-- creates new file 'SRR1234.fastq.gz') \" ${NL}\
+\">> BIOINF FASTA remove linebreaks from sequence (make one-line fasta sequences): cat file.fasta | awk '!/^>/{printf \\\"%s\\\", \\\$0; n=\\\"\n\\\"} /^>/{print n \\\$0; n=\\\"\\\"} END {printf\\\"%s\\\",n}' > out.fa \" ${NL}\
+\">> BIOINF SEQ: fastq2fasta (fq2fa, fastq -> fasta): zcat FQ.fq.gz | awk '{if(NR%4==1) {printf(\\\">%s\n\\\",substr(\\\$0,2));} else if(NR%4==2) print;}' > FASTA.fa \" ${NL}\
+\">> BIOINF SEQ: bcl2fastq: NCPU=4; bcl2fastq --fastq-compression-level 5 --barcode-mismatches 1 --no-lane-splitting -r $NCPU -d $NCPU -p $NCPU -w $NCPU --sample-sheet 'THIS_MUST_BE_VALID_NOT_MAC_FORMAT.csv'  --runfolder-dir=WEIRDLY_NAMED_160_NB01415_ABCDQBXX   (output goes to Data/Intensities/BaseCalls/*.fastq.gz) \" ${NL}\
+\">> BIOINF FASTQ/FASTA subsample 500 reads randomly. Use -s1234 (random seed) so you can get the same reads in paired-end situations: seqtk sample -s1234 read1.fq.gz 500 | gzip > sub1.fq.gz \" ${NL}\
+\">> BIOINF FASTQ: sort by read ID:  zcat YOUR.fq.gz | paste - - - - | sort -k1,1g -t \\\" \\\" | tr \\\"\\t\\\" \\\"\\n\\\" | gzip > SORTED.fq.gz (or use 'fastq_sort_by_read_name.sh') \" ${NL}\
+\">> BIOINF RNASEQ: SAM --> BAM:  samtools view -bS in.sam > out.bam \" ${NL}\
+\">> BIOINF RNASEQ: BAM --> SAM:  samtools view -h  in.bam > out.sam \" ${NL}\
+\">> BIOINF RNASEQ: samtools view first read of pair only:  samtools view -f  64 file.bam \" ${NL}\
+\">> BIOINF RNASEQ: samtools view second read of pair only: samtools view -f 128 file.bam \" ${NL}\
+\">> BIOINF RNASEQ: sort SAM and setting the 'sorted' flag:  java -Xmx2g  -jar SortSam.jar INPUT=in.sam SORT_ORDER=coordinate OUTPUT=out_sorted.sam \" ${NL}\
+\">> BIOINF RNASEQ: View BAM header: samtools view -H  in.bam \" ${NL}\
+\">> BIOINF RNASEQ: Merge BAM files in subdirectories: for f in * ; do samtools merge \\\${f}_merged.bam \\\$f/*.bam; done \" ${NL}\
+\">> BIOINF RNASEQ: arbitrary text filtering in Perl on a BAM file: samtools view -h in.bam | perl -ne 'if (m/^@/) {print;} else { print if m/YOURCONDITIONHERE/; }' | samtools view -bS > filtered.bam  \" ${NL}\
+\">> BIOINF RNASEQ: remove non-primary and non-aligned reads: samtools view -b -F 0x104 in.bam > mapped_primary.bam \" ${NL}\
+\">> BIOINF RNASEQ: count primary (0x100) mapped (0x4) reads: samtools view -c -F 0x104 in.bam > COUNT.txt\" ${NL}\
+\">> BIOINF RNASEQ: Count frequencies of first 5 bases of a SAM file: cut -f 10 theFile.sam | cut -c 1-5 | sort | uniq -c \" ${NL}\
+\">> BIOINF RNASEQ: TOPHAT/rename TEST: for f in *; do echo \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
+\">> BIOINF RNASEQ: TOPHAT/rename RUN : for f in *; do   mv \\\${f}/accepted_hits.bam \\\${f}/accepted_hits_\\\${f}.bam ; done \" ${NL}\
+\">> BIOINF RNASEQ: Truncate a fastq file to length 19 without using fastx-trimmer: awk 'NR % 2 == 0 { \\\$0=substr(\\\$0,1,19)} {print}' \" ${NL}\
+\">> BIOINF SRA: Obtain SRA sequence from NCBI: prefetch --verbose SRR__whateverID__ \" ${NL}\
+\">> BIOINF SRA->FASTQ: fastq-dump --gzip SRR1234.sra    (<-- creates new file 'SRR1234.fastq.gz') \" ${NL}\
 \">> MINION LONG READ SEQ: FAST5 to FASTQ: Make a single FASTQ out of all FAST5s in each of the 'barcode' subdirectories (assumes the file structure is: minion/barcode01/batch9988/file.fast5): for bar in barcode*; do final=ToFQ.\\\$bar.final.fq.gz; /bin/rm -f \\\$final; for f in \\\${bar}/*/*.fast5; do echo \\\"Handling \\\$f\\\"; poretools fastq \\\$f | gzip >> \\\$final; done; done \" ${NL}\
 \" \" ${NL}\
-\">> BLAST: Extract all info (sequence names and FASTA sequence) from a database: blastdbcmd -entry all -db YOUR_DATABASE_PREFIX \" ${NL}\
-\">> BLAST: DNA pair-wise similarity for all sequences in a fasta file:   makeblastdb -in REF.fa -dbtype nucl  &&  blastn -outfmt 6 -db REF.fa -query REF.fa -title 'BLAST index' -out results.out \" ${NL}\
-\">> BLAST: MakeblastDB on COMPRESSED gzip input fasta: gunzip -c GENOME.fasta.gz | makeblastdb -in - -title 'OUTPUTNAME' -dbtype nucl -out OUTFILEPREFIX  \" ${NL}\
-\">> BLAST: extract DATABASE sequences back to FASTA: In the directory with database files starting with the prefix 'nt_your_prefix_whatever', blastdbcmd -db nt_your_prefix_whatever -entry all -out - | gzip > all_sequences.fasta  \" ${NL}\
-\">> BLAST: if you have PROTEINS, see where they are in NUCLEOTIDE space using tblastn. Also use a custom output format that SHOWS the alignment in a table: tblastn -query myproteins.faa -subject refgenome.fasta -outfmt \\\"6 qacc sacc btop\\\" > OUTPUT_with_alignment.blast.out.txt \" ${NL}\
-\">> BLAST: if you generate a blast query with -outfmt 11, you can use 'blast_formatter' to reformat it into other output types! So:   blast [...] -outfmt 11 -out BLASTOUT.asn     and then:    blast_formatter -archive BLASTOUT.asn -outfmt \\\"7 qacc sacc evalue qstart qend sstart send \\\"  \" ${NL}\
-\">> BLAST: the ultimate custom formatting for thorough individuals: blastn -query QUERY.fa -subject REFERENCE.fa -outfmt \\\"7 qseqid qlen qstart qend sseqid slen sstart send qseq sseq evalue bitscore score length pident nident mismatch gaps btop\\\" > outfmt_custom.blast.txt  \" ${NL}\
+\">> BIOINF BLAST: Extract all info (sequence names and FASTA sequence) from a database: blastdbcmd -entry all -db YOUR_DATABASE_PREFIX \" ${NL}\
+\">> BIOINF BLAST: DNA pair-wise similarity for all sequences in a fasta file:   makeblastdb -in REF.fa -dbtype nucl  &&  blastn -outfmt 6 -db REF.fa -query REF.fa -title 'BLAST index' -out results.out \" ${NL}\
+\">> BIOINF BLAST: MakeblastDB on COMPRESSED gzip input fasta: gunzip -c GENOME.fasta.gz | makeblastdb -in - -title 'OUTPUTNAME' -dbtype nucl -out OUTFILEPREFIX  \" ${NL}\
+\">> BIOINF BLAST: extract DATABASE sequences back to FASTA: In the directory with database files starting with the prefix 'nt_your_prefix_whatever', blastdbcmd -db nt_your_prefix_whatever -entry all -out - | gzip > all_sequences.fasta  \" ${NL}\
+\">> BIOINF BLAST: if you have PROTEINS, see where they are in NUCLEOTIDE space using tblastn. Also use a custom output format that SHOWS the alignment in a table: tblastn -query myproteins.faa -subject refgenome.fasta -outfmt \\\"6 qacc sacc btop\\\" > OUTPUT_with_alignment.blast.out.txt \" ${NL}\
+\">> BIOINF BLAST: if you generate a blast query with -outfmt 11, you can use 'blast_formatter' to reformat it into other output types! So:   blast [...] -outfmt 11 -out BLASTOUT.asn     and then:    blast_formatter -archive BLASTOUT.asn -outfmt \\\"7 qacc sacc evalue qstart qend sstart send \\\"  \" ${NL}\
+\">> BIOINF BLAST: the ultimate custom formatting for thorough individuals: blastn -query QUERY.fa -subject REFERENCE.fa -outfmt \\\"7 qseqid qlen qstart qend sseqid slen sstart send qseq sseq evalue bitscore score length pident nident mismatch gaps btop\\\" > outfmt_custom.blast.txt  \" ${NL}\
+\">> BIOINF DNA reverse-complement: perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
 \" \" ${NL}\
-\">> DNA reverse-complement: perl -e '\\\$x = qq{AAAA_SEQUENCE_GGGG_TT_CC}; \\\$_ = scalar(reverse(\\\$x)); tr/ACGT/TGCA/; print \\\$_;' \" ${NL}\
-\">> APACHE error log: sudo less -S /var/log/apache2/error.log \" ${NL}\
+\">> UNIX APACHE error log: sudo less -S /var/log/apache2/error.log \" ${NL}\
 \">> MAC: DNS woes: sudo dscacheutil -flushcache \" ${NL}\
 \">> MAC: Dictionary: /usr/share/dict/words \" ${NL}\
 \">> MAC: why isn't the screensaver working: pmset -g (see 'sleep' in there), then pmset -g assertions \" ${NL}\
 \">> MAC: Image type convert: mkdir -p PNGS_TO_JPEG; sips -s format jpeg *.png --out PNGS_TO_JPEG \" ${NL}\
-\">> Github solve 'Your push would publish a private email address': git config --global user.email 'YOURGITHUB_USERNAME_GOES_HERE@users.noreply.github.com'; git commit --amend --reset-author; git push ; (and make sure you don't have a .git/config that overrides this setting)\" ${NL}\
-\">> COPROC: coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ${NL}\
+\">> GITHUB solve 'Your push would publish a private email address': git config --global user.email 'YOURGITHUB_USERNAME_GOES_HERE@users.noreply.github.com'; git commit --amend --reset-author; git push ; (and make sure you don't have a .git/config that overrides this setting)\" ${NL}\
+\">> UNIX COPROC: coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ${NL}\
 \">> LINES: RANDOM subset (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'print if (rand() < 0.5);' theFile.txt \" ${NL}\
 \">> LINES: REPEATABLE RANDOM subset: perl -e 'srand(123456); while(<>){ print if (rand() < 0.5);}' theFile.txt \" ${NL}\
 \">> LINES: Semi-random FASTA records (2 lines at a time): perl -e 'my \\\$total=0; my \\\$MAX=3; srand(); while(<>){ if (rand()<0.01) { print \\\$_; my \\\$nextLine=<>; print \\\$nextLine; \\\$total++; exit(0) if (\\\$total>=\\\$MAX); } }' \" ${NL}\
@@ -1511,5 +1511,5 @@ alias cheat="echo \
 \">> UNIX/LINES/AWK re-order columns: cat FILE | awk 'BEGIN {OFS = \\\"\t\\\"}; {print \\\$1,\\\$4,\\\$2,\\\$11}' \" ${NL}\
 \">> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">> LINES Count chars on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
-\">> BIOINFORMATICS SOFTWARE to remember: UGENE will do Clustal/BLAST/Etc locally, and visualize sequences / FASTAS. MAUVE is a similar aligner that we used previously for viral genomes.  IGV is a local genome browser. TreeView and Cluster 3 will cluster.  GLANCES: like 'top' but fancier.\" ${NL}\
+\">> Z SOFTWARE to remember: Bioinformatics: UGENE will do Clustal/BLAST/Etc locally, and visualize sequences / FASTAS. MAUVE is a similar aligner that we used previously for viral genomes.  IGV is a local genome browser. TreeView and Cluster 3 will cluster.  General: GLANCES is fancier top/htop system activity monitor.\" ${NL}\
 "
