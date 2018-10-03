@@ -3,7 +3,7 @@ set -u
 set -o pipefail
 # Don't set -e, which EXITS if any return code is non-zero!
 
-echoerr() { echo "$@" 1>&2; }
+echoerr() { echo -e "$@" 1>&2; }
 
 we_need_file() {
     if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] requires EXACTLY ONE file/directory name!"; exit 1; fi
