@@ -1304,7 +1304,8 @@ alias cheat="echo \
 \">> R: Convert columns of a dataframe to factors (from char): fact.df   <- char.df; fact.df[] <- lapply(char.df[], as.factor) \" ${NL}\
 \">> R: Prevent blank page in PDF: pdf(..., onefile=FALSE) \" ${NL}\
 \">> R: Aggregate rows / average rows with same name (mean): mAGG <- t(sapply(by(MAT,rownames(MAT),colMeans),identity)) \" ${NL}\
-\">> R: Read bzip/gz file:  x <- read.table(bzfile(\\\"name.bz2\\\") or gzfile(...) \" ${NL}\
+\">> R: Read bzip/gz file:  x <- read.table(gzfile(\\\"name.bz2\\\") (gzfile supposedly handles .txt/.xz/.bz2/.gz) \" ${NL}\
+\">> R: Read bzip/gz file line by line:  conn=gzcon(file('in.txt.gz','r')); while(TRUE) { lines22.vec=readLines(conn,n=22); if (0==length(lines22.vec)){break; } } close(conn); \" ${NL}\
 \">> R: Read from stdin:    x <- read.table(pipe(\\\"cat something name.bz2 | bunzip2\\\") \" ${NL}\
 \">> R: traceback() - to properly debug. Also: options(error=recover()) \" ${NL}\
 \">> R: t.test failing? Use tryCatch: tryCatch(something, error=function() { return('NA'); }); \" ${NL}\
