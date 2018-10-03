@@ -15,7 +15,9 @@
 #term xterm-color
 term xterm-256color
 defutf8 on
-defflow off
+#defflow off
+defflow auto interrupt
+
 vbell off
 
 # autodetach on
