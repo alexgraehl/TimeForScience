@@ -1,8 +1,5 @@
 ---
-# Click the "Knit" buttin in RStudio.
 # Debugging:
-# POSSIBLE ISSUE: You see "Error in eval... object 'opts_chunk' not found" when you Knit
-# SOLUTION: put 'require(knitr)' before your 'opts_chunk' statement
 # POSSIBLE ISSUE: Your HTML is being generated, but no PDFs.
 # SOLUTION: Debug this by removing the 'html_document' part of the header. Then you'll get the real error message. If you're on a Mac, probably the issue is that you need TexLive for Mac (http://tug.org/mactex/ <-- takes a few hours to download)
 title: "[Project] ______________________________________________________P"
@@ -13,25 +10,25 @@ date: '`r Sys.Date()` (Started _____INSERT_DATE_HERE_________)'
 output:
   html_document:
     css: ~/workspace/0_CODE/1750_haiyin_Rmd.css
-    toc: yes
-    toc_depth: 4
     self_contained: true
-    code_folding: hide
-    fig_caption: yes
-    fig_width: 16
-    fig_height: 8 
+    code_folding:   hide
+    fig_caption:    true
+    toc:            true
+    toc_depth:      3
   pdf_document:
-    toc: yes
-    toc_depth: '4'
+    toc:            true
+    toc_depth:      3
+    fig_caption:    true
 ---
 
 ```{r setup, include=FALSE}
 # include=FALSE --> evaluated, but neither the code nor its output displayed.
 library(knitr) # Required to avoid "'opts_chunk' not found"
 library(reshape2); library(tibble); library(dplyr); library(readr); # order matters for reshape/tibble
+library(ggplot); library(pryr)
 library(markdown)
 library(DT) # install.packages("DT"): Data table library for making interactive HTML tables. Documentation: https://rstudio.github.io/DT/
-knitr::opts_chunk$set(dev='png', fig.align='center', fig.width=16, fig.height=8, out.width='2000px', fig.pos='htbp', echo=FALSE, results='hide', cache=FALSE, message=FALSE)
+knitr::opts_chunk$set(dev='png', fig.align='center', fig.width=8, fig.height=5, out.width='2000px', fig.pos='htbp', echo=FALSE, results='hide', cache=FALSE, message=FALSE)
 knitr::opts_knit$set(stop_on_error=2L)
 
 agw_dtfile    <- function(file, caption=NULL, ...) { # Makes a data table from a filename
