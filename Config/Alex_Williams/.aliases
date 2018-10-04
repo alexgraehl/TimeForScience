@@ -1294,11 +1294,12 @@ alias cheat="echo \
 \">> PYTHON debug a crashing program by enterint the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
 \">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --user PACKAGENAME \" ${NL}\
 \">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --ignore-installed --install-option=\\\"--prefix=$BINFPYROOT\\\" PACKAGENAME \" ${NL}\
-\">> PYTHON debug a crashing program: Put this in the code verbatim to properly enter the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
+\">> PYTHON debug a crashing program: Put this in the code to enter the python debugger on a line:  import pdb; pdb.set_trace() \" ${NL}\
 \" \" ${NL}\
 \">> BIOM format: convert FROM BIOM   : biom convert -i INPUT.biom -o TABDELIM.txt  --to-tsv  --header-key=taxonomy \" ${NL}\
 \">> BIOM format: convert BACK TO BIOM: biom convert -i TABIN.txt  -o OTUTABLE.biom --to-hdf5 --table-type=\\\"OTU table\\\" --process-obs-metadata taxonomy \" ${NL}\
 \">> R: RMD/KNITR: script -e 'library(rmarkdown); rmarkdown::render(\\\"/path/to/the.Rmd\\\", \\\"html_document\\\")'   \" ${NL}\
+\">> R: RMD/KNITR: write a markdown element VERBATIM from R \\\`\\\`\\\`{r results='asis'} (newline) cat('\n\n## HERE is a programmatically-defined SECTION in Rmd\n')  \" ${NL}\
 \">> R: List (same # elements per item) --> Data frame (list to data.frame / list to table): do.call(rbind.data.frame, YOUR_LIST_HERE)   \" ${NL}\
 \">> R: Save copy of figure as pdf: dev.copy2pdf() \" ${NL}\
 \">> R: Convert columns of a dataframe to factors (from char): fact.df   <- char.df; fact.df[] <- lapply(char.df[], as.factor) \" ${NL}\
