@@ -55,15 +55,20 @@ agw_datatable <- function(data, caption="Data Table", pageLength=10, options=NUL
 # Project Summary:
   * Samples
 
-```{r , results="markdown", echo=F, error=TRUE, message=TRUE, warning=TRUE, cache=FALSE}
+```{r , results='asis', echo=F, error=TRUE, message=TRUE, warning=TRUE, cache=FALSE}
 
 # Command to get a bunch of PNG figures in a format where you can insert them here:
 #          ls -1 YOURDIRECTORY/*.png | perl -pe 's/^/   * ![](/' | perl -pe 's/$/)/'
 
 #agw_dtfile("./some_data.tsv", caption="This is a table of data")
 #agw_datatable(a_tibble, caption="Data table from a tibble.")
+
+cat(paste0("\n\n## SECTION_BREAK_HERE: ", 1, "\n"))
+
 set.seed(123)
 hist(rnorm(100), col="red")
+
+cat(paste0("\n\n## SECTION_BREAK_HERE_ALSO: ", 1, "\n"))
 
 agw_datatable(data.frame(A=rnorm(10), B=runif(10)), caption="Sample Data", pageLength=7)
 ```
