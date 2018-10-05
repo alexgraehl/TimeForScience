@@ -22,10 +22,11 @@ require_executable() {
 
 # This does not work
 #is_numeric() {
+#    if [[ "$#" != 1 ]]; then echoerr "[:ERR:]] is_numeric requires EXACTLY ONE ARGUMENT!"; exit 1; fi
 #    if [[ $1 =~ ^[+-]?[0-9]+([.][0-9]+)?$ ]] ; then
-#	return 0 # is a number (0 means 'success' in bash)
+#	return 0 # is a number (0 is 'success' in bash)
 #    else
-#	return 1 # not a number (1 means 'not success' in bash)
+#	return 1 # not a number (1 is 'not success' in bash)
 #    fi
 #    # Remember that you can't capture the return value with x=$(is_numeric ...): you must check $?
 #}
