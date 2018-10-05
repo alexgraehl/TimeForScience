@@ -462,21 +462,21 @@ function science {
     GD="${HOME}/GOOG/Alex_All_Projects"
     WSPRE="${HOME}/workspace/0_CODE"
     scienceboth "${HOME}/workspace/0_CODE" # sync these files before overwriting the local W_...Rmd ones
-    
     if [[ -d "${GD}" ]]; then
 	[[ -d "${WSPRE}" ]] || { echo "Failure! Missing expected directory: ${WSPRE}"; return 99; }
 
 	#find . -iname "W_*.Rmd" -o -iname "W_*.R"
 	for f in "${GD}"/**/W_*.Rmd "${GD}"/**/W_*.R; do
 	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "[:OK:] ${f} --> ${h}...";
-	    \cp -f "${f}" "${h}"
+	    \rsync -avz "${f}" "${h}"
 	done
     fi
     WEBO="${HOME}/web"
+
     if [[ -d "${WEBO}" && -d "${WSPRE}" ]]; then
-	echo "[:OK:] Copying web files to a GIT directory..."
-	\cp -f ${WEBO}/index.html ${WSPRE}/web/
-	\cp -f ${WEBO}/projects/*.html ${WSPRE}/web/projects/
+	echo "[:OK:] Rsyncing web files to a GIT directory..."
+	\rsync -avz ${WEBO}/index.html ${WSPRE}/web/
+	\rsync -avz ${WEBO}/projects/*.html ${WSPRE}/web/projects/
     fi
     # ================== Done with this Google code stuff ==============
     scienceboth "${TIME_FOR_SCIENCE_DIR}"
