@@ -5,19 +5,19 @@ set -o pipefail
 
 echoerr() { echo -e "$@" 1>&2; }
 
-we_need_file() {
-    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] requires EXACTLY ONE file/directory name!"; exit 1; fi
-    if [[ ! -f "$1" ]]; then echo "[:ERR:] Cannot find required file: '$1'"; exit 1; fi
-    if [[ ! -s "$1" ]]; then echo "[:ERR:] The file exists, but is EMPTY, which is probably a mistake!: '$1'"; exit 1; fi
-    return 0
+require_nonempty_file() {
+    if [[ "$#" != 1 ]]; then echoerr "[:ERR:]] requires EXACTLY ONE file/directory name!"; exit 1; fi
+    if [[ ! -f "$1" ]]; then echoerr "[:ERR:] Cannot find required file: '$1'"; exit 1; fi
+    if [[ ! -s "$1" ]]; then echoerr "[:ERR:] The file exists, but is EMPTY, which is probably a mistake!: '$1'"; exit 1; fi
+    return 0 # 0 is the 'good' status
 }
 
-need_executable() {
-    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] requires EXACTLY ONE file/directory name!"; exit 1; fi
-    if [[ ! -f "$1" ]]; then echo "[:ERR:] Cannot find required executable: '$1'"; exit 1; fi
-    if [[ ! -x "$1" ]]; then echo "[:ERR:] Program was found, but is NOT EXECUTABLE at: '$1'"; exit 1; fi
-    if [[ ! -s "$1" ]]; then echo "[:ERR:] The file exists, but is EMPTY, which is probably a mistake!: '$1'"; exit 1; fi
-    return 0
+require_executable() {
+    if [[ "$#" != 1 ]]; then echoerr "[:ERR:]] requires EXACTLY ONE file/directory name!"; exit 1; fi
+    if [[ ! -f "$1" ]]; then echoerr "[:ERR:] Cannot find required executable: '$1'"; exit 1; fi
+    if [[ ! -x "$1" ]]; then echoerr "[:ERR:] Program was found, but is NOT EXECUTABLE at: '$1'"; exit 1; fi
+    if [[ ! -s "$1" ]]; then echoerr "[:ERR:] The executable exists, but is EMPTY, which is probably a mistake!: '$1'"; exit 1; fi
+    return 0 # 0 is the 'good' status
 }
 
 # This does not work
