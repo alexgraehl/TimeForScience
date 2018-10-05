@@ -15,7 +15,7 @@ if (!exists("print.agw")) {
 }
 
 #source("~willia51/workspace/0_CODE/common/common.R")
-#source("~willia51/workspace/0_CODE/common/multi_array_experiment.R")
+#source("~willia51/workspace/0_CODE/common/multi_assay_experiment.R")
 #source("~willia51/workspace/0_CODE/common/paths.R")
 #source("~willia51/workspace/0_CODE/common/salmon_quant.R")
 
