@@ -15,7 +15,7 @@ nonempty_file_exists() { # returns 1, but does not exit with an error
 
 require_nonempty_file() {
     if [[ "$#" != 1 ]]; then echoerr "[:ERR:]] requires EXACTLY ONE file/directory name!"; exit 1; fi # Bad arguments to the function
-    if [[ ! nonempty_file_exists "$1" ]]; then exit 1; fi
+    if [[ ! $(nonempty_file_exists "$1") ]]; then exit 1; fi
     return 0 # 0 is the 'good' status
 }
 
