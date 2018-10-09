@@ -1108,7 +1108,20 @@ function setunion {
 #    "${cmd[@]}" # <- Actually execute. See http://unix.stackexchange.com/questions/131766/why-does-my-shell-script-choke-on-whitespace-or-other-special-characters
 #}
 
-function bsubtemp {
+
+bsubnow() {
+    echo bsub -L '/bin/bash' \
+	 -R "'span[hosts=1]'" \
+	 -q "'long'" \
+	 -R "'rusage[mem=32]'" \
+	 -oo "'LOG-%J.bsub.log.out'" \
+	 -eo "'LOG-%J.bsub.log.err'" \
+	 -n 1 \
+	 -J "'YOUR_PROJNAME_HERE'" \
+	 \"YOUR_COMMAND_GOES_HERE\"
+}
+
+bsubtemp() {
     if (( "$#" < 1 )) ; then echo -e "[:ERR:]] Please specify a job name! Note that you probably also want to send this output to STDOUT, so e.g. 'bsubtemp MYJOB > job.sub.sh'"; return 1; fi
     if [[ "$#" == 2 ]] ; then
 	MEM=$2
