@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 
 # ======================================================================================
 # First, attempt to load Alex's common utility code off the filesystem. Hopefully this already exists somewhere!
@@ -56,11 +57,28 @@ agw_datatable <- function(data, caption="Data Table", pageLength=10, options=NUL
   DT::datatable(data=data, caption=caption, filter=list(position='top',plain=TRUE),  rownames=FALSE, options=options, ...) %>% formatSignif(numeric_colnames, SIGNIF_DIGITS)   #style="bootstrap", . Note: works fine with NULL (c()) numeric_colnames input
 }
 
+args        <- base::commandArgs(trailingOnly=TRUE)
+if (length(args) > 0 && !grepl("^[-]", args[1])) {
+     stop(paste0("[:ERR:] Usage error: It looks like you are using this script by passing in something BESIDES an option, which must start with a '-'. You can't do that: try running this script with '--help' for usage information."))
+}
+library(optparse)
+option_list <- list(optparse::make_option(c("-i", "--input"), dest="input", type="character", help="Input SAMPLE_LIST config file, which is actually an R list of lists!", metavar="FILE"),
+                    optparse::make_option(c("-s", "--something"), dest="somethingvar", type="character", help="Another sample", metavar="SOMETHING")
+                    )
+opt        <- optparse::parse_args( optparse::OptionParser(option_list=option_list) ) #opt_parser)
+
+if (!is.null(opt$input)) {
+     print(opt$input)
+} else {
+     print("Apparently the '--input' was not specified on the command line.")
+}
+
+# Don't load all this stuff until AFTER you handled the argument parsing! It's slow.
 #library(reshape2)
-library(pheatmap)
+#library(pheatmap)
 # library(ggplot2)
-library(viridis); # viridis::magma() / viridis::inferno() / viridis() color schemes. install.packages('virids')
+#library(viridis); # viridis::magma() / viridis::inferno() / viridis() color schemes. install.packages('virids')
 library(readr); library(tibble); library(dplyr)
 library(pryr); # pryr::object_size(obj1, obj2, ...)
 
-
+print("[Done]")
