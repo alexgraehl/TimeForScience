@@ -99,13 +99,13 @@
   "Indicates arrays/vectors." :group 'agwFaces)
 
 (defface agwListFace '((t (:bold nil :foreground "OliveDrab3")))
-  "Indicates which variables are an R list, based on the name." :group 'agwFaces)
+  "Indicates which variables are an R list (based on the variable name)." :group 'agwFaces)
 
 (defface agwAssertionFace '((t (:bold nil :foreground "dark slate blue" :background "black" :underline nil)))
   "Highlights assertions."  :group 'agwFaces)
 
 (defface agwMakeGlobalVarFace '((t (:bold nil :foreground "black" :background "magenta" :underline nil)))
-  "Indicates which variables are GLOBAL variables, assuming they start with 'gv'", :group 'agwFaces)
+  "Highlights variables that start with 'gv', which are assumed to be global variables."  :group 'agwFaces)
 
 ;; The indents that show up in the left margin!
 (defface agwIndent1Face
