@@ -1,63 +1,22 @@
 ;; -*-Lisp-*-  <-- Tells emacs what syntax highlighting to use ; Important if the line ending does not indicate the file type.
 
-;; =============================================================================
+;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ;; NOTE: IF YOU NOTICE THAT EMACS TAKES 2 seconds to open a file when you start it up AND you are using TMUX
-;; THEN HERE IS THE SOLUTION: set your $TERM to screen-256color instead of xterm-256color
-;; Then it will work! See here: https://bbs.archlinux.org/viewtopic.php?id=113566
-;; Changing any of these variables seems to fix it: No tmux means that it works instantly. Also "emacsclient -c filename" opens a new window displaying the file instantly. It's a specific combination of starting the terminal version of emacs from within tmux that's triggering the delay. Also, any subsequent C-x C-f open that file instantly. It's just the first time.
-
-;; My TERM was set to xterm-256color inside tmux.
-;; I changed that to screen-256color, and it immediately fixed the problem.
-;; Now I set my TERM in my .bashrc to xterm-256color unless $TMUX is set,
-;; in which case, screen-256color.
-
-;; =============================================================================
-
+;;       THEN HERE IS THE SOLUTION: set your $TERM to screen-256color instead of xterm-256color. See: https://bbs.archlinux.org/viewtopic.php?id=113566
+;;       Also "emacsclient -c filename" opens a new window displaying the file instantly. It's a combination of starting emacs from tmux causing a delay with the FIRST file only.
+;;       Now I set my TERM in my .bashrc to xterm-256color unless $TMUX is set, in which case, screen-256color.
+;; ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ;; How to set a keybinding interactively:
 ;; 1. M-x: global-set-key
 ;; 2. Type the key combination you want
 ;; 3. Use C-x ESC ESC (repeat-complex-command) to see the apropiate command. Example:
 ;;     (global-set-key (quote [C-tab]) (quote my-func))
-
 ;; M-x apropos: searches command documentation (very limited and unreliable)
 ;; M-x command-apropos: searches for the literal text of a command
-
 ;; http://xahlee.org/emacs/keyboard_shortcuts.html
-
 ;;(setq debug-on-error t)
-
-;;(setq tags-file-name "~/cvs-local/TAGS")
-;;(visit-tags-table "~/cvs-local/TAGS")
-
-;; http://chumsley.org/download/markdown.el NA ND
-
-;; Emacs regexp: http://www.cs.utah.edu/dept/old/texinfo/emacs18/emacs_17.html
-
-;; #  emacsclient -c -a "" $*
-
-
 ;; List of all emacs colors: http://raebear.net/comp/emacscolors.html
-
-;; Emacs is a monstrosity, but it only takes 2 or 3 hours to figure out how to
-;; configure it with additional packages (assuming you're already an expert)
-;; See here: http://ergoemacs.org/emacs/emacs_package_system.html
-
-;(when (>= emacs-major-version 24)
-;  (require 'package)
-;  (package-initialize)
-;  (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/") t)
-;  (message "Loaded the other packages! Run M-x list-packages to install them.")
-;  (message "Note: packages go into ~/.emacs.d/elpa/")
-;  )
-;; The code above may also require you to run 'package-initialize' for unknown reasons
-;; Then you can  use M-x list-packages to get:
-;;   jedi -- python autocomplete: (also see http://jedi.jedidjah.ch/en/latest/)
-;;   pylint (minor mode) maybe?
-;;   highlight-indentation maybe? ;Customize `highlight-indentation-face', and `highlight-indentation-current-column-face' to suit your theme.
-;; maybe highlight-blocks ?
-;; maybe highlight-symbol ?
-
  
 (defvar ACTIVE_MODELINE       "white")   ;; Background for the active modeline
 (defvar ACTIVE_MODELINE_TEXT  "DodgerBlue1") ;; Text in the currently-active modeline
@@ -116,55 +75,37 @@
 (defvar KEYWORD_BG   nil)
 
 (defface agwCustomDoubleLineFace
-  '((t (:foreground "magenta" :background "black" :underline t))) "To highlight linebreak-style rows of == characters.")
+  '((t (:foreground "magenta" :background "black" :underline t))) "To highlight rows of == or ~~ characters.")
 
 (defface agwLineNumberFace
-  '((t (:foreground "black" :background "blue" :inverse-video nil)))
-  "Face for the line numbers at the beginning of each line")
+  '((t (:foreground "black" :background "blue" :inverse-video nil))) "Face for line numbers at the beginning of each line")
 
 (defface agwPositiveNumberFace
   '((t (:foreground "green"))) "To highlight positive numbers")
 
 (defface agwZeroNumberFace
-  '((t (:foreground "cyan")))
-  "To highlight zeros")
+  '((t (:foreground "cyan")))  "To highlight zeros")
 
 (defface agwNegativeNumberFace
-  '((t (:foreground "red")))
-  "To highlight negative numbers")
-
+  '((t (:foreground "red")))  "To highlight negative numbers")
 
 (defface agwPythonPassFace
-  '((t (:bold f  :foreground "black"  :background "magenta"  :inverse-video nil)))
-  "Face for PASS in Python."  :group 'agwFaces)
+  '((t (:bold f  :foreground "black"  :background "magenta"  :inverse-video nil))) "Special for Python 'pass' keyword."  :group 'agwFaces)
 
 (defface agwTempFilenameFace
-  '((t (:bold t  :foreground "black"  :background "green"  :inverse-video nil)))
-  "Face for temp files in MAKE"  :group 'agwFaces)
+  '((t (:bold t  :foreground "black"  :background "green"  :inverse-video nil))) "Face for temp files in MAKE"  :group 'agwFaces)
 
-(defface agwArrayFace
-  '((t ( ;;:inherit font-lock-warning-face
-	:bold nil :background nil :foreground "DarkOliveGreen3"))) "Indicates arrays/vectors." :group 'agwFaces)
+(defface agwArrayFace '((t (:bold nil :background nil :foreground "DarkOliveGreen3")))
+  "Indicates arrays/vectors." :group 'agwFaces)
 
-(defface agwListFace
-  '((t ( ;; inherit some-other-face
-	:bold nil :foreground "OliveDrab3"))) "Indicates which variables are an R list, based on the name." :group 'agwFaces)
+(defface agwListFace '((t (:bold nil :foreground "OliveDrab3")))
+  "Indicates which variables are an R list, based on the name." :group 'agwFaces)
 
-(defface agwAssertionFace
-  '((t ( ;; inherit some-other-face
-	:bold nil :foreground "dark slate blue" :background "black" :underline nil))
-    )
-  "Highlights assertions."
-  :group 'agwFaces)
+(defface agwAssertionFace '((t (:bold nil :foreground "dark slate blue" :background "black" :underline nil)))
+  "Highlights assertions."  :group 'agwFaces)
 
-(defface agwMakeGlobalVarFace
-  '((t ( ;; inherit some-other-face
-	:bold nil :foreground "black" :background "magenta" :underline nil))
-    )
-  "Indicates which variables are GLOBAL variables, assuming they start with 'gv'"
-  :group 'agwFaces)
-
-
+(defface agwMakeGlobalVarFace '((t (:bold nil :foreground "black" :background "magenta" :underline nil)))
+  "Indicates which variables are GLOBAL variables, assuming they start with 'gv'", :group 'agwFaces)
 
 ;; The indents that show up in the left margin!
 (defface agwIndent1Face
@@ -192,12 +133,9 @@
 	:bold nil :background "gray37" :foreground nil :underline nil))
     )  ""   :group 'agwFaces)
 
-
-
 (defface agwEssClassElementFace
   '((t (:bold f  :foreground "cyan"  :background nil  :inverse-video nil)))
   "Face for properties / class elements in R."  :group 'agwFaces)
-
 
 ;;(require 'cl nil t) ;; a rare necessary use of REQUIRE <-- (no idea what this does)
 ;;(defvar *emacs-load-start* (current-time)) ; <-- uncomment this to figure out how long it took to run this .emacs
@@ -281,14 +219,12 @@
 
 (add-to-list 'auto-mode-alist '("Rakefile" . ruby-mode))
 (add-to-list 'auto-mode-alist '("\\.rb\\'" . ruby-mode))
-
 (add-to-list 'auto-mode-alist '("\\.mak\\'" . makefile-mode))
 (add-to-list 'auto-mode-alist '("/\\Makefile[^/]*\\'" . makefile-mode)) ; Filename has "Makefile" somewhere in it
 ;(add-to-list 'auto-mode-alist '("\\.txt\\'" . html-mode)) ; so that we get nice highlighting!
 ;(add-to-list 'auto-mode-alist '("\\.tab\\'" . html-mode)) ; "text-mode" is so plain, so we use the nice HTML mode with highlighting
 ;(add-to-list 'auto-mode-alist '("\\.lst\\'" . html-mode)) ; "text-mode" is so plain
 ;(add-to-list 'auto-mode-alist '("\\.dat\\'" . html-mode)) ; "text-mode" is so plain
-
 
 ;;(defun insert-literal-char (arg)
 ;;  "Note: Ctrl-Q inserts literal *typeable* characters."
@@ -402,7 +338,7 @@
 (global-unset-key "\M-c")
 
 
-;; ========================= HOW TO DEFINE A KEY SEQUENCE THAT WILL BE REPEATED (TEMPORARY MACRO) ====================
+;; ~~~~~~~~~~~~~~~~~~~~~~~~~ HOW TO DEFINE A KEY SEQUENCE THAT WILL BE REPEATED (TEMPORARY MACRO) ~~~~~~~~~~~~~~~~~~~~
 ;; You hit meta-' to start recording your keys.
 ;; Then you type some stuff, and/or move the cursor with the keys
 ;; You hit meta-' again to stop recording
@@ -417,7 +353,7 @@
 		     (progn (setq agw-defining-macro (not agw-defining-macro))
 			    (end-kbd-macro)))))
 (global-set-key (kbd "M-;") '(lambda () "Run keyboard macro"   (interactive) (call-last-kbd-macro) (message "Repeated the last macro defined with M-'..."))) ;; <-- and here's how you EXECUTE that temporary sequence
-;; ========================= DONE DEFINING A KEY SEQUENCE THAT WILL BE REPEATED (TEMPORARY MACRO) ====================
+;; ~~~~~~~~~~~~~~~~~~~~~~~~~ DONE DEFINING A KEY SEQUENCE THAT WILL BE REPEATED (TEMPORARY MACRO) ~~~~~~~~~~~~~~~~~~~~
 
 (global-unset-key [(control x) (m)]) ;; no clue what this does... ctrl-x m?
 (global-set-key [(meta m)]       '(lambda () "Next pane..." (interactive) (other-window 1)))
@@ -652,10 +588,10 @@ current line."
   (if (not (null back)) (set-face-background type back)))
 ;;(copy-face 'bold 'font-lock-function-name-face)
 
-;; ======== <HIGHLIGHT THE CURRENT LINE>: ====
+;; ~~~~~~~~ <HIGHLIGHT THE CURRENT LINE>: ~~~~~~~~~
 ;;(global-hl-line-mode 1) ; line highlight / highlight line with the active cursor on it
 ;;(set-face-background 'hl-line "gray10")
-;; ======== </HIGHLIGHT THE CURRENT LINE> ====
+;; ~~~~~~~~ </HIGHLIGHT THE CURRENT LINE> ~~~~~~~~~~
 
 (set-cursor-color CURSOR_BG)
 (agwColor 'cursor CURSOR_TEXT CURSOR_BG)
@@ -862,6 +798,7 @@ current line."
 	 ("\\<\\([a-zA-Z0-9_\\.]+\.hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
 	 ("\\<\\([a-zA-Z0-9_\\.]+\.mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
 	 ("\\([=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
+	 ("\\([~]~~~~~~~.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '~' in a row means "highlight this line in a visually obvious manner"
 	 ))))
 
 (add-hook
@@ -875,6 +812,7 @@ current line."
        ("\\(-[0-9\\.]+\\(?:\\.[0-9]+\\)?\\(?:[eE][-+]?[0-9]+\\)?\\)" 1 'agwNegativeNumberFace keep)
        ("\\<\\(NaN\\|NA\\|ND+\\)\\>" 1 font-lock-warning-face keep)
        ("\\(.*[=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
+       ("\\(.*[~]~~~~~~~.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '~' in a row means "highlight this line in a visually obvious manner"
        ))))
 
 ;; FUNCTIONS
@@ -900,7 +838,7 @@ current line."
 
 ;;(global-set-key "\C-x w" 'kill-current-buffer-and-window)
 
-;; ================= BACKUP FILES AND AUTOSAVING =================
+;; ~~~~~~~~~~~~~~~~~ BACKUP FILES AND AUTOSAVING ~~~~~~~~~~~~~~~~~
 
 (icomplete-mode t)
 ;(iswitchb-mode t) ;; enhances buffer switching (C-x b)
@@ -1049,7 +987,7 @@ current line."
 (put 'downcase-region 'disabled nil)
 
 
-;;;;;;;; ========================= SHELL INTEGRATION: allow the user to put their cursor on a line, hit "Control-Option-L" and have that text run in the shell ============
+;;;;;;;; ~~~~~~~~~~~~~~~~~~~~~~~~~ SHELL INTEGRATION: allow the user to put their cursor on a line, hit "Control-Option-L" and have that text run in the shell ~~~~~~~~~~~~
 (defun sh-send-line-or-region (&optional shouldStep) ;; From here: http://stackoverflow.com/questions/6286579/emacs-shell-mode-how-to-send-region-to-shell
   ;; Run this to execute some text in the shell!
   (interactive ())
@@ -1090,9 +1028,9 @@ current line."
 ;(define-key sh-mode-map [(control ?c) (control ?z)] 'sh-switch-to-process-buffer)
 (setq comint-scroll-to-bottom-on-output t) ; <-- scroll to bottom when the shell prints something
 
-;;;; =========== SHORTCUT KEY DEFINED HERE: you can change it from Ctrl-option-L by changing the text below =================
+;; ~~~~~~~~~~~ SHORTCUT KEY DEFINED HERE: you can change it from Ctrl-option-L by changing the text below ~~~~~~~~~~~~~~~~~
 (global-set-key [(control meta l)] 'sh-send-line-or-region-and-step) ; option-control-l will execute the current line the cursor is on in the shell, OR a whole region if there' a highlighted region
-;;;;;;;; ========================= SHELL INTEGRATION: allow the user to put their cursor on a line, hit "Control-Option-L" and have that text run in the shell ============
+;; ~~~~~~~~~~~~~~~~~~~~~~~~~ SHELL INTEGRATION: allow the user to put their cursor on a line, hit "Control-Option-L" and have that text run in the shell ~~~~~~~~~~~~
 (put 'upcase-region 'disabled nil) ; Don't confirm that we want to enable "CTRL-X CTRL-U" to upper-case a region.
 
 ; (add-hook 'after-init-hook #'global-flycheck-mode)

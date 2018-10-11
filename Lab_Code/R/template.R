@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 
-# ======================================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # First, attempt to load Alex's common utility code off the filesystem. Hopefully this already exists somewhere!
 # Note that we NORMALLY attempt to load this based on where the "R_BINF_CORE" variable is, but we also a few hard-coded locations in case that environment variable isn't there.
 for (tryFile in c(file.path(Sys.getenv("R_BINF_CORE"), "Utility", "agwUtil.R")
@@ -20,11 +20,11 @@ if (!exists("print.agw")) {
 #source("~willia51/workspace/0_CODE/common/paths.R")
 #source("~willia51/workspace/0_CODE/common/salmon_quant.R")
 
-# ======================================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if (interactive()) { options(error=recover, max.print=1000) } else { options(error=NULL) } # useful even non-interactively
 # Error = traceback DOES NOT STOP THE SCRIPT
 options(stringsAsFactors=F, menu.graphics=F) # for top of file
-# ======================================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Common functions
 print0<-function(...){print(paste0(...))};
 system0<-function(...){m=paste0(...);print0("[SYSTEM]: ",m);system(m)}
@@ -34,8 +34,10 @@ first_existing <- function(...){for(x in list(...)){if(file.exists(x)){return(x)
 devclear       <- function() { while (!is.null(dev.list())) { dev.off() } }
 GLOBAL_ERRORS <- c("")
 errlog <- function(...) { msg=paste0(...);print0(msg);warning(msg); GLOBAL_ERRORS <<- append(GLOBAL_ERRORS, msg); }
-library("dplyr"); library("readr"); library("tibble")
-# ======================================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+library(dplyr); library(tibble); library(readr);
+library(MultiAssayExperiment); library(SummarizedExperiment); # Note that if you include MAE, you should also inclued SummarizedExperiment so that e.g. 'names(...)' works
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 # Convenient functions for making tables in knitr documents
