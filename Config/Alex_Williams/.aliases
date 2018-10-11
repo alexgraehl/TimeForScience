@@ -1438,6 +1438,7 @@ alias cheat="echo \
 \">> UNIX GREP: filter files based on presence of text: mkdir YES NO; for f in *.txt; do if [[ \\\"\\\$(grep 'YOUR_STRING_HERE' \\\$f | wc -l)\\\" -ne \\\"0\\\" ]]; then mv \\\$f yes/; else mv \\\$f no/; fi ; done \" ${NL}\
 \">> UNIX GREP: find text in a file VERBATIM, like join: grep -w -f KEYFILE.txt search_in_file.txt  (remove the '-w' to allow PARTIAL matches as well. You can use '-E' to allow regular expressions in the file too!)\" ${NL}\
 \">> UNIX GREP Count occurrences of a match per line: cat FILE | grep -o -n SEARCHTERM | cut -d : -f 1 | uniq -c \" ${NL}\
+\">> BSUB change queue that a job is in: bswitch LONGQUEUE <YOUR_JOB_ID_HERE> \" ${NL}\
 \">> QSUB/QUEUE/PBS submit job: echo 'echo \\\"hello I am a test job\\\"' | qsub -q Bio -W group_list=bioqueue ; sleep 10; cat STDIN*; \" ${NL}\
 \">> QSUB/QUEUE/PBS: Delete all your jobs one by one: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
 \">> QSUB/QUEUE/PBS: restart torque: sudo service pbs_sched stop ; sudo service pbs_mom stop ; sudo service pbs_server stop ; sudo /bin/rm /var/lock/subsys/pbs_server ; sudo service pbs_sched start ; sudo service pbs_mom start ; sudo service pbs_server start ; qstat \" ${NL}\
