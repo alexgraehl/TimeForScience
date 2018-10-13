@@ -1343,7 +1343,7 @@ alias cheat="echo \
 \">> R: GGPLOT: rotate axis labels (x-axis perpendicular): YOURGGPLOT + theme(axis.text.x = element_text(angle=90, vjust=1, size=12, hjust=1))  \" ${NL}\
 \">> R: GGPLOT: multi plots (facets): YOURPLOT + facet_grid(. ~ DRUG_TREATMENT, scales=-'free_x', space='free_x') <-- replace the '.' for a 2-way facet. The format is: x ~ y, with a '.' for an unused facet dimension. \" ${NL}\
 \">> R: GGPLOT: melted sample data: m1=matrix(runif(80),nrow=10, dimnames=list(paste('Gene',1:10), LETTERS[1:8])); library(dplyr); library(reshape2); melted = reshape2::melt(m1, value.name='EXPRRESSION') %>% \\\`colnames<-\\\`(c('GENE','SAMP','EXPR')) \" ${NL}\
-\">> R: GGPLOT: equivalent of pch='s' (square plots with X / Y axes the same size): YOURPLOT + coord_fixed() \" ${NL}\
+\">> R: GGPLOT: equivalent of par(pty='s') (square plots with X / Y axes the same size): YOURPLOT + coord_fixed() \" ${NL}\
 \">> R: GGPLOT: scatterplot: ggplot(melted.df, aes(x=CATEGORY)) + geom_bar(aes(weight=VALUE, fill=CATEGORY)) \" ${NL}\
 \">> R: GGPLOT: barplot basic example: ggplot(melted.df, aes(x=CATEGORY)) + geom_bar(aes(weight=VALUE, fill=CATEGORY)) \" ${NL}\
 \">> R: GGPLOT: barplot reordered by GROUP2, but still plotted by individual 'SOMETHING1': ggplot(melt.df, aes(x=reorder(SOMETHING1, as.integer(as.factor(GROUP2))))) + geom_bar(aes(weight=VALUE, fill=GROUP2)) \" ${NL}\
