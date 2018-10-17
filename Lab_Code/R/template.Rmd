@@ -28,7 +28,7 @@ library(reshape2); library(tibble); library(dplyr); library(readr); # order matt
 library(ggplot); library(pryr)
 library(markdown)
 library(DT) # install.packages("DT"): Data table library for making interactive HTML tables. Documentation: https://rstudio.github.io/DT/
-knitr::opts_chunk$set(dev='png', fig.align='center', fig.width=8, fig.height=5, out.width='2000px', fig.pos='htbp', echo=FALSE, results='hide', cache=FALSE, message=FALSE)
+knitr::opts_chunk$set(dev='png', fig.align='center', fig.width=8, fig.height=5, out.width='2000px', fig.pos='htbp', error=FALSE, warn=TRUE, echo=FALSE, results='hide', cache=FALSE, message=FALSE)
 knitr::opts_knit$set(stop_on_error=2L)
 
 agw_dtfile    <- function(file, caption=NULL, ...) { # Makes a data table from a filename
@@ -55,7 +55,7 @@ agw_datatable <- function(data, caption="Data Table", pageLength=10, options=NUL
 # Project Summary:
   * Samples
 
-```{r , results='asis', echo=F, error=TRUE, message=TRUE, warning=TRUE, cache=FALSE, fig.width=8, fig.height=10}
+```{r, results='asis', echo=F, message=TRUE, cache=FALSE, fig.width=8, fig.height=10}
 # Note 'fig.height=10' above for this one chunk! You CANNOT use opt$chunks to set this.
 
 # Command to get a bunch of PNG figures in a format where you can insert them here:
@@ -76,7 +76,7 @@ agw_datatable(data.frame(A=rnorm(10), B=runif(10)), caption="Sample Data", pageL
 ```
 
 
-```{r, include=F}
+```{r, results='asis', include=F}
 #  Comments
 ```
 
