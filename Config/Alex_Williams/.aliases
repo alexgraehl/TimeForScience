@@ -1377,7 +1377,7 @@ alias cheat="echo \
 \" \" ${NL}\
 \">> R/DPLYR/TIBBLE: RENAME a column to a variable: tib %>% dplyr::rename(!!variable_goes_here := 'Literal_Column_Name_To_Replace'); <-- note that 'rename' and 'select' both can be overridden by other packages, and also have a dplyr variant with TOTALLY DIFFERENT BEHAVIOR     \" ${NL}\
 \">> R/DPLYR/TIBBLE: READR read QUIETLY / not verbose: readr::read_tsv(..., progress=F, col_types=cols()); <-- super non-intuitive way to suppress printing     \" ${NL}\
-\">> R/DPLYR/TIBBLE: split tab-delim fields into a TABLE: tempsplits = sapply(YOUR_CHAR_DATA_OF_INTEREST, strsplit, '\t'); final.tib = as_tibble(do.call(rbind, lapply(tempsplits, rbind)));     \" ${NL}\
+\">> R/DPLYR/TIBBLE: split tab-delim fields into a TABLE / matrix: tempsplits = sapply(YOUR_CHAR_DATA_OF_INTEREST, strsplit, '\t'); final.tib = as_tibble(do.call(rbind, lapply(tempsplits, rbind)));   OR even better, you can use 'stringr' and: as.data.frame(t(do.call(cbind, stringr::str_split(YOUR_CHAR_VECTOR, pattern='\t')))); \" ${NL}\
 \">> R/DPLYR/TIBBLE: Mutate only CERTAIN columns: my.tib %>% mutate_at(vars(matches('(snakes|cakes)')), funs(log2(1 + .) )) \" ${NL}\
 \">> R/DPLYR/TIBBLE: Aggregate a small number of rows in a tibble: mytib %>% group_by(MYGRPCOL) %>% summarize(x=mean(OTHERVALUE), n=n()) %>% ungroup() \" ${NL}\
 \">> R/DPLYR/TIBBLE: Aggregate multiple rows BY A PASSED-IN-VARIABLE in a tibble (way 1 of 3): mytib %>% group_by(MYGRPCOL) %>% summarize_at(.vars=c('colA','colB','colC'), .funs=c('NEWSUM'='sum', 'NEW_MEDIAN'='median')) %>% ungroup() \" ${NL}\
