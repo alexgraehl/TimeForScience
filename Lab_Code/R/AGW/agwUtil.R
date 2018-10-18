@@ -1,4 +1,5 @@
 
+
 ## This file should not *source* any others!
 ## It is COMPLETELY SELF CONTAINED. So you could copy and paste all this code anywhere else.
 
@@ -2199,11 +2200,29 @@ agw_datatable <- function(data, caption="Data Table", options=NULL, ...) {
   DT::datatable(data=data, caption=caption, filter=list(position='top',plain=TRUE),  rownames=FALSE, options=options, ...)   #style="bootstrap",
 }
 
-agw_read_blast_out6_into_tibble <- function(filename) {      # Reads a blastn '--outfmt 6' output file into a tibble
-  require("tibble"); require("readr")  # install.packages("readr") # install.packages("tibble")
-  cnames <- c("query_id", "refgenome_id", "perc_ident", "align_length", "n_mismatch", "n_gapopen", "query_start", "query_end", "refgenome_start", "refgenome_end", "evalue", "bit_score")
-  btib <- readr::read_tsv(filename, comment="#", na="", col_names=cnames)
-  return(btib)
+
+agw_read_blast_out6_into_tibble <- function(filename, comment.char="") {      # Reads a blastn '--outfmt 6' output file into a tibble blast outfmt6 outfmt 6
+     require("tibble"); require("readr")  # install.packages("readr") # install.packages("tibble")
+     cnames <- c("query_id", "refgenome_id", "perc_ident", "align_length", "n_mismatch", "n_gapopen", "query_start", "query_end", "refgenome_start", "refgenome_end", "evalue", "bit_score")
+     blast_col_settings = cols_only(
+          "query_id"     = col_character(),
+          "refgenome_id" = col_character(),
+          "perc_ident"   = col_double(),
+          "align_length" = col_integer(),
+          "n_mismatch"   = col_integer(),
+          "n_gapopen"    = col_integer(),
+          "query_start"  = col_integer(),
+          "query_end"    = col_integer(),
+          "refgenome_start" = col_integer(),
+          "refgenome_end"   = col_integer(),
+          "evalue"    = col_double(),
+          "bit_score" = col_double())  # <-- this is a double! But it will often be detected as an 'int' if you don't specify.
+     btib <- readr::read_tsv(filename, comment=comment.char, na="", col_names=cnames, col_types=blast_col_settings)
+     return(btib)
+}
+
+agw_read_blast_out7_into_tibble <- function(filename) {      # Reads a blastn '--outfmt 6' output file into a tibble blast outfmt6 outfmt 6
+     return(agw_read_blast_out6_into_tibble(filename, comment.char="#")) # comment char is always a '#" for outfmt7
 }
 
 agw_read_bed_into_tibble <- function(filename) {
