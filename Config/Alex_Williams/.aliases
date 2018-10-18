@@ -456,21 +456,19 @@ function scienceup {
     fi
 }
 
-function scienceboth {
+function scienceboth() {
     if [[ -d "$1" ]]; then
 	echo -e "${REVERSE}$1:${a_end_color}"; scienceup "$@" && sciencecom "$@"
     fi
 
 }
-function science {
+function science() {
     # Manually copy a bunch of GOOGLE CODE controlled files
-    
     GD="${HOME}/GOOG/Alex_All_Projects"
     WSPRE="${HOME}/workspace/0_CODE"
     scienceboth "${HOME}/workspace/0_CODE" # sync these files before overwriting the local W_...Rmd ones
     if [[ -d "${GD}" ]]; then
 	[[ -d "${WSPRE}" ]] || { echo "Failure! Missing expected directory: ${WSPRE}"; return 99; }
-
 	#find . -iname "W_*.Rmd" -o -iname "W_*.R"
 	for f in "${GD}"/**/W_*.Rmd "${GD}"/**/W_*.R; do
 	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "[:OK:] ${f} --> ${h}...";
@@ -482,7 +480,7 @@ function science {
     if [[ -d "${WEBO}" && -d "${WSPRE}" ]]; then
 	echo "[:OK:] Rsyncing web files to a GIT directory..."
 	\rsync -avz ${WEBO}/index.html ${WSPRE}/web/
-	\rsync -avz ${WEBO}/projects/*.html ${WSPRE}/web/projects/
+	#\rsync -avz ${WEBO}/projects/*.html ${WSPRE}/web/projects/
     fi
     # ================== Done with this Google code stuff ==============
     scienceboth "${TIME_FOR_SCIENCE_DIR}"
