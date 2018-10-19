@@ -23,21 +23,19 @@ output:
 
 ```{r setup, include=FALSE}
 # include=FALSE --> evaluated, but neither the code nor its output displayed.
-library(knitr) # Required to avoid "'opts_chunk' not found"
-library(reshape2); library(tibble); library(dplyr); library(readr); # order matters for reshape/tibble
-library(ggplot); library(pryr)
-library(markdown)
-library(DT) # install.packages("DT"): Data table library for making interactive HTML tables. Documentation: https://rstudio.github.io/DT/
+suppressWarnings(library(knitr))     # Avoids "'opts_chunk' not found"
+suppressWarnings(library(reshape2)); suppressWarnings(library(tibble)); suppressWarnings(library(dplyr)); suppressWarnings(library(readr)); # order matters for reshape/tibble
+suppressWarnings(library(ggplot));   suppressWarnings(library(pryr))
+suppressWarnings(library(markdown)); suppressWarnings(library(DT)) # install.packages("DT"): Data table for making interactive HTML tables. Documentation: https://rstudio.github.io/DT/
 knitr::opts_chunk$set(dev='png', fig.align='center', fig.width=10, fig.height=6, out.width='3000px', fig.pos='htbp', results='asis', cache=TRUE, message=FALSE, error=FALSE, warning=TRUE, echo=FALSE)
 knitr::opts_knit$set(stop_on_error=2L)
 
 agw_dtfile    <- function(file, caption=NULL, ...) { # Makes a data table from a filename
   if (is.null(caption)) { caption = paste0("Data table: ", basename(file)) }
-  if (grepl("[.](tsv|tab)", file, ignore.case=T)) {      x = readr::read_tsv(file, col_types=cols()) # suppress printing column types
-  } else if (grepl("[.]csv", file, ignore.case=T)) {     x = readr::read_csv(file, col_types=cols()) # suppress printing column types
+  if (grepl("[.](tsv|tab)", file, ignore.case=T))  { x = readr::read_tsv(file, col_types=cols()) # suppress printing column types
+  } else if (grepl("[.]csv", file, ignore.case=T)) { x = readr::read_csv(file, col_types=cols()) # suppress printing column types
   } else {
-    warning("Couldn't guess the file type from the extension--trying TAB-delimited.")
-    x = readr::read_tsv(file)
+    x = readr::read_tsv(file); warning("Couldn't guess the file type from the extension--trying TAB-delimited.")
   }
   agw_datatable(data=x, caption=caption, ...)
 }
