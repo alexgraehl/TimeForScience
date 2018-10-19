@@ -772,8 +772,8 @@ current line."
        '(
 	 ;;   ("\\<\\(kv[a-zA-Z0-9\.]*\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 font-lock-constant-face append) ; anything that starts in kv
 	 ("\\<\\(stop\\|stopifnot\\|browser\\|options\\)\\>" 1 font-lock-warning-face keep)
-	 ("\\<\\(kv[a-zA-Z0-9\.]*\\)\\($\\|[^a-zA-Z0-9\.]\\)" 1 font-lock-constant-face keep) ; anything that starts in kv
-	 ("\\<\\(gv[a-zA-Z0-9\.]*\\)\\($\\|[^a-zA-Z0-9\.]\\)" 1 'agwMakeGlobalVarFace keep) ; anything that starts in gv
+	 ("\\<\\(kv[a-zA-Z0-9._]*\\)\\($\\|[^a-zA-Z0-9._]\\)" 1 font-lock-constant-face keep) ; anything that starts in kv
+	 ("\\<\\(gv[a-zA-Z0-9._]*\\)\\($\\|[^a-zA-Z0-9._]\\)" 1 'agwMakeGlobalVarFace keep) ; anything that starts in gv
 
 	 ;;("^\\([}].*\\)"      1 'agwIndent1Face t) ; function-ending (line-starting) brace
 

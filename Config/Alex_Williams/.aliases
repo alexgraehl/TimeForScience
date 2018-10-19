@@ -137,7 +137,7 @@ function c { # Like CD, but lets you go to a FILE as well.
 
 alias igv='/Library/Java/JavaVirtualMachines/jdk1.8.0_131.jdk/Contents/Home/jre/bin/java -jar /Applications/IGV_2.4.10.app/Contents/Java/igv.jar'
 
-function witch { # Shows the versions for all on-your-path verisons of software.
+function witch() { # Shows the versions for all on-your-path verisons of software.
     # Takes ONE required argument: the program name. Can also take a SECOND argument, which is the actual command to run to check versions (if it isn't 'version')
     # Example:   witch emacs
     #               This works, because 'emacs --version' is how you get the version
@@ -159,15 +159,15 @@ function witch { # Shows the versions for all on-your-path verisons of software.
     for f in $(which -a "$1"); do echo -en "\n${a_echo_color}$f${a_end_color} --> "; eval "$f $VER_STR" | head -n 2; done; echo ""
 }
 
-function moduleblast {
-    module load apps/ncbi-blast
+function mods() {
+    echo "[:OK:] Loading a couple of modules that you might need"
+    module load apps/ncbi-blast apps/R apps/emacs
 }
 
-function delve { # or 'dv'
+function delve() { # or 'dv'
     ## Finds, in any subdirectories, any files that have a name that matches the input text. Sort of like a poor man's "locate"
     find . -iname "*$@*"
 }
-alias dv='delve'
 
 BRACKET_OPEN='{'
 PAREN_OPEN='('
