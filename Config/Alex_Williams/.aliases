@@ -475,13 +475,13 @@ function science() {
 	    \rsync -avz "${f}" "${h}"
 	done
     fi
-    WEBO="${HOME}/web"
-
-    if [[ -d "${WEBO}" && -d "${WSPRE}" ]]; then
-	echo "[:OK:] Rsyncing web files to a GIT directory..."
-	\rsync -avz ${WEBO}/index.html ${WSPRE}/web/
-	#\rsync -avz ${WEBO}/projects/*.html ${WSPRE}/web/projects/
-    fi
+    #WEBO="${HOME}/web"
+    #
+    #if [[ -d "${WEBO}" && -d "${WSPRE}" ]]; then
+#	echo "[:OK:] Rsyncing web files to a GIT directory..."
+#	\rsync -avz ${WEBO}/index.html ${WSPRE}/web/
+#	#\rsync -avz ${WEBO}/projects/*.html ${WSPRE}/web/projects/
+#    fi
     # ================== Done with this Google code stuff ==============
     scienceboth "${TIME_FOR_SCIENCE_DIR}"
     #scienceboth "${HOME}/workspace/git_0_CODE"
@@ -542,34 +542,34 @@ alias htop="htop --sort-key PERCENT_CPU"
 #    for pid in $SSS ; do echo 'ionice-ing and nice+15-ing the NFS process ID' $pid; sudo ionice -c3 -p $pid ; sudo renice +15 -p $pid ; don#e 
 #}
 
-function s { ## <-- this needs to come BEFORE the other things that use less!
+function s() { ## <-- this needs to come BEFORE the other things that use less!
     magicless --LINE-NUMBERS --status-column "$@"  # "s" uses "magicless" to run files through sheet.pl
 }
 
-function acol {
+function acol() {
     column -s $'\t' -t # columns delimited by tabs! Like 'sheet.py'
 }
 
-function acols {
+function acols() {
     s "$@" | acol | s # Pipe it through magicless, then 'acol', then magicless AGAIN. Like a poor man's sheet.py (way faster, though)
 }
 
-function sf {
+function sf() {
     # Forces sheet.pl to be called ("SS Force sheet.pl").  Can only view ONE file, unlike "ss"
     /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always | s
 }
 
-function s1 {
+function s1() {
     # like sf, but shorter columns # Can only view ONE file, unlike "s"
     /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always --trunc=15 | s
 }
 
-function s2 {
+function s2() {
     # like sf, but shorter columns # Can only view ONE file, unlike "s"
     /usr/bin/less --RAW-CONTROL-CHARS "$1" | sheet.pl --color=always --trunc=25 | s
 }
 
-function v {
+function v() {
     # Use sheet.py to view a file or list of files. These files cannot be gzipped, however.
     # Must be python2.6, and not python 3, currently
     `which sheet.py` "$@"
@@ -579,13 +579,13 @@ alias huh='cat <(declare -f) <(alias)' ## uses bash subshells to show everything
 #alias backoff='${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh off'
 #alias backon='${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/unix_scripts/crashplan-backup-mod.sudo.sh on'
 
-function n { # show colors
+function n() { # show colors
     # ${cpre} is defined in my ~/.bashrc (usually as \033)
     echo -e  "${cpre}[30m black ${cpre}[31mred ${cpre}[32mgreen ${cpre}[33myellow ${cpre}[34mblue ${cpre}[35mmagenta ${cpre}[36mcyan ${cpre}[37mwhite"
 }
 
 ## Maczip zips things on the mac WITHOUT including the dot files and .DS_Stores
-function maczip {
+function maczip() {
     if [[ "$#" == 1 ]] ; then theCompressedBasename="$1"; ## If you pass it one argument, then that argument will also be the filename
     else theCompressedBasename="Archive_zipped_without_Mac_files";
     fi
@@ -602,7 +602,7 @@ function maczip {
     fi
 }
 
-function xztar {
+function xztar() {
     # Tar and xzip in one place so you don't have to remember the syntax. Or you could just remember the syntax!
     if [[ "$#" != 1 ]]; then echo -e "[:ERR:] xztar can only accept ONE argument! One directory or file to tar/xz."; return 1; fi
     OUTNAME=$(basename $1).tar.xz
@@ -618,7 +618,7 @@ function xztar {
 # Bugs: it ONLY WORKS IN THE CURRENT DIRECTORY! And it probably hates whitespaces.
 # maybe this will help with escaping? for f in `ls`; do printf "%q " $f; done
 # looks like 'printf' can save the day
-function mini {
+function mini() {
     [[ "$#" == 1 ]]         && comp_base="$1" || comp_base="Archive" ## If you pass it one argument, then that argument will also be the filename
     agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD/Mac, so check for it
     # xz is 10 times slower than bz2 to compress, but can be ~30% smaller for text.
@@ -639,7 +639,7 @@ function mini {
 }
 
 ## Extracts any number of compressed files of ANY type. Usage: 'unmini a.bz2 b.tar.gz c.tar.bz2 ... etc...'
-function unmini {
+function unmini() {
     agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD/Mac, so check for it
     if [[ $(tar --version) =~ .*bsdtar.* ]]; then TARPARAM=" -x -v "                 # BSD tar
     else TARPARAM=" --preserve-permissions --atime-preserve --keep-old-files -x -v "; fi # GNU tar
@@ -664,7 +664,7 @@ function unmini {
 alias snake="echo -n $'\xF0\x9F\x90\x8D'' '"  # Emoji snake. See http://apps.timwhitlock.info/emoji/tables/unicode
 alias cake="echo  -n $'\xF0\x9F\x8D\xB0'' '"  # Emoji cake.  See http://apps.timwhitlock.info/emoji/tables/unicode
 
-function qkiri { # kill all your OWN jobs
+function qkiri() { # kill all your OWN jobs
     echo -e "[:FYI:] If qkiri fails, try running this command: qselect -u YOURNAME | sudo xargs qdel -p"
     echo -e "[:HEY:] REALLY terminate LITERALLY EVERY SINGLE ONE OF YOUR JOBS? ***ALL*** OF THEM???"
     select yn in "[:FYI:] Wait a minute! Keep these jobs!" "[:ERR:] DELETE THEM WITHOUT REMORSE!!"; do
@@ -677,11 +677,11 @@ function qkiri { # kill all your OWN jobs
 }
 
 # grep 'pattern' can also be replaced with: perl -nle "print if m{PATTERN}" # <-- beware of '$1' versus "$1" issues!
-function qstatlong { # show qstat with LONG (full) job names:
+function qstatlong() { # show qstat with LONG (full) job names:
     qstat -f | egrep -i '(Job Id|Job_Name|Job_Owner|job_state|list.walltime)' | perl -pe 's/(.*Job_Owner.*)@.*/\1/i' | perl -pe 's/.*=\s//' | perl -pe 's/\n/\t/g' | perl -pe 's/(Job Id:\s|$)/\n/ig' | grep -v '^$'
 }
 
-function qsass { # kill all jobs that match this grep... works for usernames, jobs, etc. Be careful!
+function qsass() { # kill all jobs that match this grep... works for usernames, jobs, etc. Be careful!
     # Example usage:  qsass    yourname             # Hopefully yourname is not a subset of someone ELSE's name!
     # or:             qsass    test_job_number_     # Uses GREP, so watch out for invalid regexps!
     #sudo echo 'Initializing sudo permissions here'
@@ -706,7 +706,7 @@ function qsass { # kill all jobs that match this grep... works for usernames, jo
     done
 }
 
-function mvln { # move and then make an ALIAS in the current location, leaving a "ghostly" alias where the file previously was
+function mvln() { # move and then make an ALIAS in the current location, leaving a "ghostly" alias where the file previously was
     if [[ "$#"  < 2 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE filename (source) and ONE DESTINATION (probably a directory?) into this function!"; return 1; fi
     if [[ "$#" != 2 ]] ; then echo -e "[:ERR:] Right now, this only works with TWO ARGUMENTS (target and destination)!"; return 1; fi
     SOURCE=$1
@@ -722,7 +722,7 @@ function mvln { # move and then make an ALIAS in the current location, leaving a
     fi
 }
 
-#function neararchive { # usage: cd /work/projects/your-project  then: "neararchive myproj-1234-rna-mouse"  --> will move things to the nearline storage and symlink them back
+#function neararchive() { # usage: cd /work/projects/your-project  then: "neararchive myproj-1234-rna-mouse"  --> will move things to the nearline storage and symlink them back
 #    if [[ "$#" == 0 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE filename into this function!"; return 1; fi
 #    D=$(basename `pwd`)
 #    TARGET="/nearline_storage/castles_made_of_sand/not_backed_up/${D}"
@@ -736,7 +736,7 @@ function mvln { # move and then make an ALIAS in the current location, leaving a
 #    done
 #}
 
-function accuse { # See who is using the CPU. Usage: just "accuse" with no arguments
+function accuse() { # See who is using the CPU. Usage: just "accuse" with no arguments
     USERS_WITH_JOBS=$(ps aux | tail -n +2 | cut -d ' ' -f 1 | uniq | sort -u)
     echo -e ">> Let's see who is using the CPU..."              >&2 # print to stderr
     echo -e ">> Going to check these users: ${USERS_WITH_JOBS}" >&2 # print to stderr
@@ -753,7 +753,7 @@ function accuse { # See who is using the CPU. Usage: just "accuse" with no argum
     /bin/rm ${TOPTEMP} ${TEMP2}
 }
 
-function giant { # find giant files
+function giant() { # find giant files
     #SAVED_IFS=$IFS; IFS=$(echo -en "\n\b")
     echo -e "Calculating all sizes first, then sorting them in ascending order..." >&2 # print to stderr
     DIRS="$@"
@@ -761,7 +761,7 @@ function giant { # find giant files
     #IFS=$SAVED_IFS
 }
 
-function giantpleb { # find giant files
+function giantpleb() { # find giant files
     #SAVED_IFS=$IFS; IFS=$(echo -en "\n\b")
     echo -e "Calculating all sizes first, then sorting them in ascending order..." >&2 # print to stderr
     DIRS="$@"
@@ -769,14 +769,14 @@ function giantpleb { # find giant files
     #IFS=$SAVED_IFS
 }
 
-function wholog {
+function wholog() {
     echo -e "About to show who logs in and how big their home directories are..." >&2 # print to stderr
     TMP=$(mktemp)
     for f in $(cat /etc/passwd | cut -d ':' -f 1); do echo -e "Checking $f..." >&2 ; sudo lastlog -u $f; done | grep -v '^Username' | perl -pe 's/\s+/\t/' > $TMP
     sudo du -sch /home/* | perl -pe 's/\/home\///' | join.pl -o "NO_HOMEDIR" -1 1 -2 2 $TMP - | column -t -s $'\t'
 }
 
-function qing {
+function qing() {
     echo -e "'qing' is 'qstats' but only showing NON-COMPLETED jobs..."
     echo -e "Note that 'qstat -f' may fail in cases where 'qstat' does not. Try plain 'qstat' if this command seems to be taking forever."
     echo -e "'qstat -f' has been known to take upwards of 2 minutes to run."
@@ -784,14 +784,14 @@ function qing {
     qstat -f -Q
 }
 
-function mypip {
+function mypip() {
     if [[ "$#" == 0 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE PYTHON package-to-install into this function!"; return 1; fi
     echo -e "Installing the following python libraries: $@"
     echo -e "Installing into 'BINFPYROOT' environment variable at: $BINFPYROOT"
     pip2.7 install --ignore-installed --install-option="--prefix=$BINFPYROOT" $@
 }
 
-function mypylint {
+function mypylint() {
     if [[ "$#" == 0 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE PYTHON filename into this function!"; return 1; fi
     echo -e "Lintifying this file... $FILE"
     DISABLE_THESE_CHECKS="locally-disabled,global-variable-not-assigned,line-too-long,superfluous-parens,bad-whitespace,unused-wildcard-import,trailing-whitespace,unnecessary-pass,missing-docstring,invalid-name,global-statement,multiple-statements,too-many-locals,too-many-statements,too-many-branches,too-few-public-methods,too-many-lines,too-many-instance-attributes,too-many-arguments,wildcard-import,bad-continuation,unidiomatic-typecheck,expression-not-assigned,deprecated-lambda"
@@ -799,7 +799,7 @@ function mypylint {
     # Best usage is: mypylint | s for viewing the colorized output!
 }
 
-function mycat { # cat2 / mycat
+function mycat() { # cat2 / mycat
     # basically like 'cat' or 'zcat' but fancier
     # Based on file extension, turns something into plain text! Works on mixed files. Only delves one level of compression deep.
     for filename in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
@@ -819,7 +819,7 @@ function mycat { # cat2 / mycat
 
 alias tab="column -t -s $'\t'"
 
-function brutallycompress {
+function brutallycompress() {
     # Usage:    brutallycompress  DIRECTORY1   DIRECTORY2   DIRECTORY3
     # Recursively goes through and compresses (with gzip) any files with the extensions listed below.
     if [[ "$#" == 0 ]] ; then echo -e "[:ERR:] in arguments to brutallycompress] You need to pass AT LEAST ONE target directory into this function--it can also be '.' for the current directory!"; return 1; fi
@@ -836,7 +836,7 @@ function brutallycompress {
     done #  xargs -I %%% sh -c 'echo %%%; echo %%%;'
 }
 
-function rtag {
+function rtag() {
     # Recursively set finder tags
     tag=$1
     shift
@@ -847,7 +847,7 @@ function rtag {
     done
 }
 
-function wgetdevour { # Downloads certain types of files via wget for a password-protected directory
+function wgetdevour() { # Downloads certain types of files via wget for a password-protected directory
     if [[ "$#" != "3" ]] ; then echo -e "[:ERR:] You need to pass THREE arguments -- username, password, directory!"; return 1; fi
     USERNAME=$1
     PASSWORD=$2
@@ -859,25 +859,25 @@ function wgetdevour { # Downloads certain types of files via wget for a password
 }
 
 
-function hist {
+function hist() {
     history | tail -n 100
 }
 
 QUEUE_LOGFILE_PATTERN='.*.\([eo][0-9]+\|.log.err\|.log.out\|.out.log\|.err.log\)'
 # ~~~~~~~~~~~~~~~ QUEUE / QSUB / BSUB LOG VIEWING AND MOVING ~~~~~~~~~~~~~~~
-function rmlogs { # Usage:     catlogs (no arguments)
+function rmlogs() { # Usage:     catlogs (no arguments)
     #if [[ "$#" == "0" ]] ; then SEARCH_DIRS=. ; else SEARCH_DIRS=$@ ; fi
     NUM_FOUND=$(find . -maxdepth 1  -type f  -regex "${QUEUE_LOGFILE_PATTERN}" | wc -l)
     echo -e "[:OK :] Deleting $NUM_FOUND 'qsub' logs (the files ending with .e1234 or .o456, etc. or .log.err or .log.out)..."
     find . -maxdepth 1 -type f -regex "${QUEUE_LOGFILE_PATTERN}" -delete
     echo -e "[:OK :] Deleted the ${NUM_FOUND} log files.."
 }
-function catlogs { # Usage:     catlogs (no arguments)
+function catlogs() { # Usage:     catlogs (no arguments)
     if [[ "$#" == "0" ]] ; then SEARCH_DIRS=. ; else SEARCH_DIRS=$@ ; fi
     echo -e "Concatenating all QSUB/BSUB logs in this directory and viewing it in 'less'..."
     find ${SEARCH_DIRS} -maxdepth 1 -type f -regex "${QUEUE_LOGFILE_PATTERN}" -print0 | xargs -0 -I{} paste.pl "FILE={}" {} | s
 }
-function mvlogs { # Usage:   mvlogs OUTPUT_DIRECTORY
+function mvlogs() { # Usage:   mvlogs OUTPUT_DIRECTORY
     # This function moves those annoying qzub logs to the destination directory
     if [[ "$#" != "1" ]] ; then echo -e "[:ERR:] mvlogs needs EXACTLY ONE destination directory!"; return 1; fi
     if [[ ! -d $1 ]]     ; then echo -e "[:ERR:] mvlogs needs an EXISTING DIRECTORY as a destination! The specified directory ($1) appears not to exist."; return 1; fi
@@ -891,7 +891,7 @@ function mvlogs { # Usage:   mvlogs OUTPUT_DIRECTORY
 #    (>&2 echo -e "Refreshing the filesystem, which is important since the NFS system otherwise takes 60 seconds to update...")
 #}
 
-function star_make_index {
+function star_make_index() {
     # This makes an alignment directory for the STAR aligner, when given just a FASTA file and a length.
     # The exact length is not critical, but it should ideally be the same length as the reads, if possible (slightly longer is OK too, but not necessary).
     if [[ "$#" != "2" ]] ; then echo -e "[:ERR:] star_make_index needs an input FASTA file and a 'how long are the reads' parameter!"; return 1; fi
@@ -912,7 +912,7 @@ function star_make_index {
     (>&2 echo -e "Here is the command you should now run:\n   $cmd\n   (Copy and paste that command above, or run it with 'qplz' and double quotes: qplz -t $CPU_THREADS -m 8 \"command\""  )
 }
 
-function convert_chromosome_to_chr1_for_genome_browser {
+function convert_chromosome_to_chr1_for_genome_browser() {
     if [[ "$#" != "2" ]] ; then echo -e "[:ERR:] needs two inputs: 1. a chromosome to turn into 'chr1' and 2. a bam filename to convert"; return 1; fi
     FINDCHR=$1
     IN=$2
@@ -935,24 +935,16 @@ function convert_chromosome_to_chr1_for_genome_browser {
     (>&2 echo -e "<$FINALBAM> generated! Chromosome changed from '$FINDCHR' to 'chr1'. Original input: <$IN>")
 }
 
-function pdf2png {
+function pdf2png() {
     for f in "$@" ; do echo -e "Converting $f..."; convert -verbose -density 72 $f +antialias ${f/.pdf}.png; done
 }
 
-function zwcl {
+function zwcl() {
     zgrep -c '' "$@"
     #for f in "$@" ; do echo -e -n "$f\t"; zgrep -c '' $f; done # don't use zless, it's super slow compared to zcat
 }
 
-#function aws_ls_fastq {
-#    if [[ -z ${EPI_S3_FASTQ_SEQ_BUCKET+x} ]]; then echo -e "EPI_S3_FASTQ_SEQ_BUCKET is unset! Set it in the .local-config-no-git file."; return 1; fi
-#    # Note that the buckets are defined in .local-config-no-git
-#    (>&2 echo -e "Performing the equivalent of an 'ls -1' on the sequencing data bucket. You probably want to redirect this to a text file.")
-#    aws s3 ls s3://${EPI_S3_FASTQ_SEQ_BUCKET}/Fastq_Files_per_run/ --recursive | awk '{print $4 }'
-#    (>^2 echo -e "[Done] listing the directory on ${EPI_S3_FASTQ_SEQ_BUCKET}!")
-#}
-
-function pybug {
+function pybug() {
     #echo -e "$1"       # First argument
     #echo -e "2 ${@:2}" # Arguments 2 and beyond
     if [[ ! -e "$1" ]]; then
@@ -980,18 +972,18 @@ function pybug {
 # count bases per line in a fasta file:
 # cat x.fa | grep -v '^>' | perl -ne 'chomp; my @a=split(//,$_); my %c=(); for my $x (@a) { $c{lc($x)}++; }; for my $k (keys(%c)) { print($k.qq{=}.$c{$k}."\t"); }; print qq{  <-- \n};'
 
-function hsync {
+function hsync() {
     echo -e "[:FYI:] HTML syncing..."
     rsync -avz $HOME/workspace/html_master/ $HOME/web/
 }
 
-function fasta2single_line_per_seq {
+function fasta2single_line_per_seq() {
     echo -e "[:HEY:] FYI, this script reads from STDIN, and inputs to STDOUT. We'll be waiting for a cat-ed in input FASTA file." >&2 # print to stderr
     if [[ "$#" != 0 ]] ; then echo -e "[:ERR:]] This script takes NO ARGUMENTS. You must 'cat' a FASTA file to pass it in, like this:  cat myfile.fa | fasta2single_line_per_seq | gzip > done.fa.gz  "; return 1; fi
     awk '!/^>/{printf "%s", $0; n="\n"} /^>/{print n $0; n=""} END {printf"%s",n}'
 }
 
-function j1 {
+function j1() {
     if ! agw_cmd_exists "bsub"; then
 	echo -e "[:ERR:] This is NOT a machine on the cluster with the BSUB queue. Connect to the cluster machine first!"; return 1;
     fi
@@ -1029,11 +1021,11 @@ function j1 {
     fi
 }
 
-function jj {
+function jj() {
     j1 | less -S --RAW-CONTROL-CHARS -f --IGNORE-CASE
 }
 
-function setsubtract {
+function setsubtract() {
     # input files do NOT need to be sorted
     if [[ "$#" != 2 ]] ; then echo -e "[:ERR:]] You need to pass EXACTLY TWO files to the set subtraction!"; return 1; fi
     if [[ ! -f "$1" ]] ; then echo -e "[:ERR:]] Could not find the specified input file: $1!"; return 1; fi
@@ -1041,7 +1033,7 @@ function setsubtract {
     grep -F -x -v -f "$2" "$1"
 }
 
-function setunion {
+function setunion() {
     # input files do NOT need to be sorted
     if [[ "$#" != 2 ]] ; then echo -e "[:ERR:]] You need to pass EXACTLY TWO files to the set union!"; return 1; fi
     if [[ ! -f "$1" ]] ; then echo -e "[:ERR:]] Could not find the specified input file: $1!"; return 1; fi
@@ -1113,7 +1105,7 @@ function setunion {
 #}
 
 
-bsubnow() {
+function bsubnow() {
     echo bsub -L '/bin/bash' \
 	 -R "'span[hosts=1]'" \
 	 -q "'long'" \
@@ -1125,7 +1117,7 @@ bsubnow() {
 	 \"YOUR_COMMAND_GOES_HERE\"
 }
 
-bsubtemp() {
+function bsubtemp() {
     if (( "$#" < 1 )) ; then echo -e "[:ERR:]] Please specify a job name! Note that you probably also want to send this output to STDOUT, so e.g. 'bsubtemp MYJOB > job.sub.sh'"; return 1; fi
     if [[ "$#" == 2 ]] ; then
 	MEM=$2
@@ -1248,9 +1240,6 @@ function gitstory() {
     echo "[:OK:] Generated a bunch of '.git.old' files"
     echo "[:FYI:] If you're looking for something really specific, remember you can use:  git log -p FILENAME | less -S"
 }
-
-	
-
 
 alias cheat="echo \
 \">> Phageomancy on one dir: f=p000z_k00c3_s0037~p000z_S4_L001 && phageomancy_pipeline.py --mode=ALL --name=\\\$f --fqguess --phacts-dir=\\\$HOME/PHAGEOMANCY/PH_PHACTS_EXE/PHACTS/ --spades-n=5 \" ${NL}\
