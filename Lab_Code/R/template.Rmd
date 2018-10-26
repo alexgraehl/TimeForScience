@@ -25,7 +25,7 @@ output:
 # include=FALSE --> evaluated, but neither the code nor its output displayed.
 suppressWarnings(library(knitr))     # Avoids "'opts_chunk' not found"
 suppressWarnings(library(reshape2)); suppressWarnings(library(tibble)); suppressWarnings(library(dplyr)); suppressWarnings(library(readr)); # order matters for reshape/tibble
-suppressWarnings(library(ggplot));   suppressWarnings(library(pryr))
+suppressWarnings(library(ggplot2));   suppressWarnings(library(pryr))
 suppressWarnings(library(markdown)); suppressWarnings(library(DT)) # install.packages("DT"): Data table for making interactive HTML tables. Documentation: https://rstudio.github.io/DT/
 knitr::opts_chunk$set(dev='png', fig.align='center', fig.width=10, fig.height=6, out.width='3000px', fig.pos='htbp', results='asis', cache=TRUE, message=FALSE, error=FALSE, warning=TRUE, echo=FALSE)
 knitr::opts_knit$set(stop_on_error=2L)
