@@ -1102,15 +1102,25 @@ function setunion() {
 
 
 function bsubnow() {
+    if (( "$#" >= 1 )); then
+	PROJNAME=$1;
+    else
+	PROJNAME='YOUR_PROJNAME_GOES_HERE'
+    fi
+    if (( "$#" >= 2 )); then
+	CMD=$2;
+    else
+	CMD='YOUR_COMMAND_GOES_HERE'
+    fi
     echo bsub -L '/bin/bash' \
 	 -R "'span[hosts=1]'" \
-	 -q "'long'" \
+	 -q "'medium'" \
 	 -R "'rusage[mem=32]'" \
 	 -oo "'LOG-%J.bsub.log.out'" \
 	 -eo "'LOG-%J.bsub.log.err'" \
 	 -n 1 \
-	 -J "'YOUR_PROJNAME_HERE'" \
-	 \"YOUR_COMMAND_GOES_HERE\"
+	 -J "'${PROJNAME}'" \
+	 \"${CMD}\"
 }
 
 function bsubtemp() {
