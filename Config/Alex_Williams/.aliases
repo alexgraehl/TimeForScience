@@ -1482,7 +1482,8 @@ alias cheat="echo \
 \">> BASH: Change tab width in bash:  setterm -regtabs 16 (16 = huge!) \" ${NL}\
 \">> BASH: Expand tabs/tab width: something | expand -t 32 \" ${NL}\
 \" \" ${NL}\
-\">> BIOINF: Sort a GTF file:  LC_ALL=\\\"C\\\" sort -k 1,1 -k 4,4n YOUR.GTF > SORTED.GTF \" ${NL}\
+\">> BIOINF / GTF: Sort a GTF file:  LC_ALL=\\\"C\\\" sort -k 1,1 -k 4,4n YOUR.GTF > SORTED.GTF \" ${NL}\
+\">> BIOINF / GTF: Load a GTF file into R:  require(rtracklayer); require(GenomicRanges); granges_from_gtf <- rtracklayer::import.gff('~/THE_GTF.GZ')  \" ${NL}\
 \" \" ${NL}\
 \">> Gnu parallel: works like xargs, but works with files with spaces, by default. \" ${NL}\
 \">> XARGS/FIND multiple commands: find . -name SOMEFILE -print0 | xargs -0 -I {} sh -c \\\"echo {}; thing {} | piped here | wc -l ; \\\"  \" ${NL}\
