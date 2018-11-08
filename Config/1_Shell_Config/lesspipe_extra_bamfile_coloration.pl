@@ -6,6 +6,12 @@ use warnings;
 # Note: if you make any errors in this file, "less" will stop coloring fastq files WITHOUT ANY ERROR REPORTING.
 # You will have to actually run 'perl -c' with this program to check it, or better yet, actually debug it with real input files.
 
+my $filename = "NONE_SPECIFIED";
+if (scalar(@ARGV) == 0) {
+	warning("This script expects a filename (or blank placeholder argument) to be passed in.");
+} else {
+	$filename = $ARGV[0]; # first argument
+}
 
 my $CCC=qq{\033[44m\033[1;37m}; # colon delimiter color; 34 = blue (NOT USED RIGHT NOW)
 
@@ -105,7 +111,11 @@ my $aa_candidate_string = join("", sort(keys(%aa_colors)));
 
 # Try to guess if a section of text is DNA.
 # (Maybe also try to guess if it's an amino acid? (AA)? Not currently implemented.)
-while (my $line = <>) {
+
+my $is_fastq = ($filename =~ m/[.](fastq|fq)/i);
+
+#print("FASTQ status for file ${filename} is: " . ($is_fastq ? "IS A FASTQ" : "NOT A FASTQ") . "\n");
+while (my $line = <STDIN>) {
 	my @potentiallyInteresting = ();
 	my @boringVersion = ();
 	my $inDNA = 0; # DNA bases

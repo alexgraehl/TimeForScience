@@ -36,7 +36,7 @@ basecolor() {
     ## Assumes that you pass something INTO it via a pipe -- otherwise it fails
     ## Example:  cat myfile | sed 's/1/2/' | basecolor 
     #sed -e 's/\(AA*\)/\1'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
-    perl "${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_extra_bamfile_coloration.pl" # do NOT pass in the filename!
+    perl "${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/lesspipe_extra_bamfile_coloration.pl" "$1" # do NOT pass in the filename! That breaks things for some reason.
     #sed -e 's/A/'"$(printf ${STA}A${RES})"'/g' -e 's/C/'"$(printf ${STC}C${RES})"'/g' -e 's/G/'"$(printf ${STG}G${RES})"'/g' -e 's/T/'"$(printf ${STT}T${RES})"'/g' -e 's/N/'"$(printf ${STN}N${RES})"'/g'
     # todo: replace me
     # Colorize based on entire blocks of identical characters. Turns out not to be any faster, unfortunately!
@@ -77,7 +77,7 @@ lesspipe() {
 	       echo "******** (It is part of the TimeForScience git repository.)" ;;
 
 	*.bam|*.cram) if [[ -x "`which samtools`" ]]; then  # Color code the bases A, C, G, and T (and N)
-		   echo -e '##################\n# Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format #\n##################' ; samtools view -h "$1" | basecolor ## Use Samtools to view a BAM ("binary sam") RNA-seq file
+		   echo -e '##################\n# Viewing a BAM file with "samtools view -h" -- The actual file is in a binary format #\n##################' ; samtools view -h "$1" | basecolor "$1" ## Use Samtools to view a BAM ("binary sam") RNA-seq file
 	       else  ## Use Samtools to view a BAM ("binary sam") RNA-sequence file
 		   echo -e "ERROR: LESSPIPE_ADVANCED CANNOT VIEW THIS FILE, BECAUSE 'samtools' IS NOT INSTALLED or CANNOT BE FOUND.\nPlease install samtools (or make sure it is on your path and can be executed) and try again!"
 	       fi ;;
