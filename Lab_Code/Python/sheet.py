@@ -221,6 +221,15 @@ HELP_AREA_ID = 12
 HELP_AREA_TEXT_COLOR = curses.COLOR_RED
 HELP_AREA_BG_COLOR   = curses.COLOR_BLUE
 
+LAST_USED_PROPERTY_ID = HELP_AREA_ID
+
+# dictionary
+COLOR_PROPERTIES = {"NA":{"fg":curses.COLOR_BLUE, "bg":STANDARD_BG_COLOR}
+              }
+
+#NONE_COLOR = curses.COLOR_YELLOW
+#NONE_BKG = curses.COLOR_YELLOW
+
 # RAGGED_END_ID = 1
 # RAGGED_END_TEXT_COLOR   = curses.COLOR_WHITE
 # RAGGED_END_BG_COLOR     = curses.COLOR_BLUE
@@ -538,10 +547,15 @@ class AGW_DataWin(AGW_Win):
                 if (whichInfo.boolHighlightNumbers):
                     cellAttr = attributeForNumeric(cell, self.defaultCellProperty)
 
-
+                if cell in ("NA","na","N/A","n/a","NaN"):
+                    cellAttr = curses.color_pair(COLOR_PROPERTIES["NA"]["id"])
+                    pass
+                
                 if (cell is None):
-                    cellAttr = curses.color_pair(RAGGED_END_ID)       # (indicate that there isn't a cell here at all
+                    # This doesn't work for some reason, maybe it's getting overwritten?
+                    # Note: this is NOT exactly the same as a cell with no data in it! It's a 'ragged end' situation
                     cell = padStrToLength("", maxLenForThisCell, '~') #  distinct from an *empty* cell)
+                    cellAttr = curses.color_pair(WARNING_COLOR_ID)       # (indicate that there isn't a cell here at all
                     pass
 
                 drawCheckerboard = False
@@ -1235,6 +1249,14 @@ def setUpCurses(): # initialize the curses environment
     curses.init_pair(NUMERIC_POSITIVE_COLOR_ID, NUMERIC_POSITIVE_COLOR_TEXT_COLOR, NUMERIC_POSITIVE_COLOR_BG_COLOR)
     curses.init_pair(ACTIVE_FILENAME_COLOR_ID , ACTIVE_FILENAME_COLOR_TEXT_COLOR, ACTIVE_FILENAME_COLOR_BG_COLOR)
     curses.init_pair(HELP_AREA_ID             , HELP_AREA_TEXT_COLOR, HELP_AREA_BG_COLOR)
+
+    propid = LAST_USED_PROPERTY_ID+1
+    for propname,props in COLOR_PROPERTIES.iteritems():
+        curses.init_pair(propid, props["fg"], props["bg"])
+        COLOR_PROPERTIES[propname]["id"] = propid # save the identifying number
+        propid = propid+1
+        pass
+    
     CURSES_INVISIBLE_CURSOR = 0
     CURSES_VISIBLE_CURSOR = 1
     CURSES_HIGHLIGHTED_CURSOR = 2
