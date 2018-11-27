@@ -1342,6 +1342,7 @@ alias cheat="echo \
 \">> R: GGPLOT2: custom FILL colors (or outline color with just 'scale_color_manual'): scale_fill_manual(values=c('#999999', '#E69F00', '#56B4E9')) \" ${NL}\
 \">> R: GGPLOT2: rotate axis labels (x-axis perpendicular): YOURGGPLOT + theme(axis.text.x = element_text(angle=90, vjust=1, size=12, hjust=1))  \" ${NL}\
 \">> R: GGPLOT2: multi plots (facets): YOURPLOT + facet_grid(. ~ DRUG_TREATMENT, scales='free_x', space='free_x') <-- replace the '.' for a 2-way facet. The format is: x ~ y, with a '.' for an unused facet dimension. \" ${NL}\
+\">> R: GGPLOT2/DPLYR/RESHAPE: melt an input matrix with MULTIPLE ANNOTATION COLMNS (not just one!): your_tibble %>% reshape2::melt(id.vars=c('ProteinType','CodeClass','OtherID'), variable='GeneName', value.name='EXPRESSION') \" ${NL}\
 \">> R: GGPLOT2: melted sample data: m1=matrix(runif(80),nrow=10, dimnames=list(paste('Gene',1:10), LETTERS[1:8])); library(dplyr); library(reshape2); melted = reshape2::melt(m1, value.name='EXPRRESSION') %>% \\\`colnames<-\\\`(c('GENE','SAMP','EXPR')) \" ${NL}\
 \">> R: GGPLOT2: equivalent of par(pty='s') (square plots with X / Y axes the same size): YOURPLOT + coord_fixed() \" ${NL}\
 \">> R: GGPLOT2: scatterplot: ggplot(melted.df, aes(x=CATEGORY)) + geom_bar(aes(weight=VALUE, fill=CATEGORY)) \" ${NL}\
