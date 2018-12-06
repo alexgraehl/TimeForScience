@@ -1313,6 +1313,7 @@ alias cheat="echo \
 \">> R: set vector or list names by VARIABLE instead of plain text: Since you cannot do x='first'; y='second'; c(x='a', y='b'), you must instead do this: setNames(c('a','b'), c(x, y))  (which will set the names accordingly, in a single command.\" ${NL}\
 \">> R: RMD/KNITR: script -e 'library(rmarkdown); rmarkdown::render(\\\"/path/to/the.Rmd\\\", \\\"html_document\\\")'   \" ${NL}\
 \">> R: RMD/KNITR: write markdown VERBATIM in R \\\`\\\`\\\`{r results='asis'} (newline) cat('\n\n## HERE is a programmatically-defined SECTION in Rmd\n')  \" ${NL}\
+\">> R: A 'stop' and 'stopifnot' that actually work in RStudio:  stop_infloop   <- function(msg) { stop(msg); while(TRUE) {} }           and         waitifnot <- function(cond) { if (!cond) { stop_infloop(paste(deparse(substitute(cond)), ' is not TRUE.')) } }    \" ${NL}\
 \">> R: List (same # elements per item) --> Data frame (list to data.frame / list to table): do.call(rbind.data.frame, YOUR_LIST_HERE)   \" ${NL}\
 \">> R: Save copy of figure as pdf: dev.copy2pdf() \" ${NL}\
 \">> R: Convert columns of a dataframe to factors (from char): fact.df   <- char.df; fact.df[] <- lapply(char.df[], as.factor) \" ${NL}\
