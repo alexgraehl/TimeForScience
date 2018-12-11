@@ -783,10 +783,15 @@ class AGW_Table:
         pass
     
 
+
+    
     def readFromCurrentFile(self):
         global GlobalCurrentNumLinesLoaded
         global GlobalCurrentFile
         global GlobalCurrentFilename
+
+        local_delim = global_delimiter if global_delimiter else guess_delimiter_from_filename(GlobalCurrentFilename)
+        
         try:
             ## Read lines from a file into our data structure
             # probably should use xreadlines!
@@ -794,7 +799,7 @@ class AGW_Table:
             if (lines):
                 for line in lines:
                     line = line.rstrip("\n") # <-- like Perl "chomp"--remove the trailing newlines
-                    self.appendRowOfCellContents( line.split(delimiter) )
+                    self.appendRowOfCellContents( line.split(local_delim) )
                     GlobalCurrentNumLinesLoaded += 1
                     pass
                 pass
@@ -877,7 +882,7 @@ gWantToQuit = False ## False, since, by default, the user does not want to immed
 
 truncationSuffix = "..." ## Suffix for "this cell is too long to fit on screen"
 
-delimiter = "\t"
+global_delimiter = None # automatically guess with each file "\t"
 
 fastMoveSpeed = Point(10, 10) ## How many cells to scroll when the user is moving with shift-arrows
 
@@ -1002,10 +1007,16 @@ def initializeWindowSettings(aScreen, fileInfoToReadFrom):
     fastMoveSpeed.y = sheetWin.windowHeight // 2 # measured in CELLS, not characters!
     pass
 
+def guess_delimiter_from_filename(filename):
+    if re.search("[.]csv([.](bz2|bzip|gz|gzip|xz|Z))?", filename, flags=re.IGNORECASE):
+        return "," # comma delimiter
+    if re.search("[.](tsv|tab|txt)([.](bz2|bzip|gz|gzip|xz|Z))?", filename, flags=re.IGNORECASE):
+        return "\t" # tab delimited
+    return "\t" # default delimiter is tab
+
 def processCommandLineArgs(argv):
     try:
-        opts, args = getopt.gnu_getopt(argv, "hwi:d", ["help", "warn", "input="])
-    # Docs for getopt: http://docs.python.org/library/getopt.html
+        opts, args = getopt.gnu_getopt(argv, "hwd:i:", ["help", "warn", "delim=", "input="])     # Docs for getopt: http://docs.python.org/library/getopt.html
     except (getopt.GetoptError):
         #usageAndQuit(1, "Encountered an unknown command line option!\n" + "sheet.py: Please remember that long names must have double-dashes!\n" + "sheet.py: (i.e. -warn generates an error, but --warn is correct)\n")
         raise
@@ -1017,6 +1028,13 @@ def processCommandLineArgs(argv):
         elif opt in ("-w", "--warn"):
             global _DEBUG
             _DEBUG = True
+            pass
+        elif opt in ("-d", "--delim"):
+            global global_delimiter
+            if len(arg) != 1:
+                usageAndQuit(1, "Your delimiter, which is between the parentheses here --> ("+arg+") must be EXACTLY ONE CHARACTER. Yours was not, which is not allowed.")
+                pass
+            global_delimiter = arg
             pass
         else:
             pass
@@ -1489,6 +1507,8 @@ Written for Python 2.5.1+ by Alex Williams, 2010-2015.
 
 Apr 2015: Added transparent support for gzip and bzip2 file reading.
 
+Dec 2018: Added support for automatic delimiter guessing.
+
 Requires the "curses" terminal module, which is built-in
 with most python distributions.
 
@@ -1516,6 +1536,10 @@ Options and arguments:
 
 -w or --warn:
 	Enable debugging warnings
+
+-d or --delim="DELIMITER"
+        Manually specify a delimiter (e.g. -d '|' for the pipe, or -d ';')
+        Not necessary if your filename already ends in '.tsv/.tab/.txt' or 'csv'.
 
 Controls:
 
