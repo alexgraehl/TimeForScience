@@ -466,7 +466,8 @@ function science() {
     if [[ -d "${GD}" ]]; then
 	[[ -d "${WSPRE}" ]] || { echo "Failure! Missing expected directory: ${WSPRE}"; return 99; }
 	#find . -iname "W_*.Rmd" -o -iname "W_*.R"
-	for f in "${GD}"/[123][0-9][0-9][0-9]**/W_*.{Rmd,mak,R} "${GD}"/[123][0-9][0-9][0-9]**/W_*.R; do
+	for f in "${GD}"/[123][0-9][0-9][0-9]**/W_*.{Rmd,mak,R}; do
+	    echo "[:OK:] Copying some source files from Google Drive to the local git repo. We would prefer to symlink these, but that is impossible since Google Drive does not support symlinks."
 	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "[:OK:] ${f} --> ${h}...";
 	    \rsync -avz "${f}" "${h}"
 	done
