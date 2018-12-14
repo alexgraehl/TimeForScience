@@ -2320,6 +2320,112 @@ agw_bed_plot <- function(bed_tibble, annot_tib=NULL, genome_len_table=NULL, titl
     ggtitle("Probes (red). Dark regions have annotation.")
 }
 
+
+
+agw_read_blast_out6_into_tibble <- function(filename, comment.char="") {      # Reads a blastn '--outfmt 6' output file into a tibble blast outfmt6 outfmt 6
+ require("tibble"); require("readr")  # install.packages("readr") # install.packages("tibble")
+ cnames <- c("query_id", "refgenome_id", "perc_ident", "align_length", "n_mismatch", "n_gapopen", "query_start", "query_end", "refgenome_start", "refgenome_end", "evalue", "bit_score")
+ blast_col_settings = cols_only(
+  "query_id"     = col_character(),
+  "refgenome_id" = col_character(),
+  "perc_ident"   = col_double(),
+  "align_length" = col_integer(),
+  "n_mismatch"   = col_integer(),
+  "n_gapopen"    = col_integer(),
+  "query_start"  = col_integer(),
+  "query_end"    = col_integer(),
+  "refgenome_start" = col_integer(),
+  "refgenome_end"   = col_integer(),
+  "evalue"    = col_double(),
+  "bit_score" = col_double())  # <-- this is a double! But it will often be detected as an 'int' if you don't specify.
+ btib <- readr::read_tsv(filename, comment=comment.char, na="", col_names=cnames, col_types=blast_col_settings)
+ return(btib)
+}
+
+agw_read_blast_out7_into_tibble <- function(filename) {      # Reads a blastn '--outfmt 6' output file into a tibble blast outfmt6 outfmt 6
+ return(agw_read_blast_out6_into_tibble(filename, comment.char="#")) # comment char is always a '#" for outfmt7
+}
+
+agw_read_bed_into_tibble <- function(filename) {
+ library("tibble"); library("dplyr") # install.packages("tibble")
+ # probably should be read_tsv
+ x <- as_tibble(read.table(filename, sep="\t", comment.char='', quote='', header=F, na.strings="", stringsAsFactors=F))
+ # Example:  L1PA15	3375	3764	orf	0	-
+ #           L1PA15	3820	4179	orf	0	+
+ stopifnot(ncol(x) >= 3)
+ bedtib <- tibble(chrom    = pull(x[,1])
+  ,  start = as.integer(pull(x[,2]))
+  ,    end = as.integer(pull(x[,3]))
+  ,  width = abs(as.integer(pull(x[,3])) - as.integer(pull(x[,2]))) # BED is 0-based, so you just subtract (end-start) (see: https://github.com/arq5x/bedtools2/blob/master/docs/content/overview.rst
+  ,   name = if(ncol(x)>=4) {            pull(x[,4])  } else { rep("NA", times=nrow(x)) } # name is optional. Default: "NA" (string! Not the R NA special value)
+  ,  score = if(ncol(x)>=5) { as.integer(pull(x[,5])) } else { rep(0   , times=nrow(x)) } # score is optional. Default: 0.
+  , strand = if(ncol(x)>=6) {            pull(x[,6])  } else { rep('.' , times=nrow(x)) } # strand is optional. '.' means no data
+ )
+ return(bedtib)
+}
+
+agw_convert_blast_tibble_into_bed <- function(x) {
+ # Converts one of the "blast" data structures (from 'read_blast_out6_into_tibble') above into a tibble
+ return(tibble("chrom"=x$refgenome_id
+  , "start"  = x$refgenome_start
+  , "end"    = x$refgenome_end
+  , "width"  = abs(x$refgenome_end - x$refgenome_start)+1 # looks like 1-100 means "all 100 bp", so we add one here. UNLIKE "read_bed_into_tibble!"
+  , "name"   = x$query_id
+  , "score"  = rep(1000, times=nrow(x))
+  , "strand" = rep('.' , times=nrow(x))
+ ))
+}
+
+
+agw_cor_matrix_by_row <- function(a, b, method, verbose=F) {
+ # Computes correlation in a row-by-row fashion. Returns a list of two things:
+ #         [["pmat"]]:  a matrix of p-values (NOT adjusted!)
+ #         [["cormat"]]: a matrix of the test statistics
+ #         'a' becomes the ROWS of the output two matrices!
+ #         'b' becomes the COLUMNS of the output two matrices!
+ # 'a' will become the rows, and 'b' will become the columns in the output matrix
+ stopifnot(all(dim(a) > 0) && all(dim(b) > 0))
+ if (ncol(a) != ncol(b)) { stop("Number of columns (samples) in input matrix a and b MUST be the same!") }
+ if (is.null(method)) { stop("You must specify a correlation method! E.g. 'pearson' or 'spearman'") }
+ # Testing example:
+ #cor.test(aaa["7SK", ], bbb["ENSG00000081237", ], method="spearman")$p.value # expected to be 0.4345226
+ #cor.test(aaa["7SLRNA", ], bbb["ENSG00000010278", ], method="spearman")$p.value # expected to be 0.86010351
+ #cor.list = agw_cor_matrix_by_row(aaa, bbb, method="spearman")
+ #cor.list$pmat["7SK", "ENSG00000081237"]
+ #cor.list$pmat["7SLRNA", "ENSG00000010278"]
+ p.mat      = matrix(9999.9999, nrow=nrow(a), ncol=nrow(b)) # output matrix should be square. These weird values are just there
+ corval.mat = matrix(7777.7777, nrow=nrow(a), ncol=nrow(b)) # to make it a little more obvious if there was a bug
+ for (ia in 1:nrow(a)) {
+  a_row = a[ia, , drop=T] # get a row...
+  if (verbose && (ia %% 100 == 0)) { print(paste0(ia, "/", nrow(a), "...")) } # progress...
+  cor_result.vec = apply(b, 1, function(b_row) { suppressWarnings(cor.test(a_row, b_row, method=method)) })
+  p.mat[ia, ]       = sapply(cor_result.vec, "[[", "p.value")
+  corval.mat[ia , ] = sapply(cor_result.vec, "[[", "estimate")
+ }
+ rownames(p.mat)      = rownames(a) # Note: rownames <- rownames (the 'a' matrix supplies the rownames)
+ colnames(p.mat)      = rownames(b) # Note: COLNAMES <- rownames here (not rownames!). The 'b' matrix supplies the colnames.
+ dimnames(corval.mat) = dimnames(p.mat) # copy the info from the p-value matrix
+ return(list(pmat=p.mat, cormat=corval.mat)) # return a list of TWO matrix-like objects
+ # Note: if you want to adjust the p-values by ONLY column or row, you can do:
+ # p.adj_on_a_per_column_basis.mat = apply(cor.list$pmat, 2, p.adjust, method="BH")
+}
+
+
+
+system_if_missing <- function(results.vec, ..., allow.empty=FALSE) {
+     # If any of the files in 'results.vec' are missing, THEN run this system command. Otherwise, do not run it.
+     # results.vec: result files
+     print(paste0("Handling command: ", paste0(..., collapse=" ")))
+     stopifnot(is.logical(allow.empty))
+     if (all(file.exists(results.vec) & (allow.empty|(file.size(results.vec)>0)))) {
+          print(paste0("[:SKIP:] [Not regenerating existing files]: ", paste(results.vec, collapse=", ")));
+          return(TRUE);
+     }
+     return(system(...))
+}
+
+
+
 agw_truncate_text <- function(s, n=20, more_char="…") {
   stopifnot(n >= 2)
   truncated = sapply(s, function(sub_s) {
@@ -2345,6 +2451,199 @@ agw_summarize_blast <- function(blast_result_object, reference_fasta, reference_
   genome_dat <- data.frame("chrom"=uniq_chrom_names, "chromsize"=chrom_lengths.vec)
   agw_bed_plot(bed_tibble=bed, annot_tib=reference_annot_tib, genome_len_table=genome_dat, display_names=display_names, left_label_space_in_bp=left_label_space_in_bp)
 }
+
+
+assert_var_is_in_class <- function(v, classes.vec) {
+ if (class(v)[[1]] %in% classes.vec) { return(TRUE); } # looks good
+ else { stop(paste0("ASSERTION ERROR: We expected the variable to be one of the following R data types (classes): ", paste0(classes.vec, collapse=", "), ". But instead it was this: ", class(v)[[1]])) }
+}
+
+
+agw_cluster_and_return_ids <- function(dd, distmethod='euclidean', linkage='complete') {
+     # Used for clustering PART of a data frame for a heatmap, for example
+     stopifnot(is.matrix(dd) || is.data.frame(dd))
+     if (nrow(dd) == 1) { return(rownames(dd))
+     } else if (is.null(dd) || nrow(dd) == 0) { return(c()) }
+     dists  = dist(dd, method=distmethod);  clusts = hclust(dists, method=linkage)
+     return(clusts$labels[clusts$order]) # <-- labels, NOT indices!
+     # Example usage:
+     # lab.1 = cluster_and_return_ids(l2n.mat[probe.annot.df$Comment == "ENDOGENOUS", , drop=F])
+     # lab.2 = rownames(l2n.mat)[probe.annot.df$Comment != "ENDOGENOUS"]
+     # reordering_labels.vec = c(lab.1, lab.2)
+     # l2n.mat = l2n.mat[reordering_labels.vec, ]
+}
+
+agw_cluster_within_groups <- function(d, groups.vec, distmethod="euclidean", linkage="complete") {
+     # Cluster a matrix by ROWS, but don't cluster the whole matrix at once: sub-cluster it by each individual group instead.
+     # Usually used on the input to a 'pheatmap.'
+     # Example:
+     # mat = agw_cluster_within_groups( expression.mat, groups.vec=probe.annot.df$"Probe Type")
+     # probe.annot.df = probe.annot.df[ rownames(mat), ] # <-- reorder the annotation!
+     # stopifnot(all(rownames(probe.annot.df) == rownames(mat)))
+     ids = c()
+     for (g in unique(groups.vec)) {
+          ds = d[groups.vec == g, , drop=F]
+          ids = c(ids, agw_cluster_and_return_ids(ds, distmethod=distmethod, linkage=linkage))
+     }
+     return(d[ids, , drop=F])
+}
+
+agw_pheatmap_colors_for_one_vector <- function(elements.vec, colorset="Set1", na_col="black") {
+     pals = list()
+     pals[['manual_25']] <- c("#3366FF", # blue
+                              "red", # red
+                  "green3",
+                  "#6A3D9A", # purple
+                  "#FF7F00", # orange
+                  "#333333","gold1",
+                  "skyblue2","#FB9A99", # lt pink
+                  "palegreen2",
+                  "#CAB2D6", # lt purple
+                  "#FDBF6F", # lt orange
+                  "gray70", "khaki2",
+                  "maroon","orchid1","deeppink1","blue1","steelblue4",
+                  "darkturquoise","green1","yellow4","yellow3",
+                  "darkorange4","brown")
+     #pie(rep(1,length(color25)), col=color25)
+
+     pals[['pals_alphabet']] <- c("#F0A0FF", "#0075DC", "#993F00", "#4C005C", "#191919",
+                       "#005C31", "#2BCE48", "#FFCC99", "#808080", "#94FFB5",
+                       "#8F7C00", "#9DCC00", "#C20088", "#003380", "#FFA405",
+                       "#FFA8BB", "#426600", "#FF0010", "#5EF1F2", "#00998F",
+                       "#E0FF66", "#740AFF", "#990000", "#FFFF80", "#FFE100",
+                       "#FF5005") # from the 'pals' package
+
+     pals[['pals_cols25']] <- c("#1F78C8", "#ff0000", "#33a02c", "#6A33C2", "#ff7f00",
+                          "#565656", "#FFD700", "#a6cee3", "#FB6496", "#b2df8a",
+                          "#CAB2D6", "#FDBF6F", "#999999", "#EEE685", "#C8308C",
+                          "#FF83FA", "#C814FA", "#0000FF", "#36648B", "#00E2E5",
+                          "#00FF00", "#778B00", "#BEBE00", "#8B3B00", "#A52A3C") # from the 'pals' package
+     
+     pals[['pals_polychrome']] <- c("#5A5156", "#E4E1E3", "#F6222E", "#FE00FA", "#16FF32",
+                                    "#3283FE", "#FEAF16", "#B00068", "#1CFFCE", "#90AD1C",
+                                    "#2ED9FF", "#DEA0FD", "#AA0DFE", "#F8A19F", "#325A9B",
+                                    "#C4451C", "#1C8356", "#85660D", "#B10DA1", "#FBE426",
+                                    "#1CBE4F", "#FA0087", "#FC1CBF", "#F7E1A0", "#C075A6",
+                                    "#782AB6", "#AAF400", "#BDCDFF", "#822E1C", "#B5EFB5",
+                                    "#7ED7D1", "#1C7F93", "#D85FF7", "#683B79", "#66B0FF",
+                                    "#3B00FB")# from the 'pals' package
+
+     pals[['pals_tol']] <- c("#332288", "#6699CC", "#88CCEE", "#44AA99", "#117733", "#999933", "#DDCC77", "#661100", "#CC6677", "#AA4466", "#882255", "#AA4499")
+     pals[['pals_kelly']] <- c('#F2F3F4', '#222222', '#F3C300', '#875692', '#F38400', '#A1CAF1', '#BE0032', '#C2B280', '#848482', '#008856', '#E68FAC', '#0067A5', '#F99379', '#604E97', '#F6A600', '#B3446C', '#DCD300', '#882D17', '#8DB600', '#654522', '#E25822', '#2B3D26')
+     pals[['pals_stepped']] <- c('#990F26', '#B33E52', '#CC7A88', '#E6B8BF', '#99600F', '#B3823E', '#CCAA7A', '#E6D2B8', '#54990F', '#78B33E', '#A3CC7A', '#CFE6B8', '#0F8299', '#3E9FB3', '#7ABECC', '#B8DEE6', '#3D0F99', '#653EB3', '#967ACC', '#C7B8E6', '#333333', '#666666', '#999999', '#CCCCCC')
+     pals[['pals_glasbey']] <- c('#0000FF', '#FF0000', '#00FF00', '#000033', '#FF00B6', '#005300', '#FFD300', '#009FFF', '#9A4D42', '#00FFBE', '#783FC1', '#1F9698', '#FFACFD', '#B1CC71', '#F1085C', '#FE8F42', '#DD00FF', '#201A01', '#720055', '#766C95', '#02AD24', '#C8FF00', '#886C00', '#FFB79F', '#858567', '#A10300', '#14F9FF', '#00479E', '#DC5E93', '#93D4FF', '#004CFF', '#F2F318')
+     
+     num_colors_needed = length(unique(elements.vec))
+     if ("rainbow" == tolower(colorset)) {
+          if (num_colors_needed > 8) {
+               num_colors_light = as.integer(ceiling(num_colors_needed / 2))
+               num_colors_dark  = num_colors_needed - num_colors_light
+          } else {
+               num_colors_light = num_colors_needed; num_colors_dark = 0;
+          }
+          colors.vec = c(rainbow(num_colors_light, s=1.00, v=1.00), rainbow(num_colors_dark, s=1.00, v=0.6))
+     } else if (colorset %in% names(pals)) {
+          colors.vec = pals[[colorset]]
+     } else {
+          stop(paste0("unrecognized color palette: ", colorset))
+          #colors.vec = brewer.pal(min(N_COLORS_THAT_ALL_BREWER_SETS_HAVE, num_colors_needed), colorset)
+     }
+     if (num_colors_needed < length(colors.vec)) {
+          colors.vec = head(colors.vec, n=num_colors_needed) # We have TOO MANY colors
+     }
+     if (num_colors_needed > length(colors.vec)) { # Need MORE colors!
+          colors.vec = (colorRampPalette(colors.vec))(n=num_colors_needed) # note that this is a FUNCTION CALL
+     }
+     names(colors.vec)                      = unique(elements.vec) # Remember to set the names!
+     colors.vec[ is.na(names(colors.vec)) ] = na_col  # NA values (if present) will be black (or whatever was specified)
+     return(colors.vec)
+}
+
+agw_pheatmap_automatic_colors <- function(dframe) {
+ # Currently only tested for row annotation.
+ # Example usage:   pheatmap(my_data, annotation_row=row_annot.df, annotation_colors=agw_pheatmap_automatic_colors(row_annot.df)
+     if (!is.data.frame(dframe)) { stop("Input to agw_pheatmap_must be a data frame.") }
+     if (is.null(colnames(dframe))) { stop("Cannot auto-colorize an input data frame with NULL colnames!") }
+     categories = colnames(dframe)
+     color.list = list()
+     color_sets_in_order = c("manual_25","pals_cols25","pals_kelly","pals_polychrome","pals_alphabet","pals_tol","pals_kelly","pals_glasbey","pals_stepped","rainbow") # We rotate through different methods of picking color scales
+     i = 0
+     for (x in categories) {
+          color.list[[x]] = agw_pheatmap_colors_for_one_vector(dframe[[x]], colorset=color_sets_in_order[(i %% length(color_sets_in_order)) + 1])
+          #randseed_by_colname = openssl::md5(x) %>% substr(0,6) %>% strtoi(base=16)
+          #set.seed(randseed_by_colname)
+          #names(color.list[[x]]) = sample(names(color.list[[x]])) # randomly shuffle the names so they aren't always the same for each column
+          i = i+1
+     }
+     return(color.list)  # use this in pheatmap like this -->  annotation_row=dframe,  annotation_colors=final_color_list
+}
+
+# FIGURE: pheatmap
+pheatmap_extended <- function(h, row.df=NULL, col.df=NULL, main="Heatmap: Columns are samples, rows are features.", verbose=F, ...) {
+ # Example usage:  
+ # If 'se' is a SummarizedExperiment, then:
+ #  pheatmap_extended(assay(se), colData(se)[,3:7,drop=F], rowData(se)[,2:9,drop=F], cluster_cols=T, cluster_rows=T, show_rownames=T, fontsize_col=9, fontsize_row=9)
+ library(pheatmap);
+ sanitize_annot_for_pheatmap <- function(df, max_categories=30, remove_singletons=TRUE) {
+  if (is.null(df)) { return(NULL); }
+  if (!is.data.frame(df)) { df = as.data.frame(df); }
+  # Convert any columns to factors if they are numeric BUT only have one value! Pheatmap can't handle a column of all zeros, for example
+  is_singleton_numeric_column.bool.vec        <- unlist(lapply(df, function(x) { length(unique(na.omit(x)))<= 1 && is.numeric(x) }))
+  df[, is_singleton_numeric_column.bool.vec]  <- lapply(df[, is_singleton_numeric_column.bool.vec, drop=F], as.character) # character-ize these! Otherwise you can get an error that looks like this: 'Error in cut.default(a, breaks = 100) : 'x' must be numeric'.
+
+  ##options(stringsAsFactors=T)
+  #annot.sanitized[ , ] = lapply(hit.annot.df[, ], as.character)
+  #annot.sanitized[is.na(annot.sanitized)] = "NONE" # text, not an NA value
+  
+  is_logical_column.bool.vec                  <- unlist(lapply(df, function(x) { is.logical(x) }))
+  df[, is_logical_column.bool.vec]  <- lapply(df[, is_logical_column.bool.vec, drop=F], as.character) # character-ize these! Otherwise you can get an error that looks like this: 'Error in cut.default(a, breaks = 100) : 'x' must be numeric'
+  
+  if (remove_singletons) { 
+   is_singleton_any_type.bool.vec              <- unlist(lapply(df, function(x) { length(unique(x))<= 1 }))
+  } else {
+   is_singleton_any_type.bool.vec = rep(FALSE, times=ncol(df))
+  }
+  
+  too_many_uniques.bool.vec                   <- unlist(lapply(df, function(x) { length(unique(na.omit(x))) > max_categories }))
+  if (verbose) { print(paste0("Too many unique values: ", paste0(colnames(df)[too_many_uniques.bool.vec], collapse=", "))) }
+  same_num_categories_as_num_samples.bool.vec <- unlist(lapply(df, function(x) { length(unique(x)) >= nrow(df) }))
+  if (verbose) { print(paste0("One category per sample is uninformative: ", paste0(colnames(df)[same_num_categories_as_num_samples.bool.vec], collapse=", "))) }
+  all_missing.bool.vec                        <- unlist(lapply(df, function(x) { all(is.na(x)|is.null(x)) }))
+  if (verbose) { print(paste0("All missing: ", paste0(colnames(df)[all_missing.bool.vec], collapse=", "))) }
+  
+  remove_col.bool.vec = all_missing.bool.vec | too_many_uniques.bool.vec | same_num_categories_as_num_samples.bool.vec | is_singleton_any_type.bool.vec
+  if (verbose) { print(paste0("Removed the columns at these names: ", paste0(colnames(df)[remove_col.bool.vec], collapse=", "))) }
+  if (all(remove_col.bool.vec)) {
+   df = NULL
+  } else {
+   df = df[ , !remove_col.bool.vec, drop=F]
+  }
+  return(df)
+ }
+ col.df = sanitize_annot_for_pheatmap(col.df)
+ row.df = sanitize_annot_for_pheatmap(row.df)
+ if (!is.null(row.df)) {
+  if (is.null(rownames(h))) { stop("We apparently REQUIRE rownames in the input data matrix in order for the row annotation to work, since annotation is matched up by rownames (NOT by position in the data frame).") }
+  rownames(row.df) = rownames(h) # row names, annoyingly, must match
+ }
+ if (!exists("FIRE_COL_BLUE_TOP_15")) { stop("You need to source our local 'common.R', because that's where FIRE_COL_BLUE_TOP_15 is defined.") }
+ if (!is.null(col.df) && nrow(col.df) != ncol(h)) { stop("Your column annotation did not have the same number of rows (yes, rows!! It is transposed, remember) as the number of columns in your input data matrix.") }
+ if (!is.null(row.df) && nrow(row.df) != nrow(h)) { stop("Your row annotation did not have the same number of rows as the number of columns in your input data matrix.") }
+ #annotation_colors = list(repeat_location=c("intron"="red","intergenic"="blue", "exon"="green"))
+ #annotation_colors = NULL
+ #if (!exists("FIRE_COL_BLUE_TOP_15")) { stop("You need to source our local 'common.R', because that's where FIRE_COL_BLUE_TOP_15 is defined.") }
+ # FIRE_COL_BLUE_TOP_15 is defined in common.R
+ # Fix the annotation colors
+ #for (cidx in seq_along(colnames(c.annot.df)
+ #r_color_list = lapply(r.annot.df, function(a) { unique(na.omit(a)) })
+ #c_color_list = lapply(c.annot.df, function(a) { unique(na.omit(a)) })
+ #annotation_colors = list(repeat_location=c("intron"="red","intergenic"="blue", "exon"="green"))
+ return(pheatmap(h, border=NA, legend=T, main=main, col=FIRE_COL_BLUE_TOP_15, annotation_row=row.df, annotation_col=col.df, ...))
+}
+
+
+
+
 
 
 ### ===============================================================================
