@@ -601,10 +601,12 @@ function maczip() {
 
 function xztar() {
     # Tar and xzip in one place so you don't have to remember the syntax. Or you could just remember the syntax!
-    if [[ "$#" != 1 ]]; then echo -e "[:ERR:] xztar can only accept ONE argument! One directory or file to tar/xz."; return 1; fi
-    OUTNAME=$(basename $1).tar.xz
-    echo -e "Note that xztar is incredibly slow! So be prepared for it to take forever. Creating this archive: $OUTNAME"
-    time tar --xz -cvf "$OUTNAME" "$1"
+    #if [[ "$#" != 1 ]]; then echo -e "[:ERR:] xztar can only accept ONE argument! One directory or file to tar/xz."; return 1; fi
+    F_TAR=$(basename $1).tar
+    F_TAR_XZ=$(basename $1).tar.xz
+    echo -e "Note that xz is slow! So be prepared for it to take forever. Creating this archive: ${F_TAR_XZ}"
+    tar -cvf "${F_TAR}" "$@"
+    time xz --threads=0 -9 "${F_TAR}"
 }
 
 ## Mini is a function that creates a .bz2 archive of whatever you pass into it.
