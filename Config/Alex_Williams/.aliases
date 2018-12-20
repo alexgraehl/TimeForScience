@@ -1482,6 +1482,12 @@ alias cheat="echo \
 \">> ZIP: Zip a folder: zip -r ARCHIVENAME FOLDER \" ${NL}\
 \" \" ${NL}\
 \">> SHELL/BASH put a command into a variable with quotes and then execute it:  DEFINE: MYCMD=(perl -ne 'print 1;')   THEN:  gzcat FILE | \\\"{MYCMD[@]}\\\" \" ${NL}\
+\">> GNU MAKE with a bash loop (5 lines, look for text 'MAKELOOP'): \" ${NL}\
+\">> MAKELOOP1: looped: INFILE.txt                   \" ${NL}\
+\">> MAKELOOP2:         while read -r X; do     \\   \" ${NL}\
+\">> MAKELOOP3:                 echo \\\$\\\$X; \\   \" ${NL}\
+\">> MAKELOOP4:         done < INFILE.txt;      \\   \" ${NL}\
+\">> MAKELOOP5:         true                         \" ${NL}\
 \">> SHELL/BASH startup a 'fresh' shell with NO user configuration / clean startup / no .bashrc / no init:  env -i bash --norc --noprofile      \" ${NL}\
 \">> SHELL/BASH script header (2 lines): #!/bin/bash __NEWLINE__ set -euo -o pipefail; shopt -s nullglob; shopt -s globstar; set -o xtrace; \" ${NL}\
 \">> SHELL/BASH in MAKEFILE: In a Make rule, you can use a bash loop like so, with THREE slashes before a quote and SLASH-DOLLAR-DOLLAR instead of a dollar sign to access BASH variables. Example:  bash -c ${DQ}for fff in */*; do echo -e ${BS}${BS}${BS}${DQ}${BS}${DLR}${DLR}fff${BS}${BS}${BS}${DQ}; done; echo -e ${BS}${BS}${BS}${DQ}This goes in a makefile.${BS}${BS}${BS}${DQ}; ${DQ} \" ${NL}\
@@ -1514,7 +1520,7 @@ alias cheat="echo \
 \">> EMACS: show variable: describe-variable \" ${NL}\
 \" \" ${NL}\
 \">> Convert SAM to BAM with QPLZ:  for SSS in **/*.sam; do qplz --background \\\"samtools view -bS \\\$SSS > \\\${SSS/.sam}.bam\\\" ; done \" ${NL}\
-\">> BIOINF FASTA remove linebreaks from sequence (make one-line fasta sequences): cat file.fasta | awk '!/^>/{printf \\\"%s\\\", \\\$0; n=\\\"\n\\\"} /^>/{print n \\\$0; n=\\\"\\\"} END {printf\\\"%s\\\",n}' > out.fa \" ${NL}\
+\">> BIOINF FASTA remove linebreaks from sequence (make one-line fasta sequences): cat file.fasta | awk '!/^>/{printf \\\"%s\\\", \\\$0; n=\\\"\\n\\\"} /^>/{print n \\\$0; n=\\\"\\\"} END {printf\\\"%s\\\",n}' > out.fa \" ${NL}\
 \">> BIOINF SEQ: fastq2fasta (fq2fa, fastq -> fasta): zcat FQ.fq.gz | awk '{if(NR%4==1) {printf(\\\">%s\n\\\",substr(\\\$0,2));} else if(NR%4==2) print;}' > FASTA.fa \" ${NL}\
 \">> BIOINF SEQ: bcl2fastq: NCPU=4; bcl2fastq --fastq-compression-level 5 --barcode-mismatches 1 --no-lane-splitting -r $NCPU -d $NCPU -p $NCPU -w $NCPU --sample-sheet 'THIS_MUST_BE_VALID_NOT_MAC_FORMAT.csv'  --runfolder-dir=WEIRDLY_NAMED_160_NB01415_ABCDQBXX   (output goes to Data/Intensities/BaseCalls/*.fastq.gz) \" ${NL}\
 \">> BIOINF FASTQ/FASTA subsample 500 reads randomly. Use -s1234 (random seed) so you can get the same reads in paired-end situations: seqtk sample -s1234 read1.fq.gz 500 | gzip > sub1.fq.gz \" ${NL}\
