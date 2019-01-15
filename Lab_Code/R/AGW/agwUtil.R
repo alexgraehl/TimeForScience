@@ -2401,7 +2401,7 @@ agw_cor_matrix_by_row <- function(a, b, method, verbose=F) {
   if (!is.numeric(a_row)) { a_row = as.numeric(a_row) }
   cor_result.vec = apply(b, 1, function(b_row) {
        if (!is.numeric(b_row)) { b_row = as.numeric(b_row); }
-       (cor.test(a_row, b_row, method=method))
+       suppressWarnings(cor.test(a_row, b_row, method=method))
   })
   p.mat[ia, ]       = sapply(cor_result.vec, "[[", "p.value")
   corval.mat[ia , ] = sapply(cor_result.vec, "[[", "estimate")
