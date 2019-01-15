@@ -2398,7 +2398,11 @@ agw_cor_matrix_by_row <- function(a, b, method, verbose=F) {
  for (ia in 1:nrow(a)) {
   a_row = a[ia, , drop=T] # get a row...
   if (verbose && (ia %% 100 == 0)) { print(paste0(ia, "/", nrow(a), "...")) } # progress...
-  cor_result.vec = apply(b, 1, function(b_row) { suppressWarnings(cor.test(a_row, b_row, method=method)) })
+  if (!is.numeric(a_row)) { a_row = as.numeric(a_row) }
+  cor_result.vec = apply(b, 1, function(b_row) {
+       if (!is.numeric(b_row)) { b_row = as.numeric(b_row); }
+       (cor.test(a_row, b_row, method=method))
+  })
   p.mat[ia, ]       = sapply(cor_result.vec, "[[", "p.value")
   corval.mat[ia , ] = sapply(cor_result.vec, "[[", "estimate")
  }
@@ -2409,8 +2413,6 @@ agw_cor_matrix_by_row <- function(a, b, method, verbose=F) {
  # Note: if you want to adjust the p-values by ONLY column or row, you can do:
  # p.adj_on_a_per_column_basis.mat = apply(cor.list$pmat, 2, p.adjust, method="BH")
 }
-
-
 
 system_if_missing <- function(results.vec, ..., allow.empty=FALSE) {
  # If any of the files in 'results.vec' are missing, THEN run this system command. Otherwise, do not run it.
