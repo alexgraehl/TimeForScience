@@ -1385,6 +1385,7 @@ alias cheat="echo \
 \">> R: BED->GRanges: BED file to GeneRanges / GenomicRanges / GRanges object: use 'rtracklayer': library(rtracklayer); gr = rtracklayer::import(rmsk_bed, format='bed'); stopifnot('GRanges' %in% (class(gr))[1]); stopifnot(all(start(gr)<=end(gr))) \" ${NL}\
 \" \" ${NL}\
 \" \" ${NL}\
+\">> R/DPLYR/TIBBLE/DATAFRAME: replace NA with a value:   STRUCTURE %>% base::replace(., is.na(.), 0.00) \" ${NL}\
 \">> R/DPLYR/TIBBLE: round a column:   TIB %>% mutate(NEWCOL=signif(OLDCOL,2) \" ${NL}\
 \">> R/DPLYR/TIBBLE: get the top element per category. Here, top income per US county on a per-state basis:   TIB %>% group_by(US_STATE) %>% arrange(desc(INCOME_PER_COUNTY)) %>% filter(row_number()==1)  . For top and bottom, you could say filter(row_number()==1 | row_number()==n())  . However, note that that will always return only ONE row, whereas we might want two in the case where a state had only one county, in which case we would want: ... %>% dplyr::slice(c(1,n()))  <-- this will double-return the same row for both 'top' and 'bottom' if there is only one row. Do not omit the 'dplyr::' or else you will get the wrong SLICE function! \" ${NL}\
 \">> R/DPLYR/TIBBLE: RENAME a column to a variable: tib %>% dplyr::rename(!!variable_goes_here := 'Literal_Column_Name_To_Replace'); <-- note that 'rename' and 'select' both can be overridden by other packages, and also have a dplyr variant with TOTALLY DIFFERENT BEHAVIOR     \" ${NL}\
