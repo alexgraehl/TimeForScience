@@ -1315,7 +1315,7 @@ alias cheat="echo \
 \">> BIOM format: convert BACK TO BIOM: biom convert -i TABIN.txt  -o OTUTABLE.biom --to-hdf5 --table-type=\\\"OTU table\\\" --process-obs-metadata taxonomy \" ${NL}\
 \">> R: Unload all packages: lapply(paste('package:',names(sessionInfo()$otherPkgs),sep=""),detach,character.only=T,unload=T) \" ${NL}\
 \">> R: set vector or list names by VARIABLE instead of plain text: Since you cannot do x='first'; y='second'; c(x='a', y='b'), you must instead do this: setNames(c('a','b'), c(x, y))  (which will set the names accordingly, in a single command.\" ${NL}\
-\">> R: RMD/KNITR: script -e 'library(rmarkdown); rmarkdown::render(\\\"/path/to/the.Rmd\\\", \\\"html_document\\\")'   \" ${NL}\
+\">> R: RMD/KNITR render RMD headless: script -e 'rmarkdown::render(\\\"/path/to/the.Rmd\\\", \\\"html_document\\\")'  (or you can specify output_file='path_to_output_file.html')   \" ${NL}\
 \">> R: RMD/KNITR: write markdown VERBATIM in R \\\`\\\`\\\`{r results='asis'} (newline) cat('\n\n## HERE is a programmatically-defined SECTION in Rmd\n')  \" ${NL}\
 \">> R: A 'stop' and 'stopifnot' that actually work in RStudio:  stop_infloop   <- function(msg) { stop(msg); while(TRUE) {} }           and         waitifnot <- function(cond) { if (!cond) { stop_infloop(paste(deparse(substitute(cond)), ' is not TRUE.')) } }    \" ${NL}\
 \">> R: List (same # elements per item) --> Data frame (list to data.frame / list to table): do.call(rbind.data.frame, YOUR_LIST_HERE)   \" ${NL}\
