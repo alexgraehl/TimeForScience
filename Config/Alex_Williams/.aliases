@@ -1396,23 +1396,23 @@ alias cheat="echo \
 \" \" ${NL}\
 \">> GZIP: verify files: for f in **/*.gz; do gunzip --test -v \\\$f ; done; \" ${NL}\
 \">> LINE WRAP: wrap lines at 80 chars, preserving/ignoring word boundaries: fold -w 80 -s text.txt (omit -s to cut words) \" ${NL}\
-\">> BASH/SHELL/ECHO: echo to STDERR instead of STDOUT: echoerr() { echo \\\"\\\$@\\\" 1>&2; }  usage: echoerr 'mystring' \" ${NL}\
-\">> SHELL: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
-\">> SHELL: Pipe both STDERR and STDOUT: CMD |& less  or the old way --> CMD 2>&1 (for bash < 4)\" ${NL}\
-\">> SHELL: Modify variable: newV=\\\$(sed -e's/a/1/; s/b/2/; s/c/3/' <<< \\\$oldV) \" ${NL}\
-\">> SHELL: Script run with ionice:  ionice -c3 -p\\\$\\\$ (top line of a /bin/sh script) \" ${NL}\
-\">> SHELL: Rename files with parent directory in filename for f in DIRS*/file.whatever; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).\\\$(basename \\\$f).whatever ; done \" ${NL}\
-\">> SHELL: Rename files to NOT have the path in them at all: for fff in **/*.html ; do ggg=$(echo $fff | tr / _); mv $fff $ggg; done \" ${NL}\
-\">> SHELL: Rename files to have unique names: for f in **/*fastqc.html; do /bin/cp \\\$f DESTINATION_DIR/\\\$(md5sum \\\$f | cut -d ' ' -f 1).\\\$(basename \\\$f); done \" ${NL}\
-\">> SHELL: Rename files to a LIST of new names in a file: while read -u 9 SRC; do read -u 8 DEST; echo mv \\\"\\\$SRC\\\" \\\"\\\$DEST\\\"; done 9<<<\\\"\\\$(ls -1 * | grep -v NEW_FILENAME_LIST.TXT)\\\" 8< NEW_FILENAME_LIST.TXT  <-- note that NEW_FILENAME_LIST.TXT must be a SINGLE COLUMN of text in the same order as the files to rename. And the 'grep -v' part there is so that the filename list itself does not mess up the renaming. \" ${NL}\
-\">> SHELL: Check to see if dir is empty if [[ \\\"\\\$(ls -A \\\$OUTDIR)\\\" ]]; then echo \\\"ERR: Output dir not empty!\\\"; exit 2; fi \" ${NL}\
+\">> SHELL/BASH/ECHO: echo to STDERR instead of STDOUT: echoerr() { echo \\\"\\\$@\\\" 1>&2; }  usage: echoerr 'mystring' \" ${NL}\
+\">> SHELL/BASH: Redirect stdout/stderr separately: CMD > out.txt 2> err.txt \" ${NL}\
+\">> SHELL/BASH: Pipe both STDERR and STDOUT: CMD |& less  or the old way --> CMD 2>&1 (for bash < 4)\" ${NL}\
+\">> SHELL/BASH: Modify variable: newV=\\\$(sed -e's/a/1/; s/b/2/; s/c/3/' <<< \\\$oldV) \" ${NL}\
+\">> SHELL/BASH: Script run with ionice:  ionice -c3 -p\\\$\\\$ (top line of a /bin/sh script) \" ${NL}\
+\">> SHELL/BASH: Rename files with parent directory in filename for f in DIRS*/file.whatever; do echo \\\$f \\\$(dirname \\\$f)/\\\$(dirname \\\$f).\\\$(basename \\\$f).whatever ; done \" ${NL}\
+\">> SHELL/BASH: Rename files to NOT have the path in them at all: for fff in **/*.html ; do ggg=$(echo $fff | tr / _); mv $fff $ggg; done \" ${NL}\
+\">> SHELL/BASH: Rename files to have unique names: for f in **/*fastqc.html; do /bin/cp \\\$f DESTINATION_DIR/\\\$(md5sum \\\$f | cut -d ' ' -f 1).\\\$(basename \\\$f); done \" ${NL}\
+\">> SHELL/BASH: Rename files to a LIST of new names in a file: while read -u 9 SRC; do read -u 8 DEST; echo mv \\\"\\\$SRC\\\" \\\"\\\$DEST\\\"; done 9<<<\\\"\\\$(ls -1 * | grep -v NEW_FILENAME_LIST.TXT)\\\" 8< NEW_FILENAME_LIST.TXT  <-- note that NEW_FILENAME_LIST.TXT must be a SINGLE COLUMN of text in the same order as the files to rename. And the 'grep -v' part there is so that the filename list itself does not mess up the renaming. \" ${NL}\
+\">> SHELL/BASH: Check to see if dir is empty if [[ \\\"\\\$(ls -A \\\$OUTDIR)\\\" ]]; then echo \\\"ERR: Output dir not empty!\\\"; exit 2; fi \" ${NL}\
 \">> MD5 on EACH LINE OF A FILE (Perl) (note: WITHOUT the newline): cat YOURFILE | perl -e 'use Digest::MD5 qw(md5_hex); while(my \\\$line=<>){ chomp(\\\$line); print(md5_hex(\\\$line).qq{\n}); }'    \" ${NL}\
 \">> MD5 verify: md5sum -c md5*.txt. Checksum must be 1st col, then 2 spaces, then filename. If checksum is 2nd: cat md5*.txt | awk '{print \\\$2\\\"  \\\"\\\$1}' | md5sum -c \" ${NL}\
 \">> MD5 on multiple files: find . -type f -exec md5 {} \; > list.txt    \" ${NL}\
-\">> HEX HEXDUMP: View individual bytes of a file in hex form: hexdump -C FILENAME \" ${NL}\
+\">> HEX HEXDUMP: View bytes in hex form / hex editor: hexdump -C FILENAME   (or use colorized command-line viewer 'hexyl' on the Mac (brew install hexyl)) \" ${NL}\
 \">> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
 \">> AWK: Get only FIRST line with a unique occurrence in column 1. Does not require sorting: cat FILE | awk -F'\\t' '!_[\\\$1]++' (assumes separator is tab) \" ${NL}\
-\">> AWK FILTER based on numeric value: filter based on a number: cat test | awk '{ if (\\\$1 >= 900 && \\\$1 > 0) print; }' \" ${NL}\
+\">> AWK FILTER based on numeric value (like select.pl): filter based on a number: cat test | awk '{ if (\\\$1 >= 900 && \\\$1 > 0) print; }' \" ${NL}\
 \">> GIT: do not download huge LFS files when git lfs is enabled: GIT_LFS_SKIP_SMUDGE=1 git clone YOUR_REPO \" ${NL}\
 \">> GIT: only get the last 1 revision (faster): git clone --depth=1 https://your-site-here/something.git \" ${NL}\
 \">> GIT: discard/revert ALL local changes TO ALL FILES: DANGER >> git reset --hard origin/master << DANGER \" ${NL}\
@@ -1427,8 +1427,7 @@ alias cheat="echo \
 \">> GIT: when branch was last used AND last commit (fancy): git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \" ${NL}\
 \">> TERM: Get terminal width/height: tput cols  or  tput lines \" ${NL}\
 \">> BACKUPS: Check for changed files of a certain name: grep -E '>f.' /it/backup/log/*.log | grep YOURNAME \" ${NL}\
-\">> UNIX/FILE: Add filename to top of (copy of) files. for f in FILES*; do echo \\\$f | cat - $f > NEW_\\\$f ; done \" ${NL}\
-\">>           ...or if you will later paste/join those: for f in SPLIT*.diff; do echo \\\$f | cat - \\\$f | table-no-ragged.py - > NEW_\\\$f; done \" ${NL}\
+\">> UNIX/FILE: Add filename to top of (copy of) files. for f in FILES*; do echo \\\$f | cat - $f > NEW_\\\$f ; done     ...or if you will later paste/join those: for f in SPLIT*.diff; do echo \\\$f | cat - \\\$f | table-no-ragged.py - > NEW_\\\$f; done \" ${NL}\
 \">> UNIX: SYMLINKS: convert RELATIVE symlinks to ABSOLUTE PATHS: for fff in *; do FULL=\\\$(readlink -f \\\$fff); ln -sf \\\$FULL \\\$fff ; done \" ${NL}\
 \">> UNIX: SYMLINKS: 1) double-dereference symlinks, showing their final targets: find -L . -type f -exec readlink -f {} \\\; \" ${NL}\
 \">> UNIX: SYMLINKS: 2) double-dereference symlinks, showing their final targets: for f in * ; do echo -e \\\$f\\\"\\t\\\"\\\$(readlink -f \\\$f); done   \" ${NL}\
@@ -1449,7 +1448,7 @@ alias cheat="echo \
 \">> UNIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
 \">> UNIX: Check Linux version: cat /etc/*-release \" ${NL}\
 \">> UNIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
-\">> UNIX: Rsync transfer files: rsync --dry-run -R -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
+\">> RSYNC transfer files: rsync --dry-run -R -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
 \">> UNIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
 \">> UNIX/WGET/TRICKLE: Rate limit any command to 500kbps (-d = down, -u = up): sudo trickle -d 500 -u 500 ncftp 'your_ftp_site_here' \" ${NL}\
 \">> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
@@ -1460,7 +1459,7 @@ alias cheat="echo \
 \">> UNIX GREP: find text in a file VERBATIM, like join: grep -w -f KEYFILE.txt search_in_file.txt  (remove the '-w' to allow PARTIAL matches as well. You can use '-E' to allow regular expressions in the file too!)\" ${NL}\
 \">> UNIX GREP Count occurrences of a match per line: cat FILE | grep -o -n SEARCHTERM | cut -d : -f 1 | uniq -c \" ${NL}\
 \">> BSUB change queue that a job is in: bswitch LONGQUEUE <YOUR_JOB_ID_HERE> \" ${NL}\
-\">> QSUB/QUEUE/PBS submit job: echo 'echo \\\"hello I am a test job\\\"' | qsub -q Bio -W group_list=bioqueue ; sleep 10; cat STDIN*; \" ${NL}\
+\">> QSUB/QUEUE/PBS submit job: echo 'echo \\\"hello I am a test job\\\"' | qsub -q Bio -W group_list=YOURQUEUE ; sleep 10; cat STDIN*; \" ${NL}\
 \">> QSUB/QUEUE/PBS: Delete all your jobs one by one: for j in \\\$${PAREN_OPEN}qstat -a | grep 'YOURNAME' | cut -d '.' -f 1); do echo \\\"qdel \\\$j...\\\"; qdel \\\$j ; done \" ${NL}\
 \">> QSUB/QUEUE/PBS: restart torque: sudo service pbs_sched stop ; sudo service pbs_mom stop ; sudo service pbs_server stop ; sudo /bin/rm /var/lock/subsys/pbs_server ; sudo service pbs_sched start ; sudo service pbs_mom start ; sudo service pbs_server start ; qstat \" ${NL}\
 \">> QSUB/QUEUE/PBS: info on the queue: qstat -Qf or qstat -B more details \" ${NL}\
@@ -1479,24 +1478,24 @@ alias cheat="echo \
 \" \" ${NL}\
 \">> ZIP: Zip a folder: zip -r ARCHIVENAME FOLDER \" ${NL}\
 \" \" ${NL}\
-\">> SHELL/BASH put a command into a variable with quotes and then execute it:  DEFINE: MYCMD=(perl -ne 'print 1;')   THEN:  gzcat FILE | \\\"{MYCMD[@]}\\\" \" ${NL}\
 \">> GNU MAKE with a bash loop (5 lines, look for text 'MAKELOOP'): \" ${NL}\
 \">> MAKELOOP1: looped: INFILE.txt                   \" ${NL}\
 \">> MAKELOOP2:         while read -r X; do     \\   \" ${NL}\
 \">> MAKELOOP3:                 echo \\\$\\\$X; \\   \" ${NL}\
 \">> MAKELOOP4:         done < INFILE.txt;      \\   \" ${NL}\
 \">> MAKELOOP5:         true                         \" ${NL}\
+\">> SHELL/BASH put a command into a variable with quotes and then execute it:  DEFINE: MYCMD=(perl -ne 'print 1;')   THEN:  gzcat FILE | \\\"{MYCMD[@]}\\\" \" ${NL}\
 \">> SHELL/BASH startup a 'fresh' shell with NO user configuration / clean startup / no .bashrc / no init:  env -i bash --norc --noprofile      \" ${NL}\
 \">> SHELL/BASH script header (2 lines): #!/bin/bash __NEWLINE__ set -euo -o pipefail; shopt -s nullglob; shopt -s globstar; set -o xtrace; \" ${NL}\
 \">> SHELL/BASH in MAKEFILE: In a Make rule, you can use a bash loop like so, with THREE slashes before a quote and SLASH-DOLLAR-DOLLAR instead of a dollar sign to access BASH variables. Example:  bash -c ${DQ}for fff in */*; do echo -e ${BS}${BS}${BS}${DQ}${BS}${DLR}${DLR}fff${BS}${BS}${BS}${DQ}; done; echo -e ${BS}${BS}${BS}${DQ}This goes in a makefile.${BS}${BS}${BS}${DQ}; ${DQ} \" ${NL}\
 \">> SHELL/BASH: Literal tab: \$'\\t' (example: join -t \$'\\t' to join on tabs) or \\\$(echo -en '\\t') . In MAKE: printf '\\t' \" ${NL}\
-\">> SH  : Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
-\">> BASH: Foreach/rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
+\">> SHELL/BASH: Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
+\">> SHELL/BASH: Foreach/rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
+\">> SHELL/BASH: redirect STDERR & STDOUT both to console and to a file: THECMD 2>&1 | tee --append LOGFILE\" ${NL}\
+\">> SHELL/BASH: See a function definition: type FUNCTIONNAME \" ${NL}\
+\">> SHELL/BASH: Change tab width in bash:  setterm -regtabs 16 (16 = huge!) \" ${NL}\
+\">> SHELL/BASH: Expand tabs/tab width: something | expand -t 32 \" ${NL}\
 \">> PERL: redirect STDERR and STDOUT in backticks: my \\\$stderr_and_out = \\\`commandhere 2>&1\\\`; my \\\$exitCode = \\\$?; \" ${NL}\
-\">> BASH: redirect STDERR & STDOUT both to console and to a file: THECMD 2>&1 | tee --append LOGFILE\" ${NL}\
-\">> BASH: See a function definition: type FUNCTIONNAME \" ${NL}\
-\">> BASH: Change tab width in bash:  setterm -regtabs 16 (16 = huge!) \" ${NL}\
-\">> BASH: Expand tabs/tab width: something | expand -t 32 \" ${NL}\
 \" \" ${NL}\
 \">> BIOINF / GTF: Sort a GTF file:  LC_ALL=\\\"C\\\" sort -k 1,1 -k 4,4n YOUR.GTF > SORTED.GTF \" ${NL}\
 \">> BIOINF / GTF: Load a GTF file into R:  require(rtracklayer); require(GenomicRanges); granges_from_gtf <- rtracklayer::import.gff('~/THE_GTF.GZ')  \" ${NL}\
@@ -1562,8 +1561,10 @@ alias cheat="echo \
 \">> LINES: Range from N to M, inclusive (starts at 1):  sed -n N,Mp INPUTFILE  or  for a HUGE file: sed -n '(N+1)q;N,Mp' <-- quit on line (N+1) \" ${NL}\
 \">> LINES: Every Nth line, starting with line Y (starts at 1, not 0): awk 'NR%X==Y' FILE. So getting line 1,3,5,7,9 is awk 'NR%2==1'. FASTQ example: sequences only is awk 'NR%4==2'\" ${NL}\
 \">> LINES/AWK: Count num columns in file: awk -F '\t' '{print NF}' \" ${NL}\
-\">> UNIX/LINES/AWK re-order columns: cat FILE | awk 'BEGIN {OFS = \\\"\t\\\"}; {print \\\$1,\\\$4,\\\$2,\\\$11}' \" ${NL}\
 \">> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">> LINES Count chars on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
+\">> UNIX/LINES/AWK re-order columns: cat FILE | awk 'BEGIN {OFS = \\\"\t\\\"}; {print \\\$1,\\\$4,\\\$2,\\\$11}' \" ${NL}\
+\">> SQL/POSTGRES list databases: SELECT datname FROM pg_database WHERE datistemplate=FALSE;   \" ${NL}\
+\">> SQL/POSTGRES list databases, schemas and tables: SELECT table_schema,table_name  FROM information_schema.tables  ORDER BY table_schema,table_name;  \" ${NL}\
 \">> Z SOFTWARE to remember: Bioinformatics: UGENE will do Clustal/BLAST/Etc locally, and visualize sequences / FASTAS. MAUVE is a similar aligner that we used previously for viral genomes.  IGV is a local genome browser. TreeView and Cluster 3 will cluster.  General: GLANCES is fancier top/htop system activity monitor. HEXYL is a colorized Mac command line hex editor (brew install hexyl).\" ${NL}\
 "
