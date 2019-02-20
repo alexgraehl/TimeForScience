@@ -47,8 +47,10 @@ fi
 if [[ 1 == $SHOULD_HOMEBREW ]]; then
     echo "Installing a ton of stuff via homebrew (which must already be installed in order for this to work)"
     brew cask install java # required for gradle and more
-    brew install bash bcftools bedtools blast boost cairo catimg dialog emacs fastqc ffmpeg fontconfig freetype gcc gdbm gettext git glances glib gmp gnutls gradle gsl hdf5 htop htslib imagemagick ipython ipython3 isl jpeg lame libevent libffi libgit2 libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle numpy openssl pcre pigz pixman pkg-config pv python3 qemu R readline rsync samtools scipy sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
-    #docker
+    brew cask install slack notion visual-studio-code iterm2 github spotify transmit bettertouchtool tableplus
+    # brew install bcftools bedtools blast fastqc hdf5 htslib   # <-- science
+    # boost # <-- maybe obsolete?
+    brew install bash bbedit cairo catimg dialog dropbox emacs ffmpeg fontconfig freetype gcc gdbm gettext git glances glib gmp gnutls gradle gsl htop imagemagick ipython isl jpeg lame libevent libffi libgit2 libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle numpy openssl pcre pigz pixman pkg-config pv python qemu R readline rsync samtools scipy sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
 fi
 
 # ==============================================================================
@@ -116,11 +118,8 @@ echo "      * XCode"
 echo "YOU SHOULD MANUALLY INSTALL THE FOLLOWING PROGRAMS:"
 echo "           RStudio                   FROM --> https://www.rstudio.com/products/rstudio/download/#download"
 echo "           SCROLL REVERSER           FROM --> https://pilotmoon.com/downloads/ScrollReverser-1.7.6.zip"
-echo "           iTERM2                    FROM --> https://www.iterm2.com/"
 echo "           PYCHARM                   FROM --> https://www.jetbrains.com/pycharm/"
 echo "           CLIPY (replaces ClipMenu) FROM --> https://clipy-app.com/"
-echo "           HERMES (Pandora)          FROM --> http://hermesapp.org/"  # curl https://github.com/HermesApp/Hermes/archive/master.zip > ~/Downloads/hermes_pandora_app.zip
-echo "           TRANSMIT (PANIC) (Paid!)  FROM --> https://panic.com/transmit/#download"
 echo "           OMNIGRAFFLE (Paid!)       FROM --> https://www.omnigroup.com/"
 
 echo "UCSC Genome Browser software can be obtained for a Mac with this command: (as documented on the download page: http://hgdownload.cse.ucsc.edu/admin/exe/macOSX.x86_64/ )"
@@ -135,7 +134,6 @@ echo "maybe something like this: sudo /Applications/Xcode.app/Contents/Developer
 
 echo "[DONE!] But remember to manually install the software shown above."
 
-
 if [[ 1 == 2 ]]; then
     echo "NOTE: currently this is never run"
     echo "Installing IGV..."
@@ -143,6 +141,3 @@ if [[ 1 == 2 ]]; then
     git clone https://github.com/igvteam/igv.git
     cd igv/
 fi
-
-
-

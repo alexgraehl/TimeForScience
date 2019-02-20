@@ -414,8 +414,6 @@ alias ssh="colorssh"
 # This would be easy to extend to check if a theme with the name of the server exists and set it, and
 # fall back to the SSH theme. This way you can have different colors for different remote environments
 # (per project, production, staging, etc.)
-# ==============================================================
-
 
 if [[ ! "${isMac}" == "1" ]]; then
     # Only do this on not-a-mac
@@ -427,4 +425,9 @@ if [[ ! "${isMac}" == "1" ]]; then
 	echo "[:HEY:] Unsetting the PROMPT_COMMAND, because this machine doesn't appear to support it. See the ~/.bashrc for details."
 	unset PROMPT_COMMAND
     fi
+fi
+
+if [[ -f "${HOME}/bin/activate" ]]; then
+    echo "[:OK:] .bashrc reporting: Activating virtualenv at ~/bin/activate"
+    source "${HOME}/bin/activate"
 fi

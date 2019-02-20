@@ -159,11 +159,6 @@ function witch() { # Shows the versions for all on-your-path verisons of softwar
     for f in $(which -a "$1"); do echo -en "\n${a_echo_color}$f${a_end_color} --> "; eval "$f $VER_STR" | head -n 2; done; echo ""
 }
 
-function modules() {
-    echo "[:OK:] Loading a couple of modules that you might need"
-    module load apps/ncbi-blast apps/R apps/emacs
-}
-
 function delve() { # or 'dv'
     ## Finds, in any subdirectories, any files that have a name that matches the input text. Sort of like a poor man's "locate"
     find . -iname "*$@*"
