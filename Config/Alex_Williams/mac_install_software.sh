@@ -13,9 +13,9 @@ if [[ ! -e "$TIME_FOR_SCIENCE_DIR/README.md" ]]; then echo "[ERROR: the TIME_FOR
 
 SHOULD_HOMEBREW=1
 
-# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #            Create symlinks to standard config files
-# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if [[ $(dirname $TIME_FOR_SCIENCE_DIR) == "$HOME" ]]; then echo "use relative links"; else echo "do not use relative links--apparently the TimeForScience directory is NOT located immediately in your home directory2. Exiting here, as we cannot deal with this."; exit 1; fi
 
 HOMEDIR_CONFIG_FILES_TO_SYMLINK=(.aliases .bash_profile .bashrc .emacs .inputrc .screenrc .tmux.conf)
@@ -28,21 +28,20 @@ for FILE in ${HOMEDIR_CONFIG_FILES_TO_SYMLINK[@]}; do
 	ln -f -s $CFG ./
 done
 
-
-# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #                          SSH Config
-# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if [[ -e "$HOME/.ssh/config" ]]; then
-    echo "[SKIPPING] The ssh config file at .ssh/config ALREADY exists, so we are not overwriting it."
+    echo "[:ERR:] [SKIPPING] The ssh config file at .ssh/config ALREADY exists, so we are not overwriting it."
 else
     cp TimeForScience/Config/Alex_Williams/ssh-slash-config $HOME/.ssh/config
     chmod -R go-w   ~/.ssh/
     chmod    go-rwx ~/.ssh/id_rsa
 fi
 
-# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #                         Homebrew
-# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if [[ 1 == $SHOULD_HOMEBREW ]]; then
     echo "Installing a ton of stuff via homebrew (which must already be installed in order for this to work)"
@@ -51,10 +50,11 @@ if [[ 1 == $SHOULD_HOMEBREW ]]; then
     # brew install bcftools bedtools blast fastqc hdf5 htslib   # <-- science
     # boost # <-- maybe obsolete?
     brew install bash bbedit cairo catimg dialog dropbox emacs ffmpeg fontconfig freetype gcc gdbm gettext git glances glib gmp gnutls gradle gsl htop imagemagick ipython isl jpeg lame libevent libffi libgit2 libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle numpy openssl pcre pigz pixman pkg-config pv python qemu R readline rsync samtools scipy sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
+    brew install hexyl # command line color hex editor
+    brew install glances # fancier htop
 fi
 
-# ==============================================================================
-
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 AGW_BASH_MAJOR_VERSION=$(echo "$BASH_VERSION" | perl -pe "s/(\d+).*/\1/; chomp;")
 if (( ${AGW_BASH_MAJOR_VERSION} >= 4 )); then
     echo "[OK] globstar should be supported on bash version $AGW_BASH_MAJOR_VERSION, which is >= 4."
@@ -75,35 +75,35 @@ else
     fi
 fi
 
-# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo "Making a few required directories, in case they aren't already present."
 mkdir -p ${HOME}/bin
 
-# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo "Making a bunch of uninteresting files/folders hidden in the default Finder view..."
 FILES_TO_INVISIFY=("$HOME/Movies" "$HOME/Music" "$HOME/Public" "$HOME/TimeForScience" "$HOME/bin")
 for FILE in ${FILES_TO_INVISIFY[@]}; do
     chflags -h hidden ${FILE}
 done
-# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo "A bunch of things that should be installed via pip2 (Python 2)"
 PIP2_PACKAGES=("awscli" "pylint" "matplotlib" "numpy" "scipy")
 for PACKAGE in ${PIP2_PACKAGES[@]}; do
     echo "[PYTHON2 (PIP2)] Installing the package $PACKAGE..."
     python  -m pip install ${PACKAGE}
 done
-# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo "A bunch of things that should be installed via pip3 (Python 3)"
 PIP3_PACKAGES=("awscli" "pylint" "matplotlib" "numpy" "scipy" "jupyter")
 for PACKAGE in ${PIP3_PACKAGES[@]}; do
     echo "[PYTHON3 (PIP3)] Installing the package $PACKAGE..."
     python3 -m pip install ${PACKAGE}
 done
-# ==============================================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #echo "Install the amazon command line tools (via python's pip)"
 #pip install awscli
