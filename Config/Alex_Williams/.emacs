@@ -148,9 +148,6 @@
 
 (defun show-system-type() (interactive) (message (insert-system-type)))
 
-(if (not (boundp 'should-load-ess))
-    (setq should-load-ess nil)) ;; <-- if should-load-ess is not already defined, then initialize a new variable if we haven't loaded ess, then this *remains* "nil"
-
 (add-to-list 'load-path "/usr/share/emacs/site-lisp")
 (add-to-list 'load-path "/usr/local/share/emacs/site-lisp")
 (add-to-list 'load-path "~/bin/ESS/lisp")
@@ -161,14 +158,17 @@
 ;(add-to-list 'load-path "~/.linuxbrew/share/emacs/site-lisp/ess") ;; wow, you actually have to specify the EXACT SUBDIRECTORY for this to work
 (add-to-list 'load-path (concat (getenv "BINFSWROOT") "/share/emacs/site-lisp/ess")) ;; <-- REQUIRED to specify it this deep in the hierarchy
 
+(if (not (boundp 'should-load-ess))
+    (setq should-load-ess nil)) ;; <-- if should-load-ess is not already defined, then initialize a new variable if we haven't loaded ess, then this *remains* "nil"
+
 (if (system-type-is-darwin)
     (progn
-      (setq should-load-ess t) ; don't load R syntax highlighting
+      ;;(setq should-load-ess t) ; don't load R syntax highlighting
       ))
 
 (if (system-type-is-gnu)
     (progn
-      (setq should-load-ess t) ; do/don't (t/nil) load R syntax highlighting
+      ;;(setq should-load-ess t) ; do/don't (t/nil) load R syntax highlighting
       (require 'show-wspace nil t) ; show whitespace! (?)
       ))
 
@@ -746,13 +746,10 @@ current line."
 ;; Parameters to load that will make it not complain/warn: 'nomessage 'noerror
 ;; NB: loading the ess-module slows down emacs' load time a lot, even if ESS is compiled.
 ;; ##########################################################################
-;;(load "ess-site")
-(if should-load-ess (message "[AGW]: Loading ESS (Emacs Speaks Statistics)") (message "[AGW]: NOT loading ESS (Emacs Speaks Statistics)"))
 (if should-load-ess ;; emacs speaks statistics
     (progn
-      ;; (load "ess-site")
       (require 'ess-site) ;; nil t)
-      (message "Setting R syntax stuff...")
+      (message "Loading ESS (Emacs speaks statistics)")
       (add-hook 'ess-mode-hook  ;; R-mode-hook r-mode-hook r mode <-- should be ess-mode-hook
 		(progn (define-key ess-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in ESS mode
 		       (define-key ess-mode-map "_" nil)          ;; no smart underscores!
