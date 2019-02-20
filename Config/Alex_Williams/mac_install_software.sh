@@ -46,12 +46,11 @@ fi
 if [[ 1 == $SHOULD_HOMEBREW ]]; then
     echo "Installing a ton of stuff via homebrew (which must already be installed in order for this to work)"
     brew cask install java # required for gradle and more
-    brew cask install slack notion visual-studio-code iterm2 github spotify transmit bettertouchtool tableplus
-    # brew install bcftools bedtools blast fastqc hdf5 htslib   # <-- science
-    # boost # <-- maybe obsolete?
+    brew cask install iterm2
+    brew cask install slack notion visual-studio-code github spotify transmit bettertouchtool tableplus
     brew install bash bbedit cairo catimg dialog dropbox emacs ffmpeg fontconfig freetype gcc gdbm gettext git glances glib gmp gnutls gradle gsl htop imagemagick ipython isl jpeg lame libevent libffi libgit2 libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle numpy openssl pcre pigz pixman pkg-config pv python qemu R readline rsync samtools scipy sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
-    brew install hexyl # command line color hex editor
-    brew install glances # fancier htop
+    brew install hexyl # hexyl: command line color hex editor. glances: fancier htop
+    brew cask install atom # markdown (.md) viewer/editor
 fi
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
