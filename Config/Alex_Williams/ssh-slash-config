@@ -26,3 +26,23 @@ XAuthLocation /opt/X11/bin/xauth
 #   ProxyCommand ssh yourname@publicmachine.edu nc %h %p 2> /dev/null
 #
 
+# If you want to have MULTIPLE GITHUB accounts on one machine:
+
+# Default github account, assumes your SSH private key is in ~/.ssh/id_rsa
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_rsa
+
+# Github has a special syntax (?) for alternate accounts: hyphen + repo name.
+#Host github.com-{{TOP LEVEL ACCOUNT NAME GOES HERE}}
+#    HostName github.com
+#    User git
+#    IdentityFile ~/.ssh/{{YOUR_SPECIAL_ID_RSA_FOR_JUST_THIS_REPO}}
+    # If you already checked out the repo, make sure to also check your
+    # REPO/.git/config file, specifically for this line:
+    # url = git@github.com-{{TOP LEVEL ACCOUNT NAME GOES HERE}}:path/ToThe.git
+    # The 'url' line must have the hyphen in it, or nothing will work!
+    # You may also need a [user] \n email = youremail@users.noreply.github.com
+    # to be specified... maybe.
+
