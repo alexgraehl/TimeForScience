@@ -230,6 +230,7 @@ else
 	/bin/ls -l -h -A -F ${AGW_LL_COLOR_ALWAYS} "$@" | perl -pe "s!(.*)(
 P_L_A_C_E__H_O_L_D_E_R
 |[.]aliases
+|[.]atom.*[/]\$
 |[.]bash_history
 |[.]bash_logout
 |[.]bash_profile
@@ -262,14 +263,17 @@ P_L_A_C_E__H_O_L_D_E_R
 |[.]InstallAnywhere.*[/]\$
 |installer[.]failurerequests
 |[.]iterm2.*[/]\$
+|[.]ipython.*[/]\$
 |[.]iterm2_shell_integration.bash
 |[.]jalview_properties
 |[.]jenv
 |[.]jswingreader
+|[.]jupyter.*[/]\$
 |[.]kshrc
 |[.]lesshst
 |[.]local
 |[.]lsbatch.*[/]\$
+|[.]matplot.*[/]\$
 |[.]modules.*->
 |[.]modulesbeginenv
 |[.]mozilla.*[/]\$
@@ -277,6 +281,7 @@ P_L_A_C_E__H_O_L_D_E_R
 |[.]OSInstallerMessages\$
 |[.]PKInstallSandboxManager.*[/]\$
 |[.]python_history
+|[.]pylint.*[/]\$
 |[\d\dm|\s][.]R.*[/]\$
 |[.]Rhistory.*\$
 |Rlib.*[/]
@@ -289,6 +294,7 @@ P_L_A_C_E__H_O_L_D_E_R
 |[.]ssh.*[/]
 |[\d\dm|\s]Shares.*[/]\$
 |[.]subversion
+|[.]sqlwork.*[/]\$
 |[.]t_coffee
 |TimeForScience.*[/]
 |[.]tmux[.]conf
@@ -301,6 +307,7 @@ P_L_A_C_E__H_O_L_D_E_R
 |[\d\dm|\s]vc.*[/]
 |[.]vol.*/\$
 |[.]VolumeIcon.icns
+|[.]vscode.*[/]\$
 |[.]wget-hsts
 |[.]Xauthority
 |[.]zoomus
