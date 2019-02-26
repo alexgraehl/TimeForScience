@@ -1579,5 +1579,6 @@ alias cheat="echo \
 \">> SQL/POSTGRES list databases: SELECT datname FROM pg_database WHERE datistemplate=FALSE;   \" ${NL}\
 \">> SQL/POSTGRES list databases, schemas and tables: SELECT table_schema,table_name  FROM information_schema.tables  ORDER BY table_schema,table_name;  \" ${NL}\
 \">> SQL/POSTGRES start (Mac): pg_ctl -D /usr/local/var/postgres start  \" ${NL}\
+\">> JUPYTER/PYTHON prevent auto-closing brackets/braces/parens: from notebook.services.config import ConfigManager  <NEWLINE>  c = ConfigManager()   <NEWLINE>      c.update('notebook', {'CodeCell': {'cm_config': {'autoCloseBrackets': False}}})   \" ${NL}\
 \">> Z SOFTWARE to remember: Bioinformatics: UGENE will do Clustal/BLAST/Etc locally, and visualize sequences / FASTAS. MAUVE is a similar aligner that we used previously for viral genomes.  IGV is a local genome browser. TreeView and Cluster 3 will cluster.  General: GLANCES is fancier top/htop system activity monitor. HEXYL is a colorized Mac command line hex editor (brew install hexyl).\" ${NL}\
 "
