@@ -417,6 +417,7 @@ alias fgrepc='fgrep --color=always --with-filename --line-number'
 # git aliases
 alias gitcom="git commit -a -m 'Changes committed by ${USER}'"
 alias gitlist="git ls-tree -r master --name-only" # show currently tracked files
+alias gits="git status"
 alias gitstat="git ls-files --modified --deleted"
 alias gitdiff="git difftool"
 
@@ -1425,6 +1426,7 @@ alias cheat="echo \
 \">> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
 \">> AWK: Get only FIRST line with a unique occurrence in column 1. Does not require sorting: cat FILE | awk -F'\\t' '!_[\\\$1]++' (assumes separator is tab) \" ${NL}\
 \">> AWK FILTER based on numeric value (like select.pl): filter based on a number: cat test | awk '{ if (\\\$1 >= 900 && \\\$1 > 0) print; }' \" ${NL}\
+\">> GIT: checkout file from other branch AND OVERWRITE LOCAL COPY:  echo 'overwriting local copy ' && git checkout OTHERBRANCH -- FILENAME \" ${NL}\
 \">> GIT: change the 'upstream' of your branch to a REMOTE upstream: git branch YOURLOCALBRANCH --set-upstream-to origin/SOME_OTHER_BRANCH   <-- the 'origin' part seems necessary to make the upstream the remote \" ${NL}\
 \">> GIT: do not download huge LFS files when git lfs is enabled: GIT_LFS_SKIP_SMUDGE=1 git clone YOUR_REPO \" ${NL}\
 \">> GIT: only get the last 1 revision (faster): git clone --depth=1 https://your-site-here/something.git \" ${NL}\
