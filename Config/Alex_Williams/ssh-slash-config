@@ -33,16 +33,23 @@ Host github.com
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_rsa
-
+# You will ALSO need to make sure this IdentityFile is added to your ssh agent:
+      # 1. ssh-add -l
+      # 2. ssh-add  ~/.ssh/id_rsa_your_other_key_here_PRIVATE_KEY
+      
 # Github has a special syntax (?) for alternate accounts: hyphen + repo name.
-#Host github.com-{{TOP LEVEL ACCOUNT NAME GOES HERE}}
+# 1. In your ~/.ssh/config:
+# Host github.com-{{TOP LEVEL ACCOUNT NAME GOES HERE}}
 #    HostName github.com
 #    User git
 #    IdentityFile ~/.ssh/{{YOUR_SPECIAL_ID_RSA_FOR_JUST_THIS_REPO}}
-    # If you already checked out the repo, make sure to also check your
+# 2. If you already checked out the repo, make sure to also check your
     # REPO/.git/config file, specifically for this line:
     # url = git@github.com-{{TOP LEVEL ACCOUNT NAME GOES HERE}}:path/ToThe.git
     # The 'url' line must have the hyphen in it, or nothing will work!
     # You may also need a [user] \n email = youremail@users.noreply.github.com
     # to be specified... maybe.
+# 3. You will ALSO need to make sure this IdentityFile is added to your ssh agent:
+      # 1. ssh-add -l
+      # 2. ssh-add  ~/.ssh/id_rsa_your_other_key_here_PRIVATE_KEY
 
