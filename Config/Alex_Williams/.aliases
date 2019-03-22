@@ -1231,6 +1231,10 @@ function delete_android_file_transfer_on_mac() {
     echo "Done disabling it. Note that the files have been RENAMED, and not totally deleted!"
 }
 
+function posterr() {
+    # diagnose postgres issues
+    echo "select d.*,e.* from stl_load_errors e, stl_loaderror_detail d where d.query = e.query AND d.query = pg_last_copy_id() order by starttime desc;"
+}
 
 function gitstory() {
     if [[ "$#" != 1 ]] ; then
