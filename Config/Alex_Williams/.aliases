@@ -1580,6 +1580,7 @@ alias cheat="echo \
 \">> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">> LINES Count chars on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
 \">> UNIX/LINES/AWK re-order columns: cat FILE | awk 'BEGIN {OFS = \\\"\t\\\"}; {print \\\$1,\\\$4,\\\$2,\\\$11}' \" ${NL}\
+\">> SQL/POSTGRES Amazon Redshift show errors: select d.*,e.* from stl_load_errors e, stl_loaderror_detail d where d.query = e.query AND d.query = pg_last_copy_id() order by starttime desc; \" ${NL}\
 \">> SQL/POSTGRES list databases: SELECT datname FROM pg_database WHERE datistemplate=FALSE;   \" ${NL}\
 \">> SQL/POSTGRES list databases, schemas and tables: SELECT table_schema,table_name  FROM information_schema.tables  ORDER BY table_schema,table_name;  \" ${NL}\
 \">> SQL/POSTGRES start (Mac): pg_ctl -D /usr/local/var/postgres start  \" ${NL}\
