@@ -24,21 +24,17 @@ GetOptions("help|?|man" => sub { printUsage(); }
 	   , "title|t" => sub { $printTitle = 1; }
 	   ) or printUsage();
 
-
 my $i = 1;
 while (<>) {
     my $line = $_;
     my @lineArr = split(/$delimiter/, $line);
     my $numDelimiters = (scalar(@lineArr) - 1); #() = $line =~ /${delimiter}/g; # count how many delimiters are on this line
-
     if ($printTitle) {
 	my $title = $lineArr[0];
 	chomp($title); # just in case it was the only item in its row, so it has a newline
 	print STDOUT $title . "\t"; # Note that $lineArr[1] is the FIRST element ([0] contains the entire string)
     }
-
     print STDOUT ($incrementAmt + $numDelimiters) . "\n";
-    
     $i++;
 }
 
@@ -50,6 +46,8 @@ __DATA__
 count_items_per_line:
  Counts the number of items per line, AFTER the initial item, which is assumed to be a header for
  the row (although you can change that with -addamt=1) . Counts based on the delimiter on that line.
+
+Does NOT transparently work on gzipped files; you should use 'gzcat' or 'zcat' for those.
 
 IMPORTANT NOTE:
   You may want to use "row_stats.pl -count" instead of this program!
@@ -70,4 +68,4 @@ Options:
  -t  or --title  (Default: do not print titles, just counts)
     Print the item title at the beginning of each line, then a tab, then the count of remaining items.
 
-Q: If you are using this program, have you considered using row_stats.pl -h 0 -count instead? Note that the output is slightly different due to headers!!!
+Q: If you are using this program, have you considered using row_stats.pl -h 0 -count instead? Note that the output is slightly different due to headers!
