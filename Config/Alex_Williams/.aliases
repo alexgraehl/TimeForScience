@@ -430,6 +430,7 @@ function googcom {
 
 function sciencecom {
     # If you want to NOT interact remotely (for example, this is the 'most upstream' repo with nothing to push to) then pass in NO_REMOTE as argument 2.
+    if [[ -f ~/.ssh/id_rsa_timeforscience ]]; then ssh-add ~/.ssh/id_rsa_timeforscience; fi
     if [[ ! -d "$1/.git" ]] ; then echo -e "[:HEY:] No $1 git repository exists on this machine."; return 1; fi
     if [[ "${2}" == "NO_REMOTE" ]]; then SHOULD_REMOTE=0; else SHOULD_REMOTE=1; fi
     #echo -e "[:FYI:] Committing GIT changes locally."
@@ -466,15 +467,15 @@ function science() {
     GD="${HOME}/GOOG/Alex_All_Projects"
     WSPRE="${HOME}/workspace/0_CODE"
     scienceboth "${HOME}/workspace/0_CODE" # sync these files before overwriting the local W_...Rmd ones
-    if [[ -d "${GD}" ]]; then
-	[[ -d "${WSPRE}" ]] || { echo "Failure! Missing expected directory: ${WSPRE}"; return 99; }
-	#find . -iname "W_*.Rmd" -o -iname "W_*.R"
-	for f in "${GD}"/[123][0-9][0-9][0-9]**/W_*.{Rmd,mak,R}; do
-	    echo "[:OK:] Copying some source files from Google Drive to the local git repo. We would prefer to symlink these, but that is impossible since Google Drive does not support symlinks."
-	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "[:OK:] ${f} --> ${h}...";
-	    \rsync -avz "${f}" "${h}"
-	done
-    fi
+    #if [[ -d "${GD}" ]]; then
+#	[[ -d "${WSPRE}" ]] || { echo "Failure! Missing expected directory: ${WSPRE}"; return 99; }
+#	#find . -iname "W_*.Rmd" -o -iname "W_*.R"
+#	for f in "${GD}"/[123][0-9][0-9][0-9]**/W_*.{Rmd,mak,R}; do
+#	    echo "[:OK:] Copying some source files from Google Drive to the local git repo. We would prefer to symlink these, but that is impossible since Google Drive does not support symlinks."
+#	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "[:OK:] ${f} --> ${h}...";
+#	    \rsync -avz "${f}" "${h}"
+#	done
+#    fi
     #WEBO="${HOME}/web"
     #
     #if [[ -d "${WEBO}" && -d "${WSPRE}" ]]; then
@@ -485,7 +486,7 @@ function science() {
     # ================== Done with this Google code stuff ==============
     scienceboth "${TIME_FOR_SCIENCE_DIR}"
     #scienceboth "${HOME}/workspace/git_0_CODE"
-    scienceboth "${HOME}/workspace/0_CODE" # Sync AGAIN after copying
+    #scienceboth "${HOME}/workspace/0_CODE" # Sync AGAIN after copying
 }
 
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
