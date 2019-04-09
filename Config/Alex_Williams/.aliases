@@ -1505,11 +1505,12 @@ alias cheat="echo \
 \">> MAKELOOP3:                 echo \\\$\\\$X; \\   \" ${NL}\
 \">> MAKELOOP4:         done < INFILE.txt;      \\   \" ${NL}\
 \">> MAKELOOP5:         true                         \" ${NL}\
+\">> MAKEFILE: set variables in rule:   \\\$(eval TMP := \\\$(shell mktemp -d))  and then try echo \\\$(TMP) \" ${NL}\
 \">> SHELL/BASH put a command into a variable with quotes and then execute it:  DEFINE: MYCMD=(perl -ne 'print 1;')   THEN:  gzcat FILE | \\\"{MYCMD[@]}\\\" \" ${NL}\
 \">> SHELL/BASH startup a 'fresh' shell with NO user configuration / clean startup / no .bashrc / no init:  env -i bash --norc --noprofile      \" ${NL}\
 \">> SHELL/BASH script header (2 lines): #!/bin/bash __NEWLINE__ set -euo -o pipefail; shopt -s nullglob; shopt -s globstar; set -o xtrace; \" ${NL}\
 \">> SHELL/BASH in MAKEFILE: In a Make rule, you can use a bash loop like so, with THREE slashes before a quote and SLASH-DOLLAR-DOLLAR instead of a dollar sign to access BASH variables. Example:  bash -c ${DQ}for fff in */*; do echo -e ${BS}${BS}${BS}${DQ}${BS}${DLR}${DLR}fff${BS}${BS}${BS}${DQ}; done; echo -e ${BS}${BS}${BS}${DQ}This goes in a makefile.${BS}${BS}${BS}${DQ}; ${DQ} \" ${NL}\
-\">> SHELL/BASH: Literal tab: \$'\\t' (example: join -t \$'\\t' to join on tabs) or \\\$(echo -en '\\t') . In MAKE: printf '\\t' \" ${NL}\
+\">> SHELL/BASH: Literal tab: \\\$'\\t' (example: join -t \$'\\t' to join on tabs) or \\\$(echo -en '\\t') . In MAKE: printf '\\t' \" ${NL}\
 \">> SHELL/BASH: Get directory of this script (fails if last item is a symlink): DIR_OF_SCRIPT=\\\"\\\$( cd \\\"\\\$(dirname \\\"\\\${BASH_SOURCE[0]}\\\" )\\\" && pwd )\\\" \" ${NL}\
 \">> SHELL/BASH: Foreach/rename: for f in \\\$${PAREN_OPEN}ls); do echo \\\$f will become \\\$${BRACKET_OPEN}f/.txt/.newending} ; done \" ${NL}\
 \">> SHELL/BASH: redirect STDERR & STDOUT both to console and to a file: THECMD 2>&1 | tee --append LOGFILE\" ${NL}\
