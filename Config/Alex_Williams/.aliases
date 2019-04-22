@@ -1590,6 +1590,7 @@ alias cheat="echo \
 \">> SQL/POSTGRES list databases: SELECT datname FROM pg_database WHERE datistemplate=FALSE;   \" ${NL}\
 \">> SQL/POSTGRES list databases, schemas and tables: SELECT table_schema,table_name  FROM information_schema.tables  ORDER BY table_schema,table_name;  \" ${NL}\
 \">> SQL/POSTGRES start (Mac): pg_ctl -D /usr/local/var/postgres start  \" ${NL}\
+\">> PYTHON/PANDAS sort pandas data frame in place by absolute value: DF.reindex(DF['your_value'].abs().sort_values(ascending=False).index)   \" ${NL}\
 \">> JUPYTER/PYTHON prevent auto-closing brackets/braces/parens: from notebook.services.config import ConfigManager  <NEWLINE>  c = ConfigManager()   <NEWLINE>      c.update('notebook', {'CodeCell': {'cm_config': {'autoCloseBrackets': False}}})   \" ${NL}\
 \">> JUPYTER/PYTHON prevent scrolling regions in plots. Put this in its own cell: %%javascript  <NEWLINE>   IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }   \" ${NL}\
 \">> JUPYTER/PYTHON/MATPLOTLIB/SNS change figure size plt.rcParams['figure.figsize'] = (WIDTH, HEIGHT)   and   plt.rcParams['figure.dpi'] = 250    \" ${NL}\
