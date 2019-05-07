@@ -1307,7 +1307,6 @@ alias cheat="echo \
 \">> Imagemagick convert PDF -> PNG w/antialias and downsample: convert -verbose -density 144 in.pdf +antialias out.png   (note: REQUIRES ghostscript (brew install gs) or it will crash)  Note that argument order is very important and may not be correct here. It is also very slow..\" ${NL}\
 \">> MP3: Convert m4a/ogg->mp3 for name in *.ogg; do ffmpeg -i \\\"\\\$name\\\" -ab 256k -map_metadata 0:s:0 \\\"Converted_\\\${name/.ogg/.mp3}\\\"; done; \" ${NL}\
 \" \" ${NL}\
-\">> RSYNC to amazon instance with an ssh key: rsync -avz -e \\\"ssh -i ~/pems/your_pem.pem\\\" LOCALFILE ec2-user@REMOTEINSTANCE.COM:  <-- DO NOT FORGET THE ':'!!! \" ${NL}\
 \">> Check directories for differences (by modification time): ionice -c3 rsync --dry-run --delete -vr /dirA /dirB \" ${NL}\
 \">> Find all .R files in a directory:   find ./ -name \\\"*.R\\\" -exec ls \'{}\' \\\; \" ${NL}\
 \">> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
@@ -1469,7 +1468,9 @@ alias cheat="echo \
 \">> UNIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
 \">> UNIX: Check Linux version: cat /etc/*-release \" ${NL}\
 \">> UNIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
+\">> RSYNC to amazon instance with an ssh key: rsync -avz -e \\\"ssh -i ~/pems/your_pem.pem\\\" LOCALFILE ec2-user@REMOTEINSTANCE.COM:  <-- DO NOT FORGET THE ':'!!! \" ${NL}\
 \">> RSYNC transfer files: rsync --dry-run -R -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
+\">> RSYNC local Mac preserve all permissions and copy Mac extended attributes EXACTLY with DELETING: sudo rsync --DANGER__delete_DANGER -a -H -A -X -v /SOURCE_DIR /Path/To/Your/Destination/DIR <-- double check the '/' parts \" ${NL}\
 \">> UNIX: Password FTP command line Xfer: wget -r ftp://USERNAME:password@ftp.some.site.com/Somefiles \" ${NL}\
 \">> UNIX/WGET/TRICKLE: Rate limit any command to 500kbps (-d = down, -u = up): sudo trickle -d 500 -u 500 ncftp 'your_ftp_site_here' \" ${NL}\
 \">> UNIX: See why Ubuntu wants to restart:  cat /var/run/reboot-required.pkgs \" ${NL}\
