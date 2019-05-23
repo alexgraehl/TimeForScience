@@ -1468,6 +1468,7 @@ alias cheat="echo \
 \">> UNIX: Find zombie processes: ps aux | awk '{ print \\\$8 \\\" \\\" \\\$2 }' | grep -w Z \" ${NL}\
 \">> UNIX: Check Linux version: cat /etc/*-release \" ${NL}\
 \">> UNIX: Set system time on Ubuntu: sudo ntpdate-debian \" ${NL}\
+\">> UNIX: Get system DATE only in ISO format on the Mac or UNIX: date \\\"+%Y-%m-%d\\\" \" ${NL}\
 \">> RSYNC to amazon instance with an ssh key: rsync -avz -e \\\"ssh -i ~/pems/your_pem.pem\\\" LOCALFILE ec2-user@REMOTEINSTANCE.COM:  <-- DO NOT FORGET THE ':'!!! \" ${NL}\
 \">> RSYNC transfer files: rsync --dry-run -R -havz --progress --stats --bwlimit=999999 LOCALFILES USER@REMOTE.COM:/path/to/  \" ${NL}\
 \">> RSYNC local Mac preserve all permissions and copy Mac extended attributes EXACTLY with DELETING: sudo rsync --DANGER__delete_DANGER -a -H -A -X -v /SOURCE_DIR /Path/To/Your/Destination/DIR <-- double check the '/' parts \" ${NL}\
