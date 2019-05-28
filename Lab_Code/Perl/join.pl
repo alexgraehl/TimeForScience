@@ -153,9 +153,8 @@ sub handleMultiJoin($$$$$$) {
 	my @keysInOrder           = ();
 	($mergeType =~ m/^(${UNION_STR}|${INTERSECT_STR}|${SETDIFF_STR})$/i) or die "Programming error: multi-intersection type must be '$INTERSECT_STR' or '$UNION_STR'! But it was this: $mergeType";
 	my $filenameHeaderDelim = "::"; # example:  "Filename1::headerCol1   Filename2::headerCol2"
-	my $pad_out_ragged_char = ""; # use this value to pad out "ragged" rows
 	my $no_match_char       = (defined($stringWhenNoMatch)) ? $stringWhenNoMatch : ""; # use a blank value if (global) $stringWhenNoMatch is not defined
-	my $definitely_must_print_if_no_match = (defined($stringWhenNoMatch)); # This happens if the user MANUALLY specifies "-ob" or "-o SOMETHING"
+	my $pad_out_ragged_char = ""; # use this value to pad out "ragged" rows
 	my %headHash = ();
 	my $is_intersection     = ($mergeType eq ${INTERSECT_STR});
 	my $is_union            = ($mergeType eq ${UNION_STR});
@@ -280,25 +279,22 @@ sub handleMultiJoin($$$$$$) {
 		my $key_has_succeeded = (($is_union) || ($is_intersection && $key_is_in_every_file) || ($is_setdiff && !$key_is_in_every_file));
 		#print "$k ------> every file? $key_is_in_every_file\n";
 		#print "$k ------> enough files? $key_has_succeeded\n";
+		die if !defined($no_match_char);
 		if ($key_has_succeeded) {
 			my $printableKey = get_key_accounting_for_case_sensitivity($shouldIgnoreCase, $k, %ocKeyHash);
+			die if !defined($printableKey);
 			my @outLine     = ($printableKey); # output line. starts with just the key and nothing else
 			foreach my $filename (@filesToCheckForPrinting) {
-				if (exists($datHash{$filename}{$k})) {
-					# This is padding INSIDE a single file, to make sure it has non-ragged rows
-					my $numElemsToPad = $longestLineInFileHash{$filename} - scalar(@{$datHash{$filename}{$k}});
-					push(@outLine, @{$datHash{$filename}{$k}}, ($pad_out_ragged_char)x$numElemsToPad);
+				if (exists($datHash{$filename}{$k})) { # Key is present
+					#print("[:OK :] [Key $k] was present in file [$filename]\n");
+					# This is padding for only the columns in a row from a single file, to make sure it has non-ragged rows
+					my $numElemsToPad = $longestLineInFileHash{$filename} - scalar(@{$datHash{$filename}{$k}}); # should we pad out any items for this specific file?
+					#              vvv THIS DATA vvv           vvv PADDING FOR THIS FILE'S COLUMNS vv
+					push(@outLine, @{$datHash{$filename}{$k}}, ($no_match_char)x$numElemsToPad);
 				} else {
-					# The other file DID NOT HAVE THIS KEY
-					#if ($definitely_must_print_if_no_match && $numElemsToPad == 0) {
-					#	if ($stringWhenNoMatch eq "") {
-					#		warn_once("WARNING: your '-ob' or other blank output is NOT going to do anything useful since the number of elements to pad is zero!");
-					#	} else {
-					#		warn_once("WARNING: modifiying so at least one element is padded!");
-					#		$numElemsToPad = 0;
-					#	}
-					#}
-					push(@outLine, ($stringWhenNoMatch)x$longestLineInFileHash{$filename});
+					#print("[:HEY:] [Key $k] was ABSENT from file [$filename] ******\n");
+					# The other file DID NOT HAVE THIS KEY at all
+					push(@outLine, ($no_match_char) x $longestLineInFileHash{$filename}); # The key was not present in this file at all, so the padding should be 
 				}
 			}
 			print join($outDelim, @outLine), "\n"; # <-- somehow this results in "uninitialized value" warning sometimes...
@@ -347,7 +343,7 @@ sub main() { # Main program
 	GetOptions("help|?|man" => sub { printUsageAndQuit(); }
 			   , "k=i" => \$keyBoth
 			   , "f=i" => sub { quitWithUsageError("-f is not an option to this script! If you want to specify field separators, use -d (delim). If you want to specify keys, use -1 and -2 to pick the key columns.\n"); }
-			   , "q" => sub { $verbose = 0; } # q = quiet
+			   , "q"   => sub { $verbose = 0; } # q = quiet
 			   , "1=s" => \$keyCol1
 			   , "2=s" => \$keyCol2
 			   , "d1=s" => \$delim1
