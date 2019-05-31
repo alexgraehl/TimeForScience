@@ -1442,6 +1442,7 @@ alias cheat="echo \
 \">> GIT: delete a REMOTE branch: git push origin --delete BRANCHNAME (not delete, surprisingly) \" ${NL}\
 \">> GIT: list files in a branch: git ls-tree -r -l BRANCHNAME \" ${NL}\
 \">> GIT: what changed between branches?: git diff --summary BRANCH1 BRANCH2 \" ${NL}\
+\">> GIT: what changed in ONE SPECIFIC FILE between branches?: git diff master -- fileX.py    coolbranch(optional)  ./fileX.py \" ${NL}\
 \">> GIT: GUI and 'when was a branch made from master': gitk --all --select-commit=\\\$(git merge-base YOURBRANCH master)  \" ${NL}\
 \">> GIT: when branch was last used (MINIMAL): for BRANCH in \\\$(git branch -r | grep -v 'HEAD'); do echo -e \\\$(git show --format='%ci %cr' \\\$BRANCH | head -n 1) \\\\\\\\t\\\$BRANCH; done | sort -r \" ${NL}\
 \">> GIT: when branch was last used AND last commit (fancy): git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \" ${NL}\
