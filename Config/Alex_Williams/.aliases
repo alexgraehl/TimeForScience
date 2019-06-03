@@ -1443,6 +1443,7 @@ alias cheat="echo \
 \">> GIT: list files in a branch: git ls-tree -r -l BRANCHNAME \" ${NL}\
 \">> GIT: what changed between branches?: git diff --summary BRANCH1 BRANCH2 \" ${NL}\
 \">> GIT: what changed in ONE SPECIFIC FILE between branches?: git diff master -- fileX.py    coolbranch(optional)  ./fileX.py \" ${NL}\
+\">> GIT: solve 'your branch is ahead of master: 1. See what is different: git diff master origin/master     If you seriously didn't make any changes that you want to keep in your local copy, then obliterate your local changes with: git reset --hard origin/master \" ${NL}\
 \">> GIT: GUI and 'when was a branch made from master': gitk --all --select-commit=\\\$(git merge-base YOURBRANCH master)  \" ${NL}\
 \">> GIT: when branch was last used (MINIMAL): for BRANCH in \\\$(git branch -r | grep -v 'HEAD'); do echo -e \\\$(git show --format='%ci %cr' \\\$BRANCH | head -n 1) \\\\\\\\t\\\$BRANCH; done | sort -r \" ${NL}\
 \">> GIT: when branch was last used AND last commit (fancy): git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \" ${NL}\
