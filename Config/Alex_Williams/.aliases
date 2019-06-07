@@ -414,6 +414,9 @@ alias grepc='grep   --color=always --with-filename --line-number'
 alias egrepc='egrep --color=always --with-filename --line-number'
 alias fgrepc='fgrep --color=always --with-filename --line-number'
 
+
+alias gitgrepall="git branch -a | tr -d \* | sed '/->/d' | xargs git grep" # greps ALL branches
+
 # git aliases
 alias gitcom="git commit -a -m 'Changes committed by ${USER}'"
 alias gitlist="git ls-tree -r master --name-only" # show currently tracked files
