@@ -33,6 +33,14 @@ else
     OUR_RM=rm
 fi
 
+if agw_cmd_exists "git" ; then
+    # Git aliases
+    git config --global alias.co checkout
+    git config --global alias.br branch
+    git config --global alias.ci commit
+    git config --global alias.st status
+fi
+
 echo -e "${a_echo_color}[:FYI:] Loading bash-aliases...${a_end_color}"
 
 CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR} ${HOME}/workspace/0_CODE" # <-- Multiple **space-delimited** directories can be here
