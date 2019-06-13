@@ -431,3 +431,4 @@ if [[ -f "${HOME}/bin/activate" ]]; then
     echo "[:OK:] .bashrc reporting: Activating virtualenv at ~/bin/activate"
     source "${HOME}/bin/activate"
 fi
+
