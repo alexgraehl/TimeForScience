@@ -424,6 +424,9 @@ alias fgrepc='fgrep --color=always --with-filename --line-number'
 
 
 alias gitgrepall="git branch -a | tr -d \* | sed '/->/d' | xargs git grep" # greps ALL branches
+function gitbranchall {
+    for branch in `git branch -r | grep -v HEAD`;do echo -e `git show --format="%ci %cr" $branch | head -n 1` \\t$branch; done | sort -r
+}
 
 # git aliases
 alias gitcom="git commit -a -m 'Changes committed by ${USER}'"
