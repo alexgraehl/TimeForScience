@@ -1448,6 +1448,7 @@ alias cheat="echo \
 \">> GIT: checkout file from other branch AND OVERWRITE LOCAL COPY:  echo 'overwriting local copy ' && git checkout OTHERBRANCH -- FILENAME \" ${NL}\
 \">> GIT: change the 'upstream' of your branch to a REMOTE upstream: git branch YOURLOCALBRANCH --set-upstream-to origin/SOME_OTHER_BRANCH   <-- the 'origin' part seems necessary to make the upstream the remote \" ${NL}\
 \">> GIT: do not download huge LFS files when git lfs is enabled: GIT_LFS_SKIP_SMUDGE=1 git clone YOUR_REPO \" ${NL}\
+\">> GIT: revise a commit that is ALREADY a pull request:  once you have your changes committed, send it upstream with --FORCE, with: git push -f origin HEAD:refs/heads/whatever_your_pull_request_branch_was  \" ${NL}\
 \">> GIT: only get the last 1 revision (faster): git clone --depth=1 https://your-site-here/something.git \" ${NL}\
 \">> GIT: discard/revert ALL local changes TO ALL FILES: DANGER >> git reset --hard origin/master << DANGER \" ${NL}\
 \">> GIT: discard/revert local changes to JUST ONE FILE: git checkout -- FILENAME_HERE \" ${NL}\
