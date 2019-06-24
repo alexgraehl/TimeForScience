@@ -1441,7 +1441,7 @@ alias cheat="echo \
 \">> MD5 on EACH LINE OF A FILE (Perl) (note: WITHOUT the newline): cat YOURFILE | perl -e 'use Digest::MD5 qw(md5_hex); while(my \\\$line=<>){ chomp(\\\$line); print(md5_hex(\\\$line).qq{\n}); }'    \" ${NL}\
 \">> MD5 verify: md5sum -c md5*.txt. Checksum must be 1st col, then 2 spaces, then filename. If checksum is 2nd: cat md5*.txt | awk '{print \\\$2\\\"  \\\"\\\$1}' | md5sum -c \" ${NL}\
 \">> MD5 on multiple files: find . -type f -exec md5 {} \; > list.txt    \" ${NL}\
-\">> HEX HEXDUMP: View bytes in hex form / hex editor: hexdump -C FILENAME   (or use colorized command-line viewer 'hexyl' on the Mac (brew install hexyl)) \" ${NL}\
+\">> HEX HEXDUMP: View bytes in hex form / hex editor: hexdump -v -C FILENAME (the '-v' prevents 'squeezing' of contiguous NULL bytes)  (or use colorized command-line viewer 'hexyl -v' or 'hex on the Mac (brew install hexyl)) \" ${NL}\
 \">> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
 \">> AWK: Get only FIRST line with a unique occurrence in column 1. Does not require sorting: cat FILE | awk -F'\\t' '!_[\\\$1]++' (assumes separator is tab) \" ${NL}\
 \">> AWK FILTER based on numeric value (like select.pl): filter based on a number: cat test | awk '{ if (\\\$1 >= 900 && \\\$1 > 0) print; }' \" ${NL}\
