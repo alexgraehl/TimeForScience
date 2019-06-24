@@ -1293,13 +1293,13 @@ alias cheat="echo \
 \">> RAM/Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
 \">> MAC: what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
 \">> MAC: lock a file, for example to prevent Dropbox from replacing a custom icon: chflags uchg ~/Dropbox/Icon\\\$'\\r'  (use nouchg to unlock a file)\" ${NL}\
-\">> Mac disk: specific file I/O: fs_usage <programname> \" ${NL}\
-\">> Mac disk: filesystem I/O:    fs_usage -w | grep -v '0\\.0'  \" ${NL}\
-\">> Mac set startup disk: sudo bless -mount /Volumes/YOURDISK -setBoot \" ${NL}\
+\">> MAC disk: specific file I/O: fs_usage <programname> \" ${NL}\
+\">> MAC disk: filesystem I/O:    fs_usage -w | grep -v '0\\.0'  \" ${NL}\
+\">> MAC set startup disk: sudo bless -mount /Volumes/YOURDISK -setBoot \" ${NL}\
 \">> MAC: show weird file flags: ls -l -@ \" ${NL}\
 \">> MAC: rebuild spotlight for the boot drive only: sudo mdutil -E / \" ${NL}\
-\">> Mac Time Machine: exclude/check: tmutil isexcluded/tmutil addexclusion (-p) PATH \" ${NL}\
-\">> Mac Time Machine: delete backups: tmutil delete /Volumes/DISK/Backups.backupdb/COMPNAME/ \" ${NL}\
+\">> MAC Time Machine: exclude/check: tmutil isexcluded/tmutil addexclusion (-p) PATH \" ${NL}\
+\">> MAC Time Machine: delete backups: tmutil delete /Volumes/DISK/Backups.backupdb/COMPNAME/ \" ${NL}\
 \">> MAC: recursively clear worthless quarantine flags: xattr -r -d com.apple.quarantine FILENAME \" ${NL}\
 \">> MAC: delete impossible-to-delete files find FILE -flags schg -exec chflags noschg {} \\; \" ${NL}\
 \">> MAC: show library: chflags nohidden ~/Library/ \" ${NL}\
@@ -1310,7 +1310,7 @@ alias cheat="echo \
 \">> MAC: No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
 \">> MAC: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
 \">> MAC: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
-\">> Mac/cron : edit crontab cron.tab with emacs: env EDITOR=emacs crontab -e \" ${NL}\
+\">> CRON : edit crontab cron.tab with emacs: env EDITOR=emacs crontab -e \" ${NL}\
 \">> Delayed sudo: sudo sh -c \\\"(sleep 3600; do your command here )\\\" \" ${NL}\
 \">> Display image in ASCII on the command line: 'tiv' IMAGENAME \" ${NL}\
 \">> Image SIPS: PNG -> JPEG: mkdir outjpegs; sips -s format jpeg *.png --out outjpegs \" ${NL}\
@@ -1442,6 +1442,7 @@ alias cheat="echo \
 \">> MD5 verify: md5sum -c md5*.txt. Checksum must be 1st col, then 2 spaces, then filename. If checksum is 2nd: cat md5*.txt | awk '{print \\\$2\\\"  \\\"\\\$1}' | md5sum -c \" ${NL}\
 \">> MD5 on multiple files: find . -type f -exec md5 {} \; > list.txt    \" ${NL}\
 \">> HEX HEXDUMP: View bytes in hex form / hex editor: hexdump -v -C FILENAME (the '-v' prevents 'squeezing' of contiguous NULL bytes)  (or use colorized command-line viewer 'hexyl -v' or 'hex on the Mac (brew install hexyl)) \" ${NL}\
+\">> UNIX detect null bytes at the start of a file: for x in *; do echo -e -n \\\"\\\$x\\t\\\" ; od -v \\\$x | head -n 1 ; done | less -S  (you can grep for '000000 000000 (etc)' in the output  \" ${NL}\
 \">> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
 \">> AWK: Get only FIRST line with a unique occurrence in column 1. Does not require sorting: cat FILE | awk -F'\\t' '!_[\\\$1]++' (assumes separator is tab) \" ${NL}\
 \">> AWK FILTER based on numeric value (like select.pl): filter based on a number: cat test | awk '{ if (\\\$1 >= 900 && \\\$1 > 0) print; }' \" ${NL}\
