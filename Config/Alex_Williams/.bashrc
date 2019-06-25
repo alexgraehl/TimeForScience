@@ -14,7 +14,7 @@
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc) for examples
 # This site also has some useful commands: https://github.com/mrzool/bash-sensible/blob/master/sensible.bash
 
-# ============= Set up things below ONLY if this shell is interactive ===============
+# ~~~~~~~~~~~~ Set up things below ONLY if this shell is interactive ~~~~~~~
 
 function agw_cmd_exists() { # Check if a command exists
     type "$1" &> /dev/null
@@ -52,7 +52,7 @@ esac
 [[ -n "${TMUX}" ]] && [[ "${color_prompt}" == 1 ]] && export TERM=screen-256color
 if [[ "${OSTYPE}" == darwin* ]] ; then isMac="1" ; fi
 
-# ============= See what the Mac (if it is one) thinks the computer's name is. This is the setting in the Sharing preference pane. ===
+# ~~~~~~~~~~~~~~~~~ See what the Mac (if it is one) thinks the computer's name is. This is the setting in the Sharing preference pane. ~~~~~~~~
 if agw_cmd_exists "scutil"; then
     export MAC_SHARING_NAME=$(scutil --get ComputerName)
 else
@@ -67,7 +67,7 @@ else
     export COMPYNAME="$HOSTNAME"
     export COMPYSHORT="$COMPYNAME"
 fi
-# =============
+
 
 BLACK=$(tput setaf 0)
 RED=$(tput setaf 1)
@@ -105,6 +105,7 @@ if [[ -n "$color_prompt" ]] ; then
     a_darkgray="${cpre}[38m"
 
     # ######################
+
     
     a_red_bold="${cpre}[1;31m"
     a_green_bold="${cpre}[1;32m"
@@ -165,7 +166,7 @@ elif [[ -f ${BINF_CORE_WORK_DIR}/Code/TimeForScience/Config/Alex_Williams/.alias
 fi
 
 
-# ============================= PATH STUFF ============================
+# ~~~~~~~~~~~~~~~~~~ PATH ~~~~~~~~~~~~~~~~~~
 export MYPERLDIR=${TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl/
 
 MINICONDA_BIN="${HOME}/miniconda3/bin"
@@ -200,7 +201,7 @@ bind "set completion-ignore-case on"     # Perform file completion in a case ins
 bind "set completion-map-case on"        # Treat hyphens and underscores as equivalent
 bind "set show-all-if-ambiguous on"      # Display matches for ambiguous patterns at first tab press
 
-# =========================== TERMINAL HISTORY =========================
+# ~~~~~~~~~~~~~~~~~~~~ TERMINAL HISTORY ~~~~~~~~~~~~~~~~~~~~~
 export HISTSIZE=500000 # num lines WHEN READING A NEW SESSION
 export HISTFILESIZE=500000 # num lines ON DISK
 export HISTCONTROL="ignoredups" # do not put 'erasedups' in unless you like annoyance
@@ -211,7 +212,7 @@ shopt -s histappend # Save terminal history between sessions
 shopt -s cmdhist ## Save multi-line pasted commands into one single history command
 # Save and reload the history after each command finishes
 export PROMPT_COMMAND="history -a; history -c; history -r; $PROMPT_COMMAND"
-# =========================== TERMINAL HISTORY =========================
+
 
 highlight_text() { # prints colored text apparently. One argument, which is the color setting. 1 = red, 2 = green... etc
     if [ -x /usr/bin/tput ]; then tput bold; tput setaf $1; fi
@@ -233,8 +234,7 @@ print_if_nonzero_exit_code() { # Example of using this in your prompt: PS1='$(hi
 #     git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/[\1]/'
 #}
 #RIGNODE_HOSTNAME=${RIGNODE_HOSTNAME:-no_rignode_hostname} # bash, assign a DEFAULT value if the argument is not defined
-# ============ Start of code block from http://ezprompt.net/ =====
-# ===================================
+# ~~~~~~~~~~ Start of code block from http://ezprompt.net/ ~~~~~~~~~
 function nonzero_return() {
     RETVAL=$?
     #echo "hello $? $RETVAL ${?#0}"
@@ -298,6 +298,23 @@ function parse_git_dirty {
 #export PS1="\$(print_if_nonzero_exit_code)\n[\D{%e}~\t~${COMPYNAME:0:3}~\W]$ " ## ${HOSTNAME:0:3} means only show the first 3 characters of the hostname! "\h" is the whole thing, also.
 # Note: requires a "\n" after the "print_if_nonzero" or else Ctrl-A / Ctrl-E gets messed up when pasting
 
+a_red_bg_ps1="\[\e[33;41m\]"
+a_yellow_bg_ps1="\[\e[31;43m\]"
+a_blue_bg_ps1="\[\e[36;44m\]"
+
+COMPCOL="\[\e[37;44m\]"
+ENDCOL="\[\e[m\]"
+
+if [[ "${AFRESH__ENV}" == 'development' ]]; then
+    ENVTEXT="${a_blue_bg_ps1}[DEV]${ENDCOL}"
+elif [[ "${AFRESH__ENV}" == 'staging' ]]; then
+    ENVTEXT="${a_yellow_bg_ps1}[++STAGING++]${ENDCOL}"
+elif [[ "${AFRESH__ENV}" == 'production' ]]; then
+    ENVTEXT="${a_red_bg_ps1}[**PRODUCTION***]${ENDCOL}"
+else
+    ENVTEXT=""
+fi
+
 case "$COMPYNAME"
 in
     zzz*|*GYFH|Mac*|Slithereens|Capsid)
@@ -307,11 +324,12 @@ in
 	;;
     *) ## Otherwise...
 	# 37;44m is white on blue
-	export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;41m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]${COMPYSHORT}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
+	#export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;41m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]${COMPYSHORT}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
+	export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;41m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[${COMPCOL}${COMPYSHORT}${ENDCOL}\[\e[44m\]] ${ENVTEXT}\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
 	;;
 esac
 
-# ============ End of code block from http://ezprompt.net/ =====
+# ~~~~~~~~~~~~~~~~ End of code block from http://ezprompt.net/ ~~~~~~~~~~~~~~~
 
 #if [[ -n "$SSH_CLIENT" || -n "$SSH2_CLIENT" ]] ; then is_sshing=1 ; fi   ## We are connected via SSH or SSH2... ## $SSH_CLIENT and $SSH2_CLIENT are set automatically by SSH.
 #if [[ -n "$color_prompt" ]] ; then
@@ -389,7 +407,7 @@ umask u=rwx,g=rwx,o=rx # <-- give users and groups full access to files I create
 # export documents="${HOME}/Documents"
 # export dropbox="${HOME}/Dropbox"
 
-# ==============================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # From here: https://gist.github.com/pablete/5871811
 # Changing iTerm2 color in MacOSX when SSHing (so you know at a glance that you're no longer in Kansas)
 # Adapted from https://gist.github.com/porras/5856906
