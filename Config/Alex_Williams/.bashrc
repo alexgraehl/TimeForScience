@@ -1,5 +1,8 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 #
+
+# https://www.shellcheck.net/
+
 [[ -z "$PS1" ]] && return # <-- If not running interactively, don't
 # do anything. Printing any output breaks ssh and various things.
 # This is why this line is important at the very top!
@@ -424,7 +427,7 @@ function tabc() {
 
 function colorssh() {
   tabc SSH
-  ssh $*
+  ssh "$*"
   tabc
 }
 
@@ -434,9 +437,8 @@ alias ssh="colorssh"
 # (per project, production, staging, etc.)
 
 if [[ ! "${isMac}" == "1" ]]; then
-    # Only do this on not-a-mac
-    __bp_interactive_mode # <-- only run in order to get its exit status
-    if [[ "$?" == "0" ]]; then
+    # Only do this if we are NOT on a Mac!
+    if __bp_interactive_mode; then # <-- only run __bp_interactive_mode order to check that its exit status is ZERO
 	echo -n ''
 	# no problems
     else
