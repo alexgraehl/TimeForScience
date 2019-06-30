@@ -1251,6 +1251,14 @@ function posterr() {
     echo "select * from stl_load_errors order by starttime desc;"
 }
 
+function bb() {
+    open -a "/Applications/BBEdit.app" "$@"
+}
+
+function vs() {
+    open -a "/Applications/Visual Studio Code.app/" "$@"
+}
+
 function gitstory() {
     if [[ "$#" != 1 ]] ; then
 	echo -e "[:ERR:] You must specify EXACTLY ONE filename."; return;
