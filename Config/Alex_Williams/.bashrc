@@ -431,7 +431,7 @@ function colorssh() {
   tabc
 }
 
-alias ssh="colorssh"
+#alias ssh="colorssh"
 # This would be easy to extend to check if a theme with the name of the server exists and set it, and
 # fall back to the SSH theme. This way you can have different colors for different remote environments
 # (per project, production, staging, etc.)
