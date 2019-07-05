@@ -1621,6 +1621,7 @@ alias cheat="echo \
 \">> SQL/POSTGRES list databases: SELECT datname FROM pg_database WHERE datistemplate=FALSE;   \" ${NL}\
 \">> SQL/POSTGRES list databases, schemas and tables: SELECT table_schema,table_name  FROM information_schema.tables  ORDER BY table_schema,table_name;  \" ${NL}\
 \">> SQL/POSTGRES count records grouped by month and year:   SELECT EXTRACT(YEAR from the_date) as YYYY, EXTRACT(MONTH from the_date) as MM, count(*) as count FROM YOUR_DATA WHERE 1=1 group by EXTRACT(MONTH from date), EXTRACT(YEAR from date) ORDER BY YYYY asc, MM asc; \" ${NL}\
+\">> PYTHON/PANDAS need to access the INDEX columns in a pandas dataframe? Here's the super elegant and not overly verbose way:  forecast_init_df.index.get_level_values('ds')  \" ${NL}\
 \">> PYTHON/PANDAS sort pandas data frame in place by absolute value: DF.reindex(DF['your_value'].abs().sort_values(ascending=False).index)   \" ${NL}\
 \">> JUPYTER/PYTHON output to HTML just like you see it on screen:   jupyter nbconvert --output-dir=~/Desktop/ --to 'html' --execute YOUR_NOTEBOOK_NAME_HERE.ipynb  \" ${NL}\
 \">> JUPYTER/PYTHON prevent auto-closing brackets/braces/parens: from notebook.services.config import ConfigManager  <NEWLINE>  c = ConfigManager()   <NEWLINE>      c.update('notebook', {'CodeCell': {'cm_config': {'autoCloseBrackets': False}}})   \" ${NL}\
