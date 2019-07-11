@@ -1467,6 +1467,7 @@ alias cheat="echo \
 \">> GIT: see old version of file (example: ~4 = 4 revisons ago): git show HEAD~4:./some_file.txt \" ${NL}\
 \">> GIT: delete a REMOTE branch: git push origin --delete BRANCHNAME (not delete, surprisingly) \" ${NL}\
 \">> GIT: list files in a branch: git ls-tree -r -l BRANCHNAME \" ${NL}\
+\">> GIT: rebase with MY files, overwriting the merge conflicts: git checkout --ours /path/to/my/conflicting/dir/or/file/ \" ${NL}\
 \">> GIT: what changed between branches?: git diff --name-only BRANCH1 BRANCH2  (do not confuse this with --summary, which ONLY shows added/deleted files) \" ${NL}\
 \">> GIT: what changed in ONE SPECIFIC FILE between branches?: git diff master -- fileX.py    coolbranch(optional)  ./fileX.py \" ${NL}\
 \">> GIT: solve 'your branch is ahead of master: 1. See what is different: git diff master origin/master     If you seriously didn't make any changes that you want to keep in your local copy, then obliterate your local changes with: git reset --hard origin/master \" ${NL}\
