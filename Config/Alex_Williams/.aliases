@@ -1317,6 +1317,7 @@ alias cheat="echo \
 \">> FIND: delete files when argument list too long: find . -iname '*whatever*' -delete \" ${NL}\
 \">> MAC: No quarantine warn  : defaults write com.apple.LaunchServices LSQuarantine -bool NO \" ${NL}\
 \">> MAC: check code signing: codesign -vvv /Applications/iTunes.app \" ${NL}\
+\">> MAC: what is connected over ethernet locally, by Internet Sharing? arp -i en1 -a \" ${NL}\
 \">> MAC: No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
 \">> MAC: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
 \">> MAC: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
