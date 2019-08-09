@@ -66,11 +66,13 @@ if [[ "${MAC_SHARING_NAME}" == "Slithereens" || "${MAC_SHARING_NAME}" == "Capsid
     export isAgwHomeMachine=1
     export COMPYNAME="Mac"
     export COMPYSHORT="Mac"
+elif [[ "${MAC_SHARING_NAME}" =~ ^[Gg]host.* ]]; then # no quotation marks!
+     export COMPYNAME="Ghost"
+     export COMPYSHORT="Gho"
 else
     export COMPYNAME="$HOSTNAME"
     export COMPYSHORT="$COMPYNAME"
 fi
-
 
 BLACK=$(tput setaf 0)
 RED=$(tput setaf 1)
@@ -308,27 +310,47 @@ a_blue_bg_ps1="\[\e[36;44m\]"
 COMPCOL="\[\e[37;44m\]"
 ENDCOL="\[\e[m\]"
 
+test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash" # loads 'it2setcolor' and others
+
 if [[ "${AFRESH__ENV}" == 'development' ]]; then
-    ENVTEXT="${a_blue_bg_ps1}[DEV]${ENDCOL}"
+    ENVTEXT="${ENDCOL} ${a_blue_bg_ps1}[DEV]${ENDCOL}"
+    if agw_cmd_exists "it2setcolor"; then
+	it2setcolor bg 000000  # Set iterm2 background/foreground colors
+	it2setcolor fg FFFFFF
+    fi
 elif [[ "${AFRESH__ENV}" == 'staging' ]]; then
-    ENVTEXT="${a_yellow_bg_ps1}[++STAGING++]${ENDCOL}"
+    ENVTEXT="${ENDCOL} ${a_yellow_bg_ps1}[++STAGING++]${ENDCOL}"
+    if agw_cmd_exists "it2setcolor"; then
+	it2setcolor bg 442200  # Set iterm2 background/foreground colors
+	it2setcolor fg FFFFFF  # white
+    fi
 elif [[ "${AFRESH__ENV}" == 'production' ]]; then
-    ENVTEXT="${a_red_bg_ps1}[**PRODUCTION***]${ENDCOL}"
+    ENVTEXT="${ENDCOL} ${a_red_bg_ps1}[**PRODUCTION***]${ENDCOL}"
+        if agw_cmd_exists "it2setcolor"; then
+	it2setcolor bg 660000  # Set iterm2 background/foreground colors
+	it2setcolor fg FFBBFF  # white
+    fi
 else
     ENVTEXT=""
 fi
 
 case "$COMPYNAME"
 in
-    zzz*|*GYFH|Mac*|Slithereens|Capsid)
+    #zzz*|*GYFH|Mac*|Slithereens|Capsid)
 	# 37;41m is white on a GREEN (42) background. Red would be ;41m
-	export PS1="\[\e[37;42m\]\t\[\e[m\]\[\e[37;41m\]\`parse_git_branch\`\[\e[m\]\[\e[42m\][\[\e[m\]\[\e[37;42m\]${COMPYSHORT}\[\e[m\]\[\e[42m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
+	#export PS1="\[\e[37;42m\]\t\[\e[m\]\[\e[37;41m\]\`parse_git_branch\`\[\e[m\]\[\e[42m\][\[\e[m\]\[\e[37;42m\]${COMPYSHORT}\[\e[m\]\[\e[42m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
 	#export PS1="${PRE_PS1}\[${POWDER_BLUE}\].mac\$\[${NORMAL}\] " # we are on a mac laptop probably
-	;;
+#	;;
     *) ## Otherwise...
 	# 37;44m is white on blue
 	#export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;41m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]${COMPYSHORT}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
-	export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;41m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[${COMPCOL}${COMPYSHORT}${ENDCOL}\[\e[44m\]] ${ENVTEXT}\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
+	export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;41m\]\
+\`parse_git_branch\`\
+\[\e[m\]\[\e[44m\][\[\e[m\]\[${COMPCOL}${COMPYSHORT}${ENDCOL}\
+\[\e[44m\]]\
+$ENVTEXT\
+\[\e[m\]\[\e[33;45m\]\
+\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
 	;;
 esac
 
@@ -451,4 +473,5 @@ if [[ -f "${HOME}/bin/activate" ]]; then
     echo "[:OK:] .bashrc reporting: Activating virtualenv at ~/bin/activate"
     source "${HOME}/bin/activate"
 fi
+
 
