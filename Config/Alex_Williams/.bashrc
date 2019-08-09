@@ -348,7 +348,7 @@ in
 \`parse_git_branch\`\
 \[\e[m\]\[\e[44m\][\[\e[m\]\[${COMPCOL}${COMPYSHORT}${ENDCOL}\
 \[\e[44m\]]\
-$ENVTEXT\
+${ENVTEXT}\
 \[\e[m\]\[\e[33;45m\]\
 \`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
 	;;
