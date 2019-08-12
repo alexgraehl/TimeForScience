@@ -1610,6 +1610,7 @@ alias cheat="echo \
 \">> MAC: why isn't the screensaver working: pmset -g (see 'sleep' in there), then pmset -g assertions \" ${NL}\
 \">> MAC: Image type convert: mkdir -p PNGS_TO_JPEG; sips -s format jpeg *.png --out PNGS_TO_JPEG \" ${NL}\
 \">> GIT merge but keep LOCAL changes and not the remote ones: git pull PARENT_BRANCHNAME -Xours  or  git merge PARENT_BRANCHNAME --strategy-option ours \" ${NL}\
+\">> GIT interactively merge ONE FILE ONLY: git checkout --patch origin/master PATH/TO/YOUR/FILE.TXT  \" ${NL}\
 \">> GITHUB solve 'Your push would publish a private email address': git config --global user.email 'YOURGITHUB_USERNAME_GOES_HERE@users.noreply.github.com'; git commit --amend --reset-author; git push ; (and make sure you don't have a .git/config that overrides this setting)\" ${NL}\
 \">> UNIX COPROC: coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ${NL}\
 \">> LINES: RANDOM subset (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'print if (rand() < 0.5);' theFile.txt \" ${NL}\
