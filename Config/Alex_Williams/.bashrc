@@ -110,8 +110,6 @@ if [[ -n "$color_prompt" ]] ; then
     a_darkgray="${cpre}[38m"
 
     # ######################
-
-    
     a_red_bold="${cpre}[1;31m"
     a_green_bold="${cpre}[1;32m"
     a_yellow_bold="${cpre}[1;33m"
@@ -308,32 +306,58 @@ a_yellow_bg_ps1="\[\e[31;43m\]"
 a_blue_bg_ps1="\[\e[36;44m\]"
 
 COMPCOL="\[\e[37;44m\]"
-ENDCOL="\[\e[m\]"
+#ENDCOL="\[\e[m\]"
+ENDCOL="\e[0m"
 
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash" # loads 'it2setcolor' and others
 
-if [[ "${AFRESH__ENV}" == 'development' ]]; then
-    ENVTEXT="${ENDCOL} ${a_blue_bg_ps1}[DEV]${ENDCOL}"
-    if agw_cmd_exists "it2setcolor"; then
-	it2setcolor bg 000000  # Set iterm2 background/foreground colors
-	it2setcolor fg FFFFFF
-    fi
-elif [[ "${AFRESH__ENV}" == 'staging' ]]; then
-    ENVTEXT="${ENDCOL} ${a_yellow_bg_ps1}[++STAGING++]${ENDCOL}"
-    if agw_cmd_exists "it2setcolor"; then
-	it2setcolor bg 442200  # Set iterm2 background/foreground colors
-	it2setcolor fg FFFFFF  # white
-    fi
-elif [[ "${AFRESH__ENV}" == 'production' ]]; then
-    ENVTEXT="${ENDCOL} ${a_red_bg_ps1}[**PRODUCTION***]${ENDCOL}"
-        if agw_cmd_exists "it2setcolor"; then
-	it2setcolor bg 660000  # Set iterm2 background/foreground colors
-	it2setcolor fg FFBBFF  # white
-    fi
+if [[ "${AFRESH__CLOUD_PROVIDER}" == 'azure' ]]; then
+   if [[ "${AFRESH__ENV}" == 'development' ]]; then
+       ENVTEXT="${ENDCOL} ${a_blue}[DEV AZ]${ENDCOL}"
+       if agw_cmd_exists "it2setcolor"; then
+	   it2setcolor bg 000000  # Set iterm2 background/foreground colors
+	   it2setcolor fg FFFFFF
+       fi
+   elif [[ "${AFRESH__ENV}" == 'staging' ]]; then
+       ENVTEXT="${ENDCOL} ${a_yellow}[++STAGE AZ++]${ENDCOL}"
+       if agw_cmd_exists "it2setcolor"; then
+	   it2setcolor bg 442200  # Set iterm2 background/foreground colors
+	   it2setcolor fg FFFFFF  # white
+       fi
+   elif [[ "${AFRESH__ENV}" == 'production' ]]; then
+       ENVTEXT="${ENDCOL} ${a_red}[**PROD AZ***]${ENDCOL}"
+       if agw_cmd_exists "it2setcolor"; then
+	   it2setcolor bg 660000  # Set iterm2 background/foreground colors
+	   it2setcolor fg FFBBFF  # white
+       fi
+   else
+       ENVTEXT=""
+   fi
+   
 else
-    ENVTEXT=""
+    if [[ "${AFRESH__ENV}" == 'development' ]]; then
+       ENVTEXT="${ENDCOL} ${a_green}[DEV AWS]${ENDCOL}"
+       if agw_cmd_exists "it2setcolor"; then
+	   it2setcolor bg 000033  # Set iterm2 background/foreground colors
+	   it2setcolor fg FFFFFF
+       fi
+   elif [[ "${AFRESH__ENV}" == 'staging' ]]; then
+       ENVTEXT="${ENDCOL} ${a_yellow}[++STAGE AWS++]${ENDCOL}"
+       if agw_cmd_exists "it2setcolor"; then
+	   it2setcolor bg 664400  # Set iterm2 background/foreground colors
+	   it2setcolor fg FFFFFF  # white
+       fi
+   elif [[ "${AFRESH__ENV}" == 'production' ]]; then
+       ENVTEXT="${ENDCOL} ${a_magenta}[**PROD AWS***]${ENDCOL}"
+       if agw_cmd_exists "it2setcolor"; then
+	   it2setcolor bg 660066  # Set iterm2 background/foreground colors
+	   it2setcolor fg FFBBFF  # pink
+       fi
+   else
+       ENVTEXT=""
+   fi
 fi
-
+   
 case "$COMPYNAME"
 in
     #zzz*|*GYFH|Mac*|Slithereens|Capsid)
