@@ -307,25 +307,25 @@ a_blue_bg_ps1="\[\e[36;44m\]"
 
 COMPCOL="\[\e[37;44m\]"
 #ENDCOL="\[\e[m\]"
-ENDCOL="\e[0m"
+#ENDCOL_ECHO="\e[0m"
 
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash" # loads 'it2setcolor' and others
 
 if [[ "${AFRESH__CLOUD_PROVIDER}" == 'azure' ]]; then
    if [[ "${AFRESH__ENV}" == 'development' ]]; then
-       ENVTEXT="${ENDCOL} ${a_blue}[DEV AZ]${ENDCOL}"
+       ENVTEXT="${a_end_color} ${a_blue}[DEV AZ]${a_end_color}"
        if agw_cmd_exists "it2setcolor"; then
 	   it2setcolor bg 000000  # Set iterm2 background/foreground colors
 	   it2setcolor fg FFFFFF
        fi
    elif [[ "${AFRESH__ENV}" == 'staging' ]]; then
-       ENVTEXT="${ENDCOL} ${a_yellow}[++STAGE AZ++]${ENDCOL}"
+       ENVTEXT="${a_end_color} ${a_yellow}[++STAGE AZ++]${a_end_color}"
        if agw_cmd_exists "it2setcolor"; then
 	   it2setcolor bg 442200  # Set iterm2 background/foreground colors
 	   it2setcolor fg FFFFFF  # white
        fi
    elif [[ "${AFRESH__ENV}" == 'production' ]]; then
-       ENVTEXT="${ENDCOL} ${a_red}[**PROD AZ***]${ENDCOL}"
+       ENVTEXT="${a_end_color} ${a_red}[**PROD AZ***]${a_end_color}"
        if agw_cmd_exists "it2setcolor"; then
 	   it2setcolor bg 660000  # Set iterm2 background/foreground colors
 	   it2setcolor fg FFBBFF  # white
@@ -336,19 +336,19 @@ if [[ "${AFRESH__CLOUD_PROVIDER}" == 'azure' ]]; then
    
 else
     if [[ "${AFRESH__ENV}" == 'development' ]]; then
-       ENVTEXT="${ENDCOL} ${a_green}[DEV AWS]${ENDCOL}"
+       ENVTEXT="${a_end_color} ${a_green}[DEV AWS]${a_end_color}"
        if agw_cmd_exists "it2setcolor"; then
 	   it2setcolor bg 000033  # Set iterm2 background/foreground colors
 	   it2setcolor fg FFFFFF
        fi
    elif [[ "${AFRESH__ENV}" == 'staging' ]]; then
-       ENVTEXT="${ENDCOL} ${a_yellow}[++STAGE AWS++]${ENDCOL}"
+       ENVTEXT="${a_end_color} ${a_yellow}[++STAGE AWS++]${a_end_color}"
        if agw_cmd_exists "it2setcolor"; then
 	   it2setcolor bg 664400  # Set iterm2 background/foreground colors
 	   it2setcolor fg FFFFFF  # white
        fi
    elif [[ "${AFRESH__ENV}" == 'production' ]]; then
-       ENVTEXT="${ENDCOL} ${a_magenta}[**PROD AWS***]${ENDCOL}"
+       ENVTEXT="${a_end_color} ${a_magenta}[**PROD AWS***]${a_end_color}"
        if agw_cmd_exists "it2setcolor"; then
 	   it2setcolor bg 660066  # Set iterm2 background/foreground colors
 	   it2setcolor fg FFBBFF  # pink
@@ -370,7 +370,7 @@ in
 	#export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;41m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]${COMPYSHORT}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
 	export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;41m\]\
 \`parse_git_branch\`\
-\[\e[m\]\[\e[44m\][\[\e[m\]\[${COMPCOL}${COMPYSHORT}${ENDCOL}\
+\[\e[m\]\[\e[44m\][\[\e[m\]\[${COMPCOL}${COMPYSHORT}${a_end_color}\
 \[\e[44m\]]\
 ${ENVTEXT}\
 \[\e[m\]\[\e[33;45m\]\
