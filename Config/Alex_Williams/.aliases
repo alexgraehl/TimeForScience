@@ -1625,6 +1625,7 @@ alias cheat="echo \
 \">> SQL/PSQL/POSTGRES: Get a single value on the command line: 1. make sure to set your ~/.pgpass to put your password in, so you don't have to type it, and then: psql -q -t -A -X -h SERVERHERE -U USERHERE -d DBNAME -p PORTNUMBER -c 'select count(*) from sometable;' \" ${NL}\
 \">> SQL/POSTGRES Amazon Redshift show DATA LOADING errors: BEST SIMPLE WAY: select * from stl_load_errors e order by starttime desc;       Maybe try this to only get the MOST RECENT query:   SELECT * FROM stl_load_errors WHERE query IN (select max(query) from stl_load_errors) ORDER BY starttime DESC limit 99;
      More complex way that sometimes does not show everything: select d.*,e.* from stl_load_errors e, stl_loaderror_detail d where d.query = e.query order by starttime desc;\" ${NL}\
+\">> SQL/POSTGRES date to human-readable DOW / day of week (does NOT work with text, you must cast it to ::date): TO_CHAR(yourdate, 'day');   \" ${NL}\
 \">> SQL/POSTGRES get SECOND highest (Nth item) item in a column (memory-inefficient): SELECT  (ARRAY_AGG(colname ORDER_BY colname DESC))[2] FROM yourtable;   \" ${NL}\
 \">> SQL/POSTGRES list databases: SELECT datname FROM pg_database WHERE datistemplate=FALSE;   \" ${NL}\
 \">> SQL/POSTGRES list databases, schemas and tables: SELECT table_schema,table_name  FROM information_schema.tables  ORDER BY table_schema,table_name;  \" ${NL}\
