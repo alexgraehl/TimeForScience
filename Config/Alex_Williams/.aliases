@@ -1253,13 +1253,12 @@ function posterr() {
     echo "select * from stl_load_errors order by starttime desc;"
 }
 
-function bb() {
-    open -a "/Applications/BBEdit.app" "$@"
-}
+alias bb='bbedit' # BBEdit. Must be installed from the BBEdit "install terminal integration" command
+alias vs='code' # Visual Studio Code. Must be installed manually!
 
-function vs() {
-    open -a "/Applications/Visual Studio Code.app/" "$@"
-}
+#function bb() {
+#    open -a "/Applications/BBEdit.app" "$@"
+#}
 
 function gitstory() {
     if [[ "$#" != 1 ]] ; then
@@ -1639,4 +1638,5 @@ alias cheat="echo \
 \">> JUPYTER/PYTHON prevent scrolling regions in plots. Put this in its own cell: %%javascript  <NEWLINE>   IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }   \" ${NL}\
 \">> JUPYTER/PYTHON/MATPLOTLIB/SNS change figure size plt.rcParams['figure.figsize'] = (WIDTH, HEIGHT)   and   plt.rcParams['figure.dpi'] = 250    \" ${NL}\
 \">> Z SOFTWARE to remember: Bioinformatics: UGENE will do Clustal/BLAST/Etc locally, and visualize sequences / FASTAS. MAUVE is a similar aligner that we used previously for viral genomes.  IGV is a local genome browser. TreeView and Cluster 3 will cluster.  General: GLANCES is fancier top/htop system activity monitor. HEXYL is a colorized Mac command line hex editor (brew install hexyl).\" ${NL}\
+\">> TABLE VIEWER 'vd' from homebrew: vd --filetype='tsv' --delimiter='|' YOURFILE.csv   (CTRL-b and CTRL-f to move up/down a screen) \" ${NL}\
 "
