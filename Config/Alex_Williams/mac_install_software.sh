@@ -32,27 +32,37 @@ done
 #                          SSH Config
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 if [[ -e "$HOME/.ssh/config" ]]; then
-    echo "[:ERR:] [SKIPPING] The ssh config file at .ssh/config ALREADY exists, so we are not overwriting it."
+    echo "[:HEY:] [SKIPPING] The ssh config file at .ssh/config ALREADY exists, so we are not overwriting it."
 else
     cp TimeForScience/Config/Alex_Williams/ssh-slash-config $HOME/.ssh/config
     chmod -R go-w   ~/.ssh/
     chmod    go-rwx ~/.ssh/id_rsa
 fi
-
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #                         Homebrew
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 if [[ 1 == $SHOULD_HOMEBREW ]]; then
     echo "Installing a ton of stuff via homebrew (which must already be installed in order for this to work)"
+
     brew cask install java # required for gradle and more
-    brew cask install iterm2 hexyl glances  # hexyl: command line color hex editor. glances: fancier htop
-    brew cask install slack notion visual-studio-code github spotify bettertouchtool
-    brew install bash bbedit cairo catimg dialog dropbox emacs ffmpeg fontconfig freetype gcc gdbm gettext git glances glib gmp gnutls gradle gsl htop imagemagick ipython isl jpeg lame libevent libffi libgit2 libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle numpy openssl pcre pigz pixman pkg-config pv python qemu R readline rsync samtools scipy sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
-    # Slow-to-install or likely-to-fail things should go toward the end
-    brew cask install atom # markdown (.md) viewer/editor
-    brew install libreoffice
-    brew cask install transmit tableplus # COMMERCIAL software that requires $$$
+    #brew cask install iterm2 # hexyl glances  # hexyl: command line color hex editor. glances: fancier htop
+    brew cask install github
+    brew install bash cairo catimg dialog emacs ffmpeg fontconfig freetype gcc gdbm gettext git glances glib gmp gnutls gradle gsl htop imagemagick ipython isl jpeg lame libevent libffi libgit2 libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle numpy openssl pcre pigz pixman pkg-config pv python qemu R readline rsync scipy sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
+
+    if [[ ! -e "/Applications/iTerm.app"              ]]; then brew cask install iterm2; fi
+    if [[ ! -e "/Applications/Slack.app"              ]]; then brew cask install slack; fi
+    if [[ ! -e "/Applications/Notion.app"             ]]; then brew cask install notion; fi
+    if [[ ! -e "/Applications/Visual Studio Code.app" ]]; then brew cask install visual-studio-code; fi
+    if [[ ! -e "/Applications/Spotify.app"            ]]; then brew cask install spotify; fi
+    if [[ ! -e "/Applications/BetterTouchTool.app"    ]]; then brew cask install bettertouchtool; fi
+
+    if [[ ! -e "/Applications/Dropbox.app"            ]]; then brew install dropbox; fi
+    if [[ ! -e "/Applications/BBEdit.app"             ]]; then brew install bbedit; fi
+    if [[ ! -e "/Applications/LibreOffice.app"        ]]; then brew install libreoffice; fi
+    if [[ ! -e "/Applications/Transmit.app"           ]]; then brew cask install transmit; fi    # COMMERCIAL software
+    if [[ ! -e "/Applications/TablePlus.app"          ]]; then brew cask install tableplus; fi   # COMMERCIAL software
+    if [[ ! -e "/Applications/Atom.app"               ]]; then brew cask install atom; fi  # markdown editor
 fi
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -89,17 +99,8 @@ done
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-echo "A bunch of things that should be installed via pip2 (Python 2)"
-PIP2_PACKAGES=("awscli" "pylint" "matplotlib" "numpy" "scipy")
-for PACKAGE in ${PIP2_PACKAGES[@]}; do
-    echo "[PYTHON2 (PIP2)] Installing the package $PACKAGE..."
-    python  -m pip install ${PACKAGE}
-done
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo "A bunch of things that should be installed via pip3 (Python 3)"
-PIP3_PACKAGES=("awscli" "pylint" "matplotlib" "numpy" "scipy" "jupyter")
+PIP3_PACKAGES=("pylint" "matplotlib" "numpy" "scipy" "jupyter")
 for PACKAGE in ${PIP3_PACKAGES[@]}; do
     echo "[PYTHON3 (PIP3)] Installing the package $PACKAGE..."
     python3 -m pip install ${PACKAGE}
@@ -127,18 +128,9 @@ echo "UCSC Genome Browser software can be obtained for a Mac with this command: 
 echo "mkdir -p ~/bin/ucsc && cd ~/bin/ucsc && rsync -aP rsync://hgdownload.soe.ucsc.edu/genome/admin/exe/macOSX.x86_64/ ./  (requires rsync >= 3.1, so get that from homebrew if you're using the ancient Mac version of rsync)"
 echo "Remember to sync the iTerm2 preferences from my config folder on github!"
 
-
 echo "You will need to MANUALLY run XCode to let it install its weird components"
 echo "maybe something like this: sudo /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild  -license accept"
 #sudo installer -pkg /Applications/Xcode-beta.app/Contents/Resources/Packages/MobileDevice.pkg -target /
 #sudo installer -pkg /Applications/Xcode-beta.app/Contents/Resources/Packages/MobileDeviceDevelopment.pkg -target /
 
 echo "[DONE!] But remember to manually install the software shown above."
-
-if [[ 1 == 2 ]]; then
-    echo "NOTE: currently this is never run"
-    echo "Installing IGV..."
-    cd ~/bin
-    git clone https://github.com/igvteam/igv.git
-    cd igv/
-fi
