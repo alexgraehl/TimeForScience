@@ -1285,6 +1285,10 @@ PG_DB="/usr/local/var/postgres"
 alias pg_start="pg_ctl -D ${PG_DB} start"
 alias pg_stop="pg_ctl  -D ${PG_DB} stop"
 
+function vt {
+    # Running the 'vd' table viewer while FORCING a tab delimiter
+    vd --filetype='tsv' --delimiter='${TAB}'
+}
 
 alias cheat="echo \
 \">> Rscript/R read STDIN: One-liner R and perl extravaganza for plotting contig lengths:  cat contigs.fasta  | perl -ne 'next if not m/^>/; chomp; m/>NODE_(\d+).*length_([\d.]+).*cov_([\d.]+)/; print join(qq{\t}, \\\$1, \\\$2, \\\$3).qq{\n};' | Rscript --vanilla -e 'ddd=read.table(file(\\\"stdin\\\"),header=F,row.names=1); pdf(\\\"a.pdf\\\"); plot(ddd[,1], ddd[,2]); dev.off();' \" ${NL}\
