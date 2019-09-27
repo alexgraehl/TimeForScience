@@ -1285,9 +1285,9 @@ PG_DB="/usr/local/var/postgres"
 alias pg_start="pg_ctl -D ${PG_DB} start"
 alias pg_stop="pg_ctl  -D ${PG_DB} stop"
 
-function vt {
+function vv {
     # Running the 'vd' table viewer while FORCING a tab delimiter
-    vd --filetype='tsv' --delimiter='${TAB}'
+    vd --filetype='tsv' --delimiter='${TAB}' "$@"
 }
 
 alias cheat="echo \
