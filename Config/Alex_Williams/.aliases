@@ -1634,6 +1634,7 @@ alias cheat="echo \
 \">> SQL/POSTGRES list databases, schemas and tables: SELECT table_schema,table_name  FROM information_schema.tables  ORDER BY table_schema,table_name;  \" ${NL}\
 \">> SQL/POSTGRES create a temp table with constants:  CREATE TEMP TABLE settings AS SELECT 109 as store, 3454 as item; \" ${NL}\
 \">> SQL/POSTGRES count records grouped by month and year:   SELECT EXTRACT(YEAR from the_date) as YYYY, EXTRACT(MONTH from the_date) as MM, count(*) as count FROM YOUR_DATA WHERE 1=1 group by EXTRACT(MONTH from date), EXTRACT(YEAR from date) ORDER BY YYYY asc, MM asc; \" ${NL}\
+\">> Python read/write from file in one line:  from pathlib import Path   //    Path('out.txt').write_text('out to file')  // from_file = Path('file.txt').read_text() \" ${NL}\
 \">> PYTHON/PANDAS need to access the INDEX columns in a pandas dataframe? Here's the super elegant and not overly verbose way:  forecast_init_df.index.get_level_values('ds')  \" ${NL}\
 \">> PYTHON/PANDAS APPEND columns as a chained command with column name in a variable: new_df   = (pd.DataFrame(list(some_stuff), columns=['ds']).assign(**{NEW_COLUMN_VARIABLE_NAME:0}) ) \" ${NL}\
 \">> PYTHON/PANDAS sort pandas data frame in place by absolute value: DF.reindex(DF['your_value'].abs().sort_values(ascending=False).index)   \" ${NL}\
