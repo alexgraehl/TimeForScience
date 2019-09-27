@@ -1644,4 +1644,5 @@ alias cheat="echo \
 \">> Z SOFTWARE to remember: Bioinformatics: UGENE will do Clustal/BLAST/Etc locally, and visualize sequences / FASTAS. MAUVE is a similar aligner that we used previously for viral genomes.  IGV is a local genome browser. TreeView and Cluster 3 will cluster.  General: GLANCES is fancier top/htop system activity monitor. HEXYL is a colorized Mac command line hex editor (brew install hexyl).\" ${NL}\
 \">> Tableau custom date format for e.g. 2001-12-11 (Mon):  yyyy-MM-dd (ddd) \" ${NL}\
 \">> TABLE VIEWER 'vd' from homebrew: vd --filetype='tsv' --delimiter='|' YOURFILE.csv   (CTRL-b and CTRL-f to move up/down a screen) \" ${NL}\
+\">> GOOGLE SHEETS (maybe also Excel): count if two columns (K and L here) are EQUAL and the first one is non-blank: =SUM(ArrayFormula(NOT(ISBLANK(K12:K999)) * (K12:K999 = L12:L999))) \" ${NL}\
 "
