@@ -1625,6 +1625,7 @@ alias cheat="echo \
 \">> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">> LINES Count chars on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
 \">> UNIX/LINES/AWK re-order columns: cat FILE | awk 'BEGIN {OFS = \\\"\t\\\"}; {print \\\$1,\\\$4,\\\$2,\\\$11}' \" ${NL}\
+\">> SQL/PSQL/POSTGRES:   from the RDB, access the DWH. Works directly in the RDB, so you can say 'WITH XYZ as (...)', for example. SELECT * FROM public.dblink('redshift_server', 'SELECT * FROM cool_schema.favorite_table') t1(a int, b varchar, c int8);  ;    \" ${NL}\
 \">> SQL/PSQL/POSTGRES:   GRANT USAGE on SCHEMA your_cool_table to PUBLIC;    GRANT SELECT on ALL TABLES IN SCHEMA your_cool_table TO PUBLIC;   ALTER DEFAULT PRIVILEGES IN SCHEMA your_cool_table GRANT SELECT ON TABLES TO PUBLIC;    \" ${NL}\
 \">> SQL/PSQL/POSTGRES: Get a week number for a year, with the year too, e.g. 2019-51: select to_char(SOME_DATE_HERE, 'IYYY-IW')  \" ${NL}\
 \">> SQL/PSQL/POSTGRES: Get a single value on the command line: 1. make sure to set your ~/.pgpass to put your password in, so you don't have to type it, and then: psql -q -t -A -X -h SERVERHERE -U USERHERE -d DBNAME -p PORTNUMBER -c 'select count(*) from sometable;' \" ${NL}\
