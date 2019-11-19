@@ -1657,7 +1657,7 @@ alias cheat="echo \
 \">> TABLE VIEWER 'vd' from homebrew: vd --filetype='tsv' --delimiter='|' YOURFILE.csv   (CTRL-b and CTRL-f to move up/down a screen) \" ${NL}\
 \">> GOOGLE SHEETS (maybe also Excel): count if two columns (K and L here) are EQUAL and the first one is non-blank: =SUM(ArrayFormula(NOT(ISBLANK(K12:K999)) * (K12:K999 = L12:L999))) \" ${NL}\
 \">> GOOGLE SHEETS: combine TWO sheets of unknown length: =QUERY({cool_sheet!A4:F;even_cooler_sheet!A5:F},{\\\"SELECT Col1,Col2,Col3,Col4,Col5,Col6 WHERE Col1 != ''\\\"}, 0)  # the 0 means 'zero header lines'   \" ${NL}\
-\">> SSH complaining about permissions:   ssh-add ~/.ssh/id_rsa   should probably fix it permanently (rather than requiring 'ssh-add' to be run every time you launch a new terminal) \" ${NL}\
+\">> SSH complaining about permissions:  ssh-add -K ~/.ssh/id_rsa (on the Mac--should persist between reboots) or ssh-add ~/.ssh/id_rsa   should probably fix it permanently (rather than requiring 'ssh-add' to be run every time you launch a new terminal) \" ${NL}\
 "
 
 
