@@ -1290,6 +1290,7 @@ function vv {
     vd --filetype='tsv' --delimiter='${TAB}' "$@"
 }
 
+
 alias cheat="echo \
 \">> Rscript/R read STDIN: One-liner R and perl extravaganza for plotting contig lengths:  cat contigs.fasta  | perl -ne 'next if not m/^>/; chomp; m/>NODE_(\d+).*length_([\d.]+).*cov_([\d.]+)/; print join(qq{\t}, \\\$1, \\\$2, \\\$3).qq{\n};' | Rscript --vanilla -e 'ddd=read.table(file(\\\"stdin\\\"),header=F,row.names=1); pdf(\\\"a.pdf\\\"); plot(ddd[,1], ddd[,2]); dev.off();' \" ${NL}\
 \">> UNICODE get character as shell escape: printf YOURCHAR | hexdump , then convert that like this: printf \\\"\\\\xE2\\\\x98\\\\xA0\\\" \" ${NL}\
@@ -1301,8 +1302,8 @@ alias cheat="echo \
 \">> DOCKER: attach to container: docker exec -it CONTAINERNAME bash \" ${NL}\
 \">> EMOJI TO TERMINAL: example: a snake is echo $'\xF0\x9F\x90\x8D' (See http://apps.timwhitlock.info/emoji/tables/unicode) \" ${NL}\
 \">> SAFARI: Disable page previews: defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2 \" ${NL}\
-\">> Unzip files into SUBDIRECTORIES always: ls *.zip|awk -F'.zip' '{print \\\"unzip \\\"\\\$0\\\" -d \\\"\\\$1}'|sh  \" ${NL}\
-\">> ZIP on Mac without the dot files: zip -r -X out.zip input_directory_here    -x \\\"*.DS_Store\\\" \" ${NL}\
+\">> ZIP: Unzip files into SUBDIRECTORIES always: ls *.zip|awk -F'.zip' '{print \\\"unzip \\\"\\\$0\\\" -d \\\"\\\$1}'|sh  \" ${NL}\
+\">> ZIP: Zip on Mac without dotfiles (dot files): zip -r -X out.zip input_directory_here    -x \\\"*.DS_Store\\\" \" ${NL}\
 \">> RAM/Filesystem: clear out disk cache, recover RAM: purge \" ${NL}\
 \">> MAC: what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL \" ${NL}\
 \">> MAC: lock a file, for example to prevent Dropbox from replacing a custom icon: chflags uchg ~/Dropbox/Icon\\\$'\\r'  (use nouchg to unlock a file)\" ${NL}\
@@ -1317,29 +1318,28 @@ alias cheat="echo \
 \">> MAC: delete impossible-to-delete files find FILE -flags schg -exec chflags noschg {} \\; \" ${NL}\
 \">> MAC: show library: chflags nohidden ~/Library/ \" ${NL}\
 \">> MAC: batch change modification time: find . -print0 | xargs -0 SetFile -d '12/31/2012 12:00:00 PM' \" ${NL}\
-\">> FIND: delete files when argument list too long: find . -iname '*whatever*' -delete \" ${NL}\
 \">> MAC: No quarantine warn  : defaults write com.apple.LaunchServices LSQuarantine -bool NO \" ${NL}\
 \">> MAC: check code signing: codesign -vvv /Applications/iTunes.app \" ${NL}\
 \">> MAC: what is connected over ethernet locally, by Internet Sharing? arp -i en1 -a \" ${NL}\
 \">> MAC: No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
 \">> MAC: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
 \">> MAC: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
+\">> FIND: delete files when argument list too long: find . -iname '*whatever*' -delete \" ${NL}\
 \">> CRON : edit crontab cron.tab with emacs: env EDITOR=emacs crontab -e \" ${NL}\
-\">> Delayed sudo: sudo sh -c \\\"(sleep 3600; do your command here )\\\" \" ${NL}\
-\">> Display image in ASCII on the command line: 'tiv' IMAGENAME \" ${NL}\
-\">> Image SIPS: PNG -> JPEG: mkdir outjpegs; sips -s format jpeg *.png --out outjpegs \" ${NL}\
-\">> Imagemagick SVG -> PNG: convert -format png -background transparent -density 300 in.svg out.png (see also the -resize 100 option)\" ${NL}\
-\">> Imagemagick convert multi-page pdf: for a in \\\$(seq 90); do echo \\\"Converting page \\\$a...\\\"; convert -quality 80 your.pdf[\\\$a] OUT_page_\\\$a.jpg ; done   (note: REQUIRES ghostscript (brew install gs) or it will crash) \" ${NL}\
-\">> Imagemagick convert recursive: find ./ -name \\\"*.jp*\\\" -print0 | xargs -0 -I{} convert -resize 1024x768 -quality 85 {} {}  # or resize 50%\" ${NL}\
-\">> Imagemagick convert all PDFs in a dir: for f in *.pdf ; do echo \\\"Converting \\\$f...\\\"; convert -verbose -density 144 \\\$f +antialias \\\${f/.pdf}.png; done \" ${NL}\
-\">> Imagemagick convert PDF -> PNG w/antialias and downsample: convert -verbose -density 144 in.pdf +antialias out.png   (note: REQUIRES ghostscript (brew install gs) or it will crash)  Note that argument order is very important and may not be correct here. It is also very slow..\" ${NL}\
+\">> SUDO Delayed sudo: sudo sh -c \\\"(sleep 3600; do your command here )\\\" \" ${NL}\
+\">> IMAGE: Display image in ASCII on the command line: 'tiv' IMAGENAME \" ${NL}\
+\">> IMAGE SIPS: PNG -> JPEG: mkdir outjpegs; sips -s format jpeg *.png --out outjpegs \" ${NL}\
+\">> IMAGE Imagemagick SVG -> PNG: convert -format png -background transparent -density 300 in.svg out.png (see also the -resize 100 option)\" ${NL}\
+\">> IMAGE Imagemagick convert multi-page pdf: for a in \\\$(seq 90); do echo \\\"Converting page \\\$a...\\\"; convert -quality 80 your.pdf[\\\$a] OUT_page_\\\$a.jpg ; done   (note: REQUIRES ghostscript (brew install gs) or it will crash) \" ${NL}\
+\">> IMAGE Imagemagick convert recursive: find ./ -name \\\"*.jp*\\\" -print0 | xargs -0 -I{} convert -resize 1024x768 -quality 85 {} {}  # or resize 50%\" ${NL}\
+\">> IMAGE Imagemagick convert all PDFs in a dir: for f in *.pdf ; do echo \\\"Converting \\\$f...\\\"; convert -verbose -density 144 \\\$f +antialias \\\${f/.pdf}.png; done \" ${NL}\
+\">> IMAGE Imagemagick convert PDF -> PNG w/antialias and downsample: convert -verbose -density 144 in.pdf +antialias out.png   (note: REQUIRES ghostscript (brew install gs) or it will crash)  Note that argument order is very important and may not be correct here. It is also very slow..\" ${NL}\
 \">> MP3: Convert m4a/ogg->mp3 for name in *.ogg; do ffmpeg -i \\\"\\\$name\\\" -ab 256k -map_metadata 0:s:0 \\\"Converted_\\\${name/.ogg/.mp3}\\\"; done; \" ${NL}\
 \" \" ${NL}\
-\">> Check directories for differences (by modification time): ionice -c3 rsync --dry-run --delete -vr /dirA /dirB \" ${NL}\
-\">> Find all .R files in a directory:   find ./ -name \\\"*.R\\\" -exec ls \'{}\' \\\; \" ${NL}\
-\">> DIFF directories:   diff -rq DIR1 DIR2 \" ${NL}\
-\">> DIFF with side-by-side and line numbers: sdiff -l file1.txt file2.txt | cat -n | grep -v -e '(${DLR}'  \" ${NL}\
-\" \" ${NL}\
+\">> UNIX: Check directories for differences (by modification time): ionice -c3 rsync --dry-run --delete -vr /dirA /dirB \" ${NL}\
+\">> FIND: Find all .R files in a directory:   find ./ -name \\\"*.R\\\" -exec ls \'{}\' \\\; \" ${NL}\
+\">> DIFF: directories:   diff -rq DIR1 DIR2 \" ${NL}\
+\">> DIFF: with side-by-side and line numbers: sdiff -l file1.txt file2.txt | cat -n | grep -v -e '(${DLR}'  \" ${NL}\
 \" \" ${NL}\
 \">> PYTHON: iPython auto-reload a module before each run: %load_ext autoreload (newline)  %autoreload 2  from foo import some_function (<-- the import is only needed ONE time now!) \" ${NL}\
 \">> PYTHON logging: RED error messages, but only if we are in the 'DEBUG' (detailed output) mode:  logging.error('My message')      and then:                       if logging.getLogger().isEnabledFor(logging.DEBUG):   logging.error(f'MORE {e}') \" ${NL}\
@@ -1424,7 +1424,6 @@ alias cheat="echo \
 \">> R: PACKAGES: install package from CRAN without root: install.packages(repos='http://cran.cnr.berkeley.edu/', dependencies=TRUE, lib=head(unlist(strsplit(Sys.getenv('R_LIBS'),':')),1), pkgs=c('PACKAGENAMEHERE')) \" ${NL}\
 \">> R: BED->GRanges: BED file to GeneRanges / GenomicRanges / GRanges object: use 'rtracklayer': library(rtracklayer); gr = rtracklayer::import(rmsk_bed, format='bed'); stopifnot('GRanges' %in% (class(gr))[1]); stopifnot(all(start(gr)<=end(gr))) \" ${NL}\
 \" \" ${NL}\
-\" \" ${NL}\
 \">> R/DPLYR/TIBBLE/DATAFRAME: replace NA with a value:   STRUCTURE %>% base::replace(., is.na(.), 0.00) \" ${NL}\
 \">> R/DPLYR/TIBBLE: round a column:   TIB %>% mutate(NEWCOL=signif(OLDCOL,2) \" ${NL}\
 \">> R/DPLYR/TIBBLE: get the top element per category. Here, top income per US county on a per-state basis:   TIB %>% group_by(US_STATE) %>% arrange(desc(INCOME_PER_COUNTY)) %>% filter(row_number()==1)  . For top and bottom, you could say filter(row_number()==1 | row_number()==n())  . However, note that that will always return only ONE row, whereas we might want two in the case where a state had only one county, in which case we would want: ... %>% dplyr::slice(c(1,n()))  <-- this will double-return the same row for both 'top' and 'bottom' if there is only one row. Do not omit the 'dplyr::' or else you will get the wrong SLICE function! \" ${NL}\
@@ -1480,6 +1479,11 @@ alias cheat="echo \
 \">> GIT: GUI and 'when was a branch made from master': gitk --all --select-commit=\\\$(git merge-base YOURBRANCH master)  \" ${NL}\
 \">> GIT: when branch was last used (MINIMAL): for BRANCH in \\\$(git branch -r | grep -v 'HEAD'); do echo -e \\\$(git show --format='%ci %cr' \\\$BRANCH | head -n 1) \\\\\\\\t\\\$BRANCH; done | sort -r \" ${NL}\
 \">> GIT: when branch was last used AND last commit (fancy): git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))' \" ${NL}\
+\">> GIT check a specific file and its history:  git log --follow -p FILENAME \" ${NL}\
+\">> GIT merge but keep LOCAL changes and not the remote ones: git pull PARENT_BRANCHNAME -Xours  or  git merge PARENT_BRANCHNAME --strategy-option ours \" ${NL}\
+\">> GIT interactively merge ONE FILE ONLY: git checkout --patch origin/master PATH/TO/YOUR/FILE.TXT  \" ${NL}\
+\">> GIT interactively edit/squash/combine/rebase a bunch of commits / edit commit messages: git rebase -i HEAD~[N] <-- where N is the number of commits you're interested in... you can put any number here, like 10 or whatever. [s]quash is how you combine commits, by the way. \" ${NL}\
+\">> GITHUB solve 'Your push would publish a private email address': git config --global user.email 'YOURGITHUB_USERNAME_GOES_HERE@users.noreply.github.com'; git commit --amend --reset-author; git push ; (and make sure you don't have a .git/config that overrides this setting)\" ${NL}\
 \">> TERM: Get terminal width/height: tput cols  or  tput lines \" ${NL}\
 \">> BACKUPS: Check for changed files of a certain name: grep -E '>f.' /it/backup/log/*.log | grep YOURNAME \" ${NL}\
 \">> UNIX/FILE: Add filename to top of (copy of) files. for f in FILES*; do echo \\\$f | cat - $f > NEW_\\\$f ; done     ...or if you will later paste/join those: for f in SPLIT*.diff; do echo \\\$f | cat - \\\$f | table-no-ragged.py - > NEW_\\\$f; done \" ${NL}\
@@ -1612,10 +1616,6 @@ alias cheat="echo \
 \">> MAC: Dictionary: /usr/share/dict/words \" ${NL}\
 \">> MAC: why isn't the screensaver working: pmset -g (see 'sleep' in there), then pmset -g assertions \" ${NL}\
 \">> MAC: Image type convert: mkdir -p PNGS_TO_JPEG; sips -s format jpeg *.png --out PNGS_TO_JPEG \" ${NL}\
-\">> GIT merge but keep LOCAL changes and not the remote ones: git pull PARENT_BRANCHNAME -Xours  or  git merge PARENT_BRANCHNAME --strategy-option ours \" ${NL}\
-\">> GIT interactively merge ONE FILE ONLY: git checkout --patch origin/master PATH/TO/YOUR/FILE.TXT  \" ${NL}\
-\">> GIT interactively edit/squash/combine/rebase a bunch of commits / edit commit messages: git rebase -i HEAD~[N] <-- where N is the number of commits you're interested in... you can put any number here, like 10 or whatever. [s]quash is how you combine commits, by the way. \" ${NL}\
-\">> GITHUB solve 'Your push would publish a private email address': git config --global user.email 'YOURGITHUB_USERNAME_GOES_HERE@users.noreply.github.com'; git commit --amend --reset-author; git push ; (and make sure you don't have a .git/config that overrides this setting)\" ${NL}\
 \">> UNIX COPROC: coproc: re-run a command every 19 seconds: for i in {1..50} ; do coproc { ls >> myfile.tmp ; } ; sleep 19; kill \\\$COPROC_PID ; sleep 2; done \" ${NL}\
 \">> LINES: RANDOM subset (0.5 = 50%, 0.1 = 10%, etc):  perl -ne 'print if (rand() < 0.5);' theFile.txt \" ${NL}\
 \">> LINES: REPEATABLE RANDOM subset: perl -e 'srand(123456); while(<>){ print if (rand() < 0.5);}' theFile.txt \" ${NL}\
@@ -1632,8 +1632,7 @@ alias cheat="echo \
 \">> SQL/PSQL/POSTGRES: Get a week number for a year, with the year too, e.g. 2019-51: select to_char(SOME_DATE_HERE, 'IYYY-IW')  \" ${NL}\
 \">> SQL/PSQL/POSTGRES: Get a single value on the command line: 1. make sure to set your ~/.pgpass to put your password in, so you don't have to type it, and then: psql -q -t -A -X -h SERVERHERE -U USERHERE -d DBNAME -p PORTNUMBER -c 'select count(*) from sometable;' \" ${NL}\
 \">> SQL/PSQL/POSTGRES: Just connect interactively: psql -h SERVERHERE -U USERHERE -d DBNAME -p PORTNUMBER -e ; <interactive password prompt will occur after you type that> \" ${NL}\
-\">> SQL/POSTGRES Amazon Redshift show DATA LOADING errors: BEST SIMPLE WAY: select * from stl_load_errors e order by starttime desc;       Maybe try this to only get the MOST RECENT query:   SELECT * FROM stl_load_errors WHERE query IN (select max(query) from stl_load_errors) ORDER BY starttime DESC limit 99;
-     More complex way that sometimes does not show everything: select d.*,e.* from stl_load_errors e, stl_loaderror_detail d where d.query = e.query order by starttime desc;\" ${NL}\
+\">> SQL/POSTGRES Amazon Redshift show DATA LOADING errors: BEST SIMPLE WAY: select * from stl_load_errors e order by starttime desc;       Maybe try this to only get the MOST RECENT query:   SELECT * FROM stl_load_errors WHERE query IN (select max(query) from stl_load_errors) ORDER BY starttime DESC limit 99;     More complex way that sometimes does not show everything: select d.*,e.* from stl_load_errors e, stl_loaderror_detail d where d.query = e.query order by starttime desc;\" ${NL}\
 \">> SQL/POSTGRES date to human-readable DOW / day of week (does NOT work with text, you must cast it to ::date): TO_CHAR(current_date, 'day') or SELECT TO_CHAR(current_date, 'DY') --> result is e.g. 'MON';   \" ${NL}\
 \">> SQL/POSTGRES get SECOND highest (Nth item) item in a column (memory-inefficient): SELECT  (ARRAY_AGG(colname ORDER_BY colname DESC))[2] FROM yourtable;   \" ${NL}\
 \">> SQL/POSTGRES list databases: SELECT datname FROM pg_database WHERE datistemplate=FALSE;   \" ${NL}\
