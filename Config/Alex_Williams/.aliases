@@ -1626,6 +1626,7 @@ alias cheat="echo \
 \">> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">> LINES Count chars on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
 \">> UNIX/LINES/AWK re-order columns: cat FILE | awk 'BEGIN {OFS = \\\"\t\\\"}; {print \\\$1,\\\$4,\\\$2,\\\$11}' \" ${NL}\
+\">> SQL/PSQL/POSTGRES:   SELECT current_timestamp AT TIME ZONE 'america/los_angeles' AS your_time_column;    \" ${NL}\
 \">> SQL/PSQL/POSTGRES:   WITH a2 as (SELECT * FROM (SELECT *,ROW_NUMBER() OVER (partition by store,item,date,whatever order by date) FROM yourtable) zzz WHERE row_number=1) -- ensure that you only get ONE RESULT (one row) per select statement!     \" ${NL}\
 \">> SQL/PSQL/POSTGRES:   from the RDB, access the DWH. Works directly in the RDB, so you can say 'WITH XYZ as (...)', for example. SELECT * FROM public.dblink('redshift_server', 'SELECT * FROM cool_schema.favorite_table') t1(a int, b varchar, c int8);  ;    \" ${NL}\
 \">> SQL/PSQL/POSTGRES:   GRANT USAGE on SCHEMA your_cool_schema to PUBLIC;    GRANT SELECT on ALL TABLES IN SCHEMA your_cool_schema TO PUBLIC;   ALTER DEFAULT PRIVILEGES IN SCHEMA your_cool_schema GRANT SELECT ON TABLES TO PUBLIC;    \" ${NL}\
