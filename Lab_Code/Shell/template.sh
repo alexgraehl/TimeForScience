@@ -28,6 +28,10 @@ require_executable() {
     return 0 # 0 is the 'good' status
 }
 
+#if ! type "command_name_here" > /dev/null; then
+#    echo "Executable / command is missing"
+#fi
+
 # This does not work
 #is_numeric() {
 #    if [[ "$#" != 1 ]]; then echoerr "[:ERR:]] is_numeric requires EXACTLY ONE ARGUMENT!"; exit 1; fi
