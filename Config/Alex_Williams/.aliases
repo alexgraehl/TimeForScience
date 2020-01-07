@@ -1466,7 +1466,7 @@ alias cheat="echo \
 \">> GIT: do not download huge LFS files when git lfs is enabled: GIT_LFS_SKIP_SMUDGE=1 git clone YOUR_REPO \" ${NL}\
 \">> GIT: revise a commit that is ALREADY a pull request:  once you have your changes committed, send it upstream with --FORCE, with: git push -f origin HEAD:refs/heads/whatever_your_pull_request_branch_was  \" ${NL}\
 \">> GIT: only get the last 1 revision (faster): git clone --depth=1 https://your-site-here/something.git \" ${NL}\
-\">> GIT: discard/revert ALL local changes TO ALL FILES: DANGER >> git reset --hard origin/master << DANGER \" ${NL}\
+\">> GIT: discard/revert ALL local changes TO ALL FILES: DANGER >> git reset --hard origin/master << DANGER (this also works for multi-path names, like --hard origin/coworker/beta_branch/coolfeature123 (note that ORIGIN is still at the beginning there!) \" ${NL}\
 \">> GIT: push local branch to remote branch with DIFFERENT NAME: git push -f origin my_local_branch:different_named_remote_branch \" ${NL}\
 \">> GIT: discard/revert local changes to JUST ONE FILE: git checkout -- FILENAME_HERE \" ${NL}\
 \">> GIT: fix an HTTP repo to SSH: git remote set-url origin git@github.com:RepoNameHere/ProjName.git \" ${NL}\
@@ -1645,6 +1645,8 @@ alias cheat="echo \
 \">> SQL/POSTGRES copy (duplicate) a table: CREATE TABLE new AS (SELECT * FROM old); \" ${NL}\
 \">> SQL/POSTGRES remove dupes from a table. Tested in Redshift   <NL> ROLLBACK; BEGIN TRANSACTION;  <NL> CREATE TABLE yourschema.without_dupes AS  <NL> (WITH ddd AS (select *,ROW_NUMBER() OVER (PARTITION BY field1,field2,etc,even,more,fields ORDER BY some_field_maybe DESC) row_number FROM yourschema.table_to_dedupe)  <NL>SELECT field1,field2,every,field,EXCEPT,FOR,do_not_select_row_number_here FROM ddd WHERE row_number=1););  <NL> ALTER TABLE yourschema.original_table RENAME TO original_table_backup;  <NL> ALTER TABLE deduplicated_table RENAME TO original_table;  <NL> COMMIT; \" ${NL}\
 \">> Python read/write from file in one line:  from pathlib import Path   //    Path('out.txt').write_text('out to file')  // from_file = Path('file.txt').read_text() \" ${NL}\
+\">> PYTHON eradicate virtual environment and start from scratch / restart venv: deactivate && cd ~/core && rm -rf the_env && python3 -m venv ./the_env && source the_env/bin/activate && make install (assumes certain locations for, e.g. 'activate' and 'the_env' \" ${NL}\
+\">> PYTHON/PANDAS: get count/index of UNIQUE VALUES in a list:  labels,actual_values = pd.factorize(your_dataframe['class']) (labels start at 0) \" ${NL}\
 \">> PYTHON/PANDAS: get count/index of UNIQUE VALUES in a list:  labels,actual_values = pd.factorize(your_dataframe['class']) (labels start at 0) \" ${NL}\
 \">> PYTHON/PANDAS need to access the INDEX columns in a pandas dataframe? Here's the super elegant and not overly verbose way:  forecast_init_df.index.get_level_values('ds')  \" ${NL}\
 \">> PYTHON/PANDAS APPEND columns as a chained command with column name in a variable: new_df   = (pd.DataFrame(list(some_stuff), columns=['ds']).assign(**{NEW_COLUMN_VARIABLE_NAME:0}) ) \" ${NL}\
