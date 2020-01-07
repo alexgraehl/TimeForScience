@@ -1466,7 +1466,7 @@ alias cheat="echo \
 \">> GIT: do not download huge LFS files when git lfs is enabled: GIT_LFS_SKIP_SMUDGE=1 git clone YOUR_REPO \" ${NL}\
 \">> GIT: revise a commit that is ALREADY a pull request:  once you have your changes committed, send it upstream with --FORCE, with: git push -f origin HEAD:refs/heads/whatever_your_pull_request_branch_was  \" ${NL}\
 \">> GIT: only get the last 1 revision (faster): git clone --depth=1 https://your-site-here/something.git \" ${NL}\
-\">> GIT: discard/revert ALL local changes TO ALL FILES: DANGER >> git reset --hard origin/master << DANGER \" ${NL}\
+\">> GIT: discard/revert ALL local changes TO ALL FILES: DANGER >> git reset --hard origin/master << DANGER (this also works for multi-path names, like --hard origin/coworker/beta_branch/coolfeature123 (note that ORIGIN is still at the beginning there!) \" ${NL}\
 \">> GIT: push local branch to remote branch with DIFFERENT NAME: git push -f origin my_local_branch:different_named_remote_branch \" ${NL}\
 \">> GIT: discard/revert local changes to JUST ONE FILE: git checkout -- FILENAME_HERE \" ${NL}\
 \">> GIT: fix an HTTP repo to SSH: git remote set-url origin git@github.com:RepoNameHere/ProjName.git \" ${NL}\
