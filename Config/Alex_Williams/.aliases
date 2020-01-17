@@ -1630,7 +1630,7 @@ alias cheat="echo \
 \">> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">> LINES Count chars on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
 \">> UNIX/LINES/AWK re-order columns: cat FILE | awk 'BEGIN {OFS = \\\"\t\\\"}; {print \\\$1,\\\$4,\\\$2,\\\$11}' \" ${NL}\
-\">> SQL: safely typecast / type cast / convert type / coerce varchar to int without error: select (CASE WHEN '-999999999999999999' ~ '^[-]?[0-9]{1,18}\\\$' THEN '-999999999999999999'::bigint else 0 end) as a;    (FYI, you can use {1,9} for a regular INT (not a BIGINT))\" ${NL}\
+\">> SQL: safely typecast / type cast / convert type / coerce varchar to int without error. You can cast the candidate variable to a FLOAT first. Do not use regular expressions! : select (CASE WHEN ABS('-9999999999999999999999999999999'::float) >= 2^63 THEN 'too large' ELSE '-99....9999'::bigint END). Note that the first cast is to a FLOAT, despite the final cast being a bigint here. This is intentional.\" ${NL}\
 \">> SQL/REDSHIFT: Calculate table size (MB, GB, rows): SELECT \\\"table\\\", (size/1024.0)::numeric(10,1) as size_gb, (tbl_rows/1000000.0)::numeric(30,2) as rows_millions FROM SVV_TABLE_INFO; --redshift cmd for checking table size \" ${NL}\
 \">> SQL/PSQL/POSTGRES:   SELECT current_timestamp AT TIME ZONE 'america/los_angeles' AS your_time_column;    \" ${NL}\
 \">> SQL/PSQL/POSTGRES:   WITH a2 as (SELECT * FROM (SELECT *,ROW_NUMBER() OVER (partition by store,item,date,whatever order by date) FROM yourtable) zzz WHERE row_number=1) -- ensure that you only get ONE RESULT (one row) per select statement!     \" ${NL}\
