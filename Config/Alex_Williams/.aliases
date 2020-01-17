@@ -39,6 +39,9 @@ if agw_cmd_exists "git" ; then
     git config --global alias.br branch
     git config --global alias.ci commit
     git config --global alias.st status
+    function amendsame {
+	git commit --amend --no-edit
+    }
 fi
 
 echo -e "${a_echo_color}[:FYI:] Loading bash-aliases...${a_end_color}"
