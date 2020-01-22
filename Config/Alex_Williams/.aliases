@@ -40,6 +40,7 @@ if agw_cmd_exists "git" ; then
     git config --global alias.ci commit
     git config --global alias.st status
     function amendsame {
+	echo "[:FYI:] Running this command: git commit --amend --no-edit"
 	git commit --amend --no-edit
     }
 fi
