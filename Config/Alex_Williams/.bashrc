@@ -505,3 +505,5 @@ if [[ -f "${HOME}/bin/activate" ]]; then
 fi
 
 
+
+source /Users/alexgw/Library/Preferences/org.dystroy.broot/launcher/bash/br

@@ -483,29 +483,8 @@ function scienceboth() {
 
 }
 function science() {
-    # Manually copy a bunch of GOOGLE CODE controlled files
-    GD="${HOME}/GOOG/Alex_All_Projects"
-    WSPRE="${HOME}/workspace/0_CODE"
-    scienceboth "${HOME}/workspace/0_CODE" # sync these files before overwriting the local W_...Rmd ones
-    #if [[ -d "${GD}" ]]; then
-#	[[ -d "${WSPRE}" ]] || { echo "Failure! Missing expected directory: ${WSPRE}"; return 99; }
-#	#find . -iname "W_*.Rmd" -o -iname "W_*.R"
-#	for f in "${GD}"/[123][0-9][0-9][0-9]**/W_*.{Rmd,mak,R}; do
-#	    echo "[:OK:] Copying some source files from Google Drive to the local git repo. We would prefer to symlink these, but that is impossible since Google Drive does not support symlinks."
-#	    g=$(basename ${f}); h="${WSPRE}/${g/W_}"; echo "[:OK:] ${f} --> ${h}...";
-#	    \rsync -avz "${f}" "${h}"
-#	done
-#    fi
-    #WEBO="${HOME}/web"
-    #
-    #if [[ -d "${WEBO}" && -d "${WSPRE}" ]]; then
-#	echo "[:OK:] Rsyncing web files to a GIT directory..."
-#	\rsync -avz ${WEBO}/index.html ${WSPRE}/web/
-#	#\rsync -avz ${WEBO}/projects/*.html ${WSPRE}/web/projects/
-#    fi
-    # ================== Done with this Google code stuff ==============
+    #scienceboth "${HOME}/workspace/0_CODE" # sync these files before overwriting the local W_...Rmd ones
     scienceboth "${TIME_FOR_SCIENCE_DIR}"
-    #scienceboth "${HOME}/workspace/git_0_CODE"
     #scienceboth "${HOME}/workspace/0_CODE" # Sync AGAIN after copying
 }
 
