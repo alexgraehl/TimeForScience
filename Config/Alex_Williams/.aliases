@@ -39,6 +39,9 @@ if agw_cmd_exists "git" ; then
     git config --global alias.br branch
     git config --global alias.ci commit
     git config --global alias.st status
+    function amendsame {
+	git commit --amend --no-edit
+    }
 fi
 
 echo -e "${a_echo_color}[:FYI:] Loading bash-aliases...${a_end_color}"
@@ -1627,12 +1630,13 @@ alias cheat="echo \
 \">> LINES based on perl expr: perl -e '\\\$n = 0; while(<>) { if (\\\$n%2 == 0) { print \\\$_; }; \\\$n++; }' \" ${NL}\
 \">> LINES Count chars on each line: cat FILENAME | awk '{print length(\\\$0)}' \" ${NL}\
 \">> UNIX/LINES/AWK re-order columns: cat FILE | awk 'BEGIN {OFS = \\\"\t\\\"}; {print \\\$1,\\\$4,\\\$2,\\\$11}' \" ${NL}\
+\">> SQL: safely typecast / type cast / convert type / coerce varchar to int without error. You can cast the candidate variable to a FLOAT first. Do not use regular expressions! : select (CASE WHEN ABS('-9999999999999999999999999999999'::float) >= 2^63 THEN 'too large' ELSE '-99....9999'::bigint END). Note that the first cast is to a FLOAT, despite the final cast being a bigint here. This is intentional.\" ${NL}\
 \">> SQL/REDSHIFT: Calculate table size (MB, GB, rows): SELECT \\\"table\\\", (size/1024.0)::numeric(10,1) as size_gb, (tbl_rows/1000000.0)::numeric(30,2) as rows_millions FROM SVV_TABLE_INFO; --redshift cmd for checking table size \" ${NL}\
 \">> SQL/PSQL/POSTGRES:   SELECT current_timestamp AT TIME ZONE 'america/los_angeles' AS your_time_column;    \" ${NL}\
 \">> SQL/PSQL/POSTGRES:   WITH a2 as (SELECT * FROM (SELECT *,ROW_NUMBER() OVER (partition by store,item,date,whatever order by date) FROM yourtable) zzz WHERE row_number=1) -- ensure that you only get ONE RESULT (one row) per select statement!     \" ${NL}\
 \">> SQL/PSQL/POSTGRES:   from the RDB, access the DWH. Works directly in the RDB, so you can say 'WITH XYZ as (...)', for example. SELECT * FROM public.dblink('redshift_server', 'SELECT * FROM cool_schema.favorite_table') t1(a int, b varchar, c int8);  ;    \" ${NL}\
 \">> SQL/PSQL/POSTGRES:   GRANT USAGE on SCHEMA your_cool_schema to PUBLIC;    GRANT SELECT on ALL TABLES IN SCHEMA your_cool_schema TO PUBLIC;   ALTER DEFAULT PRIVILEGES IN SCHEMA your_cool_schema GRANT SELECT ON TABLES TO PUBLIC;    \" ${NL}\
-\">> SQL/PSQL/POSTGRES: Get a week number for a year, with the year too, e.g. 2019-51: select to_char(SOME_DATE_HERE, 'IYYY-IW')  \" ${NL}\
+\">> SQL/PSQL/POSTGRES: Get a week number for a year, with the year too, e.g. 2019-51: select to_char(SOME_DATE_HERE, 'YYYY-WW')  (for month, use YYYY-MM) \" ${NL}\
 \">> SQL/PSQL/POSTGRES: Get a single value on the command line: 1. make sure to set your ~/.pgpass to put your password in, so you don't have to type it, and then: psql -q -t -A -X -h SERVERHERE -U USERHERE -d DBNAME -p PORTNUMBER -c 'select count(*) from sometable;' \" ${NL}\
 \">> SQL/PSQL/POSTGRES: Just connect interactively: psql -h SERVERHERE -U USERHERE -d DBNAME -p PORTNUMBER -e ; <interactive password prompt will occur after you type that> \" ${NL}\
 \">> SQL/POSTGRES Amazon Redshift show DATA LOADING errors: BEST SIMPLE WAY: select * from stl_load_errors e order by starttime desc;       Maybe try this to only get the MOST RECENT query:   SELECT * FROM stl_load_errors WHERE query IN (select max(query) from stl_load_errors) ORDER BY starttime DESC limit 99;     More complex way that sometimes does not show everything: select d.*,e.* from stl_load_errors e, stl_loaderror_detail d where d.query = e.query order by starttime desc;\" ${NL}\
@@ -1644,7 +1648,7 @@ alias cheat="echo \
 \">> SQL/POSTGRES count records grouped by month and year:   SELECT EXTRACT(YEAR from the_date) as YYYY, EXTRACT(MONTH from the_date) as MM, count(*) as count FROM YOUR_DATA WHERE 1=1 group by EXTRACT(MONTH from date), EXTRACT(YEAR from date) ORDER BY YYYY asc, MM asc; \" ${NL}\
 \">> SQL/POSTGRES copy (duplicate) a table: CREATE TABLE new AS (SELECT * FROM old); \" ${NL}\
 \">> SQL/POSTGRES remove dupes from a table. Tested in Redshift   <NL> ROLLBACK; BEGIN TRANSACTION;  <NL> CREATE TABLE yourschema.without_dupes AS  <NL> (WITH ddd AS (select *,ROW_NUMBER() OVER (PARTITION BY field1,field2,etc,even,more,fields ORDER BY some_field_maybe DESC) row_number FROM yourschema.table_to_dedupe)  <NL>SELECT field1,field2,every,field,EXCEPT,FOR,do_not_select_row_number_here FROM ddd WHERE row_number=1););  <NL> ALTER TABLE yourschema.original_table RENAME TO original_table_backup;  <NL> ALTER TABLE deduplicated_table RENAME TO original_table;  <NL> COMMIT; \" ${NL}\
-\">> Python read/write from file in one line:  from pathlib import Path   //    Path('out.txt').write_text('out to file')  // from_file = Path('file.txt').read_text() \" ${NL}\
+\">> Python read/write from file in one line (OVERWRITES--does not append):  from pathlib import Path   //    Path('out.txt').write_text('output filename to OVERWRITE')  // To read from a file:  from_file = Path('file.txt').read_text()        To APPEND from a file, you need two lines: with Path('file.txt').open('a') as f: // f.write('...appending')\" ${NL}\
 \">> PYTHON eradicate virtual environment and start from scratch / restart venv: deactivate && cd ~/core && rm -rf the_env && python3 -m venv ./the_env && source the_env/bin/activate && make install (assumes certain locations for, e.g. 'activate' and 'the_env' \" ${NL}\
 \">> PYTHON/PANDAS: get count/index of UNIQUE VALUES in a list:  labels,actual_values = pd.factorize(your_dataframe['class']) (labels start at 0) \" ${NL}\
 \">> PYTHON/PANDAS: get count/index of UNIQUE VALUES in a list:  labels,actual_values = pd.factorize(your_dataframe['class']) (labels start at 0) \" ${NL}\
