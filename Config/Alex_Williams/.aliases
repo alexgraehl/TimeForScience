@@ -33,18 +33,6 @@ else
     OUR_RM=rm
 fi
 
-if agw_cmd_exists "git" ; then
-    # Git aliases
-    git config --global alias.co checkout
-    git config --global alias.br branch
-    git config --global alias.ci commit
-    git config --global alias.st status
-    function amendsame {
-	echo "[:FYI:] Running this command: git commit --amend --no-edit"
-	git commit --amend --no-edit
-    }
-fi
-
 echo -e "${a_echo_color}[:FYI:] Loading bash-aliases...${a_end_color}"
 
 CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR} ${HOME}/workspace/0_CODE" # <-- Multiple **space-delimited** directories can be here
@@ -372,6 +360,12 @@ alias unlock='chflags nouchg' # Mac: unlock file
 
 alias clearicon='$SETFILE_LOCATION -P -a c' ## clear mac custom icons. Useful for images that have old custom icons.
 alias version="lsb_release -a" # Tells you which version of Ubuntu you are running!
+alias vscode="code"
+alias bb='bbedit' # BBEdit. Must be installed from the BBEdit "install terminal integration" command
+alias vs='code' # Visual Studio Code. Must be installed manually!
+#function bb() {
+#    open -a "/Applications/BBEdit.app" "$@"
+#}
 
 function mac2unix { # Convert a Mac-style line-ending file to a UNIX one. Useful for when you save a file in Excel and then UNIX won't read it.
     if [[ -f "$1" ]] ; then cat "$1" | tr '\r' '\n' ## if a filename is passed in, then auto-cat that file
@@ -441,12 +435,17 @@ alias gits="git status"
 alias gitstat="git ls-files --modified --deleted"
 alias gitdiff="git difftool"
 
-function googcom {
-    D="/Volumes/GoogleDrive/My Drive/Alex_All_Projects"
-    cd "/Volumes/GoogleDrive/My Drive/Alex_All_Projects"
-    echo "Changed directories to: ${D}"
-    gitcom
-}
+if agw_cmd_exists "git" ; then
+    # Git aliases
+    git config --global alias.co checkout
+    git config --global alias.br branch
+    git config --global alias.ci commit
+    git config --global alias.st status
+    function amendsame {
+	echo "[:FYI:] Running this command: git commit --amend --no-edit"
+	git commit --amend --no-edit
+    }
+fi
 
 function sciencecom {
     # If you want to NOT interact remotely (for example, this is the 'most upstream' repo with nothing to push to) then pass in NO_REMOTE as argument 2.
@@ -1230,18 +1229,6 @@ function delete_android_file_transfer_on_mac() {
     osascript -e 'tell application "System Events" to delete every login item whose name is "Android File Transfer Agent"'
     echo "Done disabling it. Note that the files have been RENAMED, and not totally deleted!"
 }
-
-function posterr() {
-    # diagnose postgres issues
-    echo "select * from stl_load_errors order by starttime desc;"
-}
-
-alias bb='bbedit' # BBEdit. Must be installed from the BBEdit "install terminal integration" command
-alias vs='code' # Visual Studio Code. Must be installed manually!
-
-#function bb() {
-#    open -a "/Applications/BBEdit.app" "$@"
-#}
 
 function gitstory() {
     if [[ "$#" != 1 ]] ; then
