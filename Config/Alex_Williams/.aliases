@@ -1626,6 +1626,7 @@ alias cheat="echo \
 \">> JUPYTER/PYTHON prevent auto-closing brackets/braces/parens: from notebook.services.config import ConfigManager  <NEWLINE>  c = ConfigManager()   <NEWLINE>      c.update('notebook', {'CodeCell': {'cm_config': {'autoCloseBrackets': False}}})   \" ${NL}\
 \">> JUPYTER/PYTHON prevent scrolling regions in plots. Put this in its own cell: %%javascript  <NEWLINE>   IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }   \" ${NL}\
 \">> JUPYTER/PYTHON/MATPLOTLIB/SNS change figure size plt.rcParams['figure.figsize'] = (WIDTH, HEIGHT)   and   plt.rcParams['figure.dpi'] = 250    \" ${NL}\
+\">> JUPYTER/PYTHON output raw formatted text as HTML, programmatically:   display(Markdown('<SPAN style='color:green; font-size:8px;'>Your text here</SPAN>')) \" ${NL}\
 \">> Z SOFTWARE to remember: Bioinformatics: UGENE will do Clustal/BLAST/Etc locally, and visualize sequences / FASTAS. MAUVE is a similar aligner that we used previously for viral genomes.  IGV is a local genome browser. TreeView and Cluster 3 will cluster.  General: GLANCES is fancier top/htop system activity monitor. HEXYL is a colorized Mac command line hex editor (brew install hexyl).\" ${NL}\
 \">> Tableau 'roll up' (aggregate / groupby / group by) fields by some other field: {INCLUDE [state_of_usa] : SUM([cars_sold_per_county])} / {INCLUDE [state_of_usa] : SUM([num_people_per_county])} \" ${NL}\
 \">> Tableau: get a few days of data: window_sum(sum([your_cool_daily_value]), -4, -1)  // [-4 to -1] is the preceding 3 days, but not today  \" ${NL}\
