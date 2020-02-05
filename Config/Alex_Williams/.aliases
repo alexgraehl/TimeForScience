@@ -1622,7 +1622,7 @@ alias cheat="echo \
 \">> PYTHON/PANDAS need to access the INDEX columns in a pandas dataframe? Here's the super elegant and not overly verbose way:  forecast_init_df.index.get_level_values('ds')  \" ${NL}\
 \">> PYTHON/PANDAS APPEND columns as a chained command with column name in a variable: new_df   = (pd.DataFrame(list(some_stuff), columns=['ds']).assign(**{NEW_COLUMN_VARIABLE_NAME:0}) ) \" ${NL}\
 \">> PYTHON/PANDAS sort pandas data frame in place by absolute value: DF.reindex(DF['your_value'].abs().sort_values(ascending=False).index)   \" ${NL}\
-\">> JUPYTER/PYTHON output to HTML just like you see it on screen:   jupyter nbconvert --output-dir=~/Desktop/ --to 'html' --execute YOUR_NOTEBOOK_NAME_HERE.ipynb  \" ${NL}\
+\">> JUPYTER/PYTHON output to HTML just like you see it on screen:   jupyter nbconvert --output-dir=~/Desktop/ --to 'html' --ExecutePreprocessor.timeout=1800 --execute YOUR_NOTEBOOK_NAME_HERE.ipynb  \" ${NL}\
 \">> JUPYTER/PYTHON prevent auto-closing brackets/braces/parens: from notebook.services.config import ConfigManager  <NEWLINE>  c = ConfigManager()   <NEWLINE>      c.update('notebook', {'CodeCell': {'cm_config': {'autoCloseBrackets': False}}})   \" ${NL}\
 \">> JUPYTER/PYTHON prevent scrolling regions in plots. Put this in its own cell: %%javascript  <NEWLINE>   IPython.OutputArea.prototype._should_scroll = function(lines) { return false; }   \" ${NL}\
 \">> JUPYTER/PYTHON/MATPLOTLIB/SNS change figure size plt.rcParams['figure.figsize'] = (WIDTH, HEIGHT)   and   plt.rcParams['figure.dpi'] = 250    \" ${NL}\
