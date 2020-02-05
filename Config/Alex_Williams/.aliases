@@ -1295,7 +1295,8 @@ alias cheat="echo \
 \">> MAC: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
 \">> MAC: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
 \">> FIND: delete files when argument list too long: find . -iname '*whatever*' -delete \" ${NL}\
-\">> CRON : edit crontab cron.tab with emacs: env EDITOR=emacs crontab -e \" ${NL}\
+\">> CRON: edit crontab cron.tab with emacs: env EDITOR=emacs crontab -e \" ${NL}\
+\">> CRON: check CRON logs (if enabled) on the Mac: sudo cat /var/mail/your_username_here \" ${NL}\
 \">> SUDO Delayed sudo: sudo sh -c \\\"(sleep 3600; do your command here )\\\" \" ${NL}\
 \">> IMAGE: Display image in ASCII on the command line: 'tiv' IMAGENAME \" ${NL}\
 \">> IMAGE SIPS: PNG -> JPEG: mkdir outjpegs; sips -s format jpeg *.png --out outjpegs \" ${NL}\
