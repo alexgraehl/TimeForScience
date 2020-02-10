@@ -1456,6 +1456,7 @@ alias cheat="echo \
 \">> GIT interactively merge ONE FILE ONLY: git checkout --patch origin/master PATH/TO/YOUR/FILE.TXT  \" ${NL}\
 \">> GIT interactively edit/squash/combine/rebase a bunch of commits / edit commit messages: git rebase -i HEAD~[N] <-- where N is the number of commits you're interested in... you can put any number here, like 10 or whatever. [s]quash is how you combine commits, by the way. \" ${NL}\
 \">> GITHUB solve 'Your push would publish a private email address': git config --global user.email 'YOURGITHUB_USERNAME_GOES_HERE@users.noreply.github.com'; git commit --amend --reset-author; git push ; (and make sure you don't have a .git/config that overrides this setting)\" ${NL}\
+\">> GITHUB: to solve 'Please make sure you have the correct access rights', usually you can fix this on the Mac with:  ssh-agent -s &&  ssh-add -K && ssh-add  . Not sure if all of those are necessary. This problem seems to occur after system updates. \" ${NL}\
 \">> TERM: Get terminal width/height: tput cols  or  tput lines \" ${NL}\
 \">> BACKUPS: Check for changed files of a certain name: grep -E '>f.' /it/backup/log/*.log | grep YOURNAME \" ${NL}\
 \">> UNIX/FILE: Add filename to top of (copy of) files. for f in FILES*; do echo \\\$f | cat - $f > NEW_\\\$f ; done     ...or if you will later paste/join those: for f in SPLIT*.diff; do echo \\\$f | cat - \\\$f | table-no-ragged.py - > NEW_\\\$f; done \" ${NL}\
