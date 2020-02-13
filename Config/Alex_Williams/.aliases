@@ -1509,7 +1509,8 @@ alias cheat="echo \
 \">> UNIX/APT-GET: upgrade only EXISTING packages matching wildcard pattern: apt-get install --only-upgrade 'r-cran*' \" ${NL}\
 \">> UNIX/APT-GET: Fix 'NO_PUBKEY *SOMEKEY*' in APT: gpg --keyserver subkeys.pgp.net --recv *SOMEKEY* ; gpg --export --armor *SOMEKEY* | sudo apt-key add - \" ${NL}\
 \">> UNIX SSH/SHELL/LOGIN to a 'fresh' shell without loading bashrc or bash_profile: ssh -t user@server bash --norc --noprofile \" ${NL}\
-\">> UNIX SSH Passphraseless: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub   to server ~/.ssh/authorized_keys \" ${NL}\
+\">> UNIX SSH Passphraseless Option 1 of 2: Client: ssh-keygen -t rsa ; Append client ~/.ssh/id_rsa.pub   to server ~/.ssh/authorized_keys \" ${NL}\
+\">> UNIX SSH Passphraseless Option 2 of 2: Client: On your CLIENT, you can copy your existing SSH profile with just: ssh-copy-id your_username@server_goes_here \" ${NL}\
 \" \" ${NL}\
 \">> ZIP: Zip a folder: zip -r ARCHIVENAME FOLDER \" ${NL}\
 \" \" ${NL}\
