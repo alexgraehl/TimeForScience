@@ -951,8 +951,8 @@ function pybug() {
     if [[ ! -e "$1" ]]; then
 	echo -e "Looks like your (required!) python script <$1> could not be found!"; return 1;
     fi
-    echo -e "Running [ipython]..."
-    ipython --pdb "$1"     --      "${@:2}"
+    echo -e "Running [jupyter]..."
+    jupyter --pdb "$1"     --      "${@:2}"
     #             SCRIPT  DASHES   ARGUMENTS
 }
 
@@ -1312,10 +1312,11 @@ alias cheat="echo \
 \">> DIFF: directories:   diff -rq DIR1 DIR2 \" ${NL}\
 \">> DIFF: with side-by-side and line numbers: sdiff -l file1.txt file2.txt | cat -n | grep -v -e '(${DLR}'  \" ${NL}\
 \" \" ${NL}\
-\">> PYTHON: iPython auto-reload a module before each run: %load_ext autoreload (newline)  %autoreload 2  from foo import some_function (<-- the import is only needed ONE time now!) \" ${NL}\
+\">> PYTHON: Get today's date / time in Pacific Time: from datetime import datetime // import pytz // datetime.now(tz=pytz.utc).astimezone(pytz.timezone('US/Pacific'))  (plus .date().isoformat() if you want a string)  \" ${NL}\
+\">> PYTHON: Jupyter auto-reload a module before each run: %load_ext autoreload (newline)  %autoreload 2  from foo import some_function (<-- the import is only needed ONE time now!) \" ${NL}\
 \">> PYTHON logging: RED error messages, but only if we are in the 'DEBUG' (detailed output) mode:  logging.error('My message')      and then:                       if logging.getLogger().isEnabledFor(logging.DEBUG):   logging.error(f'MORE {e}') \" ${NL}\
 \">> PYTHON debug a crashing program (worse):  python -m pdb YOURPROG -some -args -here . 'c' continues execution, 's' steps. \" ${NL}\
-\">> PYTHON debug a crashing program (better): ipython --pdb YOURPROG --  -more -args -here  'c' continues execution, 's' steps. \" ${NL}\
+\">> PYTHON debug a crashing program (better): jupyter --pdb YOURPROG --  -more -args -here  'c' continues execution, 's' steps. \" ${NL}\
 \">> PYTHON debug a crashing program by enterint the debugger at a specific point:  import pdb; pdb.set_trace() \" ${NL}\
 \">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --user PACKAGENAME \" ${NL}\
 \">> PYTHON / PIP install locally to home directory -> .local: pip2.7 install --ignore-installed --install-option=\\\"--prefix=$BINFPYROOT\\\" PACKAGENAME \" ${NL}\
