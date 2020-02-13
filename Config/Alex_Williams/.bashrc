@@ -416,9 +416,9 @@ export LS_COLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40
 export LSCOLORS="FxgxCxDxBxegedabagacad"    ## LSCOLORS *without* an underscore is for Mac OS X.
 export HOSTNAME  ## <-- Required for tmux / env to see HOSTNAME as a variable!
 export    CVS_RSH="ssh"
-export  CVSEDITOR="emacs -nw"
-export SVN_EDITOR="emacs -nw"
-export     EDITOR="emacs -nw"
+export  CVSEDITOR="emacs"
+export SVN_EDITOR="emacs"
+export     EDITOR="emacs"
 
 export HUE_BASE_IP="10.0.0.9"
 # Keybindings: Add IJKL navigation to supplement/replace the arrow keys
@@ -503,5 +503,3 @@ if [[ -f "${HOME}/bin/activate" ]]; then
     echo "[:OK:] .bashrc reporting: Activating virtualenv at ~/bin/activate"
     source "${HOME}/bin/activate"
 fi
-
-
