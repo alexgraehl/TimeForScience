@@ -1427,6 +1427,7 @@ alias cheat="echo \
 \">> MD5 verify: md5sum -c md5*.txt. Checksum must be 1st col, then 2 spaces, then filename. If checksum is 2nd: cat md5*.txt | awk '{print \\\$2\\\"  \\\"\\\$1}' | md5sum -c \" ${NL}\
 \">> MD5 on multiple files: find . -type f -exec md5 {} \; > list.txt    \" ${NL}\
 \">> HEX HEXDUMP: View bytes in hex form / hex editor: hexdump -v -C FILENAME (the '-v' prevents 'squeezing' of contiguous NULL bytes)  (or use colorized command-line viewer 'hexyl -v' or 'hex on the Mac (brew install hexyl)) \" ${NL}\
+\">> UNIX get Pacific time:    TZ=America/Los_Angeles date       (date might normally give you UTC, or whatever the system is set to) \" ${NL}\
 \">> UNIX detect null bytes at the start of a file: for x in *; do echo -e -n \\\"\\\$x\\t\\\" ; od -v \\\$x | head -n 1 ; done | less -S  (you can grep for '000000 000000 (etc)' in the output  \" ${NL}\
 \">> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=\\\$1} END {print sum}'\" ${NL}\
 \">> AWK: Get only FIRST line with a unique occurrence in column 1. Does not require sorting: cat FILE | awk -F'\\t' '!_[\\\$1]++' (assumes separator is tab) \" ${NL}\
