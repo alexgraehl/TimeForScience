@@ -1634,6 +1634,7 @@ alias cheat="echo \
 \">> JUPYTER/PYTHON output raw formatted text as HTML, programmatically:   display(Markdown('<SPAN style='color:green; font-size:8px;'>Your text here</SPAN>')) \" ${NL}\
 \">> Z SOFTWARE to remember: Bioinformatics: UGENE will do Clustal/BLAST/Etc locally, and visualize sequences / FASTAS. MAUVE is a similar aligner that we used previously for viral genomes.  IGV is a local genome browser. TreeView and Cluster 3 will cluster.  General: GLANCES is fancier top/htop system activity monitor. HEXYL is a colorized Mac command line hex editor (brew install hexyl).\" ${NL}\
 \">> Tableau 'roll up' (aggregate / groupby / group by) fields by some other field: {INCLUDE [state_of_usa] : SUM([cars_sold_per_county])} / {INCLUDE [state_of_usa] : SUM([num_people_per_county])} \" ${NL}\
+\">> Tableau 'maximum' date/value across a table {FIXED : MAX( { FIXED [YOUR_GROUPING_1] : MAX( [THE_VALUE_TO_MAX] ) } ) } \" ${NL}\
 \">> Tableau: get the most recent date in a giant table with a bunch of fields:  (new calculated field) {FIXED [SomeTopLevelCategory] : MAX([Date])} \" ${NL}\
 \">> Tableau: get a few days of data: window_sum(sum([your_cool_daily_value]), -4, -1)  // [-4 to -1] is the preceding 3 days, but not today  \" ${NL}\
 \">> Tableau: custom date format for e.g. 2001-12-11 (Mon):  yyyy-MM-dd (ddd) \" ${NL}\
