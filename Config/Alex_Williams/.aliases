@@ -171,7 +171,6 @@ DLR='\$'
 DQ='\"'
 BS='\\'
 NL="\$'\\n'" # newline!
-alias t="transpose.pl"
 
 # Shell navigation/commands
 
@@ -331,6 +330,8 @@ alias mv='mv -i'
 alias cp='cp -i'
 alias kpk='exit'
 alias diffdir='diff -rq' ## diff on directories
+alias t="transpose.pl"
+alias crone="EDITOR=emacs crontab -e"
 
 # Turn on/off crashplan. No longer necessary.
 #alias recrash='sudo launchctl unload /Library/LaunchDaemons/com.crashplan.engine.plist; sleep 1; sudo launchctl load /Library/LaunchDaemons/com.crashplan.engine.plist'
