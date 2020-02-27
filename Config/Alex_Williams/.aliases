@@ -956,6 +956,18 @@ function pybug() {
     #             SCRIPT  DASHES   ARGUMENTS
 }
 
+function jupynote() {
+    # Executes a jupyter notebook with generous settings. Saves output HTML to desktop
+    if [[ "$#" != "1" ]] ; then echo -e "[:ERR:] 'jupynote' can only accept exactly one argument: the name of a .ipynb file to run and convert to html"; return 1; fi
+    jupyter nbconvert --output-dir=~/Desktop/ --to 'html' --ExecutePreprocessor.timeout=1800 --execute "$1"
+    EXIT_CODE=$?
+    if [[ "$EXIT_CODE" == "0" ]]; then
+	echo "[:OK:] Done executing $1. Successful exit code $EXIT_CODE."
+    else
+	echo "[:ERR:] Done executing $1. Non-zero exit code $EXIT_CODE"
+    fi
+}
+
 #function docker-begone {
 #    echo -e "Stopping and removing ALL DOCKER CONTAINERS. ALL OF THEM!"
 #    docker stop $(docker ps -a -q)
