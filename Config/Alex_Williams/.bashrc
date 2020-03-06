@@ -317,12 +317,13 @@ ENDCOL_PS1="\[\e[m\]"
 
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash" # loads 'it2setcolor' and others
 
+# Color terminal settings / iTerm background color settings / iterm color settings
 if [[ "${AFRESH__CLOUD_PROVIDER}" == 'azure' ]]; then
    if [[ "${AFRESH__ENV}" == 'development' ]]; then
        ENVTEXT="${ENDCOL_PS1} [DEV AZ]"
        if agw_cmd_exists "it2setcolor"; then
-	   it2setcolor bg 000000  # Set iterm2 background/foreground colors
-	   it2setcolor fg FFFFFF
+	   it2setcolor bg 000000  # Set iterm2 background color (terminal background color)
+	   it2setcolor fg FFFFFF  # Set iterm2 foreground color (terminal foreground color)
        fi
    elif [[ "${AFRESH__ENV}" == 'staging' ]]; then
        ENVTEXT="${ENDCOL_PS1} [++STAGE AZ++]"
