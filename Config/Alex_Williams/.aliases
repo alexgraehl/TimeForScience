@@ -1640,6 +1640,7 @@ alias cheat="echo \
 \">> PYTHON/PANDAS: get count/index of UNIQUE VALUES in a list:  labels,actual_values = pd.factorize(your_dataframe['class']) (labels start at 0) \" ${NL}\
 \">> PYTHON/PANDAS: get count/index of UNIQUE VALUES in a list:  labels,actual_values = pd.factorize(your_dataframe['class']) (labels start at 0) \" ${NL}\
 \">> PYTHON/PANDAS need to access the INDEX columns in a pandas dataframe? Here's the super elegant and not overly verbose way:  forecast_init_df.index.get_level_values('ds')  \" ${NL}\
+\">> PYTHON/PANDAS aggregate (.agg()) (group by / group_by / group by) multiple times over the same column, saving to new named columns: by_state = all_usa_city_data.groupby('state').agg(num_cities=pd.NamedAgg(column='cityname', aggfunc='count'), state_bird=pd.NamedAgg(column='state_bird', aggfunc='first'), state_pop_all_cities=pd.NamedAgg(column='citypop', aggfunction='sum')).reset_index() \" ${NL}\
 \">> PYTHON/PANDAS APPEND columns as a chained command with column name in a variable: new_df   = (pd.DataFrame(list(some_stuff), columns=['ds']).assign(**{NEW_COLUMN_VARIABLE_NAME:0}) ) \" ${NL}\
 \">> PYTHON/PANDAS sort pandas data frame in place by absolute value: DF.reindex(DF['your_value'].abs().sort_values(ascending=False).index)   \" ${NL}\
 \">> JUPYTER/PYTHON output to HTML just like you see it on screen:   jupyter nbconvert --output-dir=~/Desktop/ --to 'html' --ExecutePreprocessor.timeout=1800 --execute YOUR_NOTEBOOK_NAME_HERE.ipynb  \" ${NL}\

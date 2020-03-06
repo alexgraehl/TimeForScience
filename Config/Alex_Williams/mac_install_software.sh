@@ -118,6 +118,7 @@ echo "      * Pixelmator"
 echo "      * XCode"
 
 echo "YOU SHOULD MANUALLY INSTALL THE FOLLOWING PROGRAMS:"
+echo "           cool-retro-term           FROM --> brew cask install cool-retro-term (retro-style Terminal)"
 echo "           RStudio                   FROM --> https://www.rstudio.com/products/rstudio/download/#download"
 echo "           SCROLL REVERSER           FROM --> https://pilotmoon.com/downloads/ScrollReverser-1.7.6.zip"
 echo "           PYCHARM                   FROM --> https://www.jetbrains.com/pycharm/"
