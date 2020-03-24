@@ -1234,6 +1234,40 @@ function bbq() { # bsub, be quick!
     echo -e "${a_green}[DONE]${a_end_color}"
 }
 
+function convert_webp_to_jpg() {
+    # Requires 'dwebp'
+    # Batch convert recursively any WEBP format to JPEG. Keeps old jpegs.
+    find ./ -name "*.webp" -exec dwebp {} -o {}.jpg \;
+}
+
+function mp4_concat() {
+    # Concatenate 2+ split-up mp4 files into a single file. Requires ffmpeg
+    if [[ "$#" < 2 ]]; then
+	echo "Requires at least 2 files."
+	return
+    fi
+    INFILE=file_combiner_temp.tmp
+    # Note that infile has to be in the same directory as the mp4s if you
+    # are not going to include the full path (which this command does not)
+    
+    OUTFILE=OUTFILE.mp4
+    if [[ -e "$OUTFILE" ]]; then
+	echo "$OUTFILE already exists--not overwriting."
+	return
+    fi
+    if [[ -e "$INFILE" ]]; then
+	echo "$INFILE temp file already exists--not overwriting."
+	return
+    fi
+    for arg; do
+	printf 'Preparing to combine "%s"...\n' "$arg"
+	touch $INFILE
+	echo "file '$arg'" >> $INFILE
+    done
+    echo "Writing to output file $OUTFILE..."
+    ffmpeg -f concat -safe 0 -i "$INFILE" -c copy "$OUTFILE"
+}
+
 function delete_android_file_transfer_on_mac() {
     PID=$(ps -fe | grep "[A]ndroid File Transfer Agent" | awk '{print $2}')
     if [[ -n ${PID} ]]; then kill ${PID}; fi;
