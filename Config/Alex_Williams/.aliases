@@ -400,6 +400,18 @@ alias e="emacsclient -nw  -c --alternate-editor=\"\"" # "As a special exception,
 #alias e2="LANG='en_US.UTF-8' bash -c 'emacsclient -nw  -c --alternate-editor=\"\"'" # "As a special exception, if command is the empty string, then emacsclient starts Emacs in daemon mode (as emacs --daemon) and then tries connecting again."
 #fi
 
+function ql_nfiles() {
+    # count number of offending quicklook files
+    lsof | grep Quick | grep -v -e /System -e /Library -e /private -e /dev -e /usr -e KQUEUE -e cwd | wc -l
+}
+
+function ql_kill() {
+    # Kill the weird quicklook processes that sometimes accumulate and make the UI laggy.
+    killall -9 -v QuickLookSatellite
+    killall -9 -v QuickLookUIService
+}
+
+
 #alias t='transpose.pl -q'
 alias tattle="echo -e -n '$a_status_color'; ps aux | tail -n +2 | sort --reverse -k 3,3 | head -n 5 | perl -p -e 's/[ ]+/\t/g' | cut -f 1,3,4,11 | cap.pl 'USER,CPU,MEM,TASK' | sheet.pl --color=always \
 --ht=75 --trunc=60 | tail -n +2 ; echo -e -n '$a_end_color'"
