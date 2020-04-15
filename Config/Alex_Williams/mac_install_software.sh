@@ -100,7 +100,7 @@ done
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo "A bunch of things that should be installed via pip3 (Python 3)"
-PIP3_PACKAGES=("pylint" "matplotlib" "numpy" "scipy" "jupyter")
+PIP3_PACKAGES=("pylint" "matplotlib" "numpy" "scipy" "jupyter" "mypy" "scikit-learn")
 for PACKAGE in ${PIP3_PACKAGES[@]}; do
     echo "[PYTHON3 (PIP3)] Installing the package $PACKAGE..."
     python3 -m pip install ${PACKAGE}
