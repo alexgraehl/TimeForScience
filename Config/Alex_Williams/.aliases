@@ -400,9 +400,9 @@ alias e="emacsclient -nw  -c --alternate-editor=\"\"" # "As a special exception,
 #alias e2="LANG='en_US.UTF-8' bash -c 'emacsclient -nw  -c --alternate-editor=\"\"'" # "As a special exception, if command is the empty string, then emacsclient starts Emacs in daemon mode (as emacs --daemon) and then tries connecting again."
 #fi
 
-function ql_nfiles() {
-    # count number of offending quicklook files
-    lsof | grep Quick | grep -v -e /System -e /Library -e /private -e /dev -e /usr -e KQUEUE -e cwd | wc -l
+function ql_files() {
+    # List any offending quicklook files
+    lsof | grep Quick | grep -v -e /System -e /Library -e /private -e /dev -e /usr -e KQUEUE -e cwd
 }
 
 function ql_kill() {

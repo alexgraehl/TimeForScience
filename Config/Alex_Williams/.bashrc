@@ -318,20 +318,20 @@ ENDCOL_PS1="\[\e[m\]"
 test -e "${HOME}/.iterm2_shell_integration.bash" && source "${HOME}/.iterm2_shell_integration.bash" # loads 'it2setcolor' and others
 
 # Color terminal settings / iTerm background color settings / iterm color settings
-if [[ "${AFRESH__CLOUD_PROVIDER}" == 'azure' ]]; then
-   if [[ "${AFRESH__ENV}" == 'development' ]]; then
+if [[ "some_variable" == 'azure' ]]; then
+   if [[ "thing" == 'development' ]]; then
        ENVTEXT="${ENDCOL_PS1} [DEV AZ]"
        if agw_cmd_exists "it2setcolor"; then
 	   it2setcolor bg 000000  # Set iterm2 background color (terminal background color)
 	   it2setcolor fg FFFFFF  # Set iterm2 foreground color (terminal foreground color)
        fi
-   elif [[ "${AFRESH__ENV}" == 'staging' ]]; then
+   elif [[ "thing" == 'staging' ]]; then
        ENVTEXT="${ENDCOL_PS1} [++STAGE AZ++]"
        if agw_cmd_exists "it2setcolor"; then
 	   it2setcolor bg 442200  # Set iterm2 background/foreground colors
 	   it2setcolor fg FFFFFF  # white
        fi
-   elif [[ "${AFRESH__ENV}" == 'production' ]]; then
+   elif [[ "thing" == 'production' ]]; then
        ENVTEXT="${ENDCOL_PS1} [**PROD AZ***]"
        if agw_cmd_exists "it2setcolor"; then
 	   it2setcolor bg 660000  # Set iterm2 background/foreground colors
@@ -340,31 +340,8 @@ if [[ "${AFRESH__CLOUD_PROVIDER}" == 'azure' ]]; then
    else
        ENVTEXT=""
    fi
-   
-else
-    if [[ "${AFRESH__ENV}" == 'development' ]]; then
-       ENVTEXT="${ENDCOL_PS1} [DEV AWS]"
-       if agw_cmd_exists "it2setcolor"; then
-	   it2setcolor bg 000033  # Set iterm2 background/foreground colors
-	   it2setcolor fg FFFFFF
-       fi
-   elif [[ "${AFRESH__ENV}" == 'staging' ]]; then
-       ENVTEXT="${ENDCOL_PS1} [++STAGE AWS++]"
-       if agw_cmd_exists "it2setcolor"; then
-	   it2setcolor bg 664400  # Set iterm2 background/foreground colors
-	   it2setcolor fg FFFFFF  # white
-       fi
-   elif [[ "${AFRESH__ENV}" == 'production' ]]; then
-       ENVTEXT="${ENDCOL_PS1} [**PROD AWS***]"
-       if agw_cmd_exists "it2setcolor"; then
-	   it2setcolor bg 660066  # Set iterm2 background/foreground colors
-	   it2setcolor fg FFBBFF  # pink
-       fi
-   else
-       ENVTEXT=""
-   fi
 fi
-   
+
 case "$COMPYNAME"
 in
     #zzz*|*GYFH|Mac*|Slithereens|Capsid)
