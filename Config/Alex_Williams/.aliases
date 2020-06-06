@@ -406,9 +406,13 @@ function ql_files() {
 }
 
 function ql_kill() {
-    # Kill the weird quicklook processes that sometimes accumulate and make the UI laggy.
+    # Kill the weird quicklook processes that sometimes accumulate and make the UI laggy (and maybe this is what makes WindowServer take up all the CPU?) for unknown reasons.
+    echo "Killing QuickLookSatellite (killall -9 -v QuickLookSatellite)"
     killall -9 -v QuickLookSatellite
+    echo "Killing QuickLookUIService (killall -9 -v QuickLookUIService)"
     killall -9 -v QuickLookUIService
+    echo "Resetting cache (qlmanage -r cache")
+    qlmanage -r cache
 }
 
 
@@ -899,11 +903,6 @@ function mvlogs() { # Usage:   mvlogs OUTPUT_DIRECTORY
     echo -e "[:OK :] Moved all the logs into the directory <$1>"
 }
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-#function refresh { # Usage:  refresh (no arguments)
-#    FAKEFILE=$(mktemp ./tmp.XXXXXX.tmp) ; /bin/rm $FAKEFILE;
-#    (>&2 echo -e "Refreshing the filesystem, which is important since the NFS system otherwise takes 60 seconds to update...")
-#}
 
 function star_make_index() {
     # This makes an alignment directory for the STAR aligner, when given just a FASTA file and a length.
