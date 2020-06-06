@@ -411,7 +411,7 @@ function ql_kill() {
     killall -9 -v QuickLookSatellite
     echo "Killing QuickLookUIService (killall -9 -v QuickLookUIService)"
     killall -9 -v QuickLookUIService
-    echo "Resetting cache (qlmanage -r cache")
+    echo "Resetting cache (qlmanage -r cache"
     qlmanage -r cache
 }
 
