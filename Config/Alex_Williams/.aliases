@@ -1199,6 +1199,11 @@ function agw_is_numeric() {
 # Logs you into a fast interactive node
 alias qrush='bsub -q long   -n 4   -R '\''span[hosts=1] rusage[mem=4]'\'' -Is bash' # was previously 'qrsh' 
 
+function windowserver_kill() {
+    sudo killall -HUP WindowServer
+}
+
+
 function bbq() { # bsub, be quick!
     # Usage:   bbq "my command here"
     # Note:    * Outputs log files to THE CURRENT DIRECTORY!
