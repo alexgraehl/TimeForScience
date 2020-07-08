@@ -1,7 +1,27 @@
 #!/bin/bash
+###
+### Test_script.sh: DESCRIPTION SHOULD GO HERE
+###
+### Usage:
+###   HOW_TO_USE_IT
+###
+### Options:
+###   THING 1        A thing
+###   THING 2        Another thing
+###   -h or --help:  Show this help message
+
 set -u
 set -o pipefail
 # Don't set -e, which EXITS if any return code is non-zero!
+
+# ~~~~~~~~~ Method for printing usage based on the '###' at very top of file ~~~~
+if [[ $# == 0 ]] || [[ "$1" == "-h" ]] || [[ "$1" == "--help" ]]; then
+    # Cool way to print help messages from https://samizdat.dev/help-message-for-shell-scripts/
+    # Any line ANYWHERE in this file that starts with '###' will be printed.
+    awk -F'### ' '/^###/ { print $2 }' "$0"
+    exit 1
+fi
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 echoerr() { echo -e "$@" 1>&2; }
 
