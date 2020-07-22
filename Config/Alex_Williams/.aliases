@@ -408,11 +408,11 @@ function ql_files() {
 function ql_kill() {
     # Kill the weird quicklook processes that sometimes accumulate and make the UI laggy (and maybe this is what makes WindowServer take up all the CPU?) for unknown reasons.
     echo "[:FYI:] Killing QuickLookSatellite: killall -9 -v QuickLookSatellite"
-    killall -9 -v QuickLookSatellite
+    sudo killall -9 -v QuickLookSatellite
     echo "[:FYI:] Killing QuickLookUIService: killall -9 -v QuickLookUIService"
-    killall -9 -v QuickLookUIService
+    sudo killall -9 -v QuickLookUIService
     echo "[:FYI:] Resetting cache: qlmanage -r cache"
-    qlmanage -r cache
+    sudo qlmanage -r cache
 }
 
 
