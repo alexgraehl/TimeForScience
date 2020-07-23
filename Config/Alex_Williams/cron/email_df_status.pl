@@ -6,9 +6,9 @@ use strict;
 use warnings;
 
 my $dfTemp = '/tmp/df.tmp';
-my $sendTo = 'alexgraehl+lighthouse+status+update@gmail.com';
+my $sendTo = 'some_address @ somewhere . com';
 
-my $EMAIL_USERNAME_FROM = 'binfcore'; ## Do NOT include @gmail.com here!
+my $EMAIL_USERNAME_FROM = 'binfcore'; ## Do NOT include @gmail here!
 
 my $email_smtp_client_location = $ARGV[0];
 my $PLAINTEXT_PASSWORD = $ARGV[1];
