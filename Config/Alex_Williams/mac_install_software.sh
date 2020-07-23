@@ -5,39 +5,39 @@ set -o xtrace
 
 cd "$HOME"
 
-if [[ -z "$TIME_FOR_SCIENCE_DIR" ]]; then echo "[ERROR: a required variable is NOT set!] You need to set the TIME_FOR_SCIENCE_DIR to the location of the TimeForScience directory (probably in your home directory). You could do this by following the instructions at https://github.com/alexgraehl/TimeForScience."; exit 1; else echo "[OK] The TIME_FOR_SCIENCE_DIR environment variable is '$TIME_FOR_SCIENCE_DIR'"; fi
-
-if [[ ! -d "$TIME_FOR_SCIENCE_DIR" ]]; then echo "[ERROR: the TIME_FOR_SCIENCE_DIR does not exist (or is not a directory)] The TIME_FOR_SCIENCE_DIR environment variable must point to a valid checked-out copy of the TimeForScience repository. It appears to not be a directory. The directory we are looking for (which you should verify is correct) is: '$TIME_FOR_SCIENCE_DIR'"; exit 1; else echo "[OK] Successfully verified the existence of the directory '$TIME_FOR_SCIENCE_DIR'"; fi
-
-if [[ ! -e "$TIME_FOR_SCIENCE_DIR/README.md" ]]; then echo "[ERROR: the TIME_FOR_SCIENCE_DIR appears NOT to contain a 'README.md', which implies that it is not a valid checked-out copy of the TimeForScience repository."; exit 1; else echo "[OK] The $TIME_FOR_SCIENCE_DIR/README.md file was successfully found."; fi
-
 SHOULD_HOMEBREW=1
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#            Create symlinks to standard config files
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-if [[ $(dirname $TIME_FOR_SCIENCE_DIR) == "$HOME" ]]; then echo "use relative links"; else echo "do not use relative links--apparently the TimeForScience directory is NOT located immediately in your home directory2. Exiting here, as we cannot deal with this."; exit 1; fi
+if [[ -z "${TIME_FOR_SCIENCE_DIR:-}" ]] || [[ ! -d "$TIME_FOR_SCIENCE_DIR" ]] || [[ ! -e "$TIME_FOR_SCIENCE_DIR/README.md" ]]; then
+    echo "[FYI]: TIME_FOR_SCIENCE_DIR is not set. You can set it by following the instructions at https://github.com/alexgraehl/TimeForScience.";
+    echo "[FYI]: Continuing without symlinking..."
+else
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #            Create symlinks to standard config files
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if [[ $(dirname $TIME_FOR_SCIENCE_DIR) == "$HOME" ]]; then echo "use relative links"; else echo "do not use relative links--apparently the TimeForScience directory is NOT located immediately in your home directory2. Exiting here, as we cannot deal with this."; exit 1; fi
 
-HOMEDIR_CONFIG_FILES_TO_SYMLINK=(.aliases .bash_profile .bashrc .emacs .inputrc .screenrc .tmux.conf)
-for FILE in ${HOMEDIR_CONFIG_FILES_TO_SYMLINK[@]}; do
+    HOMEDIR_CONFIG_FILES_TO_SYMLINK=(.aliases .bash_profile .bashrc .emacs .inputrc .screenrc .tmux.conf)
+    for FILE in ${HOMEDIR_CONFIG_FILES_TO_SYMLINK[@]}; do
 	TIME_FOR_SCIENCE_BASENAME=$(basename $TIME_FOR_SCIENCE_DIR)
-	CFG="./$TIME_FOR_SCIENCE_BASENAME/Config/Alex_Williams/$FILE"
+	CFG="./${TIME_FOR_SCIENCE_BASENAME}/Config/Alex_Williams/$FILE"
 	echo "CFG="$CFG
 	echo "FILE="$FILE
 	if [[ ! -e $CFG ]]; then echo "[ERROR] The config file that we expected to exist, specifically, '$CFG', did not exist."; exit 1; else echo "[OK] Linking $CFG to the home directory (via relative path)"; fi
 	ln -f -s $CFG ./
-done
+    done
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#                          SSH Config
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-if [[ -e "$HOME/.ssh/config" ]]; then
-    echo "[:HEY:] [SKIPPING] The ssh config file at .ssh/config ALREADY exists, so we are not overwriting it."
-else
-    cp TimeForScience/Config/Alex_Williams/ssh-slash-config $HOME/.ssh/config
-    chmod -R go-w   ~/.ssh/
-    chmod    go-rwx ~/.ssh/id_rsa
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #                          SSH Config
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if [[ -e "$HOME/.ssh/config" ]]; then
+	echo "[:HEY:] [SKIPPING] The ssh config file at .ssh/config ALREADY exists, so we are not overwriting it."
+    else
+	cp ${TIME_FOR_SCIENCE_DIR}/Config/Alex_Williams/ssh-slash-config $HOME/.ssh/config
+	chmod -R go-w   ~/.ssh/
+	chmod    go-rwx ~/.ssh/id_rsa
+    fi
 fi
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #                         Homebrew
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,7 +59,7 @@ if [[ 1 == $SHOULD_HOMEBREW ]]; then
 
     if [[ ! -e "/Applications/Dropbox.app"            ]]; then brew install dropbox; fi
     if [[ ! -e "/Applications/BBEdit.app"             ]]; then brew install bbedit; fi
-    if [[ ! -e "/Applications/LibreOffice.app"        ]]; then brew install libreoffice; fi
+    if [[ ! -e "/Applications/LibreOffice.app"        ]]; then brew cask install libreoffice; fi
     if [[ ! -e "/Applications/Transmit.app"           ]]; then brew cask install transmit; fi    # COMMERCIAL software
     if [[ ! -e "/Applications/TablePlus.app"          ]]; then brew cask install tableplus; fi   # COMMERCIAL software
     if [[ ! -e "/Applications/Atom.app"               ]]; then brew cask install atom; fi  # markdown editor

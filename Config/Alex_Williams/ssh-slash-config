@@ -13,7 +13,7 @@ Host *
     KeepAlive        yes
     ForwardX11       yes
     Compression      yes
-#    CompressionLevel 9
+#   CompressionLevel 9
 
 # https://serverfault.com/questions/422908/how-can-i-prevent-the-warning-no-xauth-data-using-fake-authentication-data-for
 # If you get this message: "No xauth program." when sshing...
@@ -33,9 +33,11 @@ Host github.com
     HostName github.com
     User git
     IdentityFile ~/.ssh/id_rsa
-# You will ALSO need to make sure this IdentityFile is added to your ssh agent:
-      # 1. ssh-add -l
-      # 2. ssh-add  ~/.ssh/id_rsa_your_other_key_here_PRIVATE_KEY
+
+# When adding a key: you will ALSO need to make sure this IdentityFile is added to your ssh agent:
+#     1. ssh-add -l
+#     2. ssh-add -K   ~/.ssh/id_rsa_your_other_key_here_PRIVATE_KEY
+#        (The 'k' option is a 'keychain' option just for the Mac)
       
 # Github has a special syntax (?) for alternate accounts: hyphen + repo name.
 # 1. In your ~/.ssh/config:
@@ -49,7 +51,7 @@ Host github.com
 #          url = git@github.com-COOLUSERNAME:COOLREPOTOPLEVEL/MyCoolSubRepo.git
 #          email = COOLUSERNAME@users.noreply.github.com
 #    * The 'url' line must have the hyphen in it, or nothing will work!
-# 3. You will ALSO need to make sure this IdentityFile is added to your ssh agent:
-#    1. ssh-add -l
-#    2. ssh-add  ~/.ssh/id_rsa_your_other_key_here_PRIVATE_KEY
+
+# If your git push command (on GitHub) is rejected due to 'declined due to email privacy restrictions',
+# you can amend your commit to use the default 'noreply' email address: git commit --amend --author="YOURNAME <YOURNAME@noreply.github.com>"
 
