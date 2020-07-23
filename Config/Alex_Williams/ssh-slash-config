@@ -52,4 +52,5 @@ Host github.com
 # 3. You will ALSO need to make sure this IdentityFile is added to your ssh agent:
       # 1. ssh-add -l
       # 2. ssh-add  ~/.ssh/id_rsa_your_other_key_here_PRIVATE_KEY
-
+# If your push command on git is rejected due to 'declined due to email privacy restrictions',
+# you can amend your commit to use the default 'noreply' email address: git commit --amend --author="YOURNAME <YOURNAME@noreply.github.com>"
