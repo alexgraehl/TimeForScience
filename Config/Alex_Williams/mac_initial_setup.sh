@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# ~/.osx — https://mths.be/osx
+# ~/.osx - https://mths.be/osx
 
 # Ask for the administrator password upfront
 sudo -v
@@ -77,11 +77,11 @@ defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
 # Automatically quit printer app once the print jobs complete
 #defaults write com.apple.print.PrintingPrefs "Quit When Finished" -bool true
 
-# Disable the “Are you sure you want to open this application?” dialog
+# Disable the "Are you sure you want to open this application?" dialog
 sudo defaults write com.apple.LaunchServices LSQuarantine -bool false
 sudo defaults write com.apple.LaunchServices LSQuarantine -bool NO
 
-# Remove duplicates in the “Open With” menu (also see `lscleanup` alias)
+# Remove duplicates in the "Open With" menu (also see `lscleanup` alias)
 /System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user
 
 # Display ASCII control characters using caret notation in standard text views
@@ -123,10 +123,10 @@ defaults write com.apple.SoftwareUpdate ScheduleFrequency -int 1
 # Disable Notification Center and remove the menu bar icon
 #launchctl unload -w /System/Library/LaunchAgents/com.apple.notificationcenterui.plist 2> /dev/null
 
-# Disable smart quotes as they’re annoying when typing code
+# Disable smart quotes as they're annoying when typing code
 defaults write NSGlobalDomain NSAutomaticQuoteSubstitutionEnabled -bool false
 
-# Disable smart dashes as they’re annoying when typing code
+# Disable smart dashes as they're annoying when typing code
 defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
 
 # Set a custom wallpaper image. `DefaultDesktop.jpg` is already a symlink, and
@@ -147,12 +147,12 @@ defaults write NSGlobalDomain NSAutomaticDashSubstitutionEnabled -bool false
 
 # Remove the sleep image file to save disk space
 #sudo rm /private/var/vm/sleepimage
-# Create a zero-byte file instead…
+# Create a zero-byte file instead...
 #sudo touch /private/var/vm/sleepimage
-# …and make sure it can’t be rewritten
+# ...and make sure it can't be rewritten
 #sudo chflags uchg /private/var/vm/sleepimage
 
-# Disable the sudden motion sensor as it’s not useful for SSDs
+# Disable the sudden motion sensor as it's not useful for SSDs
 #sudo pmset -a sms 0
 
 ###############################################################################
@@ -170,7 +170,7 @@ defaults write NSGlobalDomain com.apple.mouse.tapBehavior -int 1
 #defaults -currentHost write NSGlobalDomain com.apple.trackpad.trackpadCornerClickBehavior -int 1
 #defaults -currentHost write NSGlobalDomain com.apple.trackpad.enableSecondaryClick -bool true
 
-# Disable “natural” (Lion-style) scrolling
+# Disable "natural" (Lion-style) scrolling
 #defaults write NSGlobalDomain com.apple.swipescrolldirection -bool false
 
 # Increase sound quality for Bluetooth headphones/headsets
@@ -189,14 +189,13 @@ defaults write com.apple.universalaccess closeViewZoomFollowsFocus -bool false
 # Disable press-and-hold for keys in favor of key repeat
 defaults write NSGlobalDomain ApplePressAndHoldEnabled -bool false
 
-# Set a blazingly fast keyboard repeat rate
-defaults write NSGlobalDomain KeyRepeat -float 0.000000000001
-
-# not sure if this line below is important... see https://github.com/mathiasbynens/dotfiles/issues/687
+# Set a fast keyboard repeat rate (here, you're setting the KeyRepeat rate to 1 (15ms). The default minumum is 2 (30ms).)
+defaults write NSGlobalDomain KeyRepeat -int 1
 defaults write NSGlobalDomain InitialKeyRepeat -int 10
+# Alex's note: *actually requires you to re-plug-in your keyboard after changing!* Does not take effect until you unplug the USB keyboard!
 
 # Set language and text formats
-# Note: if you’re in the US, replace `EUR` with `USD`, `Centimeters` with
+# Note: if you're in the US, replace `EUR` with `USD`, `Centimeters` with
 # `Inches`, `en_GB` with `en_US`, and `true` with `false`.
 #defaults write NSGlobalDomain AppleLanguages -array "en" "us"
 #defaults write NSGlobalDomain AppleLocale -string "en_US@currency=USD"
@@ -342,12 +341,12 @@ defaults write com.apple.finder WarnOnEmptyTrash -bool false
 # Show the ~/Library folder
 chflags nohidden ~/Library
 
-# Remove Dropbox’s green checkmark icons in Finder
+# Remove Dropbox's green checkmark icons in Finder
 #file=/Applications/Dropbox.app/Contents/Resources/emblem-dropbox-uptodate.icns
 #[ -e "${file}" ] && mv -f "${file}" "${file}.bak"
 
 # Expand the following File Info panes:
-# “General”, “Open with”, and “Sharing & Permissions”
+# "General", "Open with", and "Sharing & Permissions"
 defaults write com.apple.finder FXInfoPanesExpanded -dict \
 	General -bool true \
 	OpenWith -bool true \
@@ -374,27 +373,27 @@ defaults write com.apple.dock enable-spring-load-actions-on-all-items -bool true
 defaults write com.apple.dock show-process-indicators -bool true
 
 # Wipe all (default) app icons from the Dock
-# This is only really useful when setting up a new Mac, or if you don’t use
+# This is only really useful when setting up a new Mac, or if you don't use
 # the Dock to launch apps.
 #defaults write com.apple.dock persistent-apps -array ""
 
-# Don’t animate opening applications from the Dock
+# Don't animate opening applications from the Dock
 defaults write com.apple.dock launchanim -bool false
 
 # Speed up Mission Control animations
 defaults write com.apple.dock expose-animation-duration -float 0.1
 
-# Don’t group windows by application in Mission Control
+# Don't group windows by application in Mission Control
 # (i.e. use the old Exposé behavior instead)
 defaults write com.apple.dock expose-group-by-app -bool false
 
 # Disable Dashboard
 defaults write com.apple.dashboard mcx-disabled -bool true
 
-# Don’t show Dashboard as a Space
+# Don't show Dashboard as a Space
 defaults write com.apple.dock dashboard-in-overlay -bool true
 
-# Don’t automatically rearrange Spaces based on most recent use
+# Don't automatically rearrange Spaces based on most recent use
 defaults write com.apple.dock mru-spaces -bool false
 
 # Remove the auto-hiding Dock delay
@@ -452,7 +451,7 @@ defaults write com.apple.dock wvous-rr-corner -int 4 # 4 = Desktop
 # Safari & WebKit                                                             #
 ###############################################################################
 
-# Privacy: don’t send search queries to Apple
+# Privacy: don't send search queries to Apple
 defaults write com.apple.Safari UniversalSearchEnabled -bool false
 defaults write com.apple.Safari SuppressSearchSuggestions -bool true
 
@@ -463,31 +462,31 @@ defaults write com.apple.Safari SuppressSearchSuggestions -bool true
 # Show the full URL in the address bar (note: this still hides the scheme)
 defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool true
 
-# Set Safari’s home page to `about:blank` for faster loading
+# Set Safari's home page to `about:blank` for faster loading
 defaults write com.apple.Safari HomePage -string "about:blank"
 
-# Prevent Safari from opening ‘safe’ files automatically after downloading
+# Prevent Safari from opening 'safe' files automatically after downloading
 defaults write com.apple.Safari AutoOpenSafeDownloads -bool false
 
 # Prevent the Backspace key from going to the previous page in history
 defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2BackspaceKeyNavigationEnabled -bool false
 
-# Hide Safari’s bookmarks bar by default
+# Hide Safari's bookmarks bar by default
 defaults write com.apple.Safari ShowFavoritesBar -bool false
 
-# Hide Safari’s sidebar in Top Sites
+# Hide Safari's sidebar in Top Sites
 defaults write com.apple.Safari ShowSidebarInTopSites -bool false
 
-# Disable Safari’s thumbnail cache for History and Top Sites
+# Disable Safari's thumbnail cache for History and Top Sites
 defaults write com.apple.Safari DebugSnapshotsUpdatePolicy -int 2
 
-# Enable Safari’s debug menu
+# Enable Safari's debug menu
 defaults write com.apple.Safari IncludeInternalDebugMenu -bool true
 
-# Make Safari’s search banners default to Contains instead of Starts With
+# Make Safari's search banners default to Contains instead of Starts With
 defaults write com.apple.Safari FindOnPageMatchesWordStartsOnly -bool false
 
-# Remove useless icons from Safari’s bookmarks bar
+# Remove useless icons from Safari's bookmarks bar
 defaults write com.apple.Safari ProxiesInBookmarksBar "()"
 
 # Enable the Develop menu and the Web Inspector in Safari
@@ -588,7 +587,7 @@ defaults write com.apple.spotlight orderedItems -array \
 #	defaults write com.apple.terminal 'Startup Window Settings' -string "${TERM_PROFILE}";
 #fi;
 
-# Enable “focus follows mouse” for Terminal.app and all X11 apps
+# Enable "focus follows mouse" for Terminal.app and all X11 apps
 # i.e. hover over a window and start typing in it without clicking first
 #defaults write com.apple.terminal FocusFollowsMouse -bool true
 #defaults write org.x.X11 wm_ffm -bool true
@@ -596,7 +595,7 @@ defaults write com.apple.spotlight orderedItems -array \
 # Install the Solarized Dark theme for iTerm
 #open "${HOME}/init/Solarized Dark.itermcolors"
 
-# Don’t display the annoying prompt when quitting iTerm
+# Don't display the annoying prompt when quitting iTerm
 #defaults write com.googlecode.iterm2 PromptOnQuit -bool false
 
 ###############################################################################
@@ -666,7 +665,7 @@ defaults write com.apple.appstore ShowDebugMenu -bool true
 # Disable automatic emoji substitution (i.e. use plain text smileys)
 defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticEmojiSubstitutionEnablediMessage" -bool false
 
-# Disable smart quotes as it’s annoying for messages that contain code
+# Disable smart quotes as it's annoying for messages that contain code
 defaults write com.apple.messageshelper.MessageController SOInputLineSettings -dict-add "automaticQuoteSubstitutionEnabled" -bool false
 
 # Disable continuous spell checking
@@ -694,7 +693,7 @@ defaults write com.google.Chrome.canary DisablePrintPreview -bool true
 defaults write com.google.Chrome PMPrintingExpandedStateForPrint2 -bool true
 defaults write com.google.Chrome.canary PMPrintingExpandedStateForPrint2 -bool true
 
-# ===============================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Extra stuff that Alex found online
 
 # opening and closing Quick Look windows
@@ -720,7 +719,7 @@ defaults write com.apple.loginwindow PowerButtonSleepsSystem -bool no
 BETTER_NAME=mac
 scutil --set HostName $BETTER_NAME
 
-# ===============================================================
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ###############################################################################
 # Kill affected applications                                                  #
