@@ -10,8 +10,11 @@
 # Source any global bash definitions
 [[ -f "/etc/bashrc" ]] &&  . /etc/bashrc
 
-# Enable programmable completion features. May already be enabled in  /etc/bash.bashrc or /etc/profile, in which case this would not be necessary.
-[[ -f "/etc/bash_completion" ]] &&  . /etc/bash_completion
+# Enable programmable completion features (e.g. git branch autocompletion).
+# May already be enabled in  /etc/bash.bashrc or /etc/profile, in which case this would not be necessary.
+[[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
+#[[ -f "/etc/bash_completion" ]] &&  . /etc/bash_completion          # old
+
 
 # ~/.bashrc: executed by bash(1) for non-login shells (Loaded when the shell is non-interactively started up)
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc) for examples

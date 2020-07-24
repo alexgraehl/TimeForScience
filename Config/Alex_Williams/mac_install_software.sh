@@ -48,7 +48,7 @@ if [[ 1 == $SHOULD_HOMEBREW ]]; then
     brew cask install java # required for gradle and more
     #brew cask install iterm2 # hexyl glances  # hexyl: command line color hex editor. glances: fancier htop
     brew cask install github
-    brew install bash cairo catimg dialog emacs ffmpeg fontconfig freetype gcc gdbm gettext git glances glib gmp gnutls gradle gsl htop imagemagick ipython isl jpeg lame libevent libffi libgit2 libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle numpy openssl pcre pigz pixman pkg-config pv python qemu R readline rsync scipy sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
+    brew install bash bash-completion cairo catimg dialog emacs ffmpeg fontconfig freetype gcc gdbm gettext git glances glib gmp gnutls gradle gsl htop imagemagick ipython isl jpeg lame libevent libffi libgit2 libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle numpy openssl pcre pigz pixman pkg-config pv python qemu R readline rsync scipy sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
 
     if [[ ! -e "/Applications/iTerm.app"              ]]; then brew cask install iterm2; fi
     if [[ ! -e "/Applications/Slack.app"              ]]; then brew cask install slack; fi
@@ -100,7 +100,7 @@ done
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo "A bunch of things that should be installed via pip3 (Python 3)"
-PIP3_PACKAGES=("pylint" "matplotlib" "numpy" "scipy" "jupyter" "mypy" "scikit-learn")
+PIP3_PACKAGES=("pylint" "matplotlib" "numpy" "scipy" "jupyter" "mypy" "scikit-learn" "docutils" "sphinx" "sphinx-autobuild")
 for PACKAGE in ${PIP3_PACKAGES[@]}; do
     echo "[PYTHON3 (PIP3)] Installing the package $PACKAGE..."
     python3 -m pip install ${PACKAGE}
