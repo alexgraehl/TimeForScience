@@ -8,8 +8,18 @@ sudo -v
 echo "Note: this will take about 60-90 seconds--don't stop it early... let it run to completion."
 # Keep-alive: update existing `sudo` time stamp until `.osx` has finished
 while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done 2>/dev/null &
-
 echo "Done with the extra-slow step..."
+
+
+###############################################################################
+# Git aliases (e.g. 'git co') - one-time setup                                #
+###############################################################################
+git config --global alias.co   'checkout'
+git config --global alias.br   'branch'
+git config --global alias.bl   'branch --list'
+git config --global alias.ci   'commit'
+git config --global alias.st   'status'
+git config --global alias.last 'log -1 HEAD'
 
 ###############################################################################
 # General UI/UX                                                               #
