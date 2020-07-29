@@ -19,8 +19,11 @@ git config --global alias.br   'branch'
 git config --global alias.bl   'branch --list'
 git config --global alias.blr  'branch --list --remote'
 git config --global alias.ci   'commit'
+git config --global alias.s    'status'
 git config --global alias.st   'status'
+git config --global alias.sw   'switch'
 git config --global alias.last 'log -1 HEAD'
+git config --global alias.cot  'checkout --track'  # e.g. git checkout --track origin/remote_branch_name
 
 ###############################################################################
 # General UI/UX                                                               #
