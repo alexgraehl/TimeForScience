@@ -443,6 +443,13 @@ function gitbranchall {
     for branch in `git branch -r | grep -v HEAD`;do echo -e `git show --format="%ci %cr" $branch | head -n 1` \\t$branch; done | sort -r
 }
 
+function git-grab-hash {
+    if [[ "$#" != 1 ]]; then echo -e "[:ERR:] 'git-grab-hash' needs exactly one hash argument!"; return 1; fi
+    echo "[:FYI:] Grabbing remote hash as new local branch..."
+    echo "[:OK:]       --> git checkout \"$1\"  -b \"local-$1\""
+    git checkout "$1"  -b "local-$1"
+}
+
 alias gitours="git checkout --ours"
 
 # git aliases
