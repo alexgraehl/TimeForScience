@@ -1,0 +1,24 @@
+############## TITLE ##################50 CHARS->#
+Fixed a thing. This is a commit title <50 chars
+
+####### 72 characters #######################################72 CHARS->#
+Problem / Issue:
+
+  * Problem 1 with blank line above
+  * Problem 2 with no spaces between items
+  * Etc etc
+
+Solution / Changes:
+
+  * Special instructions
+  * Testing steps
+  * Etc etc that can be
+    multiple lines long but remember to linebreak them at 72 chars
+    and properly re-indent them!
+  * Separate subject from body with a blank line
+  * You can make this template appear every time you run a git commit
+    by running "git config --global commit.template ~/.gitmessage" ,
+    assuming you have saved this file as ~/.gitmessage .
+  * Comments are stripped out
+
+####### 72 characters #######################################72 CHARS->#
