@@ -1333,6 +1333,22 @@ function vv {
 }
 
 
+function cheat2() {
+    cat <<-END_OF_HEREDOC
+This is line one.
+This is line two.
+This is line three.
+>> VSCode example launch.json [// means 'newline']:
+   { "configurations": [  {
+            "name": "MyProgram",
+            "type": "python",
+            "request": "launch",
+            "program": "path/to/your/script.py",
+            "args": [ "--good-arg", "some-value" ],
+            "console": "integratedTerminal"          } ], }
+END_OF_HEREDOC
+}
+
 alias cheat="echo \
 \">> Rscript/R read STDIN: One-liner R and perl extravaganza for plotting contig lengths:  cat contigs.fasta  | perl -ne 'next if not m/^>/; chomp; m/>NODE_(\d+).*length_([\d.]+).*cov_([\d.]+)/; print join(qq{\t}, \\\$1, \\\$2, \\\$3).qq{\n};' | Rscript --vanilla -e 'ddd=read.table(file(\\\"stdin\\\"),header=F,row.names=1); pdf(\\\"a.pdf\\\"); plot(ddd[,1], ddd[,2]); dev.off();' \" ${NL}\
 \">> UNICODE get character as shell escape: printf YOURCHAR | hexdump , then convert that like this: printf \\\"\\\\xE2\\\\x98\\\\xA0\\\" \" ${NL}\
