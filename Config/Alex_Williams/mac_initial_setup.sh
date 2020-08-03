@@ -24,6 +24,7 @@ git config --global alias.st   'status'
 git config --global alias.sw   'switch'
 git config --global alias.last 'log -1 HEAD'
 git config --global alias.cot  'checkout --track'  # e.g. git checkout --track origin/remote_branch_name
+git config --global alias.alias "! git config --get-regexp ^alias\. | sed -e s/^alias\.// -e s/\ /\ =\ /" # Adds 'git alias' to list aliases
 
 ###############################################################################
 # General UI/UX                                                               #
