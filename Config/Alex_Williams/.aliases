@@ -1639,7 +1639,7 @@ alias cheat="echo \
 \">> PERL: CPAN invocation: sudo perl -MCPAN -e shell \" ${NL}\
 \">> PERL: CPAN upgrade all WITHOUT prompting: PERL_MM_USE_DEFAULT=1 && sudo perl -MCPAN -e shell >> then o conf build_requires_install_policy yes  ; o conf prerequisites_policy 'follow'  ; o conf commit ;  upgrade /(.\\*)/\\\" \" ${NL}\
 \">> PERL: Backreferences/does something show up twice on a line: perl -n -e 'print ((\\\$_ =~ /\b(Something\d+)\s.\g1/) ? qq{match: \\\$1\\n} : qq{Nope\\n});' \" ${NL}\
-\">> EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
+\">> EMACS: insert verbatim newline in search-and-replace:  Ctrl-Q Ctrl-J (this is also how you insert a newline when editing in iPython / PDB / python debugging on the command line \" ${NL}\
 \">> EMACS: install new packages: list-packages \" ${NL}\
 \">> EMACS: show variable: describe-variable \" ${NL}\
 \" \" ${NL}\
