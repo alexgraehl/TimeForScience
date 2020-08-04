@@ -7,14 +7,14 @@
 # ---------------------
 if [ -f ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config ]; then
     source ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config
-elif [ -f ~/.aliases-server-config ]; then
-    source ~/.aliases-server-config
+elif [ -f ~/.aliases-server-config.sh ]; then
+    source ~/.aliases-server-config.sh
 fi
 
-if [ -f ~/.local-config-no-git ]; then
-    source ~/.local-config-no-git
+if [ -f ~/.local-config-no-git.sh ]; then
+    source ~/.local-config-no-git.sh
 else
-    echo -e "[:HEY:] Since no .local-config-no-git was found, SSH commands, server shortcuts, and tmux coloring may fail. You may want to MANUALLY copy this file over from another machine."
+    echo -e "[:HEY:] Since no ~/.local-config-no-git.sh was found, SSH commands, server shortcuts, and tmux coloring may fail. You may want to MANUALLY copy this file over from another machine."
 fi
 
 if [[ "${USER}" == "alexgw" ]] || [[ "${USER}" == "awilliams" ]] || [[ "${USER}" == "alexwilliams" ]] || [[ "${USER}" =~ willia* ]]; then
