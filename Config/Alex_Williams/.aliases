@@ -322,7 +322,7 @@ alias l='ls'
 alias lo='ll -r -t' # Depends on "ll" already being defined above. List by TIME so that NEWEST files are at the bottom
 alias p='pwd -P'
 alias ..='cd ..'
-#alias ../='cd ..'
+#alias ../=='cd ..'
 #alias ../../='cd ../../'
 #alias ..='pushd ..'
 alias res='source ~/.bashrc ; source ~/.bash_profile'
@@ -1382,6 +1382,7 @@ alias cheat="echo \
 \">> MAC: No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
 \">> MAC: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
 \">> MAC: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
+\">> BASH: Print and execute a command: use a SUBSHELL for this:  (set -x; YOUR COMMAND THAT IS PRINTED; ); next command not printed \" ${NL}\
 \">> FIND: delete files when argument list too long: find . -iname '*whatever*' -delete \" ${NL}\
 \">> CRON: edit crontab cron.tab with emacs: env EDITOR=emacs crontab -e \" ${NL}\
 \">> CRON: check CRON logs (if enabled) on the Mac: sudo cat /var/mail/your_username_here \" ${NL}\
