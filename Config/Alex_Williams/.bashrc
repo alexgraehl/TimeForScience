@@ -250,14 +250,14 @@ function nonzero_return() {
 
 # get current branch in git repo
 function parse_git_branch() {
-	BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
-	if [ ! "${BRANCH}" == "" ]
-	then
-		STAT=`parse_git_dirty`
-		echo "[${BRANCH}${STAT}]"
-	else
-		echo ""
-	fi
+    BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
+    if [ ! "${BRANCH}" == "" ]
+    then
+	STAT=`parse_git_dirty`
+	echo "[${BRANCH}${STAT}]"
+    else
+	echo ""
+    fi
 }
 
 # get current status of git repo
@@ -345,25 +345,33 @@ if [[ "some_variable" == 'azure' ]]; then
    fi
 fi
 
-case "$COMPYNAME"
-in
-    #zzz*|*GYFH|Mac*|Slithereens|Capsid)
+if [[ "1" == "1" ]]; then
+    # NOT root. Set PS1 accordingly
+    case "$COMPYNAME"
+    in
+	#zzz*|*GYFH|Mac*|Slithereens|Capsid)
 	# 37;41m is white on a GREEN (42) background. Red would be ;41m
 	#export PS1="\[\e[37;42m\]\t\[\e[m\]\[\e[37;41m\]\`parse_git_branch\`\[\e[m\]\[\e[42m\][\[\e[m\]\[\e[37;42m\]${COMPYSHORT}\[\e[m\]\[\e[42m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
 	#export PS1="${PRE_PS1}\[${POWDER_BLUE}\].mac\$\[${NORMAL}\] " # we are on a mac laptop probably
-#	;;
-    *) ## Otherwise...
-	# 37;44m is white on blue
-	#export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;41m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]${COMPYSHORT}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
-	export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;41m\]\
+	#	;;
+	*) ## Otherwise...
+	    # 37;44m is white on blue
+	    #export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;41m\]\`parse_git_branch\`\[\e[m\]\[\e[44m\][\[\e[m\]\[\e[37;44m\]${COMPYSHORT}\[\e[m\]\[\e[44m\]]\[\e[m\]\[\e[33;45m\]\`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
+	    export PS1="\[\e[37;44m\]\t\[\e[m\]\[\e[37;41m\]\
 \`parse_git_branch\`\
 \[\e[m\]\[\e[44m\][\[\e[m\]\[${COMPCOL}${COMPYSHORT}${ENDCOL_PS1}\
 \[\e[44m\]]\
 ${ENVTEXT}\
 \[\e[m\]\[\e[33;45m\]\
 \`nonzero_return\`\[\e[m\] " # don't use \h for host here; we use COMPYNAME instead, since it was sanitized / redone
-	;;
-esac
+	    ;;
+    esac
+else
+    # this doesn't work for 'sudo su'
+    export PS1="ROOT> "
+fi
+
+
 
 # ~~~~~~~~~~~~~~~~ End of code block from http://ezprompt.net/ ~~~~~~~~~~~~~~~
 

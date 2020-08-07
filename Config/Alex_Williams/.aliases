@@ -817,6 +817,14 @@ function pylint-agw() {
     # Best usage is: mypylint | s for viewing the colorized output!
 }
 
+function mypy-agw() {
+    if [[ "$#" == 0 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE PYTHON filename into this function!"; return 1; fi
+    echo -e "Lintifying this file... $FILE (if this fails, run 'pip3 install mypy')"
+    #DISABLE_THESE_CHECKS="locally-disabled,global-variable-not-assigned,line-too-long,superfluous-parens,bad-whitespace,unused-wildcard-import,trailing-whitespace,unnecessary-pass,missing-docstring,invalid-name,global-statement,multiple-statements,too-many-locals,too-many-statements,too-many-branches,too-few-public-methods,too-many-lines,too-many-instance-attributes,too-many-arguments,wildcard-import,bad-continuation,unidiomatic-typecheck,expression-not-assigned,deprecated-lambda"
+    mypy "$@"
+    # Best usage is: mypylint | s for viewing the colorized output!
+}
+
 function mycat() { # cat2 / mycat
     # basically like 'cat' or 'zcat' but fancier
     # Based on file extension, turns something into plain text! Works on mixed files. Only delves one level of compression deep.
