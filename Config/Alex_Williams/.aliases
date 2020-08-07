@@ -7,14 +7,14 @@
 # ---------------------
 if [ -f ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config ]; then
     source ${BINF_CORE_WORK_DIR}/Code/alexgw/aliases-server-config
-elif [ -f ~/.aliases-server-config ]; then
-    source ~/.aliases-server-config
+elif [ -f ~/.aliases-server-config.sh ]; then
+    source ~/.aliases-server-config.sh
 fi
 
-if [ -f ~/.local-config-no-git ]; then
-    source ~/.local-config-no-git
+if [ -f ~/.local-config-no-git.sh ]; then
+    source ~/.local-config-no-git.sh
 else
-    echo -e "[:HEY:] Since no .local-config-no-git was found, SSH commands, server shortcuts, and tmux coloring may fail. You may want to MANUALLY copy this file over from another machine."
+    echo -e "[:HEY:] Since no ~/.local-config-no-git.sh was found, SSH commands, server shortcuts, and tmux coloring may fail. You may want to MANUALLY copy this file over from another machine."
 fi
 
 if [[ "${USER}" == "alexgw" ]] || [[ "${USER}" == "awilliams" ]] || [[ "${USER}" == "alexwilliams" ]] || [[ "${USER}" =~ willia* ]]; then
@@ -322,7 +322,7 @@ alias l='ls'
 alias lo='ll -r -t' # Depends on "ll" already being defined above. List by TIME so that NEWEST files are at the bottom
 alias p='pwd -P'
 alias ..='cd ..'
-#alias ../='cd ..'
+#alias ../=='cd ..'
 #alias ../../='cd ../../'
 #alias ..='pushd ..'
 alias res='source ~/.bashrc ; source ~/.bash_profile'
@@ -441,6 +441,13 @@ alias fgrepc='fgrep --color=always --with-filename --line-number'
 alias gitgrepall="git branch -a | tr -d \* | sed '/->/d' | xargs git grep" # greps ALL branches
 function gitbranchall {
     for branch in `git branch -r | grep -v HEAD`;do echo -e `git show --format="%ci %cr" $branch | head -n 1` \\t$branch; done | sort -r
+}
+
+function git-grab-hash {
+    if [[ "$#" != 1 ]]; then echo -e "[:ERR:] 'git-grab-hash' needs exactly one hash argument!"; return 1; fi
+    echo "[:FYI:] Grabbing remote hash as new local branch..."
+    echo "[:OK:]       --> git checkout \"$1\"  -b \"local-$1\""
+    git checkout "$1"  -b "local-$1"
 }
 
 alias gitours="git checkout --ours"
@@ -1334,6 +1341,22 @@ function vv {
 }
 
 
+function cheat2() {
+    cat <<-END_OF_HEREDOC
+This is line one.
+This is line two.
+This is line three.
+>> VSCode example launch.json [// means 'newline']:
+   { "configurations": [  {
+            "name": "MyProgram",
+            "type": "python",
+            "request": "launch",
+            "program": "path/to/your/script.py",
+            "args": [ "--good-arg", "some-value" ],
+            "console": "integratedTerminal"          } ], }
+END_OF_HEREDOC
+}
+
 alias cheat="echo \
 \">> Rscript/R read STDIN: One-liner R and perl extravaganza for plotting contig lengths:  cat contigs.fasta  | perl -ne 'next if not m/^>/; chomp; m/>NODE_(\d+).*length_([\d.]+).*cov_([\d.]+)/; print join(qq{\t}, \\\$1, \\\$2, \\\$3).qq{\n};' | Rscript --vanilla -e 'ddd=read.table(file(\\\"stdin\\\"),header=F,row.names=1); pdf(\\\"a.pdf\\\"); plot(ddd[,1], ddd[,2]); dev.off();' \" ${NL}\
 \">> UNICODE get character as shell escape: printf YOURCHAR | hexdump , then convert that like this: printf \\\"\\\\xE2\\\\x98\\\\xA0\\\" \" ${NL}\
@@ -1367,6 +1390,7 @@ alias cheat="echo \
 \">> MAC: No .DS_Store servers: defaults write com.apple.desktopservices DSDontWriteNetworkStores -bool YES \" ${NL}\
 \">> MAC: Select in QuickLook (buggy!): defaults write com.apple.finder QLEnableTextSelection -bool YES \" ${NL}\
 \">> MAC: No smooth scroll: defaults write -g NSScrollAnimationEnabled -bool NO \" ${NL}\
+\">> BASH: Print and execute a command: use a SUBSHELL for this:  (set -x; YOUR COMMAND THAT IS PRINTED; ); next command not printed \" ${NL}\
 \">> FIND: delete files when argument list too long: find . -iname '*whatever*' -delete \" ${NL}\
 \">> CRON: edit crontab cron.tab with emacs: env EDITOR=emacs crontab -e \" ${NL}\
 \">> CRON: check CRON logs (if enabled) on the Mac: sudo cat /var/mail/your_username_here \" ${NL}\
@@ -1624,7 +1648,7 @@ alias cheat="echo \
 \">> PERL: CPAN invocation: sudo perl -MCPAN -e shell \" ${NL}\
 \">> PERL: CPAN upgrade all WITHOUT prompting: PERL_MM_USE_DEFAULT=1 && sudo perl -MCPAN -e shell >> then o conf build_requires_install_policy yes  ; o conf prerequisites_policy 'follow'  ; o conf commit ;  upgrade /(.\\*)/\\\" \" ${NL}\
 \">> PERL: Backreferences/does something show up twice on a line: perl -n -e 'print ((\\\$_ =~ /\b(Something\d+)\s.\g1/) ? qq{match: \\\$1\\n} : qq{Nope\\n});' \" ${NL}\
-\">> EMACS: insert newline in search-and-replace:  Ctrl-Q Ctrl-J \" ${NL}\
+\">> EMACS: insert verbatim newline in search-and-replace:  Ctrl-Q Ctrl-J (this is also how you insert a newline when editing in iPython / PDB / python debugging on the command line \" ${NL}\
 \">> EMACS: install new packages: list-packages \" ${NL}\
 \">> EMACS: show variable: describe-variable \" ${NL}\
 \" \" ${NL}\
