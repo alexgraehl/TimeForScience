@@ -46,6 +46,7 @@ if [[ 1 == $SHOULD_HOMEBREW ]]; then
     echo "Installing a ton of stuff via homebrew (which must already be installed in order for this to work)"
 
     brew cask install java # required for gradle and more
+    brew cask install tldr # Better examples, like 'man' or 'info'
     #brew cask install iterm2 # hexyl glances  # hexyl: command line color hex editor. glances: fancier htop
     brew cask install github
     brew install bash bash-completion cairo catimg dialog emacs ffmpeg fontconfig freetype gcc gdbm gettext git glances glib gmp gnutls gradle gsl htop imagemagick ipython isl jpeg lame libevent libffi libgit2 libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle numpy openssl pcre pigz pixman pkg-config pv python qemu R readline rsync scipy sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
