@@ -1913,6 +1913,14 @@ function cheat() {
 >> AWK: sum numbers in column 1 of a file: cat FILE | awk '{ sum+=$1} END {print sum}' 
 >> AWK: Get only FIRST line with a unique occurrence in column 1. Does not require sorting: cat FILE | awk -F'\t' '!_[$1]++' (assumes separator is tab)  
 >> AWK FILTER based on numeric value (like select.pl): filter based on a number: cat test | awk '{ if ($1 >= 900 && $1 > 0) print; }'  
+
+>> GIT: pick only VERY SPECIFIC line changes from another branch (even more granular than cherry-pick / cherry pick):
+         git cherry-pick --no-commit [SOURCE_COMMIT_HASH_HERE]
+         git reset   # un-stage changes from that commit
+         git add -p  # interactively select the changes that you want
+         git commit  # finish up
+
+>> GIT: undo commit / undo last commit / rollback last commit roll back: git reset --soft HEAD~1
 >> GIT: verbose debugging:  GIT_SSH_COMMAND='ssh -vvv' git fetch   <-- or whatever command you want    
 >> GIT: change your git commit messages, say, 5 commits ago: git rebase -i HEAD~5 and then change the 'command' on the left to REWORD. DO NOT EDIT DIRECTY IN THE EIDTOR UNTIL AFTER YOU SAVED AND EXITED  <-- 5 can be whatever  
 >> GIT: checkout file from other branch AND OVERWRITE LOCAL COPY:  echo 'overwriting local copy ' && git checkout OTHERBRANCH -- FILENAME  
