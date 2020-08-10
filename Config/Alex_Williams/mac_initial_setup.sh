@@ -14,6 +14,7 @@ echo "Done with the extra-slow step..."
 ###############################################################################
 # Git aliases (e.g. 'git co') - one-time setup                                #
 ###############################################################################
+git config --global alias.amendsame  'commit --amend --no-edit'  # Amend with no edit
 git config --global alias.co   'checkout'
 git config --global alias.br   'branch'
 git config --global alias.bl   'branch --list'

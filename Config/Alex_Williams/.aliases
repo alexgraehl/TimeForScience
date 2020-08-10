@@ -459,17 +459,9 @@ alias gits="git status"
 alias gitstat="git ls-files --modified --deleted"
 alias gitdiff="git difftool"
 
-if agw_cmd_exists "git" ; then
-    # Git aliases
-    git config --global alias.co checkout
-    git config --global alias.br branch
-    git config --global alias.ci commit
-    git config --global alias.st status
-    function amendsame {
-	echo "[:FYI:] Running this command: git commit --amend --no-edit"
-	git commit --amend --no-edit
-    }
-fi
+#if agw_cmd_exists "git" ; then
+# Git aliases have been moved to mac_initial_setup.sh
+#fi
 
 function sciencecom {
     # If you want to NOT interact remotely (for example, this is the 'most upstream' repo with nothing to push to) then pass in NO_REMOTE as argument 2.
