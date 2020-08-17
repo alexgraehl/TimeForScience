@@ -1912,6 +1912,8 @@ function cheat() {
 >> AWK: Get only FIRST line with a unique occurrence in column 1. Does not require sorting: cat FILE | awk -F'\t' '!_[$1]++' (assumes separator is tab)  
 >> AWK FILTER based on numeric value (like select.pl): filter based on a number: cat test | awk '{ if ($1 >= 900 && $1 > 0) print; }'  
 
+>> GIT: show all commits / historical commits to master (or any other branch) for all time: git log --first-parent master
+
 >> GIT: pick only VERY SPECIFIC line changes from another branch (even more granular than cherry-pick / cherry pick):
          git cherry-pick --no-commit [SOURCE_COMMIT_HASH_HERE]
          git reset   # un-stage changes from that commit
