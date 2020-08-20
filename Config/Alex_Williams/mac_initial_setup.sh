@@ -25,10 +25,10 @@ git config --global alias.st      'status'
 git config --global alias.sw      'switch'
 git config --global alias.last    'log -1 HEAD'
 git config --global alias.cot     'checkout --track'  # e.g. git checkout --track origin/remote_branch_name
-git config --global alias.alias   "! git config --get-regexp ^alias\. | sed -e s/^alias\.// -e s/\ /\ =\ /" # Adds 'git alias' to list aliases
 git config --global alias.rlc     "reflog --pretty='format:%C(green)%cd%Creset %C(red)%h%Creset %gD: %gs %C(yellow)%d%Creset%C(bold blue)<%an>%Creset'" # reflog COLOR / COOLER (rlc)
 git config --global alias.reflogc "rlc"
-git config --global alias.hist-of-master "log --first-parent master"
+git config --global alias.hist-of-master   "log --first-parent master"
+git config --global alias.alias            "! git config --get-regexp ^alias\. | sed -e s/^alias\.// -e s/\ /\ =\ /" # Adds 'git alias' to list aliases
 
 ###############################################################################
 # General UI/UX                                                               #

@@ -444,6 +444,10 @@ alias egrepc='egrep --color=always --with-filename --line-number'
 alias fgrepc='fgrep --color=always --with-filename --line-number'
 
 
+function git-grep-all-local-branches() {
+    \git grep --color=always "${1}" $(git rev-list --all)
+}
+
 alias gitgrepall="git branch -a | tr -d \* | sed '/->/d' | xargs git grep" # greps ALL branches
 function gitbranchall {
     for branch in `git branch -r | grep -v HEAD`;do echo -e `git show --format="%ci %cr" $branch | head -n 1` \\t$branch; done | sort -r
