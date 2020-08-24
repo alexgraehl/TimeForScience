@@ -1794,7 +1794,8 @@ function cheat() {
 >> FIND: Find all .R files in a directory:   find ./ -name "*.R" -exec ls \'{}\' \;  
 >> DIFF: directories:   diff -rq DIR1 DIR2  
 >> DIFF: with side-by-side and line numbers: sdiff -l file1.txt file2.txt | cat -n
-  
+
+>> PYTHON: get dictionary with SOME keys remove / remove keys from dictionary: import toolz --> toolz.dicttoolz.dissoc(the_dict, the_keys_to_remove)
 >> PYTHON: Get today's date / time in Pacific Time: from datetime import datetime // import pytz // dateime.datetime.now(tz=pytz.utc).astimezone(pytz.timezone('US/Pacific'))  (plus .date().isoformat() if you want a string)   
 >> PYTHON: Jupyter auto-reload a module before each run: %load_ext autoreload (newline)  %autoreload 2  from foo import some_function (<-- the import is only needed ONE time now!)  
 >> PYTHON logging: RED error messages, but only if we are in the 'DEBUG' (detailed output) mode:  logging.error('My message')      and then:                       if logging.getLogger().isEnabledFor(logging.DEBUG):   logging.error(f'MORE {e}')  
