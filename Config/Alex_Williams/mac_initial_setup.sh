@@ -29,6 +29,7 @@ git config --global alias.rlc     "reflog --pretty='format:%C(green)%cd%Creset %
 git config --global alias.reflogc "rlc"
 git config --global alias.hist-of-master   "log --first-parent master"
 git config --global alias.alias            "! git config --get-regexp ^alias\. | sed -e s/^alias\.// -e s/\ /\ =\ /" # Adds 'git alias' to list aliases
+git config --global alias.uncommit "reset --soft HEAD~1"  # Undo the commit itself, but don't change anything on the filesystem
 
 ###############################################################################
 # General UI/UX                                                               #
