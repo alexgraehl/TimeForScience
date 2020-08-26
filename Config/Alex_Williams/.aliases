@@ -2107,6 +2107,9 @@ function cheat() {
 >> SQL/PSQL/POSTGRES: Just connect interactively: psql -h SERVERHERE -U USERHERE -d DBNAME -p PORTNUMBER -e ; <interactive password prompt will occur after you type that>  
 >> SQL/POSTGRES Amazon Redshift show DATA LOADING errors: BEST SIMPLE WAY: select * from stl_load_errors e order by starttime desc;       Maybe try this to only get the MOST RECENT query:   SELECT * FROM stl_load_errors WHERE query IN (select max(query) from stl_load_errors) ORDER BY starttime DESC limit 99;     More complex way that sometimes does not show everything: select d.*,e.* from stl_load_errors e, stl_loaderror_detail d where d.query = e.query order by starttime desc; 
 >> SQL/POSTGRES date to human-readable DOW / day of week (does NOT work with text, you must cast it to ::date): TO_CHAR(current_date, 'day') or SELECT TO_CHAR(current_date, 'DY') --> result is e.g. 'MON';  If you want the DAY OF WEEK (and not the week number), try DATE_PART('dow',current_date) <-- numeric. Beware of 1 or 0 starting the week--it is different from Python!    
+
+>> SQL postgres ONLY (command line):  \dt SCHEMANAME.* -- show all tables in a schema   \x: print rows-as-columns. \z: show current schema. \d schemaname.tablename: describe table.
+
 >> SQL/POSTGRES get SECOND highest (Nth item) item in a column (memory-inefficient): SELECT  (ARRAY_AGG(colname ORDER_BY colname DESC))[2] FROM yourtable;    
 >> SQL/POSTGRES list databases: SELECT datname FROM pg_database WHERE datistemplate=FALSE;    
 >> SQL/POSTGRES list databases, schemas and tables: SELECT table_schema,table_name  FROM information_schema.tables  ORDER BY table_schema,table_name;   
