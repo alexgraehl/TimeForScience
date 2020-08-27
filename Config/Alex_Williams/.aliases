@@ -469,6 +469,13 @@ alias gits="git status"
 alias gitstat="git ls-files --modified --deleted"
 alias gitdiff="git difftool"
 
+function gitdifforigin() {
+    # Compare current git BRANCH_NAME to the (probably) same-named remote branch "origin/BRANCH_NAME"
+    # Theoretically, the branch could have a different remote 'origin' being tracked. But that's rare in practice.
+    cur_branch=$(git branch --show-current)
+    git diff "${cur_branch}" "origin/${cur_branch}"
+}
+
 #if agw_cmd_exists "git" ; then
 # Git aliases have been moved to mac_initial_setup.sh
 #fi
