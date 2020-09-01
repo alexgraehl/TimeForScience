@@ -457,7 +457,7 @@ function git-grab-hash {
     if [[ "$#" != 1 ]]; then echo -e "[:ERR:] 'git-grab-hash' needs exactly one hash argument!"; return 1; fi
     echo "[:FYI:] Grabbing remote hash as new local branch..."
     echo "[:OK:]       --> git checkout \"$1\"  -b \"local-$1\""
-    git checkout "$1"  -b "local-$1"
+    (set -x; git checkout "$1"  -b "local-$1"; )
 }
 
 alias gitours="git checkout --ours"
@@ -469,11 +469,17 @@ alias gits="git status"
 alias gitstat="git ls-files --modified --deleted"
 alias gitdiff="git difftool"
 
-function gitdifforigin() {
+function git-diff-origin() {
     # Compare current git BRANCH_NAME to the (probably) same-named remote branch "origin/BRANCH_NAME"
     # Theoretically, the branch could have a different remote 'origin' being tracked. But that's rare in practice.
-    cur_branch=$(git branch --show-current)
-    git diff "${cur_branch}" "origin/${cur_branch}"
+    cur_branch=$(\git branch --show-current)
+    \git diff "${cur_branch}" "origin/${cur_branch}"
+}
+
+function git-push-origin-initial-setup() {
+    # git push --set-upstreadm origin SAME_NAME_BRANCH
+    cur_branch=$(\git branch --show-current)
+    (set -x; \git push --set-upstream origin "${cur_branch}"; )
 }
 
 #if agw_cmd_exists "git" ; then

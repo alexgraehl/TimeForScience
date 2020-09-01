@@ -197,7 +197,7 @@
 	<key>NSWindow Frame NSNavPanelAutosaveName</key>
 	<string>-1925 805 841 449 0 0 1792 1097 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>-2473 1 1625 960 -3008 -94 3008 1669 </string>
+	<string>154 137 1625 960 0 0 1792 1097 </string>
 	<key>NSWindow Frame iTerm Window 1</key>
 	<string>-1780 472 1474 826 -3008 -94 3008 1669 </string>
 	<key>NSWindow Frame iTerm Window 2</key>
@@ -1346,12 +1346,12 @@
 		<key>screenFrame</key>
 		<string>{{-3008, -94}, {3008, 1692}}</string>
 		<key>topLeft</key>
-		<string>{-1596, 1135}</string>
+		<string>{-1554, 1103}</string>
 	</dict>
 	<key>NoSyncInstallationId</key>
 	<string>D283D277-228B-44E6-9E60-89EAC5FB665D</string>
 	<key>NoSyncLaunchExperienceControllerRunCount</key>
-	<integer>12</integer>
+	<integer>13</integer>
 	<key>NoSyncNextAnnoyanceTime</key>
 	<real>617646235.58255994</real>
 	<key>NoSyncOnboardingWindowHasBeenShown</key>
@@ -2111,7 +2111,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2020-08-26T07:13:21Z</date>
+	<date>2020-08-31T03:25:33Z</date>
 	<key>SUSendProfileInfo</key>
 	<false/>
 	<key>ShowFullScreenTabBar</key>
