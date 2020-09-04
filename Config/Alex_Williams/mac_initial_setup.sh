@@ -30,6 +30,7 @@ git config --global alias.reflogc "rlc"
 git config --global alias.hist-of-master   "log --first-parent master"
 git config --global alias.alias            "! git config --get-regexp ^alias\. | sed -e s/^alias\.// -e s/\ /\ =\ /" # Adds 'git alias' to list aliases
 git config --global alias.uncommit "reset --soft HEAD~1"  # Undo the commit itself, but don't change anything on the filesystem
+git config --global alias.reconcile '! git fetch; git rebase -i origin/master'  # Reconcile with origin/master after fetching
 
 ###############################################################################
 # General UI/UX                                                               #
