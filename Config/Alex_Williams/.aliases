@@ -1362,6 +1362,8 @@ function vv {
 function cheat() {
     VERBATIM_CHEAT_SHEET=$(cat <<'END_OF_HEREDOC'
 
+>> UNIX / APT / APT-GET: Look for total size of installed packages in KB (so divide by 1000 for MB) dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 20
+
 >> VSCode example launch.json [// means 'newline']:
    { "configurations": [  {
             "name": "MyProgram",
