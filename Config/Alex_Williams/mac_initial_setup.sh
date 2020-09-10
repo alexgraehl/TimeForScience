@@ -12,7 +12,7 @@ echo "Done with the extra-slow step..."
 
 
 ###############################################################################
-# Git aliases (e.g. 'git co') - one-time setup                                #
+# Git aliases (e.g. 'git co') - one-time setup (git config --global --edit)   #
 ###############################################################################
 git config --global alias.amendsame  'commit --amend --no-edit'  # Amend with no edit
 git config --global alias.co      'checkout'
@@ -30,7 +30,8 @@ git config --global alias.reflogc "rlc"
 git config --global alias.hist-of-master   "log --first-parent master"
 git config --global alias.alias            "! git config --get-regexp ^alias\. | sed -e s/^alias\.// -e s/\ /\ =\ /" # Adds 'git alias' to list aliases
 git config --global alias.uncommit "reset --soft HEAD~1"  # Undo the commit itself, but don't change anything on the filesystem
-git config --global alias.reconcile '! git fetch; git rebase -i origin/master'  # Reconcile with origin/master after fetching
+git config --global alias.reconcile-master '! git fetch; git rebase -i origin/master'  # Reconcile with origin/master after fetching
+git config --global alias.reconcile-unstable '! git fetch; git rebase -i origin/unstable'  # Reconcile with origin/master after fetching
 
 ###############################################################################
 # General UI/UX                                                               #

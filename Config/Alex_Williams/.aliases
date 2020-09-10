@@ -460,18 +460,15 @@ function git-grab-hash {
     (set -x; git checkout "$1"  -b "local-$1"; )
 }
 
+# git-related aliases
 alias gitours="git checkout --ours"
-
-# git aliases
 alias gitcom="echo 'Stop using this'" #git commit -a -m 'Changes committed by ${USER}'"
-
-
-
 alias git-list="git ls-tree -r master --name-only" # show currently tracked files
 alias gits="git status"
 alias git-stat="git ls-files --modified --deleted"
 alias git-diff="git difftool"
-alias git-pull-master-without-changing="echo 'Updating <master> without changing branches.'; git fetch origin master:master"
+#alias git-pull-master-without-changing="echo 'Updating <master> without changing branches.'; git fetch origin master:master"
+alias git-pull-unstable-without-changing="echo 'Updating <unstable> without changing branches.'; git fetch origin unstable:unstable"
 
 function git-diff-origin() {
     # Compare current git BRANCH_NAME to the (probably) same-named remote branch "origin/BRANCH_NAME"
