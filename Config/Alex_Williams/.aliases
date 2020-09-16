@@ -524,6 +524,7 @@ function scienceboth() {
 function science() {
     #scienceboth "${HOME}/workspace/0_CODE" # sync these files before overwriting the local W_...Rmd ones
     scienceboth "${TIME_FOR_SCIENCE_DIR}"
+    (set -x ; \cp -f ~/.local-config-no-git.sh ~/Dropbox/HT/backup-local-config-no-git.sh )
     #scienceboth "${HOME}/workspace/0_CODE" # Sync AGAIN after copying
 }
 
