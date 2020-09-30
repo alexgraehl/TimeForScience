@@ -1555,6 +1555,7 @@ function cheat() {
          git add -p  # interactively select the changes that you want
          git commit  # finish up
 
+>> GIT: move branch / git rename branch: git branch -m OLD NEW . Or if you want to rename the CURRENT branch, just git branch -m NEWNAME
 >> GIT: undo commit / undo last commit / rollback last commit roll back: git reset --soft HEAD~1
 >> GIT: verbose debugging:  GIT_SSH_COMMAND='ssh -vvv' git fetch   <-- or whatever command you want    
 >> GIT: change your git commit messages, say, 5 commits ago: git rebase -i HEAD~5 and then change the 'command' on the left to REWORD. DO NOT EDIT DIRECTY IN THE EIDTOR UNTIL AFTER YOU SAVED AND EXITED  <-- 5 can be whatever  

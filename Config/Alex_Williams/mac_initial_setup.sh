@@ -32,6 +32,7 @@ git config --global alias.alias            "! git config --get-regexp ^alias\. |
 git config --global alias.uncommit "reset --soft HEAD~1"  # Undo the commit itself, but don't change anything on the filesystem
 git config --global alias.reconcile-master '! git fetch; git rebase -i origin/master'  # Reconcile with origin/master after fetching
 git config --global alias.reconcile-unstable '! git fetch; git rebase -i origin/unstable'  # Reconcile with origin/master after fetching
+git config --global alias.rename-branch 'branch -m'
 git config --global alias.amend-regret 'reset --soft HEAD@{1}'  # Undo a mistaken git commit --amend
 
 ###############################################################################
