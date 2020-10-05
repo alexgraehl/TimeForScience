@@ -1566,7 +1566,7 @@ function cheat() {
 >> GIT: revise a commit that is ALREADY a pull request:  once you have your changes committed, send it upstream with --FORCE, with: git push -f origin HEAD:refs/heads/whatever_your_pull_request_branch_was   
 >> GIT: only get the last 1 revision (faster): git clone --depth=1 https://your-site-here/something.git  
 >> GIT: discard/revert ALL local changes TO ALL FILES: DANGER >> git reset --hard origin/master << DANGER (this also works for multi-path names, like --hard origin/coworker/beta_branch/coolfeature123 (note that ORIGIN is still at the beginning there!)  
->> GIT: push local branch to remote branch with DIFFERENT NAME: to set up TRACKING only (upstream parent): git push --upstream origin LOCALNAME:REMOTENAME   Or to push it:   git push -f origin my_local_branch:different_named_remote_branch (or if you want, just say push -f origin HEAD:other_remote_branch if it's your current HEAD)  
+>> GIT: push local branch to remote branch with DIFFERENT NAME: to set up TRACKING only (upstream parent): git push --set-upstream origin LOCALNAME:REMOTENAME   Or to push it:   git push -f origin my_local_branch:different_named_remote_branch (or if you want, just say push -f origin HEAD:other_remote_branch if it's your current HEAD)  
 >> GIT: discard/revert local changes to JUST ONE FILE: git checkout -- FILENAME_HERE  
 >> GIT: fix an HTTP repo to SSH: git remote set-url origin git@github.com:RepoNameHere/ProjName.git  
 >> GIT: see old version of file (example: ~4 = 4 revisons ago): git show HEAD~4:./some_file.txt  
