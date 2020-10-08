@@ -34,7 +34,7 @@ git config --global alias.reconcile-master '! git fetch; git rebase -i origin/ma
 git config --global alias.reconcile-unstable '! git fetch; git rebase -i origin/unstable'  # Reconcile with origin/master after fetching
 git config --global alias.rename-branch 'branch -m'
 git config --global alias.amend-regret 'reset --soft HEAD@{1}'  # Undo a mistaken git commit --amend
-
+git config --global alias.log-nice 'log --pretty=format:"%h (%an, %ad) - %s" --date=relative '  # Log format variant
 ###############################################################################
 # General UI/UX                                                               #
 ###############################################################################
