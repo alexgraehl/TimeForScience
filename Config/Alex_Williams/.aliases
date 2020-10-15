@@ -444,6 +444,15 @@ alias egrepc='egrep --color=always --with-filename --line-number'
 alias fgrepc='fgrep --color=always --with-filename --line-number'
 
 
+
+function git-diff-commits-in-branch-1-but-not-branch-2() {
+    # Shows commits in the first branch but NOT the second one. Order matters!
+    if [[ "$#" != 2 ]];  then echo -e "[:ERR:] Please provide TWO branch names. Order matters."; return 1; fi
+    b1="$1"
+    b2="$2"
+    \git cherry --verbose "${b1}" "${b2}" | grep "^\+"
+}
+
 function git-grep-all-local-branches() {
     \git grep --color=always "${1}" $(git rev-list --all)
 }
@@ -1572,6 +1581,7 @@ function cheat() {
 >> GIT: see old version of file (example: ~4 = 4 revisons ago): git show HEAD~4:./some_file.txt  
 >> GIT: delete a REMOTE branch: git push origin --delete BRANCHNAME (not delete, surprisingly)  
 >> GIT: list files in a branch: git ls-tree -r -l BRANCHNAME  
+>> GIT: diff commits / commits in one branch but not another:   git cherry -v YES_IN_THIS_BRANCH   BUT_NOT_THIS_BRANCH   | grep "^\+"    (order matters)
 >> GIT: rebase with MY files, overwriting the merge conflicts: git checkout --ours /path/to/my/conflicting/dir/or/file/  
 >> GIT: what changed between branches?: git diff --name-only BRANCH1 BRANCH2  (do not confuse this with --summary, which ONLY shows added/deleted files)  
 >> GIT: what changed in ONE SPECIFIC FILE between branches?: git diff master -- fileX.py    coolbranch(optional)  ./fileX.py  
