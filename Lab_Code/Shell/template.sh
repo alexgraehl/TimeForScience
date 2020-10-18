@@ -1,5 +1,4 @@
 #!/bin/bash
-###
 ### Test_script.sh: DESCRIPTION SHOULD GO HERE
 ###
 ### Usage:
