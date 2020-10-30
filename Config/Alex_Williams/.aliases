@@ -1565,6 +1565,9 @@ function cheat() {
          git add -p  # interactively select the changes that you want
          git commit  # finish up
 
+>> GIT interactively merge / cherry-pick 'git add -p' from ANOTHER BRANCH: first switch to your pristine branch (git checkout master -> git checkout -b mybranch), then use cherry-pick -n:  git cherry-pick --no-commit OTHER_COOL_BRANCH; then you need to git reset each file, and finally git add -p .  to INTERACTIVELY 'git add -p' from another branch
+
+
 >> GIT: move branch / git rename branch: git branch -m OLD NEW . Or if you want to rename the CURRENT branch, just git branch -m NEWNAME
 >> GIT: undo commit / undo last commit / rollback last commit roll back: git reset --soft HEAD~1
 >> GIT: verbose debugging:  GIT_SSH_COMMAND='ssh -vvv' git fetch   <-- or whatever command you want    
@@ -1590,7 +1593,6 @@ function cheat() {
 >> GIT: when branch was last used (MINIMAL): for BRANCH in $(git branch -r | grep -v 'HEAD'); do echo -e $(git show --format='%ci %cr' $BRANCH | head -n 1) \\t$BRANCH; done | sort -r  
 >> GIT: when branch was last used AND last commit (fancy): git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) - %(color:red)%(objectname:short)%(color:reset) - %(contents:subject) - %(authorname) (%(color:green)%(committerdate:relative)%(color:reset))'  
 >> GIT check a specific file and its history:  git log --follow -p FILENAME 
->> GIT interactively merge / cherry-pick 'git add -p' from ANOTHER BRANCH: first switch to your pristine branch (git checkout master -> git checkout -b mybranch), then use cherry-pick -n:  git cherry-pick --no-commit OTHER_COOL_BRANCH; then git add -p .  to INTERACTIVELY 'git add -p' from another branch
 >> GIT merge but keep LOCAL changes and not the remote ones: git pull PARENT_BRANCHNAME -Xours  or  git merge PARENT_BRANCHNAME --strategy-option ours  
 >> GIT interactively merge ONE FILE ONLY: git checkout --patch origin/master PATH/TO/YOUR/FILE.TXT   
 >> GIT interactively edit/squash/combine/rebase a bunch of commits / edit commit messages: git rebase -i HEAD~[N] <-- where N is the number of commits you're interested in... you can put any number here, like 10 or whatever. [s]quash is how you combine commits, by the way.  
