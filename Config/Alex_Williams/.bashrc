@@ -401,6 +401,8 @@ fi
 # enable color support of ls
 [[ -x "/usr/bin/dircolors" ]] && eval "`dircolors -b`"
 
+export PYDEVD_WARN_EVALUATION_TIMEOUT=20 # Increase time (seconds) until VSCode complains when debugging. Unclear if this is important
+
 export CLICOLOR='Yes'
 export LS_OPTIONS='--color=auto'
 export LS_COLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=43;31;03:ex=01;31'  ## LS_COLORS *with* an underscore is for Ubuntu
