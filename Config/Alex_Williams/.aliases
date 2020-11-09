@@ -1326,6 +1326,8 @@ function mp4_concat() {
     ffmpeg -f concat -safe 0 -i "$INFILE" -c copy "$OUTFILE"
 }
 
+export ANDROID_HOME=~/.android
+
 function delete_android_file_transfer_on_mac() {
     PID=$(ps -fe | grep "[A]ndroid File Transfer Agent" | awk '{print $2}')
     if [[ -n ${PID} ]]; then kill ${PID}; fi;
