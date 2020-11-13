@@ -15,7 +15,6 @@
 [[ -r "/usr/local/etc/profile.d/bash_completion.sh" ]] && . "/usr/local/etc/profile.d/bash_completion.sh"
 #[[ -f "/etc/bash_completion" ]] &&  . /etc/bash_completion          # old
 
-
 # ~/.bashrc: executed by bash(1) for non-login shells (Loaded when the shell is non-interactively started up)
 # see /usr/share/doc/bash/examples/startup-files (in the package bash-doc) for examples
 # This site also has some useful commands: https://github.com/mrzool/bash-sensible/blob/master/sensible.bash
