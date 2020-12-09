@@ -121,7 +121,7 @@
         "editor.selectionHighlightBackground": "#3366FFEE", // Any text that is the same as the current selection
         "editor.findMatchBackground": "#FFFF00EE", // Currently highlighted SEARCH result
         "editor.findMatchHighlightBackground": "#0000FFEE" // All OTHER SEARCH results
-    }
+    },
     "editor.acceptSuggestionOnCommitCharacter": false,
     "editor.acceptSuggestionOnEnter": "off"
 }
