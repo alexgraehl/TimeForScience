@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/usr/local/bin/python3",
+    //"python.pythonPath": "/usr/local/bin/python3", or with pyenv: "~/.pyenv/shims/python",
     "python.autoComplete.extraPaths": [
         "~/automed",
         "~/automed/automed",
@@ -7,7 +7,7 @@
     ],
     "window.zoomLevel": 1,
     "editor.formatOnSave": true,
-    "rewrap.wrappingColumn": 99,
+    "rewrap.wrappingColumn": 105,
     "python.formatting.blackPath": "~/Library/Python/3.8/bin/black",
     "python.formatting.blackArgs": [
         "--line-length=108",
@@ -65,7 +65,6 @@
         "cpp": "cd $dir && g++ $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
         "objective-c": "cd $dir && gcc -framework Cocoa $fileName -o $fileNameWithoutExt && $dir$fileNameWithoutExt",
         "php": "php",
-        "python": "python -u",
         "perl": "perl",
         "perl6": "perl6",
         "ruby": "ruby",
@@ -123,5 +122,11 @@
         "editor.findMatchHighlightBackground": "#0000FFEE" // All OTHER SEARCH results
     },
     "editor.acceptSuggestionOnCommitCharacter": false,
-    "editor.acceptSuggestionOnEnter": "off"
+    "editor.acceptSuggestionOnEnter": "off",
+    "workbench.editorAssociations": [
+        {
+            "viewType": "jupyter.notebook.ipynb",
+            "filenamePattern": "*.ipynb"
+        }
+    ]
 }
