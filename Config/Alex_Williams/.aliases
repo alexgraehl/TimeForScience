@@ -1441,6 +1441,8 @@ function cheat() {
    def test_thing(caplog):   # caplog is a special term
        caplog.set_level(logging.ERROR, "your_logger_name_as_string")  # make it less verbose (errors only)
 
+>> PYTHON: import a directory with code in it so you can run some debugging code as if you're in the full codebase: Top of the file:    import sys   and   sys.path.insert(1, "/Users/YOURNAME/YOUR_PATH_HERE")
+
 >> PYTHON: get dictionary with SOME keys remove / remove keys from dictionary: import toolz --> toolz.dicttoolz.dissoc(the_dict, the_keys_to_remove)
 >> PYTHON: Get today's date / time in Pacific Time: from datetime import datetime // import pytz // dateime.datetime.now(tz=pytz.utc).astimezone(pytz.timezone('US/Pacific'))  (plus .date().isoformat() if you want a string)   
 >> PYTHON: Jupyter auto-reload a module before each run: %load_ext autoreload (newline)  %autoreload 2  from foo import some_function (<-- the import is only needed ONE time now!)  
