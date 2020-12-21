@@ -492,14 +492,14 @@ if [[ ! "${isMac}" == "1" ]]; then
 fi
 
 if [[ -f "${HOME}/bin/activate" ]]; then
-    echo "[:OK:] .bashrc reporting: Activating virtualenv at ~/bin/activate"
+    echo "[:FYI:] .bashrc reporting: Activating virtualenv at ~/bin/activate"
     source "${HOME}/bin/activate"
 fi
 
 if [[ -e "${HOME}/.pyenv" ]]; then
-    echo "Initializing pyenv..."
     eval "$(pyenv init -)"
     export PYENV_ROOT="$HOME/.pyenv"
     export PATH="$PYENV_ROOT/bin:$PATH"
+    echo "[:FYI:] pyenv has selected" $(python --version)
 fi
     
