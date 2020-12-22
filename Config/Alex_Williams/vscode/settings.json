@@ -128,5 +128,6 @@
             "viewType": "jupyter.notebook.ipynb",
             "filenamePattern": "*.ipynb"
         }
-    ]
+    ],
+    "python.defaultInterpreterPath": "/Users/alexgw/.pyenv/shims/python"
 }
