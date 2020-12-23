@@ -8,7 +8,7 @@
     "window.zoomLevel": 1,
     "editor.formatOnSave": true,
     "rewrap.wrappingColumn": 105,
-    "python.formatting.blackPath": "~/Library/Python/3.8/bin/black",
+    "python.formatting.blackPath": "~/.pyenv/shims/black",
     "python.formatting.blackArgs": [
         "--line-length=108",
         "--target-version=py38"
@@ -129,5 +129,5 @@
             "filenamePattern": "*.ipynb"
         }
     ],
-    "python.defaultInterpreterPath": "/Users/alexgw/.pyenv/shims/python"
+    "python.defaultInterpreterPath": "~/.pyenv/shims/python"
 }
