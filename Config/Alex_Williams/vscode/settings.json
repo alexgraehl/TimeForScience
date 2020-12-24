@@ -128,5 +128,7 @@
             "viewType": "jupyter.notebook.ipynb",
             "filenamePattern": "*.ipynb"
         }
-    ]
+    ],
+    "editor.fontLigatures": null,
+    "editor.fontFamily": "Menlo, 'Source Code Pro', Monaco, 'Courier New', monospace"
 }
