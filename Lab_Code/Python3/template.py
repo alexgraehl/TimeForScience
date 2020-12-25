@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 '''
-This script require python3
+This script requires python3
 
         python3 ./template.py some_filename x y z
 
 '''
+# pylint: disable=unnecessary-pass,useless-return,line-too-long,unused-import
 # import ipdb; ipdb.set_trace()
 import argparse
 import os
