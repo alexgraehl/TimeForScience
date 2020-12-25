@@ -65,12 +65,11 @@ function template() {
     EX=$1
     case "${EX}" in 
 	[Mm]ak*) SRC=`which template.mak`; DEST="Makefile" ;;
-	fishldr*)      SRC="${HOME}/workspace/0_CODE/fishldr_example.cfg.R"        DEST="./C10_fishldr_template.cfg.R" ;;
-	[Rr][Mm][Dd]*) SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.Rmd"       DEST="./template.Rmd"        ;;
-	[Rr])          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.R"         DEST="./template.R"          ;;
-	py*2)          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python/template.py"   DEST="./template_python2.py" ;;
-	py*3)          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python3/template.py3" DEST="./template_python3.py" ;;
-	bash | sh)          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Shell/template.sh"    DEST="./template.sh" ;;
+	[Rr][Mm][Dd]*) SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.Rmd"          DEST="./template.Rmd"        ;;
+	[Rr])          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.R"            DEST="./template.R"          ;;
+	py2)           SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python/template-py2.py"  DEST="./template_python2.py" ;;
+	py | py3)      SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python3/template.py"     DEST="./template_python3.py" ;;
+	bash | sh)     SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Shell/template.sh"       DEST="./template.sh" ;;
 	*) echo -e "[:ERR:] template did not understand what type of file you requested: the extension you supplied was <${EX}>." ; return 1 ;;
     esac
     if [[ -e "${DEST}" ]]; then
