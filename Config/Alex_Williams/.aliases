@@ -65,12 +65,11 @@ function template() {
     EX=$1
     case "${EX}" in 
 	[Mm]ak*) SRC=`which template.mak`; DEST="Makefile" ;;
-	fishldr*)      SRC="${HOME}/workspace/0_CODE/fishldr_example.cfg.R"        DEST="./C10_fishldr_template.cfg.R" ;;
-	[Rr][Mm][Dd]*) SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.Rmd"       DEST="./template.Rmd"        ;;
-	[Rr])          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.R"         DEST="./template.R"          ;;
-	py*2)          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python/template.py"   DEST="./template_python2.py" ;;
-	py*3)          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python3/template.py3" DEST="./template_python3.py" ;;
-	bash | sh)          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Shell/template.sh"    DEST="./template.sh" ;;
+	[Rr][Mm][Dd]*) SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.Rmd"          DEST="./template.Rmd"        ;;
+	[Rr])          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.R"            DEST="./template.R"          ;;
+	py2)           SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python/template-py2.py"  DEST="./template_python2.py" ;;
+	py | py3)      SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python3/template.py"     DEST="./template_python3.py" ;;
+	bash | sh)     SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Shell/template.sh"       DEST="./template.sh" ;;
 	*) echo -e "[:ERR:] template did not understand what type of file you requested: the extension you supplied was <${EX}>." ; return 1 ;;
     esac
     if [[ -e "${DEST}" ]]; then
@@ -1794,6 +1793,8 @@ function cheat() {
 >> GOOGLE SHEETS (maybe also Excel): count if two columns (K and L here) are EQUAL and the first one is non-blank: =SUM(ArrayFormula(NOT(ISBLANK(K12:K999)) * (K12:K999 = L12:L999)))  
 >> GOOGLE SHEETS: combine TWO sheets of unknown length: =QUERY({cool_sheet!A4:F;even_cooler_sheet!A5:F},{"SELECT Col1,Col2,Col3,Col4,Col5,Col6 WHERE Col1 != ''"}, 0)  # the 0 means 'zero header lines'    
 >> SSH complaining about permissions:  ssh-add -K ~/.ssh/id_rsa (on the Mac--should persist between reboots) or ssh-add ~/.ssh/id_rsa   should probably fix it permanently (rather than requiring 'ssh-add' to be run every time you launch a new terminal)  
+>> BREW uninstall an application that was manually deleted from Applications: e.g. (brew uninstall --cask zettlr  would remove /Applications/Zettlr.app) -- this solves the brew upgrade message "It seems the App source [...] is not there"
+
 
 END_OF_HEREDOC
        ) # This end-paren is important! It matches the one above
