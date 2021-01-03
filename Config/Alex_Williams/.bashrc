@@ -136,7 +136,7 @@ else
     a_end_color=''
 fi
 
-echo -e "${a_echo_color}[:FYI:] Loading .bashrc...${a_end_color}" ## <-- comes after the colors are set up in platform-specific fashion
+echo -e "${a_echo_color}[:FYI:] loading .bashrc...${a_end_color}" ## <-- comes after the colors are set up in platform-specific fashion
 
 if [[ -d "${HOME}/work" ]]; then
     export BINF_CORE_WORK_DIR="${HOME}/work" # <-- set BINF_CORE work directory
@@ -492,14 +492,14 @@ if [[ ! "${isMac}" == "1" ]]; then
 fi
 
 if [[ -f "${HOME}/bin/activate" ]]; then
-    echo "[:OK:] .bashrc reporting: Activating virtualenv at ~/bin/activate"
+    echo "[:FYI:] .bashrc reporting: Activating virtualenv at ~/bin/activate"
     source "${HOME}/bin/activate"
 fi
 
 if [[ -e "${HOME}/.pyenv" ]]; then
-    echo "Initializing pyenv..."
     eval "$(pyenv init -)"
     export PYENV_ROOT="$HOME/.pyenv"
     export PATH="$PYENV_ROOT/bin:$PATH"
+    echo -e "${a_echo_color}[:FYI:] \"pyenv global\" is set to $(python --version)${a_end_color}" ## <-- comes after the colors are set up in platform-specific fashion
 fi
     

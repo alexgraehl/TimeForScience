@@ -49,7 +49,12 @@ if [[ 1 == $SHOULD_HOMEBREW ]]; then
     brew cask install tldr # Better examples, like 'man' or 'info'
     #brew cask install iterm2 # hexyl glances  # hexyl: command line color hex editor. glances: fancier htop
     brew cask install github
-    brew install bash bash-completion cairo catimg dialog emacs ffmpeg fontconfig freetype gcc gdbm gettext git glances glib gmp gnutls gradle gsl htop imagemagick ipython isl jpeg lame libevent libffi libgit2 libmpc libpng libtasn1 libtiff libtool libvo-aacenc mono mpfr nettle numpy openssl pcre pigz pixman pkg-config pv python qemu R readline rsync scipy sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
+    brew install bash bash-completion cairo catimg dialog \
+	 emacs ffmpeg fontconfig freetype gcc gdbm gettext git glances glib gmp gnutls gradle gsl \
+	 htop imagemagick ipython isl jpeg \
+	 lame libevent libffi libgit2 libmpc libpng libtasn1 libtiff libtool libvo-aacenc \
+	 mono mpfr nettle numpy openssl pcre pigz pixman pyenv pkg-config pv python qemu \
+	 R readline rsync scipy sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
 
     if [[ ! -e "/Applications/iTerm.app"              ]]; then brew cask install iterm2; fi
     if [[ ! -e "/Applications/Slack.app"              ]]; then brew cask install slack; fi
@@ -101,7 +106,7 @@ done
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 echo "A bunch of things that should be installed via pip3 (Python 3)"
-PIP3_PACKAGES=("pylint" "matplotlib" "numpy" "scipy" "jupyter" "mypy" "scikit-learn" "docutils" "sphinx" "sphinx-autobuild")
+PIP3_PACKAGES=("matplotlib" "numpy" "scipy" "jupyter" "mypy" "scikit-learn" "docutils" "pandas" "pylint" "sphinx" "sphinx-autobuild")
 for PACKAGE in ${PIP3_PACKAGES[@]}; do
     echo "[PYTHON3 (PIP3)] Installing the package $PACKAGE..."
     python3 -m pip install ${PACKAGE}
@@ -134,5 +139,7 @@ echo "You will need to MANUALLY run XCode to let it install its weird components
 echo "maybe something like this: sudo /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild  -license accept"
 #sudo installer -pkg /Applications/Xcode-beta.app/Contents/Resources/Packages/MobileDevice.pkg -target /
 #sudo installer -pkg /Applications/Xcode-beta.app/Contents/Resources/Packages/MobileDeviceDevelopment.pkg -target /
+
+echo "You probably want to set up pyenv: e.g., pyenv install 3.9.0 and then pyenv global 3.9.0"
 
 echo "[DONE!] But remember to manually install the software shown above."
