@@ -129,10 +129,7 @@
             "filenamePattern": "*.ipynb"
         }
     ],
-<<<<<<< HEAD
+    "python.defaultInterpreterPath": "~/.pyenv/shims/python",
     "editor.fontLigatures": null,
     "editor.fontFamily": "Menlo, 'Source Code Pro', Monaco, 'Courier New', monospace"
-=======
-    "python.defaultInterpreterPath": "~/.pyenv/shims/python"
->>>>>>> f3481891391bc8dfe1a5c6785ff175aba39d9871
 }
