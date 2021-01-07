@@ -6,7 +6,7 @@
         "~/"
     ],
     "window.zoomLevel": 1,
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "rewrap.wrappingColumn": 108,
     "python.formatting.blackPath": "~/.pyenv/shims/black",
     "python.formatting.blackArgs": [
@@ -130,5 +130,5 @@
         }
     ],
     "editor.fontLigatures": false,
-    "editor.fontFamily": "Menlo, 'Source Code Pro', Monaco, 'Courier New', monospace"
+    "editor.fontFamily": "Menlo, 'Source Code Pro', Monaco, 'Courier New', monospace",
 }
