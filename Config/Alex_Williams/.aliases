@@ -35,6 +35,7 @@ fi
 
 echo -e "${a_echo_color}[:FYI:] Loading bash-aliases...${a_end_color}"
 
+LITERAL_TAB='	'
 CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR} ${HOME}/workspace/0_CODE" # <-- Multiple **space-delimited** directories can be here
 if [[ -n "${isMac}" ]] ; then ## It *is* a mac!
     function g { ## Searches certain source directories, and the current directory (and any subdirectories!)
@@ -455,6 +456,13 @@ function git-diff-commits-in-branch-1-but-not-branch-2() {
 function git-grep-all-local-branches() {
     \git grep --color=always "${1}" $(git rev-list --all)
 }
+
+function git-last-modified {
+    if [[ "$#" != 1 ]]; then echo -e "[:ERR:] 'git-last-modified' needs exactly one filename to be supplied!"; return 1; fi
+    file=$1
+    git --no-pager log -1 --pretty="format:%ci" "$file"; echo "${LITERAL_TAB}${file}"
+}
+
 
 alias gitgrepall="git branch -a | tr -d \* | sed '/->/d' | xargs git grep" # greps ALL branches
 function gitbranchall {
