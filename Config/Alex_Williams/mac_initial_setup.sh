@@ -27,6 +27,9 @@ git config --global alias.last    'log -1 HEAD'
 git config --global alias.cot     'checkout --track'  # e.g. git checkout --track origin/remote_branch_name
 git config --global alias.rlc     "reflog --pretty='format:%C(green)%cd%Creset %C(red)%h%Creset %gD: %gs %C(yellow)%d%Creset%C(bold blue)<%an>%Creset'" # reflog COLOR / COOLER (rlc)
 
+# Checkout master without switching, as per https://stackoverflow.com/questions/3216360/merge-update-and-pull-git-branches-without-using-checkouts
+# sync = !sh -c 'git checkout --quiet HEAD; git fetch upstream master:master; git checkout --quiet -'
+
 git config --global alias.fetch-other-from-origin "! f() { git fetch -u origin \"$1\":\"$1\" ; }; f #"
 # updates non-active 'branch' <- 'origin/branch' (e.g. origin/master to master)
 
