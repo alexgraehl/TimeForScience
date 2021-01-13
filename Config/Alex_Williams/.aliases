@@ -1408,7 +1408,7 @@ function cheat() {
 >> ZIP: Unzip files into SUBDIRECTORIES always: ls *.zip|awk -F'.zip' '{print "unzip "$0" -d "$1}'|sh   
 >> ZIP: Zip on Mac without dotfiles (dot files): zip -r -X out.zip input_directory_here    -x "*.DS_Store"  
 >> RAM/Filesystem: clear out disk cache, recover RAM: purge  
->> MAC: what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL  
+>> MAC: what program is using a disk / preventing eject: sudo lsof -xf +d /Volumes/THEVOL  -- or try diskutil unmount /Volumes/THEVOL  to get exactly which processes are preventing eject / unmount
 >> MAC: lock a file, for example to prevent Dropbox from replacing a custom icon: chflags uchg ~/Dropbox/Icon$'\r'  (use nouchg to unlock a file) 
 >> MAC disk: specific file I/O: fs_usage <programname>  
 >> MAC disk: filesystem I/O:    fs_usage -w | grep -v '0\.0'   
