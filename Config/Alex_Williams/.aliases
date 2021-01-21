@@ -1611,6 +1611,7 @@ function cheat() {
 >> GIT merge but keep LOCAL changes and not the remote ones: git pull PARENT_BRANCHNAME -Xours  or  git merge PARENT_BRANCHNAME --strategy-option ours  
 >> GIT interactively merge ONE FILE ONLY: git checkout --patch origin/master PATH/TO/YOUR/FILE.TXT   
 >> GIT interactively edit/squash/combine/rebase a bunch of commits / edit commit messages: git rebase -i HEAD~[N] <-- where N is the number of commits you're interested in... you can put any number here, like 10 or whatever. [s]quash is how you combine commits, by the way.  
+>> GIT grep for a particular piece of code / line of source code that changed in a file:  git grep 'ESRD' $(git rev-list --all -- PATH/TO/FILE.py ) -- PATH/TO/FILE.py
 >> GITHUB solve 'Your push would publish a private email address': git config --global user.email 'YOURGITHUB_USERNAME_GOES_HERE@users.noreply.github.com'; git commit --amend --reset-author; git push ; (and make sure you don't have a .git/config that overrides this setting) 
 >> GITHUB: to solve 'Please make sure you have the correct access rights', usually you can fix this on the Mac with:  ssh-agent -s &&  ssh-add -K && ssh-add  . Not sure if all of those are necessary. This problem seems to occur after system updates.  
 >> GIT / GITLAB: change author of a commit: git commit --amend --author="YOURNAME_HERE <YOUREMAIL@EXAMPLE.COM>" --no-edit
