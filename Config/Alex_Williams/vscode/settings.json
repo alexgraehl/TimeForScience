@@ -123,12 +123,7 @@
     },
     "editor.acceptSuggestionOnCommitCharacter": false,
     "editor.acceptSuggestionOnEnter": "off",
-    "workbench.editorAssociations": [
-        {
-            "viewType": "jupyter.notebook.ipynb",
-            "filenamePattern": "*.ipynb"
-        }
-    ],
+    "workbench.editorAssociations": [],
     "editor.fontLigatures": false,
     "editor.fontFamily": "Menlo, 'Source Code Pro', Monaco, 'Courier New', monospace",
 }
