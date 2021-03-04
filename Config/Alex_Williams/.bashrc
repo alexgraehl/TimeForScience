@@ -500,6 +500,6 @@ if [[ -e "${HOME}/.pyenv" ]]; then
     eval "$(pyenv init -)"
     export PYENV_ROOT="$HOME/.pyenv"
     export PATH="$PYENV_ROOT/bin:$PATH"
-    echo -e "${a_echo_color}[:FYI:] \"pyenv global\" is set to $(python --version)${a_end_color}" ## <-- comes after the colors are set up in platform-specific fashion
+    echo -e "${a_echo_color}[:FYI:] \"pyenv global\" is set to $(python --version)${a_end_color}"
 fi
     
