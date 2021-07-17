@@ -123,7 +123,6 @@
     },
     "editor.acceptSuggestionOnCommitCharacter": false,
     "editor.acceptSuggestionOnEnter": "off",
-    "workbench.editorAssociations": [],
     "editor.fontLigatures": false,
     "editor.fontFamily": "Menlo, 'Source Code Pro', Monaco, 'Courier New', monospace",
     "python.languageServer": "Pylance",
@@ -132,4 +131,5 @@
         "~/automed/automed",
         "~/"
     ],
+    "security.workspace.trust.enabled": false,
 }
