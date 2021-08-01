@@ -1804,6 +1804,8 @@ function cheat() {
 
 >> ITERM2 text highlighting with partial matches / highlight only a subset of matched text / highlight partial match (lookback / lookahead regexp): if you want to highlight only AND, and only when it appears as "THIS AND THAT": you would add a rule for (?<=THIS )AND(?= THAT) <-- only the AND will be highlighted by iTerm.
 
+>> DEDUPE / DEDUPLICATE / REMOVE DUPLICATE FILES: use the utility 'fdupes'
+
 END_OF_HEREDOC
        ) # This end-paren is important! It matches the one above
     echo "$VERBATIM_CHEAT_SHEET"
