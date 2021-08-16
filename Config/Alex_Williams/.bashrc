@@ -346,7 +346,7 @@ if [[ "some_variable" == 'azure' ]]; then
    fi
 fi
 
-if [[ "1" == "1" ]]; then
+if [[ "${USER}" != "root" ]]; then
     # NOT root. Set PS1 accordingly
     case "$COMPYNAME"
     in
@@ -369,7 +369,7 @@ ${ENVTEXT}\
     esac
 else
     # this doesn't work for 'sudo su'
-    export PS1="ROOT> "
+    export PS1="ROOT# "
 fi
 
 
