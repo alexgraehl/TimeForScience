@@ -106,6 +106,36 @@ function template() {
 #
 #}
 
+function agw_aaa_autocomplete_capture() {
+    echo "This is alphabetically first in the 'agw_' commands."
+    echo "It is just to capture any inadverent tab completion."
+}
+
+function agw_split_files_into_new_subdirectories_in_batches_of_100() {
+    echo "Moving (a presumably large quantity of) files in this directory into subdirectories named 'subdir###'."
+    n=0;
+    for f in *; do
+	d="subdir$((n++ / 100))";
+	mkdir -p "$d";
+	mv -- "$f" "$d/$f";
+    done
+}
+
+
+function agw_preview_app_delete_its_cache_files() {
+    echo "Deleting an assortment of various cache-related files that can cause Apple Preview.app to get confused and refuse to open files with various 'cannot open' errors. Still occasionally necessary as of August 2021."
+    rm -rf ~/Library/Containers/com.apple.Preview
+    rm -rf ~/Library/Saved\ Application\ State/com.apple.Preview.savedState
+    rm -rf ~/Preferences/com.apple.Preview.LSSharedFileList.plist
+    rm -rf ~/Library/Preferences/com.apple.Preview.SandboxedPersistentURLs.LSSharedFileList.plist
+    rm -rf ~/Library/Caches/com.apple.Preview
+}
+
+
+function agw_dupe_delete_this_folder() {
+    echo "Just run fdupes (brew install fdupes, then fdupes -dN .)"
+}
+
 function sleepmin() { # Sleep N minutes
     if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] 'sleepmin' requires a number of minutes to sleep! One argument."; return 1; fi
     seconds_to_sleep=$(($1 * 60))  # Bash math!
