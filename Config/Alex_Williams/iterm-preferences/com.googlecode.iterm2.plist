@@ -1311,7 +1311,7 @@
 	<key>OpenFileInNewWindows</key>
 	<true/>
 	<key>OpenNoWindowsAtStartup</key>
-	<true/>
+	<false/>
 	<key>OpenTmuxWindowsIn</key>
 	<integer>2</integer>
 	<key>PasteTabToStringTabStopSize</key>
