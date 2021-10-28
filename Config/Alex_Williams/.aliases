@@ -131,6 +131,32 @@ function agw_preview_app_delete_its_cache_files() {
     rm -rf ~/Library/Caches/com.apple.Preview
 }
 
+function delete_mp3s_where_an_m4a_file_exists_with_the_otherwise_same_name() {
+    echo "May be dangerous. Attempts to delete any mp3 files where there is ALSO an (ideally uncompressed?) m4a file with the same name."
+    echo "Basically just finds all the m4a files and then attempts to delete the (perhaps present) .mp3 version of the file."
+    echo "The only real trick to this is that it can be non-obvious how to craft a command that handles spaces/quotation marks/etc."
+    find . -depth -type f -name "*.m4a" -exec sh -c 'rm -- "${1/.m4a}.mp3"' _ '{}' \;
+}
+
+function backup() {
+    bdir="./Backups"
+    # Back up one or more files into a <$bdir> backup subdirectory in this same directory
+    if [[ $# -eq 0 ]]; then
+        echo "E0001 99: You must specify AT LEAST ONE file to copy to the $bdir directory." >&2
+        return 1
+    fi
+    if [[ ! -d "${bdir}" ]]; then
+        echo "E0100 99: A <$bdir> directory must exist here." >&2
+        return 100
+    fi
+    seconds=$(date +%s) # time in unix seconds
+    for filename in "$@"; do
+        bak="${bdir}/${filename}.${seconds}.bak"
+        set -x # Turn on echoing of the following commands
+        cp "$filename" "$bak"
+        { set +x; } 2>/dev/null # Turn off echoing without echoing the "set +x"
+    done
+}
 
 function agw_dupe_delete_this_folder() {
     echo "Just run fdupes (brew install fdupes, then fdupes -dN .)"
