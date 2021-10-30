@@ -37,8 +37,8 @@ function deduped() { # input: one string to de-dupe. Usage: PATH=$(deduped $PATH
 	while [ -n "$old" ]; do
 	    x=${old%%:*}
 	    case "$new": in
-		*:"$x":*) ;; # <-- entry EXISTS already
-		*)new="$new:$x";; # Does not exist already
+		    *:"$x":*) ;;        # <-- This element exists already (do not append it)
+		    *) new="$new:$x" ;; # <-- Does not exist already, so append "new"
 	    esac
 	    old=${old#*:}
 	done
@@ -151,7 +151,7 @@ if [[ -d "${HOME}/TimeForScience" ]]; then ## If this is in the home directory, 
 else
     export TIME_FOR_SCIENCE_DIR="/home/alexgw/TimeForScience"
     if [[ -d ${TIME_FOR_SCIENCE_DIR} ]]; then
-	true # Don't do anything; it was found, which is fine
+	true # Do not't do anything; it was found, which is fine
     else
 	echo "[:HEY:] WARNING in .bashrc: TIME_FOR_SCIENCE_DIR not found]"
 	export TIME_FOR_SCIENCE_DIR="COULD_NOT_FIND_TIME_FOR_SCIENCE_DIRECTORY_ON_FILESYSTEM"
