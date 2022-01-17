@@ -5,7 +5,6 @@
         "~/automed/automed",
         "~/"
     ],
-    "window.zoomLevel": 1,
     "editor.formatOnSave": true,
     "rewrap.wrappingColumn": 108,
     "python.formatting.blackPath": "~/.pyenv/shims/black",
