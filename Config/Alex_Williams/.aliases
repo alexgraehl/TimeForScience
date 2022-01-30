@@ -36,7 +36,7 @@ fi
 echo -e "${a_echo_color}[:FYI:] Loading bash-aliases...${a_end_color}"
 
 LITERAL_TAB='	'
-CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR} ${HOME}/workspace/0_CODE" # <-- Multiple **space-delimited** directories can be here
+CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR}" # <-- Multiple **space-delimited** directories can be here
 if [[ -n "${isMac}" ]] ; then ## It *is* a mac!
     function g { ## Searches certain source directories, and the current directory (and any subdirectories!)
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".git" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" \
