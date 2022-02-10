@@ -65,20 +65,20 @@ function template() {
     if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] 'template ___' requires EXACTLY ONE file/directory suffix!"; return 1; fi
     EX=$1
     case "${EX}" in 
-	[Mm]ak*) SRC=`which template.mak`; DEST="Makefile" ;;
-	[Rr][Mm][Dd]*) SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.Rmd"          DEST="./template.Rmd"        ;;
-	[Rr])          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.R"            DEST="./template.R"          ;;
-	py2)           SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python/template-py2.py"  DEST="./template_python2.py" ;;
-	py | py3)      SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python3/template.py"     DEST="./template_python3.py" ;;
-	bash | sh)     SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Shell/template.sh"       DEST="./template.sh" ;;
-	*) echo -e "[:ERR:] template did not understand what type of file you requested: the extension you supplied was <${EX}>." ; return 1 ;;
+        [Mm]ak*) SRC=`which template.mak`; DEST="Makefile" ;;
+        [Rr][Mm][Dd]*) SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.Rmd"          DEST="./template.Rmd"        ;;
+        [Rr])          SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/R/template.R"            DEST="./template.R"          ;;
+        py2)           SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python/template-py2.py"  DEST="./template_python2.py" ;;
+        py | py3)      SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python3/template.py"     DEST="./template_python3.py" ;;
+        bash | sh)     SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Shell/template.sh"       DEST="./template.sh" ;;
+        *) echo -e "[:ERR:] template did not understand what type of file you requested: the extension you supplied was <${EX}>." ; return 1 ;;
     esac
     if [[ -e "${DEST}" ]]; then
-	echo "[:ERR:] Refusing to overwrite the existing file '${DEST}'."
-	return 1
+        echo "[:ERR:] Refusing to overwrite the existing file '${DEST}'."
+        return 1
     else
-	cp -i "${SRC}" "${DEST}"
-	echo "[:OK:] Copied a new '${EX}' template to <${DEST}>."
+        cp -i "${SRC}" "${DEST}"
+        echo "[:OK:] Copied a new '${EX}' template to <${DEST}>."
     fi
 }
 
@@ -138,6 +138,17 @@ function delete_mp3s_where_an_m4a_file_exists_with_the_otherwise_same_name() {
     find . -depth -type f -name "*.m4a" -exec sh -c 'rm -- "${1/.m4a}.mp3"' _ '{}' \;
 }
 
+function ios_killall_to_fix_stuck_operation_is_still_in_progress() {
+    echo "This should solve the <<Finder can't quit because an operation is still in progress on an iOS device>> problem."
+    killall -9 AMPDevicesAgent
+}
+
+function colorssh() {
+  tabc SSH
+  ssh "$*"
+  tabc
+}
+
 function backup() {
     bdir="./Backups"
     # Back up one or more files into a <$bdir> backup subdirectory in this same directory
@@ -159,7 +170,7 @@ function backup() {
 }
 
 function agw_dupe_delete_this_folder() {
-    echo "Just run fdupes (brew install fdupes, then fdupes -dN .)"
+    echo "Delete exact-duplicate files. Just run `fdupes` instead. (brew install fdupes, then fdupes -dN .)"
 }
 
 function sleepmin() { # Sleep N minutes
@@ -224,6 +235,13 @@ function witch() { # Shows the versions for all on-your-path verisons of softwar
 function delve() { # or 'dv'
     ## Finds, in any subdirectories, any files that have a name that matches the input text. Sort of like a poor man's "locate"
     find . -iname "*$@*"
+}
+
+function agw_find_small_files() {
+    echo "Finding files (of any type) that are under 50 kilobytes."
+    echo "Add `-delete` to the command below to actually *delete* the files."
+    echo "Running:  find -E . -type 'f' -size -50k "
+                    find -E . -type 'f' -size -50k
 }
 
 BRACKET_OPEN='{'
@@ -463,7 +481,7 @@ alias e="emacsclient -nw  -c --alternate-editor=\"\"" # "As a special exception,
 #fi
 
 function ql_files() {
-    # List any offending quicklook files
+    # List any offending quicklook files. You may also want to count them with "wc -l" at the end.
     lsof | grep Quick | grep -v -e /System -e /Library -e /private -e /dev -e /usr -e KQUEUE -e cwd
 }
 
@@ -1050,8 +1068,25 @@ function convert_chromosome_to_chr1_for_genome_browser() {
     (>&2 echo -e "<$FINALBAM> generated! Chromosome changed from '$FINDCHR' to 'chr1'. Original input: <$IN>")
 }
 
-function pdf2png() {
+function convert_pdf_to_png() {
     for f in "$@" ; do echo -e "Converting $f..."; convert -verbose -density 72 $f +antialias ${f/.pdf}.png; done
+}
+
+function convert_webp_to_jpg() {
+    # This will be a lossy conversion. Only useful if we can't use webp.
+    # Converts ALL `.webp` files in a directory. Beware
+    JPEG_QUALITY=65
+    for IN in *.webp; do
+        OUT=${IN/.webp/.jpg}
+        echo "${IN} --> ${OUT}";
+        jpeg_tempfile=$(mktemp)
+        dwebp "${IN}" -o "${jpeg_tempfile}"  # Requires that `dwebp` is installed.
+        convert "${jpeg_tempfile}" -quality $JPEG_QUALITY "${OUT}"
+        touch -r "${IN}" "${OUT}"  # Copy certain attributes (like file modification time)
+        \rm ${jpeg_tempfile}       # Delete the temp file
+    done
+    # Note that this keeps the .webp images.
+    #find ./ -name "*.webp" -exec dwebp {} -o {}.jpg \;
 }
 
 function zwcl() {
