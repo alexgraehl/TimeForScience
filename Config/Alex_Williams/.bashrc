@@ -21,6 +21,9 @@
 
 # ~~~~~~~~~~~~ Set up things below ONLY if this shell is interactive ~~~~~~~
 
+# Note: "normal" functions should generally go in ~/.aliases . This file is for re-usable functions that other
+# function definitions might depend on.
+
 function agw_cmd_exists() { # Check if a command exists
     type "$1" &> /dev/null
     # Alternative approach: command -v "scutil" > /dev/null # <-- Note: we check the exit code from this ("$?") below
@@ -28,11 +31,6 @@ function agw_cmd_exists() { # Check if a command exists
     # or try: if [[ -n `which exa 2> /dev/null` ]] ... # Usage example: if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then ...
 }
 
-function ios_killall_to_fix_stuck_operation_is_still_in_progress() {
-    echo "This should solve the <<Finder can't quit because an operation is still in progress on an iOS device>> problem."
-    killall -9 AMPDevicesAgent
-}
- 
 function deduped() { # input: one string to de-dupe. Usage: PATH=$(deduped $PATH). May break on things with spaces.
     local X="$1"
     local new=""
@@ -411,12 +409,10 @@ export LS_OPTIONS='--color=auto'
 export LS_COLORS='no=00:fi=00:di=01;35:ln=01;36:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=43;31;03:ex=01;31'  ## LS_COLORS *with* an underscore is for Ubuntu
 export LSCOLORS="FxgxCxDxBxegedabagacad"    ## LSCOLORS *without* an underscore is for Mac OS X.
 export HOSTNAME  ## <-- Required for tmux / env to see HOSTNAME as a variable!
-export    CVS_RSH="ssh"
-export  CVSEDITOR="emacs"
-export SVN_EDITOR="emacs"
-export     EDITOR="emacs"
+export EDITOR="emacs"
 
-export HUE_BASE_IP="10.0.0.9"
+# export HUE_BASE_IP="10.0.0.9"  # Old, for Philips hue
+
 # Keybindings: Add IJKL navigation to supplement/replace the arrow keys
 bind "\M-J:backward-word"
 bind "\M-L:forward-word"
@@ -472,17 +468,6 @@ function tabc() {
                                                       # "Default" to the name of your default theme
   echo -e "\033]50;SetProfile=$NAME\a"
 }
-
-function colorssh() {
-  tabc SSH
-  ssh "$*"
-  tabc
-}
-
-#alias ssh="colorssh"
-# This would be easy to extend to check if a theme with the name of the server exists and set it, and
-# fall back to the SSH theme. This way you can have different colors for different remote environments
-# (per project, production, staging, etc.)
 
 if [[ ! "${isMac}" == "1" ]]; then
     # Only do this if we are NOT on a Mac!
