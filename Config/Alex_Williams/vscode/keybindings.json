@@ -180,5 +180,15 @@
         "key": "shift+cmd+up",
         "command": "-cursorTopSelect",
         "when": "textInputFocus"
+    },
+    {
+        "key": "ctrl+cmd+e",
+        "command": "workbench.action.debug.start",
+        "when": "debuggersAvailable && debugState == 'inactive'"
+    },
+    {
+        "key": "f5",
+        "command": "-workbench.action.debug.start",
+        "when": "debuggersAvailable && debugState == 'inactive'"
     }
 ]

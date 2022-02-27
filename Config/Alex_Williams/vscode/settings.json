@@ -130,4 +130,6 @@
         "~/"
     ],
     "security.workspace.trust.enabled": false,
+    "window.zoomLevel": 1,
+    "editor.tabSize": 2,
 }
