@@ -139,7 +139,7 @@ function delete_mp3s_where_an_m4a_file_exists_with_the_otherwise_same_name() {
 }
 
 function ios_killall_to_fix_stuck_operation_is_still_in_progress() {
-    echo "This should solve the <<Finder can't quit because an operation is still in progress on an iOS device>> problem."
+    echo "This should solve the <<Finder can't quit because an operation is still in progress on an iOS device>> problem (iOS / iPhone syncing taking forever)."
     killall -9 AMPDevicesAgent
 }
 
@@ -1466,6 +1466,8 @@ function vv {
 
 function cheat() {
     VERBATIM_CHEAT_SHEET=$(cat <<'END_OF_HEREDOC'
+
+>> Fix an iPhone syncing forever in the Finder: This should solve the <<Finder can't quit because an operation is still in progress on an iOS device>> problem: killall -9 AMPDevicesAgent
 
 >> UNIX / APT / APT-GET: Look for total size of installed packages in KB (so divide by 1000 for MB) dpkg-query -Wf '${Installed-Size}\t${Package}\n' | sort -n | tail -n 20
 
