@@ -35,6 +35,8 @@ fi
 
 echo -e "${a_echo_color}[:FYI:] Loading bash-aliases...${a_end_color}"
 
+ERRTT="[:ERR:]"  # Set to highlight in iTerm
+
 LITERAL_TAB='	'
 CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR}" # <-- Multiple **space-delimited** directories can be here
 if [[ -n "${isMac}" ]] ; then ## It *is* a mac!
@@ -61,8 +63,9 @@ else
     }
 fi
 
+
 function template() {
-    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] 'template ___' requires EXACTLY ONE file/directory suffix!"; return 1; fi
+    if [[ "$#" != 1 ]] ; then echo -e "$ERRTT 'template ___' requires EXACTLY ONE file/directory suffix!"; return 1; fi
     EX=$1
     case "${EX}" in 
         [Mm]ak*) SRC=`which template.mak`; DEST="Makefile" ;;
@@ -71,40 +74,16 @@ function template() {
         py2)           SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python/template-py2.py"  DEST="./template_python2.py" ;;
         py | py3)      SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Python3/template.py"     DEST="./template_python3.py" ;;
         bash | sh)     SRC="${TIME_FOR_SCIENCE_DIR}/Lab_Code/Shell/template.sh"       DEST="./template.sh" ;;
-        *) echo -e "[:ERR:] template did not understand what type of file you requested: the extension you supplied was <${EX}>." ; return 1 ;;
+        *) echo -e "$ERRTT template did not understand what type of file you requested: the extension you supplied was <${EX}>." ; return 1 ;;
     esac
     if [[ -e "${DEST}" ]]; then
-        echo "[:ERR:] Refusing to overwrite the existing file '${DEST}'."
+        echo "$ERRTT Refusing to overwrite the existing file '${DEST}'."
         return 1
     else
         cp -i "${SRC}" "${DEST}"
         echo "[:OK:] Copied a new '${EX}' template to <${DEST}>."
     fi
 }
-
-#function maketemplate() {
-#    DEST=./Makefile
-#    if [[ -e "${DEST}" ]]; then
-#	echo "[:ERR:] CANNOT copy a makefile here---there is already one here! Refusing to overwrite it."
-#	return 1
-#    else
-#	echo "[:OK:] Copied a new makefile template to ${DEST}"
-#	cp -i `which template.mak` "${DEST}"
-#    fi
-#
-#}
-#
-#function fishldrtemplate() {
-#    DEST=./C10_fishldr_template.cfg.R
-#    if [[ -e "${DEST}" ]]; then
-#	echo "[:ERR:] CANNOT copy the fishLDR template to this location---there is already one here! Refusing to overwrite it#."
-#	return 1
-#    else
-#	echo "[:OK:] Copied a new fishLDR template to ${DEST}"
-#	cp -i "${HOME}/workspace/0_CODE/fishldr_example.cfg.R" "${DEST}"
-#    fi
-#
-#}
 
 function agw_aaa_autocomplete_capture() {
     echo "This is alphabetically first in the 'agw_' commands."
@@ -120,7 +99,6 @@ function agw_split_files_into_new_subdirectories_in_batches_of_100() {
 	mv -- "$f" "$d/$f";
     done
 }
-
 
 function agw_preview_app_delete_its_cache_files() {
     echo "Deleting an assortment of various cache-related files that can cause Apple Preview.app to get confused and refuse to open files with various 'cannot open' errors. Still occasionally necessary as of August 2021."
@@ -138,7 +116,7 @@ function delete_mp3s_where_an_m4a_file_exists_with_the_otherwise_same_name() {
     find . -depth -type f -name "*.m4a" -exec sh -c 'rm -- "${1/.m4a}.mp3"' _ '{}' \;
 }
 
-function ios_killall_to_fix_stuck_operation_is_still_in_progress() {
+function agw_AMPDevicesAgent_iOS_kill_fixes_sync_operation_is_still_in_progress() {
     echo "This should solve the <<Finder can't quit because an operation is still in progress on an iOS device>> problem (iOS / iPhone syncing taking forever)."
     killall -9 AMPDevicesAgent
 }
@@ -174,7 +152,7 @@ function agw_dupe_delete_this_folder() {
 }
 
 function sleepmin() { # Sleep N minutes
-    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] 'sleepmin' requires a number of minutes to sleep! One argument."; return 1; fi
+    if [[ "$#" != 1 ]] ; then echo -e "$ERRTT 'sleepmin' requires a number of minutes to sleep! One argument."; return 1; fi
     seconds_to_sleep=$(($1 * 60))  # Bash math!
     \sleep "$seconds_to_sleep"
 }
@@ -197,13 +175,13 @@ function hunt { # cd into a directory with a script
 }
 
 function cto { # Like CD, but lets you go to a FILE as well.
-    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] 'cto' requires EXACTLY ONE file/directory name!"; return 1; fi
+    if [[ "$#" != 1 ]] ; then echo -e "$ERRTT 'cto' requires EXACTLY ONE file/directory name!"; return 1; fi
     if [[ -d "$1" ]] ; then cd "$1" ; return 0; fi # it's already a directory, change to it!
     cd "$(dirname "$1")"
 }
 
 function c() { # Like CD, but lets you go to a FILE as well.
-    if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] 'cto' requires EXACTLY ONE file/directory name!"; return 1; fi
+    if [[ "$#" != 1 ]] ; then echo -e "$ERRTT 'cto' requires EXACTLY ONE file/directory name!"; return 1; fi
     if [[ -d "$1" ]] ; then cd "$1" ; return 0; fi # it's already a directory, change to it!
     cd "$(dirname "$1")"
 }
@@ -424,11 +402,11 @@ alias crone="EDITOR=emacs crontab -e"
 ## Note that we don't want to make it so everyone can execute *files* necessarily, just folders
 ## ("Executing" a folder means you can "ls" it and see what's inside.)
 function showoff {
-    if [ "$#" -eq 0 ]; then echo -e "[:ERR:] Usage: 'showoff' requires path argument(s)! Example: 'showoff ./' for the current directory."; return 1; fi
+    if [ "$#" -eq 0 ]; then echo -e "$ERRTT Usage: 'showoff' requires path argument(s)! Example: 'showoff ./' for the current directory."; return 1; fi
     for var in "$@"; do echo -e "[:FYI:] showoff is now running 'chmod -R' to allow ANY USER to browse \"$var\""; chmod -R a+rX "$var"; done
 }
 function sudoshowoff {
-    if [ "$#" -eq 0 ]; then echo -e "[:ERR:] Usage: 'sudoshowoff' requires path argument(s)! Example: 'sudoshowoff ./' for the current directory."; return 1; fi
+    if [ "$#" -eq 0 ]; then echo -e "$ERRTT Usage: 'sudoshowoff' requires path argument(s)! Example: 'sudoshowoff ./' for the current directory."; return 1; fi
     for var in "$@"; do echo -e "[:FYI:] sudoshowoff: Using sudo chmod -R to allow ANY USER to browse \"$var\""; sudo chmod -R a+rX "$var"; done
 }
 
@@ -521,7 +499,7 @@ alias fgrepc='fgrep --color=always --with-filename --line-number'
 
 function git-diff-commits-in-branch-1-but-not-branch-2() {
     # Shows commits in the first branch but NOT the second one. Order matters!
-    if [[ "$#" != 2 ]];  then echo -e "[:ERR:] Please provide TWO branch names. Order matters."; return 1; fi
+    if [[ "$#" != 2 ]];  then echo -e "$ERRTT Please provide TWO branch names. Order matters."; return 1; fi
     b1="$1"
     b2="$2"
     \git cherry --verbose "${b1}" "${b2}" | grep "^\+"
@@ -532,7 +510,7 @@ function git-grep-all-local-branches() {
 }
 
 function git-last-modified {
-    if [[ "$#" != 1 ]]; then echo -e "[:ERR:] 'git-last-modified' needs exactly one filename to be supplied!"; return 1; fi
+    if [[ "$#" != 1 ]]; then echo -e "$ERRTT 'git-last-modified' needs exactly one filename to be supplied!"; return 1; fi
     file=$1
     git --no-pager log -1 --pretty="format:%ci" "$file"; echo "${LITERAL_TAB}${file}"
 }
@@ -544,7 +522,7 @@ function gitbranchall {
 }
 
 function git-grab-hash {
-    if [[ "$#" != 1 ]]; then echo -e "[:ERR:] 'git-grab-hash' needs exactly one hash argument!"; return 1; fi
+    if [[ "$#" != 1 ]]; then echo -e "$ERRTT 'git-grab-hash' needs exactly one hash argument!"; return 1; fi
     echo "[:FYI:] Grabbing remote hash as new local branch..."
     echo "[:OK:]       --> git checkout \"$1\"  -b \"local-$1\""
     (set -x; git checkout "$1"  -b "local-$1"; )
@@ -619,12 +597,12 @@ function science() {
 AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
 
 function rmd {
-    if [[ "$#" != 1 ]]; then echo -e "[:ERR:] the 'rmd'-ify command needs exactly one filename argument."; return 1; fi
+    if [[ "$#" != 1 ]]; then echo -e "$ERRTT the 'rmd'-ify command needs exactly one filename argument."; return 1; fi
     FILE_TO_RENDER=$1
-    if [[ ! ${FILE_TO_RENDER} =~ .*Rmd ]]; then echo -e "[:ERR:] Your file to render, <${FILE_TO_RENDER}>, did not end in '.Rmd'!!"; return 1; fi
-    if [[ ! -f "${FILE_TO_RENDER}" ]]    ; then echo -e "[:ERR:] Your file to render, <${FILE_TO_RENDER}>, did not appear to exist!"; return 1; fi
+    if [[ ! ${FILE_TO_RENDER} =~ .*Rmd ]]; then echo -e "$ERRTT Your file to render, <${FILE_TO_RENDER}>, did not end in '.Rmd'!!"; return 1; fi
+    if [[ ! -f "${FILE_TO_RENDER}" ]]    ; then echo -e "$ERRTT Your file to render, <${FILE_TO_RENDER}>, did not appear to exist!"; return 1; fi
     NON_SYMLINKED="${FILE_TO_RENDER}.alias.tmp.Rmd" # R markdown handles aliases in a super annoying fashion
-    if [[ ! -f "${NON_SYMLINKED}" ]]    ; then echo -e "[:ERR:] We could not copy the file to a non-symlinked location!"; return 1; fi
+    if [[ ! -f "${NON_SYMLINKED}" ]]    ; then echo -e "$ERRTT We could not copy the file to a non-symlinked location!"; return 1; fi
     WORKDIR=`dirname ${FILE_TO_RENDER}`
     \cp -f --dereference "${FILE_TO_RENDER}" "${NON_SYMLINKED}"
     rmd_cmd="Rscript -e 'library(rmarkdown); rmarkdown::render(\"${NON_SYMLINKED}\", output_dir=\"${WORKDIR}\", knit_root_dir=\"${WORKDIR}\");'  "
@@ -719,7 +697,7 @@ function maczip() {
     fi
     theCompressedBasename=`echo "$theCompressedBasename" | sed "s/[/]//"` ## Let's remove any slashes from the name of the *output*. That way if someone types "mini MyDir/" it will generate "MyDir.zip" and NOT "MyDir/.zip"
     if [[ -f "${theCompressedBasename}.zip" ]] ; then
-	echo -e "[:ERR:] mini: HALTING: Cannot create a new archive---perhaps ${theCompressedBasename}.zip already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive!!! Delete it and compress again." ;
+	echo -e "$ERRTT mini: HALTING: Cannot create a new archive---perhaps ${theCompressedBasename}.zip already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive!!! Delete it and compress again." ;
 	return 1;
     else
 	if [[ "$#" -gt 1 ]] ; then echo -e "[:FYI:] Adding a total of $# files to the new zip archive, which OMITS Mac-specific files (e.g. .DS_Store)." ; fi
@@ -732,7 +710,7 @@ function maczip() {
 
 function xztar() {
     # Tar and xzip in one place so you don't have to remember the syntax. Or you could just remember the syntax!
-    #if [[ "$#" != 1 ]]; then echo -e "[:ERR:] xztar can only accept ONE argument! One directory or file to tar/xz."; return 1; fi
+    #if [[ "$#" != 1 ]]; then echo -e "$ERRTT xztar can only accept ONE argument! One directory or file to tar/xz."; return 1; fi
     F_TAR=$(basename $1).tar
     F_TAR_XZ=$(basename $1).tar.xz
     echo -e "Note that xz is slow! So be prepared for it to take forever. Creating this archive: ${F_TAR_XZ}"
@@ -785,7 +763,7 @@ function unmini() {
 	    *.gz)      EX_CMD="gzip  --decompress         $fff" ;; 
 	    *.bz2)     EX_CMD="bzip2 --decompress         $fff" ;;
 	    *.zip)     EX_CMD="unzip ${NEVER_OVERWRITE_ZIP} $fff   -d ${fff/.zip/}" ;;
-	    *) echo -e "[:ERR:] unmini has failed to detect type of archive (filename is <${fff}>. Recommendation: make sure that file exists)... aborting." ; return 1 ;;
+	    *) echo -e "$ERRTT unmini has failed to detect type of archive (filename is <${fff}>. Recommendation: make sure that file exists)... aborting." ; return 1 ;;
 	esac
 	eval "${AGW_IONICE}" "${EX_CMD}" # <-- actually decompress the file
     done
@@ -797,7 +775,7 @@ alias cake="echo  -n $'\xF0\x9F\x8D\xB0'' '"  # Emoji cake.  See http://apps.tim
 function qkiri() { # kill all your OWN jobs
     echo -e "[:FYI:] If qkiri fails, try running this command: qselect -u YOURNAME | sudo xargs qdel -p"
     echo -e "[:HEY:] REALLY terminate LITERALLY EVERY SINGLE ONE OF YOUR JOBS? ***ALL*** OF THEM???"
-    select yn in "[:FYI:] Wait a minute! Keep these jobs!" "[:ERR:] DELETE THEM WITHOUT REMORSE!!"; do
+    select yn in "[:FYI:] Wait a minute! Keep these jobs!" "$ERRTT DELETE THEM WITHOUT REMORSE!!"; do
 	case $yn in
 	    Wrong*)  echo -e "Ok, not doing anything."; break;;
 	    Delete*) bkill 0 -u ${USER}
@@ -837,23 +815,23 @@ function qsass() { # kill all jobs that match this grep... works for usernames, 
 }
 
 function mvln() { # move and then make an ALIAS in the current location, leaving a "ghostly" alias where the file previously was
-    if [[ "$#"  < 2 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE filename (source) and ONE DESTINATION (probably a directory?) into this function!"; return 1; fi
-    if [[ "$#" != 2 ]] ; then echo -e "[:ERR:] Right now, this only works with TWO ARGUMENTS (target and destination)!"; return 1; fi
+    if [[ "$#"  < 2 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE filename (source) and ONE DESTINATION (probably a directory?) into this function!"; return 1; fi
+    if [[ "$#" != 2 ]] ; then echo -e "$ERRTT Right now, this only works with TWO ARGUMENTS (target and destination)!"; return 1; fi
     SOURCE=$1
-    if [[ ! -e "${SOURCE}" ]] ; then echo -e "[:ERR:] Your source file (${SOURCE}) does not exist!"; return 1; fi
+    if [[ ! -e "${SOURCE}" ]] ; then echo -e "$ERRTT Your source file (${SOURCE}) does not exist!"; return 1; fi
     DEST=${@: -1}
     if [[ -d "${DEST}" ]]; then # target is a directory
 	DEST="${DEST%/}/${SOURCE}" # remove trailing slash. This is OK even with '/' (root), since we always insert a slash at the end no matter what
     fi
     mv "${SOURCE}" "${DEST}"  && ln -s "${DEST}" "${SOURCE}" && echo -e "Moved ${a_green}${SOURCE} ${a_yellow}-> ${a_green}${DEST}${a_end_color} and left a symlink at ${a_cyan}${SOURCE}${a_end_color}"
     if [[ $? != 0 ]]; then
-	echo -e "[:ERR:] Google Drive (or whatever the filesystem is that is complaining about symlinks) does NOT support cross-filesystem symlinks, so although we did successfully MOVE your file, we were unable to create a symlink. Your file was moved to this location --> ${DEST} "
+	echo -e "$ERRTT Google Drive (or whatever the filesystem is that is complaining about symlinks) does NOT support cross-filesystem symlinks, so although we did successfully MOVE your file, we were unable to create a symlink. Your file was moved to this location --> ${DEST} "
 	return 1;
     fi
 }
 
 #function neararchive() { # usage: cd /work/projects/your-project  then: "neararchive myproj-1234-rna-mouse"  --> will move things to the nearline storage and symlink them back
-#    if [[ "$#" == 0 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE filename into this function!"; return 1; fi
+#    if [[ "$#" == 0 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE filename into this function!"; return 1; fi
 #    D=$(basename `pwd`)
 #    TARGET="/nearline_storage/castles_made_of_sand/not_backed_up/${D}"
 #    echo -e "We would like to move the following $# files to the NEARLINE SECONDARY STORAGE folder <${TARGET}/>... sound ok to you? Select a NUMERIC option below:"
@@ -915,14 +893,14 @@ function qing() {
 }
 
 function mypip() {
-    if [[ "$#" == 0 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE PYTHON package-to-install into this function!"; return 1; fi
+    if [[ "$#" == 0 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE PYTHON package-to-install into this function!"; return 1; fi
     echo -e "Installing the following python libraries: $@"
     echo -e "Installing into 'BINFPYROOT' environment variable at: $BINFPYROOT"
     pip2.7 install --ignore-installed --install-option="--prefix=$BINFPYROOT" $@
 }
 
 function pylint-agw() {
-    if [[ "$#" == 0 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE PYTHON filename into this function!"; return 1; fi
+    if [[ "$#" == 0 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE PYTHON filename into this function!"; return 1; fi
     echo -e "Lintifying this file... $FILE (if this fails, run 'pip3 install pylint')"
     DISABLE_THESE_CHECKS="locally-disabled,global-variable-not-assigned,line-too-long,superfluous-parens,bad-whitespace,unused-wildcard-import,trailing-whitespace,unnecessary-pass,missing-docstring,invalid-name,global-statement,multiple-statements,too-many-locals,too-many-statements,too-many-branches,too-few-public-methods,too-many-lines,too-many-instance-attributes,too-many-arguments,wildcard-import,bad-continuation,unidiomatic-typecheck,expression-not-assigned,deprecated-lambda"
     pylint --jobs=4 --output-format=colorized --disable=$DISABLE_THESE_CHECKS "$@"
@@ -930,7 +908,7 @@ function pylint-agw() {
 }
 
 function mypy-agw() {
-    if [[ "$#" == 0 ]] ; then echo -e "[:ERR:] You need to pass AT LEAST ONE PYTHON filename into this function!"; return 1; fi
+    if [[ "$#" == 0 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE PYTHON filename into this function!"; return 1; fi
     echo -e "Lintifying this file... $FILE (if this fails, run 'pip3 install mypy')"
     #DISABLE_THESE_CHECKS="locally-disabled,global-variable-not-assigned,line-too-long,superfluous-parens,bad-whitespace,unused-wildcard-import,trailing-whitespace,unnecessary-pass,missing-docstring,invalid-name,global-statement,multiple-statements,too-many-locals,too-many-statements,too-many-branches,too-few-public-methods,too-many-lines,too-many-instance-attributes,too-many-arguments,wildcard-import,bad-continuation,unidiomatic-typecheck,expression-not-assigned,deprecated-lambda"
     mypy "$@"
@@ -960,15 +938,15 @@ alias tab="column -t -s $'\t'"
 function brutallycompress() {
     # Usage:    brutallycompress  DIRECTORY1   DIRECTORY2   DIRECTORY3
     # Recursively goes through and compresses (with gzip) any files with the extensions listed below.
-    if [[ "$#" == 0 ]] ; then echo -e "[:ERR:] in arguments to brutallycompress] You need to pass AT LEAST ONE target directory into this function--it can also be '.' for the current directory!"; return 1; fi
+    if [[ "$#" == 0 ]] ; then echo -e "$ERRTT in arguments to brutallycompress] You need to pass AT LEAST ONE target directory into this function--it can also be '.' for the current directory!"; return 1; fi
     RESTRING=".*[._]\(wig\|bed\|_tracking\|diff\|bed.count\|moa\|fa\|fasta\|fq\|fastq\|txt\|csv\|tab\)"
     echo -e "# About to compress ($COMPRESS)\n#     anything in the following locations: $@\n#     that matches this REGULAR EXPRESSION: $RESTRING"
     echo -e "# -----------------------------------------------------------------------------------------------"
     for location in "$@"; do # Sanity check to make sure all inputs are DIRECTORIES to start
-	if [[ ! -d "$location" ]] ; then echo -e "[:ERR:] in arguments to brutallycompress]: input '$location' was not a directory. Fix this--only give DIRECTORIES to 'brutallycompress'. Use '.' (not '*') if you want everything in the current directory!"; return 1; fi
+	if [[ ! -d "$location" ]] ; then echo -e "$ERRTT in arguments to brutallycompress]: input '$location' was not a directory. Fix this--only give DIRECTORIES to 'brutallycompress'. Use '.' (not '*') if you want everything in the current directory!"; return 1; fi
     done
     for location in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
-	if [[ ! -d "$location" ]] ; then echo -e "[:ERR:]: input '$location' was not a directory!"; return 1; fi
+	if [[ ! -d "$location" ]] ; then echo -e "$ERRTT: input '$location' was not a directory!"; return 1; fi
 	find "$location" -type f -regex "$RESTRING" -print0 | xargs -0 -I {} sh -c "echo 'Compressing' '{}'; gzip --verbose -6 '{}';" # <-- do **NOT** put double quotes around $COMPRESS (no "")
 	#find "$location" -type f \( -iname "*.bed" -o -iname "*_tracking" -o -iname "*.diff" -o -iname "*.bed.count" -o -iname "*.moa" -o -iname "*.fa" -o -iname "*.fq" -o -iname "*.fasta" -o -iname "*.fastq" -o -iname "*.txt" \) -print0 | xargs -0 $COMPRESS
     done #  xargs -I %%% sh -c 'echo %%%; echo %%%;'
@@ -986,7 +964,7 @@ function rtag() {
 }
 
 function wgetdevour() { # Downloads certain types of files via wget for a password-protected directory
-    if [[ "$#" != "3" ]] ; then echo -e "[:ERR:] You need to pass THREE arguments -- username, password, directory!"; return 1; fi
+    if [[ "$#" != "3" ]] ; then echo -e "$ERRTT You need to pass THREE arguments -- username, password, directory!"; return 1; fi
     USERNAME=$1
     PASSWORD=$2
     DIRECTORY=$3
@@ -1017,8 +995,8 @@ function catlogs() { # Usage:     catlogs (no arguments)
 }
 function mvlogs() { # Usage:   mvlogs OUTPUT_DIRECTORY
     # This function moves those annoying qzub logs to the destination directory
-    if [[ "$#" != "1" ]] ; then echo -e "[:ERR:] mvlogs needs EXACTLY ONE destination directory!"; return 1; fi
-    if [[ ! -d $1 ]]     ; then echo -e "[:ERR:] mvlogs needs an EXISTING DIRECTORY as a destination! The specified directory ($1) appears not to exist."; return 1; fi
+    if [[ "$#" != "1" ]] ; then echo -e "$ERRTT mvlogs needs EXACTLY ONE destination directory!"; return 1; fi
+    if [[ ! -d $1 ]]     ; then echo -e "$ERRTT mvlogs needs an EXISTING DIRECTORY as a destination! The specified directory ($1) appears not to exist."; return 1; fi
     find . -maxdepth 1 -type f -regex "${QUEUE_LOGFILE_PATTERN}" -print0 | xargs -0 -I{} mv {} $1/
     echo -e "[:OK :] Moved all the logs into the directory <$1>"
 }
@@ -1027,7 +1005,7 @@ function mvlogs() { # Usage:   mvlogs OUTPUT_DIRECTORY
 function star_make_index() {
     # This makes an alignment directory for the STAR aligner, when given just a FASTA file and a length.
     # The exact length is not critical, but it should ideally be the same length as the reads, if possible (slightly longer is OK too, but not necessary).
-    if [[ "$#" != "2" ]] ; then echo -e "[:ERR:] star_make_index needs an input FASTA file and a 'how long are the reads' parameter!"; return 1; fi
+    if [[ "$#" != "2" ]] ; then echo -e "$ERRTT star_make_index needs an input FASTA file and a 'how long are the reads' parameter!"; return 1; fi
     FAS=$1
     LEN=$2
     CPU_THREADS=8
@@ -1046,12 +1024,12 @@ function star_make_index() {
 }
 
 function convert_chromosome_to_chr1_for_genome_browser() {
-    if [[ "$#" != "2" ]] ; then echo -e "[:ERR:] needs two inputs: 1. a chromosome to turn into 'chr1' and 2. a bam filename to convert"; return 1; fi
+    if [[ "$#" != "2" ]] ; then echo -e "$ERRTT needs two inputs: 1. a chromosome to turn into 'chr1' and 2. a bam filename to convert"; return 1; fi
     FINDCHR=$1
     IN=$2
     NEWCHR=chr1
     TMPSAM=${IN}--TMP.sam
-    if [[ ! -e $IN ]] ; then echo -e "[:ERR:] Your specified input file ($FILE) does not exist!"; return 1; fi
+    if [[ ! -e $IN ]] ; then echo -e "$ERRTT Your specified input file ($FILE) does not exist!"; return 1; fi
 
     FINALBAM=${IN/.bam/--${NEWCHR}_only.bam}
 
@@ -1107,7 +1085,7 @@ function pybug() {
 
 function jupynote() {
     # Executes a jupyter notebook with generous settings. Saves output HTML to desktop
-    if [[ "$#" != "1" ]] ; then echo -e "[:ERR:] 'jupynote' can only accept exactly one argument: the name of a .ipynb file to run and convert to html"; return 1; fi
+    if [[ "$#" != "1" ]] ; then echo -e "$ERRTT 'jupynote' can only accept exactly one argument: the name of a .ipynb file to run and convert to html"; return 1; fi
     #                                                                                   14400 is 4 hours
     jupyter nbconvert --output-dir=~/Desktop/ --to 'html' --ExecutePreprocessor.timeout=14400 --execute "$1"
     
@@ -1115,7 +1093,7 @@ function jupynote() {
     if [[ "$EXIT_CODE" == "0" ]]; then
 	echo "[:OK:] Done executing $1. Successful exit code $EXIT_CODE."
     else
-	echo "[:ERR:] Done executing $1. Non-zero exit code $EXIT_CODE"
+	echo "$ERRTT Done executing $1. Non-zero exit code $EXIT_CODE"
     fi
 }
 
@@ -1143,13 +1121,13 @@ function hsync() {
 
 function fasta2single_line_per_seq() {
     echo -e "[:HEY:] FYI, this script reads from STDIN, and inputs to STDOUT. We'll be waiting for a cat-ed in input FASTA file." >&2 # print to stderr
-    if [[ "$#" != 0 ]] ; then echo -e "[:ERR:]] This script takes NO ARGUMENTS. You must 'cat' a FASTA file to pass it in, like this:  cat myfile.fa | fasta2single_line_per_seq | gzip > done.fa.gz  "; return 1; fi
+    if [[ "$#" != 0 ]] ; then echo -e "$ERRTT This script takes NO ARGUMENTS. You must 'cat' a FASTA file to pass it in, like this:  cat myfile.fa | fasta2single_line_per_seq | gzip > done.fa.gz  "; return 1; fi
     awk '!/^>/{printf "%s", $0; n="\n"} /^>/{print n $0; n=""} END {printf"%s",n}'
 }
 
 function j1() {
     if ! agw_cmd_exists "bsub"; then
-	echo -e "[:ERR:] This is NOT a machine on the cluster with the BSUB queue. Connect to the cluster machine first!"; return 1;
+	echo -e "$ERRTT This is NOT a machine on the cluster with the BSUB queue. Connect to the cluster machine first!"; return 1;
     fi
     : "${cpre}=\033}" ## <-- Color prefix, if not already set
     : "${a_end_color:=${cpre}[m}"
@@ -1179,9 +1157,9 @@ function j1() {
     if [[ "${FAILED_JOB_TEXT}" =~ No.*job.* ]]; then
 	echo -e "${a_blue_bold}(No recent job failures were found.)${a_end_color}"
     else
-	echo -e "[:ERR:]: ${a_red_bold}Jobs that failed (-a -x -l output):${a_end_color}"
+	echo -e "$ERRTT: ${a_red_bold}Jobs that failed (-a -x -l output):${a_end_color}"
 	echo -e "${FAILED_JOB_TEXT}"
-	echo -e "[:ERR:]: [End of list]"
+	echo -e "$ERRTT: [End of list]"
     fi
 }
 
@@ -1191,17 +1169,17 @@ function jj() {
 
 function setsubtract() {
     # input files do NOT need to be sorted
-    if [[ "$#" != 2 ]] ; then echo -e "[:ERR:]] You need to pass EXACTLY TWO files to the set subtraction!"; return 1; fi
-    if [[ ! -f "$1" ]] ; then echo -e "[:ERR:]] Could not find the specified input file: $1!"; return 1; fi
-    if [[ ! -f "$2" ]] ; then echo -e "[:ERR:]] Could not find the specified input file: $2!"; return 1; fi
+    if [[ "$#" != 2 ]] ; then echo -e "$ERRTT You need to pass EXACTLY TWO files to the set subtraction!"; return 1; fi
+    if [[ ! -f "$1" ]] ; then echo -e "$ERRTT Could not find the specified input file: $1!"; return 1; fi
+    if [[ ! -f "$2" ]] ; then echo -e "$ERRTT Could not find the specified input file: $2!"; return 1; fi
     grep -F -x -v -f "$2" "$1"
 }
 
 function setunion() {
     # input files do NOT need to be sorted
-    if [[ "$#" != 2 ]] ; then echo -e "[:ERR:]] You need to pass EXACTLY TWO files to the set union!"; return 1; fi
-    if [[ ! -f "$1" ]] ; then echo -e "[:ERR:]] Could not find the specified input file: $1!"; return 1; fi
-    if [[ ! -f "$2" ]] ; then echo -e "[:ERR:]] Could not find the specified input file: $2!"; return 1; fi
+    if [[ "$#" != 2 ]] ; then echo -e "$ERRTT You need to pass EXACTLY TWO files to the set union!"; return 1; fi
+    if [[ ! -f "$1" ]] ; then echo -e "$ERRTT Could not find the specified input file: $1!"; return 1; fi
+    if [[ ! -f "$2" ]] ; then echo -e "$ERRTT Could not find the specified input file: $2!"; return 1; fi
     cat "$1" "$2" | sort -u
 }
 
@@ -1243,7 +1221,7 @@ function setunion() {
 #}
 #
 #function qsud {
-#    if [[ "$#" == "0" ]] ; then echo -e "[:ERR:] qq (queue submission) needs at least ONE argument script!"; return 1; fi
+#    if [[ "$#" == "0" ]] ; then echo -e "$ERRTT qq (queue submission) needs at least ONE argument script!"; return 1; fi
 #    PBS_BIO_GGG="Bio"
 #    PBS_BIO_QQQ="bioqueue"
 #    PBS_GEN_GGG="General"
@@ -1259,7 +1237,7 @@ function setunion() {
 #	    QQUE="$PBS_GEN_QQQ"
 #	    ;;
 #	*)
-#    	    echo -e "[:ERR:] your username was not in a relevant group -- it must be in either the 'bioqueue' or 'genqueue' groups. This is MANDATORY if qsud is to work!"
+#    	    echo -e "$ERRTT your username was not in a relevant group -- it must be in either the 'bioqueue' or 'genqueue' groups. This is MANDATORY if qsud is to work!"
 #	    return 99
 #	    ;;
 #    esac
@@ -1292,14 +1270,14 @@ function bsubnow() {
 }
 
 function bsubtemp() {
-    if (( "$#" < 1 )) ; then echo -e "[:ERR:]] Please specify a job name! Note that you probably also want to send this output to STDOUT, so e.g. 'bsubtemp MYJOB > job.sub.sh'"; return 1; fi
+    if (( "$#" < 1 )) ; then echo -e "$ERRTT Please specify a job name! Note that you probably also want to send this output to STDOUT, so e.g. 'bsubtemp MYJOB > job.sub.sh'"; return 1; fi
     if [[ "$#" == 2 ]] ; then
 	MEM=$2
     else
 	MEM=4  # gigabytes
     fi
     if ! agw_is_numeric "${MEM}"; then
-	echo "[:ERR:] Your second argument, if included, MUST be an integer (the amount of RAM to request, in GB)! Your argument was this: ${mem}" >&2;
+	echo "$ERRTT Your second argument, if included, MUST be an integer (the amount of RAM to request, in GB)! Your argument was this: ${mem}" >&2;
 	return 1;
     fi
     JJJ=${1/ /_} # spaces --> '_'
@@ -1316,7 +1294,7 @@ function bsubtemp() {
     echo -e ''
     echo -e ": \"\${LSB_JOBID:=}\" # a non-defined ID would become blank"
     echo -e "if [[ -z \"\${LSB_JOBID}\" ]]; then"
-    echo -e "    echo \"[:ERR:] ERROR: You should NOT run this as a shell script! Correct way -->   bsub < scriptname.sh      <-- note: the '<' is important! Do not omit it.\"; "
+    echo -e "    echo \"$ERRTT ERROR: You should NOT run this as a shell script! Correct way -->   bsub < scriptname.sh      <-- note: the '<' is important! Do not omit it.\"; "
     echo -e "    exit 1; "
     echo -e "fi"
     echo ''
@@ -1352,13 +1330,13 @@ function bbq() { # bsub, be quick!
     : "${a_blue_bold}:=${cpre}[1;34m}"
     : "${a_green}:=${cpre}[32m}"
     echo -e "${a_blue_bold}BSS${a_end_color}: ${a_blue_bold}B${a_end_color}sub ${a_blue_bold}B${a_end_color}e ${a_blue_bold}Q${a_end_color}uick!"
-    if [[ "$#" < 1 || "$#" > 2 ]] ; then echo -e "\n[:ERR:] BBQ: You must specify EXACTLY ONE command to add to the queue run---put your command in quotes! Example:  bbq \"ls -al\"  "; return;  fi
+    if [[ "$#" < 1 || "$#" > 2 ]] ; then echo -e "\n$ERRTT BBQ: You must specify EXACTLY ONE command to add to the queue run---put your command in quotes! Example:  bbq \"ls -al\"  "; return;  fi
     cmd=$1
     
     if (( "$#" >= 2 )); then
 	mem=$2
 	if ! agw_is_numeric "${mem}"; then
-	    echo "[:ERR:] Your second argument, if included, MUST be an integer (the amount of RAM to request, in GB)! Your argument was this: ${mem}" >&2;
+	    echo "$ERRTT Your second argument, if included, MUST be an integer (the amount of RAM to request, in GB)! Your argument was this: ${mem}" >&2;
 	    return 1;
 	fi
     else
@@ -1436,11 +1414,11 @@ function delete_android_file_transfer_on_mac() {
 
 function gitstory() {
     if [[ "$#" != 1 ]] ; then
-	echo -e "[:ERR:] You must specify EXACTLY ONE filename."; return;
+	echo -e "$ERRTT You must specify EXACTLY ONE filename."; return;
     fi
     F=$1
     if [[ ! -f $F ]]; then
-	echo -e "[:ERR:] Apparently your specified file was not found??? Check this file: $F"; return;
+	echo -e "$ERRTT Apparently your specified file was not found??? Check this file: $F"; return;
     fi
 
     echo "[:OK:] Checking the last few checked-into-git versions of <$F>..."
