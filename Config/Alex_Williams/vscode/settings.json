@@ -43,6 +43,8 @@
     "editor.wordSeparators": "`~!@#$%^&*()=+[{]}\\|;:'\",.<>/?",
     "[python]": {
         "files.trimTrailingWhitespace": true,
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
     },
     "editor.multiCursorModifier": "ctrlCmd",
     "terminal.integrated.macOptionIsMeta": true,
@@ -130,11 +132,11 @@
         "~/"
     ],
     "security.workspace.trust.enabled": false,
-    "window.zoomLevel": 1,
     "editor.tabSize": 2,
     "html.format.enable": false,
     "html.format.wrapLineLength": 0,
     "html.autoClosingTags": false,
     "javascript.autoClosingTags": false,
     "typescript.autoClosingTags": false,
+    "editor.scrollBeyondLastLine": false,
 }
