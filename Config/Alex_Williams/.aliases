@@ -1458,6 +1458,7 @@ function cheat() {
             "args": [ "--good-arg", "some-value" ],
             "console": "integratedTerminal"          } ], }
 
+>> MAC: Put the Mac application switcher ("Alt tab") on ALL (multiple) monitors: 1. Run this command ---> defaults write com.apple.Dock appswitcher-all-displays -bool true  and then 'killall Dock' (or reboot your Mac).
 >> MAC Time machine: SYSTEMWIDE (not user-specified) exclusions are in: /System/Library/CoreServices/backupd.bundle/Contents/Resources/StdExclusions.plist
 >> MAC Time machine: USER SPECIFIED exclusions: view them with plutil -convert xml1 -o ~/Desktop/out_temp.txt /Library/Preferences/com.apple.TimeMachine.plist && cat ~/Desktop_out_temp.txt.   Convert that file BACK with plutil -convert binary1 ~/Desktop/out_temp.txt -o ~/Desktop/out_temp_converted.xml (save this to the com.apple.TimeMachine.plist). Note that this is GLOBAL.
 >> MAC Time Machine: exclude/check: tmutil isexcluded/tmutil addexclusion (-p) PATH  
