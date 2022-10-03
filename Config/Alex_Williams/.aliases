@@ -121,6 +121,13 @@ function agw_AMPDevicesAgent_iOS_kill_fixes_sync_operation_is_still_in_progress(
     killall -9 AMPDevicesAgent
 }
 
+function agw_quarantine_deleter() {
+    if [[ "$#" -eq 0 ]] ; then echo -e "[:ERR:] Please provide at least one file/directory to recursively delete quarantine flags in." ; return 1; fi
+    echo "RECURSIVELY deleting quarantine flags in the supplied path and any subdirectories."
+    sleep 4
+    xattr -dr com.apple.quarantine $*
+}
+    
 function colorssh() {
   tabc SSH
   ssh "$*"
