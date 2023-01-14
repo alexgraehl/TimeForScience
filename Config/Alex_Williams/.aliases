@@ -537,7 +537,7 @@ function git-grab-hash {
 
 # git-related aliases
 alias gitours="git checkout --ours"
-alias gitcom="echo 'Stop using this'" #git commit -a -m 'Changes committed by ${USER}'"
+alias gitcom="git commit -a -m 'Changes committed by ${USER}'"
 alias git-list="git ls-tree -r master --name-only" # show currently tracked files
 alias gits="git status"
 alias git-stat="git ls-files --modified --deleted"
