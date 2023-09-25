@@ -139,4 +139,6 @@
     "javascript.autoClosingTags": false,
     "typescript.autoClosingTags": false,
     "editor.scrollBeyondLastLine": false,
+    "update.showReleaseNotes": false,
+    "gitlens.showWhatsNewAfterUpgrades": false,
 }

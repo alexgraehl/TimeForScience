@@ -31,6 +31,10 @@ function agw_cmd_exists() { # Check if a command exists
     # or try: if [[ -n `which exa 2> /dev/null` ]] ... # Usage example: if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then ...
 }
 
+function agw_resource_fork_ls() {
+    echo "If you have an ancient Mac file with a resource fork, view the file contents by appending '/..namedfork/rsrc' to the path."
+}
+
 function deduped() { # input: one string to de-dupe. Usage: PATH=$(deduped $PATH). May break on things with spaces.
     local X="$1"
     local new=""
