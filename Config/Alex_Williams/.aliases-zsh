@@ -1,3 +1,4 @@
+# -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
 ## Mac-specific commands:
 SETFILE_LOCATION=/Applications/Xcode*/Contents/Developer/Tools/SetFile
