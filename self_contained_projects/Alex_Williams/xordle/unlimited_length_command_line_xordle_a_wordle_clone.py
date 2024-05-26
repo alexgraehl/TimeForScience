@@ -29,7 +29,6 @@ import argparse
 import datetime
 import random
 import re
-from ssl import HAS_TLSv1_1
 import sys
 from enum import Enum
 from typing import Iterable
