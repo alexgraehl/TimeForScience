@@ -24,7 +24,7 @@ Deterministically always pick the same words:
 Script by Alex Williams, Feb 2022.
 """
 
-# pylint: disable=unnecessary-pass,useless-return,line-too-long,unused-import
+# pylint: disable=unnecessary-pass,useless-return,line-too-long
 import argparse
 import datetime
 import random
@@ -32,7 +32,7 @@ import re
 from ssl import HAS_TLSv1_1
 import sys
 from enum import Enum
-from typing import Dict, Iterable, List, Set, Optional
+from typing import Iterable
 
 
 class Verdict(Enum):
@@ -56,7 +56,7 @@ GUESS_COUNT_EXCEEDED_LIMIT_COLOR = "\x1b[0;31;40m"
 ALREADY_GUESSED_LETTER_COLOR = "\x1b[0;34;40m"  # A dim color that isn't too eye-catching
 NOT_YET_GUESSED_LETTER_COLOR = "\x1b[0;30;42m"
 
-REDACT_CHAR_MAPPING: Dict[Verdict, str] = {
+REDACT_CHAR_MAPPING: dict[Verdict, str] = {
     # Unix color formatting
     Verdict.ABSENT: " ",
     Verdict.ELSEWHERE: "-",
@@ -64,7 +64,7 @@ REDACT_CHAR_MAPPING: Dict[Verdict, str] = {
     Verdict.FULL_WORD_CORRECT: "#",
 }
 
-REDACT_EMOJI_MAPPING: Dict[Verdict, str] = {
+REDACT_EMOJI_MAPPING: dict[Verdict, str] = {
     # Emoji mapping
     Verdict.ABSENT: "⬛",
     Verdict.ELSEWHERE: "🟡",
@@ -72,7 +72,7 @@ REDACT_EMOJI_MAPPING: Dict[Verdict, str] = {
     Verdict.FULL_WORD_CORRECT: "🔹",
 }
 
-COLOR_FORMAT_DEFAULT: Dict[Verdict, str] = {
+COLOR_FORMAT_DEFAULT: dict[Verdict, str] = {
     # Unix color formatting
     Verdict.ABSENT: "\x1b[0;37;40m",  # White on black
     Verdict.ELSEWHERE: "\x1b[0;30;43m",  # Black text, yellow background
@@ -80,7 +80,7 @@ COLOR_FORMAT_DEFAULT: Dict[Verdict, str] = {
     Verdict.FULL_WORD_CORRECT: "\x1b[1;30;46m",  # Note the '1;' for "bold" colors
 }
 
-COLOR_FORMAT_COLORBLIND_1: Dict[Verdict, str] = {
+COLOR_FORMAT_COLORBLIND_1: dict[Verdict, str] = {
     # Unix color formatting
     Verdict.ABSENT: "\x1b[1;37;40m",  # White on black
     Verdict.ELSEWHERE: "\x1b[0;33;41m",  # Yellow on red
@@ -89,7 +89,7 @@ COLOR_FORMAT_COLORBLIND_1: Dict[Verdict, str] = {
 }
 
 
-def get_color_formatter(name: str = "") -> Dict[Verdict, str]:
+def get_color_formatter(name: str = "") -> dict[Verdict, str]:
     if name in ("default", ""):
         return COLOR_FORMAT_DEFAULT
     elif name in ("colorblind", "colorblind_1", "colorblind1"):
@@ -97,17 +97,17 @@ def get_color_formatter(name: str = "") -> Dict[Verdict, str]:
 
 
 # The set of all possible words you'd find in a dictionary. Note that it's not a *python* dict.
-WORDS: Set[str] = set()
+WORDS: set[str] = set()
 
 # The actually-picked words. One word per N "boards"
-ANSWERS: List[str] = list()
+ANSWERS: list[str] = list()
 
 UNSOLVED_VALUE = -1
 
 # int showing which guess index each answer was found on, starting from index = 0 (first guess). -1 means "not correct yet"
-SOLVED_AT: List[int] = list()
+SOLVED_AT: list[int] = list()
 
-GUESSES: List[str] = list()  # your previous guesses
+GUESSES: list[str] = list()  # your previous guesses
 
 
 def is_guess_valid(guess: str, valid_words: Iterable[str], expected_len: int) -> bool:
@@ -129,9 +129,9 @@ def colorized(letter: str, v: Verdict) -> str:
     return f"""{get_color_formatter()[v]}{letter}{RESET_COLOR}"""
 
 
-def evaluate_guess(guess_word: str, answer_word: str) -> List[Verdict]:
+def evaluate_guess(guess_word: str, answer_word: str) -> list[Verdict]:
     """Evaluates a guessed WORD versus the answer WORD."""
-    result: List[Verdict] = list()
+    result: list[Verdict] = list()
     assert len(guess_word) == len(answer_word), "Programming error: length mismatch!"
     for i in range(len(guess_word)):
         if guess_word[i] == answer_word[i]:
@@ -148,14 +148,14 @@ def print_keyboard(guesses: Iterable[str]) -> None:
     xxx: str = "EMPTY"  # Just used for layout / spacing
     h1: str = "HALF"  # Half width, for offsetting the keyboard by HALF as much as 'xxx' would. This is how we offset the keyboard to get the 'staggered' row look.
     h2: str = "HALF_RIGHT"  # This is used to make the right border line up, in case it doesn't with the default spacing settings.
-    kb_layout: List[List[str]] = [  # This gets printed out essentially verbatim
+    kb_layout: list[list[str]] = [  # This gets printed out essentially verbatim
         ["q", "w", "e", "r", "t", "y", "u", "i", "o", "p"],
         [xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx],  # blank line
         [h1, "a", "s", "d", "f", "g", "h", "j", "k", "l", h2],
         [xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx, xxx],  # blank line
         [xxx, "z", "x", "c", "v", "b", "n", "m", xxx, xxx],
     ]
-    all_letters_guessed: Set[str] = set("".join(guesses))  # Letters already guessed
+    all_letters_guessed: set[str] = set("".join(guesses))  # Letters already guessed
 
     key_width = 1  # Each character is only one character wide (unless we had something like '[A]' instead of just 'A')
 
@@ -169,7 +169,7 @@ def print_keyboard(guesses: Iterable[str]) -> None:
     b_border = "╚" + "═" * (kb_width - 2) + "╝" + "\n"
     # per_row_delim = f"\n{l_border}\n"  # Two newlines means we get a blank line between rows
     sys.stdout.write(manually_colorized(t_border, BORDER_COLOR))
-    row: List[str]
+    row: list[str]
     for row in kb_layout:
         sys.stdout.write(manually_colorized(l_border, BORDER_COLOR))  # Left border for the "keyboard"
         k: str
@@ -248,7 +248,7 @@ def print_board(
         answer: str
         for a_idx, answer in enumerate(answers):
             # Each answer is a COLUMN.
-            verdict_this_word: List[Verdict] = evaluate_guess(guess, answer)
+            verdict_this_word: list[Verdict] = evaluate_guess(guess, answer)
             assert len(guess) == len(verdict_this_word)
 
             if guess == answer:  # Got this entire word totally correct
@@ -413,7 +413,7 @@ def main():
     if args.is_daily_challenge and (args.rand_seed is not None):
         argErrorAndExit("You cannot specify BOTH `--daily` and `--seed` simultaneously.")
 
-    seed: Optional[int]
+    seed: int | None
     if args.is_daily_challenge:
         # The random seed is "today's" (UTC timezone) days since Jan 1, 2000.
         seed = (datetime.datetime.utcnow().date() - datetime.date(2000, 1, 1)).days
@@ -434,11 +434,11 @@ def main():
     # print("FYI, the answers are: ", " ".join(ANSWERS))
 
     # For testing purposes, '--debug' will force a specific set of automatic TEST_GUESSES.
-    TEST_GUESSES: List[str] = list()
+    TEST_GUESSES: list[str] = list()
     if args.debug_force_input:
         print("DEBUGGING is on: we're generating DETERMINISTIC test input.")
         print("DEBUG guesses are: N random gueses, 1 correct guess, repeat…")
-        answers_not_yet_guessed: List[str] = random.sample(ANSWERS, len(ANSWERS))
+        answers_not_yet_guessed: list[str] = random.sample(ANSWERS, len(ANSWERS))
         sorted_wordlist = sorted(list(WORDS))  # Set -> list is apparently nondeterministic.
         while len(answers_not_yet_guessed) > 0:
             n_rand_guesses_between_correct: int = 2
