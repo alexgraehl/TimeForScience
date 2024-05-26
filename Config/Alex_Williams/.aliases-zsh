@@ -10,6 +10,8 @@ alias -g unlock='chflags nouchg' # Mac: unlock file
 alias -g clearicon='$SETFILE_LOCATION -P -a c' ## clear mac custom icons. Useful for images that have old custom icons.
 alias -g version="lsb_release -a" # Tells you which version of Ubuntu you are running!
 alias -g vscode="code"
+alias -g vs="vscode"
+
 alias -g wcl='grep -c ""' # actually gives you the NUMBER and not the filename
 alias -g sortt='sort -t "	"' # sort with tab as separator
 alias -g sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
