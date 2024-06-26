@@ -1,7 +1,7 @@
 {
     "global": {
         "ask_for_confirmation_before_quitting": true,
-        "check_for_updates_on_startup": true,
+        "check_for_updates_on_startup": false,
         "show_in_menu_bar": true,
         "show_profile_name_in_menu_bar": false,
         "unsafe_ui": false
@@ -480,7 +480,7 @@
                         "vendor_id": 1452
                     },
                     "ignore": false,
-                    "manipulate_caps_lock_led": true,
+                    "manipulate_caps_lock_led": false,
                     "mouse_flip_horizontal_wheel": false,
                     "mouse_flip_vertical_wheel": false,
                     "mouse_flip_x": false,
@@ -501,7 +501,7 @@
                         "product_id": 49284,
                         "vendor_id": 1133
                     },
-                    "ignore": false,
+                    "ignore": true,
                     "manipulate_caps_lock_led": true,
                     "mouse_flip_horizontal_wheel": false,
                     "mouse_flip_vertical_wheel": false,
@@ -692,26 +692,6 @@
                     "to": [
                         {
                             "key_code": "left_control"
-                        }
-                    ]
-                },
-                {
-                    "from": {
-                        "key_code": "print_screen"
-                    },
-                    "to": [
-                        {
-                            "consumer_key_code": "eject"
-                        }
-                    ]
-                },
-                {
-                    "from": {
-                        "key_code": "f13"
-                    },
-                    "to": [
-                        {
-                            "consumer_key_code": "eject"
                         }
                     ]
                 }
