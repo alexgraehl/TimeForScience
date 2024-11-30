@@ -1885,6 +1885,8 @@ function cheat() {
 
 >> DEDUPE / DEDUPLICATE / REMOVE DUPLICATE FILES: use the utility 'fdupes'
 
+>> HDIUTIL resize disk image: e.g. hdiutil resize -size 100G /path/to/diskimage.dmg
+
 END_OF_HEREDOC
        ) # This end-paren is important! It matches the one above
     echo "$VERBATIM_CHEAT_SHEET"
