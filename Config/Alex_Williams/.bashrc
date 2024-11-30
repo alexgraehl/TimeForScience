@@ -496,3 +496,6 @@ if [[ -e "${HOME}/.pyenv" ]]; then
     echo -e "${a_echo_color}[:FYI:] \"pyenv global\" is set to $(python --version)${a_end_color}"
 fi
     
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/alexgw/.cache/lm-studio/bin"

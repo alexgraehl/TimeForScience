@@ -23,3 +23,6 @@ unset __conda_setup
 
 
 eval "$(/usr/local/bin/brew shellenv)"
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/Users/alexgw/.cache/lm-studio/bin"

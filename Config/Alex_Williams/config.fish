@@ -284,3 +284,6 @@ if status --is-login
         end
     end
 end
+
+# Added by LM Studio CLI (lms)
+set -gx PATH $PATH /Users/alexgw/.cache/lm-studio/bin
