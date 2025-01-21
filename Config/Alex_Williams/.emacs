@@ -133,10 +133,6 @@
 	:bold nil :background "gray37" :foreground nil :underline nil))
     )  ""   :group 'agwFaces)
 
-(defface agwEssClassElementFace
-  '((t (:bold f  :foreground "cyan"  :background nil  :inverse-video nil)))
-  "Face for properties / class elements in R."  :group 'agwFaces)
-
 ;;(require 'cl nil t) ;; a rare necessary use of REQUIRE <-- (no idea what this does)
 ;;(defvar *emacs-load-start* (current-time)) ; <-- uncomment this to figure out how long it took to run this .emacs
 
@@ -168,44 +164,8 @@
 
 (if (system-type-is-gnu)
     (progn
-      ;;(setq should-load-ess t) ; do/don't (t/nil) load R syntax highlighting
       (require 'show-wspace nil t) ; show whitespace! (?)
       ))
-
-;;(autoload 'ruby-mode "ruby-mode" "Major mode for editing ruby scripts." t)
-;;(load (expand-file-name "~/.emacs.d/cperl-mode.el.6.2")) ; <-- note: compiled version!
-;;(autoload 'cperl-mode "cperl-mode" "Fancier mode Perl highlighting." t)
-
-(fset 'perl-mode 'cperl-mode) ;; user cperl mode instead of perl mode. Cperl mode is MUCH BETTER and isn't all dumb with tabs!
-
-;; (condition-case nil
-;;     (progn
-;;       (require 'highlight-symbol)
-;;       (setq highlight-symbol-on-navigation-p t)
-;;       (setq highlight-symbol-idle-delay 0.20)
-;;       (set-face-attribute 'highlight-symbol-face nil :inverse-video t :weight 'bold :slant 'italic) ; :foreground "blue" :background "red")
-;;       (add-hook 'python-mode-hook  '(lambda () (highlight-symbol-mode 1)) t) ; Enable "highlight-symbol-mode" for PYTHON
-;;       (add-hook 'perl-mode-hook    '(lambda () (highlight-symbol-mode 1)) t) ; Enable "highlight-symbol-mode" for PERL
-;;       (add-hook 'sh-mode-hook      '(lambda () (highlight-symbol-mode 1)) t) ; Enable "highlight-symbol-mode" for SH
-;;       )
-;;   (file-error (message "highlight-symbol mode not available--you should install it with 'list-packages'. See above!") ))
-
-; NOTE: Jedi also requires virtualenv!
-;(when (not (eq system-type 'darwin))
-;  (condition-case nil
-;      (progn
-;	(require 'jedi) ; http://tkf.github.io/emacs-jedi/released/
-;	(add-hook 'python-mode-hook 'jedi:setup)
-;	(jedi:start-server)
-;	(eval((jedi:start-dedicated-server) nil))
-;	(jedi:start-dedicated-server '/home/alexgw/.emacs.d/.python-environments/default/bin/jediepcserver)
-;	(setq jedi:setup-keys t)                      ; optional
-;	(setq jedi:complete-on-dot t)                 ; optional
-;	(setq jedi:get-in-function-call-delay 1)     ; milliseconds before function signature appears
-;	(setq jedi:get-in-function-call-timeout 3000) ; milliseconds before a failed lookup for documentation is aborted
-;	)
-;    (file-error (message "jedi python mode not available--you should install it with 'list-packages'. See above!") ))
-;  )
 
 (when window-system
   (mwheel-install) ;; enable wheelmouse
@@ -293,7 +253,7 @@
  next-line-add-newlines    nil ; don't insert newlines when the cursor moves beyond the file's end
  sentence-end-double-space nil
  colon-double-space        nil
- sentence-end              "[.?!][]\"')]*\\($\\|\t\\| \\)[ \t\n]*"
+ ;; This looks buggy maybe (extra ']'?) --> DISABLED --> sentence-end              "[.?!][]\"')]*\\($\\|\t\\| \\)[ \t\n]*"
 
  vc-follow-symlinks        t ; automatically follow symlinks to CVS-controlled files
 
@@ -310,7 +270,7 @@
  cache-long-line-scans     t ; Makes emacs less slow when scrolling when there are very long lines
  show-paren-style  'expression ; highlight entire expression when a paren is selected
  ;; - http://users.tkk.fi/~rsaikkon/conf/dot.emacs
- )
+) ; End setq
 
 (defvaralias 'c-basic-offset 'tab-width)     ;; Note that this is an alias to tab-width now!
 (defvaralias 'cperl-indent-level 'tab-width) ;; Note that this is an alias to tab-width now!
@@ -737,67 +697,6 @@ current line."
 
 ;; Keyword highlight options: t (OVERRIDE) /  prepend (prioritize) / append / keep (keep existing coloring, if any)
 
-
-
-;; ##########################################################################
-;; ESS (Emacs Speaks Statistics == "R-project" R.app r-project.org R stuff)
-;;(if (system-type-is-gnu) ; load only on the GNU filesystem at work
-;;    (load (expand-file-name "~/.emacs.d/ess/lisp/ess-site")))
-;; Parameters to load that will make it not complain/warn: 'nomessage 'noerror
-;; NB: loading the ess-module slows down emacs' load time a lot, even if ESS is compiled.
-;; ##########################################################################
-(if should-load-ess ;; emacs speaks statistics
-    (progn
-      (require 'ess-site) ;; nil t)
-      (message "Loading ESS (Emacs speaks statistics)")
-      (add-hook 'ess-mode-hook  ;; R-mode-hook r-mode-hook r mode <-- should be ess-mode-hook
-		(progn (define-key ess-mode-map "\M-\t" 'dabbrev-expand)  ;; Make meta-tab do the normal expansion even in ESS mode
-		       (define-key ess-mode-map "_" nil)          ;; no smart underscores!
-		       (define-key inferior-ess-mode-map "_" nil) ;; no smart underscores!
-		       ;;		 (define-key ess-mode-map "\t" 'self-insert-command)
-		       ))
-      
-      ;; note: lambda and progn are different somehow!!!
-      (add-hook 'ess-mode-hook
-		(lambda ()
-		  (ess-set-style 'BSD)
-		  (setq ess-indent-level 5)
-		  (setq ess-fancy-comments 'nil)
-		  ))      
-      (font-lock-add-keywords
-       'ess-mode
-       '(
-	 ;;   ("\\<\\(kv[a-zA-Z0-9\.]*\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 font-lock-constant-face append) ; anything that starts in kv
-	 ("\\<\\(stop\\|stopifnot\\|browser\\|options\\)\\>" 1 font-lock-warning-face keep)
-	 ("\\<\\(kv[a-zA-Z0-9._]*\\)\\($\\|[^a-zA-Z0-9._]\\)" 1 font-lock-constant-face keep) ; anything that starts in kv
-	 ("\\<\\(gv[a-zA-Z0-9._]*\\)\\($\\|[^a-zA-Z0-9._]\\)" 1 'agwMakeGlobalVarFace keep) ; anything that starts in gv
-
-	 ;;("^\\([}].*\\)"      1 'agwIndent1Face t) ; function-ending (line-starting) brace
-
-	 ("\\([$@][a-zA-Z0-9_\.]+\\)" 1 'agwEssClassElementFace t) ;; anything like something$item ($item would be highlighted)
-	 
-	 ("^\\([ ]\\{1,5\\}\\)" 1 'agwIndent1Face t) ; line-starting tab
-	 ("^    \\([ ]\\{1,5\\}\\)" 1 'agwIndent2Face t) ; line-starting tab
-	 ("^         \\([ ]\\{1,5\\}\\)" 1 'agwIndent3Face t) ; line-starting tab
-	 ("^              \\([ ]\\{1,5\\}\\)" 1 'agwIndent4Face t) ; line-starting tab
-	 ("^                   \\([ ]\\{1,5\\}\\)" 1 'agwIndent5Face t) ; line-starting tab
-
-	 ("\\(\<\<-\\)" 1 'agwMakeGlobalVarFace keep) ; the <<- global assignment operator
-	 ("\\(\<-\\)" 1 'agwPositiveNumberFace keep) ; the <- regular assignment operator
-	 ("\\<\\(assert\.agw.*\\)" 1 'agwAssertionFace t) ; anything that starts in assert.agwK ends in Vec
-	 ("\\<\\(stopifnot.*\\)" 1 'agwAssertionFace t) ; anything that starts in stopifnot
-	 ("\\<\\([a-zA-Z0-9_\\.]+Vec\\)\\($\\|[^a-zA-Z0-9\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
-	 ("\\<\\([a-zA-Z0-9_\\.]+List\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
-	 ("\\<\\([a-zA-Z0-9_\\.]+Hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-	 ("\\<\\([a-zA-Z0-9_\\.]+Mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-	 ("\\<\\([a-zA-Z0-9_\\.]+\.vec\\)\\($\\|[^a-zA-Z0-9\.]\\)" 1 'agwArrayFace keep) ; anything that ends in Vec
-	 ("\\<\\([a-zA-Z0-9_\\.]+\.list\\)\\($\\|[][-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in List
-	 ("\\<\\([a-zA-Z0-9_\\.]+\.hash\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-	 ("\\<\\([a-zA-Z0-9_\\.]+\.mat\\)\\($\\|[]-+~` 	<>=,;:(){}%*!@#$^&\\/\'\"]\\)" 1 'agwListFace keep) ; anything that ends in Hash
-	 ("\\([=]=======.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '=' in a row means "highlight this line in a visually obvious manner"
-	 ("\\([~]~~~~~~~.*\\)" 1 'agwCustomDoubleLineFace t) ;; <-- eight '~' in a row means "highlight this line in a visually obvious manner"
-	 ))))
-
 (add-hook
  'after-change-major-mode-hook
  '(lambda ()
@@ -910,14 +809,6 @@ current line."
     (message myStr)
     ))
 
-(defun am()
-  "Fun!"
-  (interactive)
-  (acount "^[^# 	]+.*\\(=\\|<-\\)[ ]*function[ ]*(")
-  ;(acount "^.*\\(=\\|<-\\)[ ]*function[ ]*(")
-  ) ;(count-occurences "alias"))
-
-
 (defun reload-config () 
   "Runs load-file on ~/.emacs" 
   (interactive)
@@ -925,23 +816,11 @@ current line."
   (R-mode)
   (message "Loaded the config file again..."))
 
-
-(defun loadr ()
-  "Loads R syntax stuff (the ESS package) MANUALLY in case it didn't load automatically"
-  (interactive)
-  (progn
-    (setq should-load-ess t)
-    (reload-config)
-    ))
-(global-set-key [(control meta j)] 'loadr) ; less annoying than meta-shift-5 <-- load ESS automagically with CTRL-OPTION-J
-
 (defun buffer-exists (bufname)   (not (eq nil (get-buffer bufname))))
 
 ;; Close the loathsome scratch buffer!
 (if (buffer-exists "*scratch*")  (kill-buffer "*scratch*"))
 ;;(if (buffer-exists "*Messages*")  (kill-buffer "*Messages*"))
-
-;; ##
 
 (custom-set-variables
   ;; custom-set-variables was added by Custom.
@@ -982,7 +861,6 @@ current line."
 ;(setq iswitchb-buffer-ignore '("^\\*" "^ " "*Buffer"))
 ;(setq iswitchb-buffer-ignore '("^\\*")) ;; This one is useful if you want to lose the *…* special buffers from the list. It’s helpful if you’re using the JDEE for editing Java apps, as you end up with buffers named org.whatever.package.Class which you might want to eliminate:
 (put 'downcase-region 'disabled nil)
-
 
 ;;;;;;;; ~~~~~~~~~~~~~~~~~~~~~~~~~ SHELL INTEGRATION: allow the user to put their cursor on a line, hit "Control-Option-L" and have that text run in the shell ~~~~~~~~~~~~
 (defun sh-send-line-or-region (&optional shouldStep) ;; From here: http://stackoverflow.com/questions/6286579/emacs-shell-mode-how-to-send-region-to-shell
@@ -1028,15 +906,3 @@ current line."
 ;; ~~~~~~~~~~~ SHORTCUT KEY DEFINED HERE: you can change it from Ctrl-option-L by changing the text below ~~~~~~~~~~~~~~~~~
 (global-set-key [(control meta l)] 'sh-send-line-or-region-and-step) ; option-control-l will execute the current line the cursor is on in the shell, OR a whole region if there' a highlighted region
 ;; ~~~~~~~~~~~~~~~~~~~~~~~~~ SHELL INTEGRATION: allow the user to put their cursor on a line, hit "Control-Option-L" and have that text run in the shell ~~~~~~~~~~~~
-(put 'upcase-region 'disabled nil) ; Don't confirm that we want to enable "CTRL-X CTRL-U" to upper-case a region.
-
-; (add-hook 'after-init-hook #'global-flycheck-mode)
-; (add-hook 'after-init-hook #'global-flycheck-mode)
-; To enable Flycheck add the following to your init file:
-; 
-;    (add-hook 'after-init-hook #'global-flycheck-mode)
-; 
-; Flycheck will then automatically check buffers in supported languages, as
-; long as all necessary tools are present.  Use `flycheck-verify-setup' to
-; troubleshoot your Flycheck setup.
-
