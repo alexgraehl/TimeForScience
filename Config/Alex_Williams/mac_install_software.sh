@@ -57,17 +57,12 @@ if [[ 1 == $SHOULD_HOMEBREW ]]; then
 	 R readline rsync scipy sqlite szip tmux watch wget wxmac wxpython x264 xvid xz
 
     if [[ ! -e "/Applications/iTerm.app"              ]]; then brew cask install iterm2; fi
-    if [[ ! -e "/Applications/Slack.app"              ]]; then brew cask install slack; fi
-    if [[ ! -e "/Applications/Notion.app"             ]]; then brew cask install notion; fi
+    if [[ ! -e "/Applications/Stats.app"              ]]; then brew install stats; fi   # Menu bar stats
     if [[ ! -e "/Applications/Visual Studio Code.app" ]]; then brew cask install visual-studio-code; fi
     if [[ ! -e "/Applications/Spotify.app"            ]]; then brew cask install spotify; fi
     if [[ ! -e "/Applications/BetterTouchTool.app"    ]]; then brew cask install bettertouchtool; fi
-
     if [[ ! -e "/Applications/Dropbox.app"            ]]; then brew install dropbox; fi
-    if [[ ! -e "/Applications/BBEdit.app"             ]]; then brew install bbedit; fi
     if [[ ! -e "/Applications/LibreOffice.app"        ]]; then brew cask install libreoffice; fi
-    if [[ ! -e "/Applications/Transmit.app"           ]]; then brew cask install transmit; fi    # COMMERCIAL software
-    if [[ ! -e "/Applications/TablePlus.app"          ]]; then brew cask install tableplus; fi   # COMMERCIAL software
     if [[ ! -e "/Applications/Atom.app"               ]]; then brew cask install atom; fi  # markdown editor
 fi
 
@@ -127,12 +122,8 @@ echo "YOU SHOULD MANUALLY INSTALL THE FOLLOWING PROGRAMS:"
 echo "           cool-retro-term           FROM --> brew cask install cool-retro-term (retro-style Terminal)"
 echo "           RStudio                   FROM --> https://www.rstudio.com/products/rstudio/download/#download"
 echo "           SCROLL REVERSER           FROM --> https://pilotmoon.com/downloads/ScrollReverser-1.7.6.zip"
-echo "           PYCHARM                   FROM --> https://www.jetbrains.com/pycharm/"
 echo "           CLIPY (replaces ClipMenu) FROM --> https://clipy-app.com/"
-echo "           OMNIGRAFFLE (Paid!)       FROM --> https://www.omnigroup.com/"
 
-echo "UCSC Genome Browser software can be obtained for a Mac with this command: (as documented on the download page: http://hgdownload.cse.ucsc.edu/admin/exe/macOSX.x86_64/ )"
-echo "mkdir -p ~/bin/ucsc && cd ~/bin/ucsc && rsync -aP rsync://hgdownload.soe.ucsc.edu/genome/admin/exe/macOSX.x86_64/ ./  (requires rsync >= 3.1, so get that from homebrew if you're using the ancient Mac version of rsync)"
 echo "Remember to sync the iTerm2 preferences from my config folder on github!"
 
 echo "You will need to MANUALLY run XCode to let it install its weird components"
