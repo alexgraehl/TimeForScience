@@ -1861,6 +1861,9 @@ function cheat() {
 
 >> HDIUTIL resize disk image: e.g. hdiutil resize -size 100G /path/to/diskimage.dmg   (You can also run 'hdiutil compact /path/to/image' to potentially free up space, but this is rarely required)
 
+>> Rebuild Mac OS X default applications database, AKA LaunchServices database (File type associations): /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -kill -r -domain local -domain system -domain user    # (FYI: 'killall Dock' may be required to see the changes)
+>> Rebuild Mac OS X default applications database, AKA LaunchServices database (File type associations) /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -kill -r -v -all u,s,l
+
 END_OF_HEREDOC
        ) # This end-paren is important! It matches the one above
     echo "$VERBATIM_CHEAT_SHEET"
