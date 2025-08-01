@@ -113,6 +113,13 @@ function agw_aaa_autocomplete_capture() {
     echo "It is just to capture any inadverent tab completion."
 }
 
+function agw_sleep_is_prevented_by_this_process() {
+    (
+	set -e -u -x
+	pmset -g
+    )
+}
+
 function agw_split_files_into_new_subdirectories_in_batches_of_100() {
     echo "Moving (a presumably large quantity of) files in this directory into subdirectories named 'subdir###'."
     n=0;
