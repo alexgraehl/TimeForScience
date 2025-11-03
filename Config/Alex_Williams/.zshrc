@@ -4,6 +4,15 @@
 # Path to your oh-my-zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
+MAYBE_LOCAL_CONFIG_ONLY_ZSH_CFG="$HOME/.mocal-config-zsh.sh"
+if [ -f $MAYBE_LOCAL_CONFIG_ONLY_ZSH_CFG ]; then
+    echo "[:OK:] Loading local-only configs $MAYBE_LOCAL_CONFIG_ONLY_ZSH_CFG..."
+    source $MAYBE_LOCAL_CONFIG_ONLY_ZSH_CFG
+else
+    echo "[:HEY:] NOT Loading nonexistent file $MAYBE_LOCAL_CONFIG_ONLY_ZSH_CFG..."
+fi
+
+
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
