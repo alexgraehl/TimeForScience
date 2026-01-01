@@ -3,8 +3,7 @@
 SETFILE_LOCATION=/Applications/Xcode*/Contents/Developer/Tools/SetFile
 
 alias clearicon='$SETFILE_LOCATION -P -a c' ## clear mac custom icons. Useful for images that have old custom icons.
-alias clearicon='$SETFILE_LOCATION -P -a c' ## clear mac custom icons. Useful for images that have old custom icons.
-alias e="emacs -nw"
+alias e="emacsclient -nw  -c --alternate-editor=\"\"" # "As a special exception, if command is the empty string, then emacsclient starts Emacs in daemon mode (as emacs --daemon) and then tries connecting again."
 alias git-diff="git difftool"
 alias git-list="git ls-tree -r master --name-only" # show currently tracked files
 alias git-stat="git ls-files --modified --deleted"
@@ -20,19 +19,25 @@ alias p="pwd"
 alias res="source $HOME/.zshrc"
 alias s="less -S --LINE-NUMBERS --status-column"
 alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
-alias sortt='sort -t "	"'    # sort with tab as separator
+alias sortt='sort -t "	"' # sort with tab as separator
 alias t="transpose.pl"
 alias unlock='chflags nouchg' # Mac: unlock file
 alias version="lsb_release -a" # Tells you which version of Ubuntu you are running
 alias visible="chflags -h nohidden" #alias visible='chflags nohidden' #$SETFILE_LOCATION -P -a v' ## Mac-only: opposite of "invisible"
 alias wcl='grep -c ""'        # Actually gives you the NUMBER and not the filename
 
+if [[ "$OSTYPE" == darwin* ]]; then
+  isMac=1
+else
+  isMac=0
+fi
+
 function vscode() {  # Visual Studio Code. Must be installed manually
     open -a "/Applications/Visual Studio Code.app" "$@"
 }
 alias vs="vscode"
 
-if [[ "${USER}" == "alexgw" ]] || [[ "${USER}" == "awilliams" ]] || [[ "${USER}" == "alexwilliams" ]] || [[ "${USER}" =~ willia* ]]; then
+if [[ "${USER}" == "alexgw" ]] || [[ "${USER}" =~ willia* ]]; then
     IS_ALEX_ACCOUNT=1
     #alias checktrash='mkdir -p /tmp/${USER}/Trash/ && echo -e "Contents of /tmp/${USER}/Trash:" && ls /tmp/${USER}/Trash/'
     #alias emptytrash='mkdir -p /tmp/${USER}/Trash/ && /bin/rm -rfv /tmp/${USER}/Trash/ && echo -e "Emptied the trash directory (/tmp/${USER}/Trash)" ;'
@@ -50,7 +55,7 @@ ERRTT="[:ERR:]"  # Set to highlight in iTerm
 
 LITERAL_TAB='	'
 CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR}" # <-- Multiple **space-delimited** directories can be here
-if [[ -n "${isMac}" ]] ; then ## It *is* a mac
+if [[ "$isMac" == "1" ]] ; then ## It *is* a mac
     function g { ## Searches certain source directories, and the current directory (and any subdirectories)
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".git" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" \
 		     --exclude="*.gsheet" --exclude="*.gdoc" --exclude="*.gslides" --exclude="*.html" --exclude="Annotation*.txt" \
@@ -254,144 +259,7 @@ DLR='\$'
 DQ='\"'
 BS='\\'
 NL="\$'\\n'" # newline
-
-# Shell navigation/commands
-
-SNEK="\xF0\x9F\x90\x8D"
-if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then
-    # 'exa' is a 'ls' replacement
-    function lsw {
-	echo -e "${a_banner_color}> >" $(pwd -P) "${a_end_color}"
-	if [[ -e ".readme" ]]; then
-	    echo -e -n "${a_dirinfo_color}"
-	    cat ".readme" | fold -s -w 80 | sed -e "s/^/$(echo -ne ${SNEK})  /"
-	    echo -e -n "${a_end_color}"
-	    #printf "\xF0\x9F\x90\x8D" # a snake
-	fi
-	exa --color=auto
-    }
-    alias ls='exa --color=auto'
-    alias ll='exa -l -a --color=auto'
-    
-elif agw_cmd_exists "exa" ; then
-    # Not the mac, but apparently exa is still installed.
-    alias ls='exa --color=auto'
-    alias ll='exa -l -a --color=auto'
-else
-    if [[ "$color_prompt" && "$isMac" ]]; then
-	AGW_LS_OPT=' -F -G ' #-@ ' ## Mac: Color option is -G. Also, on a Mac, show the extended attributes (-@)
-	AGW_LL_COLOR_ALWAYS=${AGW_LS_OPT} # same as above, on the mac
-    elif [[ "$color_prompt" && (-z "$isMac") ]]; then
-	AGW_LL_COLOR_ALWAYS=' --indicator-style=slash --color=always '
-	AGW_LS_OPT=' --indicator-style=slash --color=auto ' ## Ubuntu: color is --color=auto
-    else
-	AGW_LS_OPT=''
-    fi
-
-    if [[ "$isMac" ]]; then
-	AGW_MACEXT=' -@ ' # Mac extended attributes
-    else
-	AGW_MACEXT=' '
-    fi
-
-    alias ls="/bin/ls               ${AGW_LS_OPT} "
-    function llfunction {
-	export CLICOLOR_FORCE=1
-	#/bin/ls -l -h -A -F ${AGW_LL_COLOR_ALWAYS} "$@" | perl -pe 's!(.*)!${1} WHAT [:H:]!'
-	#LS_ENDCOLOR=$(echo '[0m')
-	#|WHATDIR${LS_ENDCOLOR}\/
-	/bin/ls -l -h -A -F ${AGW_LL_COLOR_ALWAYS} "$@" | perl -pe "s!(.*)(
-P_L_A_C_E__H_O_L_D_E_R
-|[.]aliases
-|[.]atom.*[/]\$
-|[.]bash_history
-|[.]bash_logout
-|[.]bash_profile
-|[.]bashrc
-|[.]bash_sessions
-|[.]biojs_templates
-|[.]cache
-|[.]cache
-|[.]CFUserTextEncoding\$
-|[.]conda.*[/]\$
-|[.]condarc
-|[.]config
-|[.]cups
-|[.]dbfseventsd.*[=]\$
-|[.]dbus.*[/]\$
-|[.]DocumentRevisions-V100.*[/]\$
-|[.]dropbox
-|[.]DS_Store
-|[.]emacs[.]?[d]?
-|[.]file\$
-|[.]fontconfig.*[/]\$
-|[.]fseventsd.*
-|[.]gconf.*[/]\$
-|[.]gitconfig
-|[.]gnome2.*[/]\$
-|[.]gnupg
-|[.]GSeqWeb.*[/]\$
-|igv.*[/]
-|[.]inputrc
-|[.]InstallAnywhere.*[/]\$
-|installer[.]failurerequests
-|[.]iterm2.*[/]\$
-|[.]ipython.*[/]\$
-|[.]iterm2_shell_integration.bash
-|[.]jalview_properties
-|[.]jenv
-|[.]jswingreader
-|[.]jupyter.*[/]\$
-|[.]kshrc
-|[.]lesshst
-|[.]local
-|[.]lsbatch.*[/]\$
-|[.]matplot.*[/]\$
-|[.]modules.*->
-|[.]modulesbeginenv
-|[.]mozilla.*[/]\$
-|[.]oracle_jre_usage
-|[.]OSInstallerMessages\$
-|[.]PKInstallSandboxManager.*[/]\$
-|[.]python_history
-|[.]pylint.*[/]\$
-|[\d\dm|\s][.]R.*[/]\$
-|[.]Rhistory.*\$
-|Rlib.*[/]
-|[\d\dm|\s][.]RData
-|[.]rstudio.*[/]\$
-|[.]rstudio-desktop
-|[.]screenrc
-|[.]serverauth
-|[.]Spotlight-V100.*[/]\$
-|[.]ssh.*[/]
-|[\d\dm|\s]Shares.*[/]\$
-|[.]subversion
-|[.]sqlwork.*[/]\$
-|[.]t_coffee
-|TimeForScience.*[/]
-|[.]tmux[.]conf
-|[.]Trash
-|[.]UGENE_downloaded.*[/]
-|[.]UGENE_files.*[/]
-|[.]vamsas
-|Velocity_ini[.]txt
-|[.]viminfo
-|[\d\dm|\s]vc.*[/]
-|[.]vol.*/\$
-|[.]VolumeIcon.icns
-|[.]vscode.*[/]\$
-|[.]wget-hsts
-|[.]Xauthority
-|[.]zoomus
-)(.*)\$!\$1\$2\$3\ [:H:]!"xx
-	unset CLICOLOR_FORCE
-    }
-    alias ll=llfunction
-    #alias ll="/bin/ls   -l -h -A -F ${AGW_LS_OPT} "
-    alias lmac="ll ${AGW_MACEXT} " # mac-specific with EXTENDED attributes (-@)
-fi
-
+SNEK="\xF0\x9F\x90\x8D" # Snake emoji
 
 function mac2unix { # Convert a Mac-style line-ending file to a UNIX one. Useful for when you save a file in Excel and then UNIX won't read it.
     if [[ -f "$1" ]] ; then cat "$1" | tr '\r' '\n' ## if a filename is passed in, then auto-cat that file
@@ -412,18 +280,6 @@ if [[ -f ~/.agw_cfg/prefer_screen ]]; then
 else
     alias rr='tmux attach || tmux new' #"screen -xR -U" ## Reconnect to the previous screen, or make a new one if there isn't one already
 fi
-
-alias wcl='grep -c ""' # actually gives you the NUMBER and not the filename
-alias sortt='sort -t "	"' # sort with tab as separator
-alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
-
-#if [[ -f /usr/local/bin/emacs ]]; then
-#if [[ -n "$isMac" ]]; then
-#    alias e='emacs --no-splash -nw ' # use 'brew install emacs' to update emacs
-#else
-alias e="emacsclient -nw  -c --alternate-editor=\"\"" # "As a special exception, if command is the empty string, then emacsclient starts Emacs in daemon mode (as emacs --daemon) and then tries connecting again."
-#alias e2="LANG='en_US.UTF-8' bash -c 'emacsclient -nw  -c --alternate-editor=\"\"'" # "As a special exception, if command is the empty string, then emacsclient starts Emacs in daemon mode (as emacs --daemon) and then tries connecting again."
-#fi
 
 function ql_files() {
     # List any offending quicklook files. You may also want to count them with "wc -l" at the end.
@@ -574,12 +430,6 @@ function rmd {
     \rm "${NON_SYMLINKED}"
 }
 
-alias agwcom='ssh ${AGW_SSH_OPTIONS}   ${AGWCOM_USERNAME}@${AGWCOM_URL}'
-
-alias nami=' ssh ${AGW_SSH_OPTIONS} -i ~/Dropbox/metaquery-dev.pem bitnami@52.53.252.164'
-alias rig=' ssh ${AGW_SSH_OPTIONS}     ${ACC_U}@${RIG_IP}'
-RIG_SAND_IP=${RIG_IP/./-sandbox.} # add "-sandbox" before the first dot
-
 ## LESS +++++++++++++++++
 export PAGER=less
 [[ -x /usr/bin/lesspipe ]] && eval "$(SHELL=/bin/sh lesspipe)" # make "less" friendly for non-text input files
@@ -590,8 +440,6 @@ alias magicless='env LESSOPEN="|${TIME_FOR_SCIENCE_DIR}/Config/1_Shell_Config/le
 # Note that this only magically happens if the files are passed in on the command line--otherwise you have
 # to use "ssf" to force sheet.pl to be run (if a file is passed through a pipe, then it won't be run through
 # sheet.pl unless you say "cat something | ssf"
-## LESS +++++++++++++++++
-
 # Plain "sn" doesn't run anything through sheet.pl, but it *does* handle gzipped files
 alias sn="/usr/bin/less -S --LINE-NUMBERS --status-column --RAW-CONTROL-CHARS -f --IGNORE-CASE"
 alias sweep="${OUR_RM} *.tmp *.temp" ## Sweep out the .tmp files
@@ -720,48 +568,6 @@ function unmini() {
 
 alias snake="echo -n $'\xF0\x9F\x90\x8D'' '"  # Emoji snake. See http://apps.timwhitlock.info/emoji/tables/unicode
 alias cake="echo  -n $'\xF0\x9F\x8D\xB0'' '"  # Emoji cake.  See http://apps.timwhitlock.info/emoji/tables/unicode
-
-function qkiri() { # kill all your OWN jobs
-    echo -e "[:FYI:] If qkiri fails, try running this command: qselect -u YOURNAME | sudo xargs qdel -p"
-    echo -e "[:HEY:] REALLY terminate LITERALLY EVERY SINGLE ONE OF YOUR JOBS? ***ALL*** OF THEM???"
-    select yn in "[:FYI:] Wait a minute. Keep these jobs." "$ERRTT DELETE THEM WITHOUT REMORSE"; do
-	case $yn in
-	    Wrong*)  echo -e "Ok, not doing anything."; break;;
-	    Delete*) bkill 0 -u ${USER}
-	esac
-    done
-    #qselect -u ${USER} | xargs qdel ; echo -e "[Cancelled jobs]"; sleep 1; qstats; break ;;
-}
-
-# grep 'pattern' can also be replaced with: perl -nle "print if m{PATTERN}" # <-- beware of '$1' versus "$1" issues.
-function qstatlong() { # show qstat with LONG (full) job names:
-    qstat -f | egrep -i '(Job Id|Job_Name|Job_Owner|job_state|list.walltime)' | perl -pe 's/(.*Job_Owner.*)@.*/\1/i' | perl -pe 's/.*=\s//' | perl -pe 's/\n/\t/g' | perl -pe 's/(Job Id:\s|$)/\n/ig' | grep -v '^$'
-}
-
-function qsass() { # kill all jobs that match this grep... works for usernames, jobs, etc. Be careful.
-    # Example usage:  qsass    yourname             # Hopefully yourname is not a subset of someone ELSE's name.
-    # or:             qsass    test_job_number_     # Uses GREP, so watch out for invalid regexps.
-    #sudo echo 'Initializing sudo permissions here'
-    if [[ ${#1} -lt 4 ]]; then
-	echo -e "ERR: Your argument to qsass ($1) was not long enough (it is only length ${#1})---it needs to be at least 4 characters, or else we don't believe it's a valid input. Be careful. Even PARTIAL MATCHES will trigger the job deletion. So don't delete 'bad_job' if you don't also want to delete 'not_a_bad_job'."
-	return 1;
-    fi;
-    echo -e "Trying to use qdel to delete jobs that match '$1'...";
-    IFS=$'\n' # <-- split a bash string on NEWLINES and not spaces.
-    DELETE_US=()
-    for jobtext in $(qstatlong | perl -nle "print if m{$1}"); do
-	jobid=$(echo -e "$jobtext" | cut -d '.' -f 1)
-	echo -e "Found a job ID to delete that matched '$1': $jobid (\"$jobtext\")";
-	DELETE_US+=("$jobid")
-    done
-    echo -e "If you really want to DELETE those jobs, input a '2'."
-    select yn in "Wrong: Keep these jobs." "Delete these jobs from the queue."; do
-	case $yn in
-	    Wrong*)  echo -e "Cancelled."; break;;
-	    Delete*) for j in "${DELETE_US[@]}"; do echo -e "Deleting job ID $j..."; `which qdel` $j ; done; break;;
-	esac
-    done
-}
 
 function mvln() { # move and then make an ALIAS in the current location, leaving a "ghostly" alias where the file previously was
     if [[ "$#"  < 2 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE filename (source) and ONE DESTINATION (probably a directory?) into this function."; return 1; fi
@@ -972,22 +778,6 @@ function convert_webp_to_jpg() {
     #find ./ -name "*.webp" -exec dwebp {} -o {}.jpg \;
 }
 
-function zwcl() {
-    zgrep -c '' "$@"
-    #for f in "$@" ; do echo -e -n "$f\t"; zgrep -c '' $f; done # don't use zless, it's super slow compared to zcat
-}
-
-function pybug() {
-    #echo -e "$1"       # First argument
-    #echo -e "2 ${@:2}" # Arguments 2 and beyond
-    if [[ ! -e "$1" ]]; then
-	echo -e "Looks like your (required) python script <$1> could not be found."; return 1;
-    fi
-    echo -e "Running [jupyter]..."
-    jupyter --pdb "$1"     --      "${@:2}"
-    #             SCRIPT  DASHES   ARGUMENTS
-}
-
 function jupynote() {
     # Executes a jupyter notebook with generous settings. Saves output HTML to desktop
     if [[ "$#" != "1" ]] ; then echo -e "$ERRTT 'jupynote' can only accept exactly one argument: the name of a .ipynb file to run and convert to html"; return 1; fi
@@ -1000,11 +790,6 @@ function jupynote() {
     else
 	echo "$ERRTT Done executing $1. Non-zero exit code $EXIT_CODE"
     fi
-}
-
-function hsync() {
-    echo -e "[:FYI:] HTML syncing..."
-    rsync -avz $HOME/workspace/html_master/ $HOME/web/
 }
 
 function fasta2single_line_per_seq() {
@@ -1076,19 +861,6 @@ function mp4_concat() {
     ffmpeg -f concat -safe 0 -i "$INFILE" -c copy "$OUTFILE"
 }
 
-export ANDROID_HOME=~/.android
-
-# function delete_android_file_transfer_on_mac() {
-#     PID=$(ps -fe | grep "[A]ndroid File Transfer Agent" | awk '{print $2}')
-#     if [[ -n ${PID} ]]; then kill ${PID}; fi;
-#     mv "/Applications/Android File Transfer.app/Contents/Resources/Android File Transfer Agent.app" \
-#        "/Applications/Android File Transfer.app/Contents/Resources/Android File Transfer Agent DISABLED.app"
-#     mv "${HOME}/Library/Application Support/Google/Android File Transfer/Android File Transfer Agent.app" \
-#        "${HOME}/Library/Application Support/Google/Android File Transfer/Android File Transfer Agent DISABLED.app"
-#     osascript -e 'tell application "System Events" to delete every login item whose name is "Android File Transfer Agent"'
-#     echo "Done disabling it. Note that the files have been RENAMED, and not totally deleted!"
-# }
-
 function gitstory() {
     if [[ "$#" != 1 ]] ; then
 	echo -e "$ERRTT You must specify EXACTLY ONE filename."; return;
@@ -1108,15 +880,6 @@ function gitstory() {
     git show HEAD~8:$F > $filebase.08.git.older_8_revisions__back.08.${extension}
     echo "[:OK:] Generated a bunch of '.git.old' files"
     echo "[:FYI:] If you're looking for something really specific, remember you can use:  git log -p FILENAME | less -S"
-}
-
-PG_DB="/usr/local/var/postgres"
-alias pg_start="pg_ctl -D ${PG_DB} start"
-alias pg_stop="pg_ctl  -D ${PG_DB} stop"
-
-function vv {
-    # Running the 'vd' table viewer while FORCING a tab delimiter
-    vd --filetype='tsv' --delimiter='${TAB}' "$@"
 }
 
 function cheat() {
