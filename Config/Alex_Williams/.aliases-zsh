@@ -1,48 +1,36 @@
 # -*-Sh-*- <-- tells emacs what kind of syntax highlighting to use
 
-## Mac-specific commands:
 SETFILE_LOCATION=/Applications/Xcode*/Contents/Developer/Tools/SetFile
-alias -g invisible='chflags -h hidden'  #alias invisible='chflags hidden' #$SETFILE_LOCATION -P -a V' ## Mac-only: Make a file/folder invisible to the Finder
-alias -g visible='chflags -h nohidden' #alias visible='chflags nohidden' #$SETFILE_LOCATION -P -a v' ## Mac-only: opposite of "invisible"
-alias -g lock='chflags uchg'     # Mac: lock file
-alias -g unlock='chflags nouchg' # Mac: unlock file
 
-alias -g clearicon='$SETFILE_LOCATION -P -a c' ## clear mac custom icons. Useful for images that have old custom icons.
-alias -g version="lsb_release -a" # Tells you which version of Ubuntu you are running!
-alias -g vscode="code"
-alias -g vs="vscode"
-
-alias -g wcl='grep -c ""' # actually gives you the NUMBER and not the filename
-alias -g sortt='sort -t "	"' # sort with tab as separator
-alias -g sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
-alias -g e="emacs -nw"
-alias -g gitours="git checkout --ours"
-alias -g gitcom="git commit -a -m 'Changes committed by ${USER}'"
-alias -g git-list="git ls-tree -r master --name-only" # show currently tracked files
-alias -g gits="git status"
-alias -g git-stat="git ls-files --modified --deleted"
-alias -g git-diff="git difftool"
-alias -g s="less -S --LINE-NUMBERS --status-column"
-alias -g res="source $HOME/.zshrc"
-
-alias -g p="pwd"
-alias -g kpk='exit'
-
-## Mac-specific commands:
-SETFILE_LOCATION=/Applications/Xcode*/Contents/Developer/Tools/SetFile
-alias invisible='chflags -h hidden'  #alias invisible='chflags hidden' #$SETFILE_LOCATION -P -a V' ## Mac-only: Make a file/folder invisible to the Finder
-alias visible='chflags -h nohidden' #alias visible='chflags nohidden' #$SETFILE_LOCATION -P -a v' ## Mac-only: opposite of "invisible"
-alias lock='chflags uchg'     # Mac: lock file
-alias unlock='chflags nouchg' # Mac: unlock file
-alias l='ls'
-alias t="transpose.pl"
 alias clearicon='$SETFILE_LOCATION -P -a c' ## clear mac custom icons. Useful for images that have old custom icons.
-function vscode() {  # Visual Studio Code. Must be installed manually!
+alias clearicon='$SETFILE_LOCATION -P -a c' ## clear mac custom icons. Useful for images that have old custom icons.
+alias e="emacs -nw"
+alias git-diff="git difftool"
+alias git-list="git ls-tree -r master --name-only" # show currently tracked files
+alias git-stat="git ls-files --modified --deleted"
+alias gitcom="git commit -a -m 'Changes committed by ${USER}'"
+alias gitours="git checkout --ours"
+alias gits="git status"
+alias invisible='chflags -h hidden'  #alias invisible='chflags hidden' #$SETFILE_LOCATION -P -a V' ## Mac-only: Make a file/folder invisible to the Finder
+alias kpk='exit'
+alias l='ls'
+alias lock='chflags uchg'     # Mac: lock file
+alias lock='chflags uchg'     # Mac: lock file
+alias p="pwd"
+alias res="source $HOME/.zshrc"
+alias s="less -S --LINE-NUMBERS --status-column"
+alias sortg='sort -g -t "	"' # sort NUMBERS, with tab as separator
+alias sortt='sort -t "	"'    # sort with tab as separator
+alias t="transpose.pl"
+alias unlock='chflags nouchg' # Mac: unlock file
+alias version="lsb_release -a" # Tells you which version of Ubuntu you are running
+alias visible="chflags -h nohidden" #alias visible='chflags nohidden' #$SETFILE_LOCATION -P -a v' ## Mac-only: opposite of "invisible"
+alias wcl='grep -c ""'        # Actually gives you the NUMBER and not the filename
+
+function vscode() {  # Visual Studio Code. Must be installed manually
     open -a "/Applications/Visual Studio Code.app" "$@"
 }
-
-
-
+alias vs="vscode"
 
 if [[ "${USER}" == "alexgw" ]] || [[ "${USER}" == "awilliams" ]] || [[ "${USER}" == "alexwilliams" ]] || [[ "${USER}" =~ willia* ]]; then
     IS_ALEX_ACCOUNT=1
@@ -62,15 +50,15 @@ ERRTT="[:ERR:]"  # Set to highlight in iTerm
 
 LITERAL_TAB='	'
 CODE_DIRS_FOR_GREPPING="${TIME_FOR_SCIENCE_DIR}" # <-- Multiple **space-delimited** directories can be here
-if [[ -n "${isMac}" ]] ; then ## It *is* a mac!
-    function g { ## Searches certain source directories, and the current directory (and any subdirectories!)
+if [[ -n "${isMac}" ]] ; then ## It *is* a mac
+    function g { ## Searches certain source directories, and the current directory (and any subdirectories)
 	`which grep` --color=always --ignore-case --recursive --extended-regexp --exclude="Mothballed" --exclude=".git" --exclude=".hg" --exclude="CVS" --exclude="[bB]ackup*" \
 		     --exclude="*.gsheet" --exclude="*.gdoc" --exclude="*.gslides" --exclude="*.html" --exclude="Annotation*.txt" \
 	    "$@" ${CODE_DIRS_FOR_GREPPING} ./
     }
     alias zcat="gzip --decompress --stdout" # The Mac doesn't have the gzip-handling zcat (AKA gzcat)
 else
-    ## Not a Mac!
+    ## Not a Mac
     function g {     ## Annoyingly, grep is different between mac/unix
 	cmd=(	grep --color=always -T \
 	    --ignore-case \
@@ -88,7 +76,7 @@ fi
 
 
 function template() {
-    if [[ "$#" != 1 ]] ; then echo -e "$ERRTT 'template ___' requires EXACTLY ONE file/directory suffix!"; return 1; fi
+    if [[ "$#" != 1 ]] ; then echo -e "$ERRTT 'template ___' requires EXACTLY ONE file/directory suffix"; return 1; fi
     EX=$1
     case "${EX}" in 
         [Mm]ak*) SRC=`which template.mak`; DEST="Makefile" ;;
@@ -189,8 +177,8 @@ function agw_dupe_delete_this_folder() {
 }
 
 function sleepmin() { # Sleep N minutes
-    if [[ "$#" != 1 ]] ; then echo -e "$ERRTT 'sleepmin' requires a number of minutes to sleep! One argument."; return 1; fi
-    seconds_to_sleep=$(($1 * 60))  # Bash math!
+    if [[ "$#" != 1 ]] ; then echo -e "$ERRTT 'sleepmin' requires a number of minutes to sleep (one argument)."; return 1; fi
+    seconds_to_sleep=$(($1 * 60))  # Bash math
     \sleep "$seconds_to_sleep"
 }
 
@@ -200,7 +188,7 @@ function agw_cmd_exists() { # Check if a command exists
     # Alternative approach: command -v "scutil" > /dev/null # <-- Note: we check the exit code from this ("$?") below
     # And then check the exit code:   HAS_PROGRAM=$((1-$?)) # $? = 0 means the above command SUCCEEDED
     # or try: if [[ -n `which exa 2> /dev/null` ]] ... # Usage example: if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then ...
-    # note that it returns 0 on success, and zero is TRUE in bash!
+    # note that it returns 0 on success, and zero is TRUE in bash
     # usage: if agw_cmd_exists "command"; then do something; fi
 }
 
@@ -212,14 +200,14 @@ function hunt { # cd into a directory with a script
 }
 
 function cto { # Like CD, but lets you go to a FILE as well.
-    if [[ "$#" != 1 ]] ; then echo -e "$ERRTT 'cto' requires EXACTLY ONE file/directory name!"; return 1; fi
-    if [[ -d "$1" ]] ; then cd "$1" ; return 0; fi # it's already a directory, change to it!
+    if [[ "$#" != 1 ]] ; then echo -e "$ERRTT 'cto' requires EXACTLY ONE file/directory name"; return 1; fi
+    if [[ -d "$1" ]] ; then cd "$1" ; return 0; fi # it's already a directory, change to it
     cd "$(dirname "$1")"
 }
 
 function c() { # Like CD, but lets you go to a FILE as well.
-    if [[ "$#" != 1 ]] ; then echo -e "$ERRTT 'cto' requires EXACTLY ONE file/directory name!"; return 1; fi
-    if [[ -d "$1" ]] ; then cd "$1" ; return 0; fi # it's already a directory, change to it!
+    if [[ "$#" != 1 ]] ; then echo -e "$ERRTT 'cto' requires EXACTLY ONE file/directory name"; return 1; fi
+    if [[ -d "$1" ]] ; then cd "$1" ; return 0; fi # it's already a directory, change to it
     cd "$(dirname "$1")"
 }
 
@@ -265,18 +253,9 @@ TAB='	'
 DLR='\$'
 DQ='\"'
 BS='\\'
-NL="\$'\\n'" # newline!
+NL="\$'\\n'" # newline
 
 # Shell navigation/commands
-
-#pushd() { builtin pushd "$@" > /dev/null; } ## <-- make it so that pushd doesn't print the stack every single time
-
-#hasExa=agw_cmd_exists "exa"
-
-#if [[ "$hasExa" && "$isMac" ]]; then # check for 'exa' -- the 'ls' replacement, but only on the Mac---it's slow on Rigel!
-
-#LS_MAX_ENTRIES=200
-#alias l2='echo -e "$(exa --color=always)"'
 
 SNEK="\xF0\x9F\x90\x8D"
 if agw_cmd_exists "exa" && [ "$isMac" == "1" ] ; then
@@ -486,7 +465,7 @@ alias fgrepc='fgrep --color=always --with-filename --line-number'
 
 
 function git-diff-commits-in-branch-1-but-not-branch-2() {
-    # Shows commits in the first branch but NOT the second one. Order matters!
+    # Shows commits in the first branch but NOT the second one. Order matters.
     if [[ "$#" != 2 ]];  then echo -e "$ERRTT Please provide TWO branch names. Order matters."; return 1; fi
     b1="$1"
     b2="$2"
@@ -498,7 +477,7 @@ function git-grep-all-local-branches() {
 }
 
 function git-last-modified {
-    if [[ "$#" != 1 ]]; then echo -e "$ERRTT 'git-last-modified' needs exactly one filename to be supplied!"; return 1; fi
+    if [[ "$#" != 1 ]]; then echo -e "$ERRTT 'git-last-modified' needs exactly one filename to be supplied."; return 1; fi
     file=$1
     git --no-pager log -1 --pretty="format:%ci" "$file"; echo "${LITERAL_TAB}${file}"
 }
@@ -510,7 +489,7 @@ function gitbranchall {
 }
 
 function git-grab-hash {
-    if [[ "$#" != 1 ]]; then echo -e "$ERRTT 'git-grab-hash' needs exactly one hash argument!"; return 1; fi
+    if [[ "$#" != 1 ]]; then echo -e "$ERRTT 'git-grab-hash' needs exactly one hash argument."; return 1; fi
     echo "[:FYI:] Grabbing remote hash as new local branch..."
     echo "[:OK:]       --> git checkout \"$1\"  -b \"local-$1\""
     (set -x; git checkout "$1"  -b "local-$1"; )
@@ -539,10 +518,6 @@ function git-push-origin-initial-setup() {
     cur_branch=$(\git branch --show-current)
     (set -x; \git push --set-upstream origin "${cur_branch}"; )
 }
-
-#if agw_cmd_exists "git" ; then
-# Git aliases have been moved to mac_initial_setup.sh
-#fi
 
 function sciencecom {
     # If you want to NOT interact remotely (for example, this is the 'most upstream' repo with nothing to push to) then pass in NO_REMOTE as argument 2.
@@ -587,10 +562,10 @@ AGW_SSH_OPTIONS=" -o ServerAliveInterval=30 -C "
 function rmd {
     if [[ "$#" != 1 ]]; then echo -e "$ERRTT the 'rmd'-ify command needs exactly one filename argument."; return 1; fi
     FILE_TO_RENDER=$1
-    if [[ ! ${FILE_TO_RENDER} =~ .*Rmd ]]; then echo -e "$ERRTT Your file to render, <${FILE_TO_RENDER}>, did not end in '.Rmd'!!"; return 1; fi
-    if [[ ! -f "${FILE_TO_RENDER}" ]]    ; then echo -e "$ERRTT Your file to render, <${FILE_TO_RENDER}>, did not appear to exist!"; return 1; fi
+    if [[ ! ${FILE_TO_RENDER} =~ .*Rmd ]]; then echo -e "$ERRTT Your file to render, <${FILE_TO_RENDER}>, did not end in '.Rmd'."; return 1; fi
+    if [[ ! -f "${FILE_TO_RENDER}" ]]    ; then echo -e "$ERRTT Your file to render, <${FILE_TO_RENDER}>, did not appear to exist."; return 1; fi
     NON_SYMLINKED="${FILE_TO_RENDER}.alias.tmp.Rmd" # R markdown handles aliases in a super annoying fashion
-    if [[ ! -f "${NON_SYMLINKED}" ]]    ; then echo -e "$ERRTT We could not copy the file to a non-symlinked location!"; return 1; fi
+    if [[ ! -f "${NON_SYMLINKED}" ]]    ; then echo -e "$ERRTT We could not copy the file to a non-symlinked location."; return 1; fi
     WORKDIR=`dirname ${FILE_TO_RENDER}`
     \cp -f --dereference "${FILE_TO_RENDER}" "${NON_SYMLINKED}"
     rmd_cmd="Rscript -e 'library(rmarkdown); rmarkdown::render(\"${NON_SYMLINKED}\", output_dir=\"${WORKDIR}\", knit_root_dir=\"${WORKDIR}\");'  "
@@ -622,26 +597,12 @@ alias sn="/usr/bin/less -S --LINE-NUMBERS --status-column --RAW-CONTROL-CHARS -f
 alias sweep="${OUR_RM} *.tmp *.temp" ## Sweep out the .tmp files
 alias htop="htop --sort-key PERCENT_CPU"
 
-#function playnicely {
-#    # Takes one argument.
-#    # requires sudo privileges. Takes one argument, the username to make play nicely:
-#    # example: playnicely THEUSERNAME
-#    SSS=$(ps -fu "$1" | perl -pe 's/[ ]+/\t/g' | cut -f 2 | tail -n +2);
-#    for pid in $SSS ; do echo 'ionice-ing and nice+15-ing process ID' $pid; sudo ionice -c3 -p $pid ; sudo renice +15 -p $pid ; done 
-#}
-#
-#function disknicely {
-#    # Takes ZERO arguments. Just for making the 'nfsd' processes less annoying.
-#    SSS=$(ps -eopid,uid,cmd | grep "nfsd" | grep -v "grep" | perl -p -e "s/^[ ]+//" | cut -d " " -f 1) # Get any 'nfsd' processes
-#    for pid in $SSS ; do echo 'ionice-ing and nice+15-ing the NFS process ID' $pid; sudo ionice -c3 -p $pid ; sudo renice +15 -p $pid ; don#e 
-#}
-
-function s() { ## <-- this needs to come BEFORE the other things that use less!
+function s() { ## <-- this needs to come BEFORE the other things that use `less`
     magicless --LINE-NUMBERS --status-column "$@"  # "s" uses "magicless" to run files through sheet.pl
 }
 
 function acol() {
-    column -s $'\t' -t # columns delimited by tabs! Like 'sheet.py'
+    column -s $'\t' -t # columns delimited by tabs. Like 'sheet.py'
 }
 
 function acols() {
@@ -685,7 +646,7 @@ function maczip() {
     fi
     theCompressedBasename=`echo "$theCompressedBasename" | sed "s/[/]//"` ## Let's remove any slashes from the name of the *output*. That way if someone types "mini MyDir/" it will generate "MyDir.zip" and NOT "MyDir/.zip"
     if [[ -f "${theCompressedBasename}.zip" ]] ; then
-	echo -e "$ERRTT mini: HALTING: Cannot create a new archive---perhaps ${theCompressedBasename}.zip already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive!!! Delete it and compress again." ;
+	echo -e "$ERRTT mini: HALTING: Cannot create a new archive---perhaps ${theCompressedBasename}.zip already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive. Delete it and compress again." ;
 	return 1;
     else
 	if [[ "$#" -gt 1 ]] ; then echo -e "[:FYI:] Adding a total of $# files to the new zip archive, which OMITS Mac-specific files (e.g. .DS_Store)." ; fi
@@ -697,11 +658,11 @@ function maczip() {
 }
 
 function xztar() {
-    # Tar and xzip in one place so you don't have to remember the syntax. Or you could just remember the syntax!
-    #if [[ "$#" != 1 ]]; then echo -e "$ERRTT xztar can only accept ONE argument! One directory or file to tar/xz."; return 1; fi
+    # Tar and xzip in one place so you don't have to remember the syntax. Or you could just remember the syntax.
+    #if [[ "$#" != 1 ]]; then echo -e "$ERRTT xztar can only accept ONE argument. One directory or file to tar/xz."; return 1; fi
     F_TAR=$(basename $1).tar
     F_TAR_XZ=$(basename $1).tar.xz
-    echo -e "Note that xz is slow! So be prepared for it to take forever. Creating this archive: ${F_TAR_XZ}"
+    echo -e "Note that xz is slow. So be prepared for it to take forever. Creating this archive: ${F_TAR_XZ}"
     tar -cvf "${F_TAR}" "$@"
     time xz --threads=0 -9 "${F_TAR}"
 }
@@ -711,7 +672,7 @@ function xztar() {
 ## If you just pass it in ONE file named FILE, then the output filename is "FILE.tar.bz2" .
 ## If you give it multiple files, the output is in Archive.tar.gz
 ## To extract a "mini" archive, use "unmini" .
-# Bugs: it ONLY WORKS IN THE CURRENT DIRECTORY! And it probably hates whitespaces.
+# Bugs: it ONLY WORKS IN THE CURRENT DIRECTORY. And it probably hates whitespaces.
 # maybe this will help with escaping? for f in `ls`; do printf "%q " $f; done
 # looks like 'printf' can save the day
 function mini() {
@@ -723,7 +684,7 @@ function mini() {
     if [[ $(tar --version) =~ .*bsdtar.* ]]; then TAREX=" -c -v "      # BSD tar
     else TAREX=" --preserve-permissions --atime-preserve -c -v "; fi   # GNU tar
     if [[ -f "${comp_base}.tar" || -f "${comp_base}.tar.bz2" ]] ; then
-	echo -e "mini: HALTING: Cannot create a new archive---either ${comp_base}.tar or ${comp_base}.tar.bz2 already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive!!! Delete it and compress again." ;
+	echo -e "mini: HALTING: Cannot create a new archive---either ${comp_base}.tar or ${comp_base}.tar.bz2 already exists.\nThis is forbidden--you cannot create the archive to overwrite the current archive. Delete it and compress again." ;
 	return 1;
     else
 	if [[ "$#" -gt 1 ]] ; then echo -e "Adding a total of $# files to the archive." ; fi
@@ -763,7 +724,7 @@ alias cake="echo  -n $'\xF0\x9F\x8D\xB0'' '"  # Emoji cake.  See http://apps.tim
 function qkiri() { # kill all your OWN jobs
     echo -e "[:FYI:] If qkiri fails, try running this command: qselect -u YOURNAME | sudo xargs qdel -p"
     echo -e "[:HEY:] REALLY terminate LITERALLY EVERY SINGLE ONE OF YOUR JOBS? ***ALL*** OF THEM???"
-    select yn in "[:FYI:] Wait a minute! Keep these jobs!" "$ERRTT DELETE THEM WITHOUT REMORSE!!"; do
+    select yn in "[:FYI:] Wait a minute. Keep these jobs." "$ERRTT DELETE THEM WITHOUT REMORSE"; do
 	case $yn in
 	    Wrong*)  echo -e "Ok, not doing anything."; break;;
 	    Delete*) bkill 0 -u ${USER}
@@ -772,21 +733,21 @@ function qkiri() { # kill all your OWN jobs
     #qselect -u ${USER} | xargs qdel ; echo -e "[Cancelled jobs]"; sleep 1; qstats; break ;;
 }
 
-# grep 'pattern' can also be replaced with: perl -nle "print if m{PATTERN}" # <-- beware of '$1' versus "$1" issues!
+# grep 'pattern' can also be replaced with: perl -nle "print if m{PATTERN}" # <-- beware of '$1' versus "$1" issues.
 function qstatlong() { # show qstat with LONG (full) job names:
     qstat -f | egrep -i '(Job Id|Job_Name|Job_Owner|job_state|list.walltime)' | perl -pe 's/(.*Job_Owner.*)@.*/\1/i' | perl -pe 's/.*=\s//' | perl -pe 's/\n/\t/g' | perl -pe 's/(Job Id:\s|$)/\n/ig' | grep -v '^$'
 }
 
-function qsass() { # kill all jobs that match this grep... works for usernames, jobs, etc. Be careful!
-    # Example usage:  qsass    yourname             # Hopefully yourname is not a subset of someone ELSE's name!
-    # or:             qsass    test_job_number_     # Uses GREP, so watch out for invalid regexps!
+function qsass() { # kill all jobs that match this grep... works for usernames, jobs, etc. Be careful.
+    # Example usage:  qsass    yourname             # Hopefully yourname is not a subset of someone ELSE's name.
+    # or:             qsass    test_job_number_     # Uses GREP, so watch out for invalid regexps.
     #sudo echo 'Initializing sudo permissions here'
     if [[ ${#1} -lt 4 ]]; then
-	echo -e "ERR: Your argument to qsass ($1) was not long enough (it is only length ${#1})---it needs to be at least 4 characters, or else we don't believe it's a valid input! Be careful! Even PARTIAL MATCHES will trigger the job deletion. So don't delete 'bad_job' if you don't also want to delete 'not_a_bad_job'."
+	echo -e "ERR: Your argument to qsass ($1) was not long enough (it is only length ${#1})---it needs to be at least 4 characters, or else we don't believe it's a valid input. Be careful. Even PARTIAL MATCHES will trigger the job deletion. So don't delete 'bad_job' if you don't also want to delete 'not_a_bad_job'."
 	return 1;
     fi;
     echo -e "Trying to use qdel to delete jobs that match '$1'...";
-    IFS=$'\n' # <-- split a bash string on NEWLINES and not spaces!
+    IFS=$'\n' # <-- split a bash string on NEWLINES and not spaces.
     DELETE_US=()
     for jobtext in $(qstatlong | perl -nle "print if m{$1}"); do
 	jobid=$(echo -e "$jobtext" | cut -d '.' -f 1)
@@ -794,19 +755,19 @@ function qsass() { # kill all jobs that match this grep... works for usernames, 
 	DELETE_US+=("$jobid")
     done
     echo -e "If you really want to DELETE those jobs, input a '2'."
-    select yn in "Wrong! Keep these jobs!" "Delete these jobs from the queue!"; do
+    select yn in "Wrong: Keep these jobs." "Delete these jobs from the queue."; do
 	case $yn in
-	    Wrong*)  echo -e "Cancelled!"; break;;
+	    Wrong*)  echo -e "Cancelled."; break;;
 	    Delete*) for j in "${DELETE_US[@]}"; do echo -e "Deleting job ID $j..."; `which qdel` $j ; done; break;;
 	esac
     done
 }
 
 function mvln() { # move and then make an ALIAS in the current location, leaving a "ghostly" alias where the file previously was
-    if [[ "$#"  < 2 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE filename (source) and ONE DESTINATION (probably a directory?) into this function!"; return 1; fi
-    if [[ "$#" != 2 ]] ; then echo -e "$ERRTT Right now, this only works with TWO ARGUMENTS (target and destination)!"; return 1; fi
+    if [[ "$#"  < 2 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE filename (source) and ONE DESTINATION (probably a directory?) into this function."; return 1; fi
+    if [[ "$#" != 2 ]] ; then echo -e "$ERRTT Right now, this only works with TWO ARGUMENTS (target and destination)"; return 1; fi
     SOURCE=$1
-    if [[ ! -e "${SOURCE}" ]] ; then echo -e "$ERRTT Your source file (${SOURCE}) does not exist!"; return 1; fi
+    if [[ ! -e "${SOURCE}" ]] ; then echo -e "$ERRTT Your source file (${SOURCE}) does not exist."; return 1; fi
     DEST=${@: -1}
     if [[ -d "${DEST}" ]]; then # target is a directory
 	DEST="${DEST%/}/${SOURCE}" # remove trailing slash. This is OK even with '/' (root), since we always insert a slash at the end no matter what
@@ -817,20 +778,6 @@ function mvln() { # move and then make an ALIAS in the current location, leaving
 	return 1;
     fi
 }
-
-#function neararchive() { # usage: cd /work/projects/your-project  then: "neararchive myproj-1234-rna-mouse"  --> will move things to the nearline storage and symlink them back
-#    if [[ "$#" == 0 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE filename into this function!"; return 1; fi
-#    D=$(basename `pwd`)
-#    TARGET="/nearline_storage/castles_made_of_sand/not_backed_up/${D}"
-#    echo -e "We would like to move the following $# files to the NEARLINE SECONDARY STORAGE folder <${TARGET}/>... sound ok to you? Select a NUMERIC option below:"
-#    ls -1 -lh $@
-#    select yn in "[Cancel]" "Move those files!"; do
-#	case $yn in
-#	    Move*) mkdir -p "$TARGET"; for f in "$@"; do mv "$f" "${TARGET}/" && ln -s "${TARGET}/$f" ./ ; echo -e "Moved <$f> to <${TARGET}/$f>..." ; done; break;;
-#	    *) echo -e "Ok, not doing anything."; break;;
-#	esac
-#    done
-#}
 
 function accuse() { # See who is using the CPU. Usage: just "accuse" with no arguments
     USERS_WITH_JOBS=$(ps aux | tail -n +2 | cut -d ' ' -f 1 | uniq | sort -u)
@@ -880,32 +827,25 @@ function qing() {
     qstat -f -Q
 }
 
-function mypip() {
-    if [[ "$#" == 0 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE PYTHON package-to-install into this function!"; return 1; fi
-    echo -e "Installing the following python libraries: $@"
-    echo -e "Installing into 'BINFPYROOT' environment variable at: $BINFPYROOT"
-    pip2.7 install --ignore-installed --install-option="--prefix=$BINFPYROOT" $@
-}
-
 function pylint-agw() {
-    if [[ "$#" == 0 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE PYTHON filename into this function!"; return 1; fi
+    if [[ "$#" == 0 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE PYTHON filename into this function"; return 1; fi
     echo -e "Lintifying this file... $FILE (if this fails, run 'pip3 install pylint')"
     DISABLE_THESE_CHECKS="locally-disabled,global-variable-not-assigned,line-too-long,superfluous-parens,bad-whitespace,unused-wildcard-import,trailing-whitespace,unnecessary-pass,missing-docstring,invalid-name,global-statement,multiple-statements,too-many-locals,too-many-statements,too-many-branches,too-few-public-methods,too-many-lines,too-many-instance-attributes,too-many-arguments,wildcard-import,bad-continuation,unidiomatic-typecheck,expression-not-assigned,deprecated-lambda"
     pylint --jobs=4 --output-format=colorized --disable=$DISABLE_THESE_CHECKS "$@"
-    # Best usage is: mypylint | s for viewing the colorized output!
+    # Best usage is: mypylint | s for viewing the colorized output
 }
 
 function mypy-agw() {
-    if [[ "$#" == 0 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE PYTHON filename into this function!"; return 1; fi
+    if [[ "$#" == 0 ]] ; then echo -e "$ERRTT You need to pass AT LEAST ONE PYTHON filename into this function"; return 1; fi
     echo -e "Lintifying this file... $FILE (if this fails, run 'pip3 install mypy')"
     #DISABLE_THESE_CHECKS="locally-disabled,global-variable-not-assigned,line-too-long,superfluous-parens,bad-whitespace,unused-wildcard-import,trailing-whitespace,unnecessary-pass,missing-docstring,invalid-name,global-statement,multiple-statements,too-many-locals,too-many-statements,too-many-branches,too-few-public-methods,too-many-lines,too-many-instance-attributes,too-many-arguments,wildcard-import,bad-continuation,unidiomatic-typecheck,expression-not-assigned,deprecated-lambda"
     mypy "$@"
-    # Best usage is: mypylint | s for viewing the colorized output!
+    # Best usage is: mypylint | s for viewing the colorized output
 }
 
 function mycat() { # cat2 / mycat
     # basically like 'cat' or 'zcat' but fancier
-    # Based on file extension, turns something into plain text! Works on mixed files. Only delves one level of compression deep.
+    # Based on file extension, turns something into plain text. Works on mixed files. Only delves one level of compression deep.
     for filename in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
 	VC="cat" # This is the default
 	filetype=$(file --dereference --brief "$filename")
@@ -926,15 +866,15 @@ alias tab="column -t -s $'\t'"
 function brutallycompress() {
     # Usage:    brutallycompress  DIRECTORY1   DIRECTORY2   DIRECTORY3
     # Recursively goes through and compresses (with gzip) any files with the extensions listed below.
-    if [[ "$#" == 0 ]] ; then echo -e "$ERRTT in arguments to brutallycompress] You need to pass AT LEAST ONE target directory into this function--it can also be '.' for the current directory!"; return 1; fi
+    if [[ "$#" == 0 ]] ; then echo -e "$ERRTT in arguments to brutallycompress] You need to pass AT LEAST ONE target directory into this function--it can also be '.' for the current directory."; return 1; fi
     RESTRING=".*[._]\(wig\|bed\|_tracking\|diff\|bed.count\|moa\|fa\|fasta\|fq\|fastq\|txt\|csv\|tab\)"
     echo -e "# About to compress ($COMPRESS)\n#     anything in the following locations: $@\n#     that matches this REGULAR EXPRESSION: $RESTRING"
     echo -e "# -----------------------------------------------------------------------------------------------"
     for location in "$@"; do # Sanity check to make sure all inputs are DIRECTORIES to start
-	if [[ ! -d "$location" ]] ; then echo -e "$ERRTT in arguments to brutallycompress]: input '$location' was not a directory. Fix this--only give DIRECTORIES to 'brutallycompress'. Use '.' (not '*') if you want everything in the current directory!"; return 1; fi
+	if [[ ! -d "$location" ]] ; then echo -e "$ERRTT in arguments to brutallycompress]: input '$location' was not a directory. Fix this--only give DIRECTORIES to 'brutallycompress'. Use '.' (not '*') if you want everything in the current directory."; return 1; fi
     done
     for location in "$@"; do # Loop through all the input arguments. Doesn't work with redirection.
-	if [[ ! -d "$location" ]] ; then echo -e "$ERRTT: input '$location' was not a directory!"; return 1; fi
+	if [[ ! -d "$location" ]] ; then echo -e "$ERRTT: input '$location' was not a directory."; return 1; fi
 	find "$location" -type f -regex "$RESTRING" -print0 | xargs -0 -I {} sh -c "echo 'Compressing' '{}'; gzip --verbose -6 '{}';" # <-- do **NOT** put double quotes around $COMPRESS (no "")
 	#find "$location" -type f \( -iname "*.bed" -o -iname "*_tracking" -o -iname "*.diff" -o -iname "*.bed.count" -o -iname "*.moa" -o -iname "*.fa" -o -iname "*.fq" -o -iname "*.fasta" -o -iname "*.fastq" -o -iname "*.txt" \) -print0 | xargs -0 $COMPRESS
     done #  xargs -I %%% sh -c 'echo %%%; echo %%%;'
@@ -952,7 +892,7 @@ function rtag() {
 }
 
 function wgetdevour() { # Downloads certain types of files via wget for a password-protected directory
-    if [[ "$#" != "3" ]] ; then echo -e "$ERRTT You need to pass THREE arguments -- username, password, directory!"; return 1; fi
+    if [[ "$#" != "3" ]] ; then echo -e "$ERRTT You need to pass THREE arguments -- username, password, directory."; return 1; fi
     USERNAME=$1
     PASSWORD=$2
     DIRECTORY=$3
@@ -967,33 +907,10 @@ function hist() {
     history | tail -n 100
 }
 
-QUEUE_LOGFILE_PATTERN='.*.\([eo][0-9]+\|.log.err\|.log.out\|.out.log\|.err.log\)'
-# ~~~~~~~~~~~~~~~ QUEUE / QSUB / BSUB LOG VIEWING AND MOVING ~~~~~~~~~~~~~~~
-function rmlogs() { # Usage:     catlogs (no arguments)
-    #if [[ "$#" == "0" ]] ; then SEARCH_DIRS=. ; else SEARCH_DIRS=$@ ; fi
-    NUM_FOUND=$(find . -maxdepth 1  -type f  -regex "${QUEUE_LOGFILE_PATTERN}" | wc -l)
-    echo -e "[:OK :] Deleting $NUM_FOUND 'qsub' logs (the files ending with .e1234 or .o456, etc. or .log.err or .log.out)..."
-    find . -maxdepth 1 -type f -regex "${QUEUE_LOGFILE_PATTERN}" -delete
-    echo -e "[:OK :] Deleted the ${NUM_FOUND} log files.."
-}
-function catlogs() { # Usage:     catlogs (no arguments)
-    if [[ "$#" == "0" ]] ; then SEARCH_DIRS=. ; else SEARCH_DIRS=$@ ; fi
-    echo -e "Concatenating all QSUB/BSUB logs in this directory and viewing it in 'less'..."
-    find ${SEARCH_DIRS} -maxdepth 1 -type f -regex "${QUEUE_LOGFILE_PATTERN}" -print0 | xargs -0 -I{} paste.pl "FILE={}" {} | s
-}
-function mvlogs() { # Usage:   mvlogs OUTPUT_DIRECTORY
-    # This function moves those annoying qzub logs to the destination directory
-    if [[ "$#" != "1" ]] ; then echo -e "$ERRTT mvlogs needs EXACTLY ONE destination directory!"; return 1; fi
-    if [[ ! -d $1 ]]     ; then echo -e "$ERRTT mvlogs needs an EXISTING DIRECTORY as a destination! The specified directory ($1) appears not to exist."; return 1; fi
-    find . -maxdepth 1 -type f -regex "${QUEUE_LOGFILE_PATTERN}" -print0 | xargs -0 -I{} mv {} $1/
-    echo -e "[:OK :] Moved all the logs into the directory <$1>"
-}
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 function star_make_index() {
     # This makes an alignment directory for the STAR aligner, when given just a FASTA file and a length.
     # The exact length is not critical, but it should ideally be the same length as the reads, if possible (slightly longer is OK too, but not necessary).
-    if [[ "$#" != "2" ]] ; then echo -e "$ERRTT star_make_index needs an input FASTA file and a 'how long are the reads' parameter!"; return 1; fi
+    if [[ "$#" != "2" ]] ; then echo -e "$ERRTT star_make_index needs an input FASTA file and a 'how long are the reads' parameter."; return 1; fi
     FAS=$1
     LEN=$2
     CPU_THREADS=8
@@ -1017,7 +934,7 @@ function convert_chromosome_to_chr1_for_genome_browser() {
     IN=$2
     NEWCHR=chr1
     TMPSAM=${IN}--TMP.sam
-    if [[ ! -e $IN ]] ; then echo -e "$ERRTT Your specified input file ($FILE) does not exist!"; return 1; fi
+    if [[ ! -e $IN ]] ; then echo -e "$ERRTT Your specified input file ($FILE) does not exist."; return 1; fi
 
     FINALBAM=${IN/.bam/--${NEWCHR}_only.bam}
 
@@ -1031,7 +948,7 @@ function convert_chromosome_to_chr1_for_genome_browser() {
 	>| $FINALBAM
     /bin/rm $TMPSAM
 
-    (>&2 echo -e "<$FINALBAM> generated! Chromosome changed from '$FINDCHR' to 'chr1'. Original input: <$IN>")
+    (>&2 echo -e "<$FINALBAM> generated: Chromosome changed from '$FINDCHR' to 'chr1'. Original input: <$IN>")
 }
 
 function convert_pdf_to_png() {
@@ -1064,7 +981,7 @@ function pybug() {
     #echo -e "$1"       # First argument
     #echo -e "2 ${@:2}" # Arguments 2 and beyond
     if [[ ! -e "$1" ]]; then
-	echo -e "Looks like your (required!) python script <$1> could not be found!"; return 1;
+	echo -e "Looks like your (required) python script <$1> could not be found."; return 1;
     fi
     echo -e "Running [jupyter]..."
     jupyter --pdb "$1"     --      "${@:2}"
@@ -1085,23 +1002,6 @@ function jupynote() {
     fi
 }
 
-#function docker-begone {
-#    echo -e "Stopping and removing ALL DOCKER CONTAINERS. ALL OF THEM!"
-#    docker stop $(docker ps -a -q)
-#    docker rm $(docker ps -a -q)
-#    echo -e "Not even one docker container was spared."
-#    echo -e "Clearing out space also..."
-#    docker rm $(docker ps -q -f 'status=exited')
-#    echo -e "You may also have to, with RUNNING YOUR CONTAINERS, run this: docker system prune -a"
-#    echo -e "The file that should be small now is:"
-#    ls -lah $HOME/Library/Containers/com.docker.docker/Data/com.docker.driver.*/*.qcow2
-#    echo -e "Clearing out space for any 'dangling' docker items (probably there are none)..."
-#    docker rmi $(docker images -q -f "dangling=true")
-#}
-
-# count bases per line in a fasta file:
-# cat x.fa | grep -v '^>' | perl -ne 'chomp; my @a=split(//,$_); my %c=(); for my $x (@a) { $c{lc($x)}++; }; for my $k (keys(%c)) { print($k.qq{=}.$c{$k}."\t"); }; print qq{  <-- \n};'
-
 function hsync() {
     echo -e "[:FYI:] HTML syncing..."
     rsync -avz $HOME/workspace/html_master/ $HOME/web/
@@ -1113,180 +1013,20 @@ function fasta2single_line_per_seq() {
     awk '!/^>/{printf "%s", $0; n="\n"} /^>/{print n $0; n=""} END {printf"%s",n}'
 }
 
-function j1() {
-    if ! agw_cmd_exists "bsub"; then
-	echo -e "$ERRTT This is NOT a machine on the cluster with the BSUB queue. Connect to the cluster machine first!"; return 1;
-    fi
-    : "${cpre}=\033}" ## <-- Color prefix, if not already set
-    : "${a_end_color:=${cpre}[m}"
-    : "${a_ok_color:="$(tput setaf 2)"}"  # Green, if not already set
-    : "${a_err_color:="$(tput setaf 1)"}" # Red, if not already set
-    : "${a_orange136}:=${cpre}[38;5;136m}"
-    : "${a_yellow226}:=${cpre}[38;5;226m}"
-    : "${a_blue_bold}:=${cpre}[1;34m}"
-    : "${a_red_bold}:=${cpre}[1;31m}"
-    ARRAY_JOB_TEXT=$(bjobs -A -u "${USER}" 2>&1) # Captures STDERR+STDOUT
-    if [[ "${ARRAY_JOB_TEXT}" =~ .*array\ is\ not\ found.* ]]; then
-	echo -e "${a_blue_bold}(No active array jobs.)${a_end_color}"
-    else
-	echo -e "${a_blue_bold}Array job status (-A):${a_end_color}"
-	echo -e "${ARRAY_JOB_TEXT}"
-	bjobs -w -A -u "${USER}" # wide to show FULL array names
-	echo -e "[:FYI:] To cancel ALL jobs in an array --> bkill -J \"JOBNAME*\" <-- be careful!"
-    fi
-    echo -e "${a_blue_bold}Current & finished-within-the-last-hour jobs:${a_end_color}"      # memlimit:3 run_time:6 time_left:5 job_group:10 from_host:12 
-    JOB_TEXT=$(bjobs -a -o "jobid:8 stat:4 job_name:80 user:4 queue:3 cpu_used:6 max_mem:3 exec_host:18 submit_time:12 finish_time:12 delimiter='|'" 2>&1)
-    JOB_TEXT=$(echo -e "${JOB_TEXT}" | perl -pe "s/^(.*[|]RUN.*)\$/${a_ok_color}\$1${a_end_color}/g")
-    JOB_TEXT=$(echo -e "${JOB_TEXT}" | perl -pe "s/^(.*[|]DONE.*)\$/${a_orange136}\$1${a_end_color}/g")
-    JOB_TEXT=$(echo -e "${JOB_TEXT}" | perl -pe "s/^(.*[|]EXIT.*)\$/${a_err_color}\$1${a_end_color}/g")
-    JOB_TEXT=$(echo -e "${JOB_TEXT}" | perl -pe "s/^(.*[|]PEN.*)\$/${a_yellow226}\$1${a_end_color}/g") # pending
-    echo -e "${JOB_TEXT}"
-    FAILED_JOB_TEXT=$(bjobs -a -x -l  2>&1)    # Capture STDERR and STDOUT both to a variable returns 0 no matter what. If there's no job, it returns the verbatim text "No job found"
-    if [[ "${FAILED_JOB_TEXT}" =~ No.*job.* ]]; then
-	echo -e "${a_blue_bold}(No recent job failures were found.)${a_end_color}"
-    else
-	echo -e "$ERRTT: ${a_red_bold}Jobs that failed (-a -x -l output):${a_end_color}"
-	echo -e "${FAILED_JOB_TEXT}"
-	echo -e "$ERRTT: [End of list]"
-    fi
-}
-
-function jj() {
-    j1 | less -S --RAW-CONTROL-CHARS -f --IGNORE-CASE
-}
-
 function setsubtract() {
     # input files do NOT need to be sorted
-    if [[ "$#" != 2 ]] ; then echo -e "$ERRTT You need to pass EXACTLY TWO files to the set subtraction!"; return 1; fi
-    if [[ ! -f "$1" ]] ; then echo -e "$ERRTT Could not find the specified input file: $1!"; return 1; fi
-    if [[ ! -f "$2" ]] ; then echo -e "$ERRTT Could not find the specified input file: $2!"; return 1; fi
+    if [[ "$#" != 2 ]] ; then echo -e "$ERRTT You need to pass EXACTLY TWO files to the set subtraction."; return 1; fi
+    if [[ ! -f "$1" ]] ; then echo -e "$ERRTT Could not find the specified input file: $1."; return 1; fi
+    if [[ ! -f "$2" ]] ; then echo -e "$ERRTT Could not find the specified input file: $2."; return 1; fi
     grep -F -x -v -f "$2" "$1"
 }
 
 function setunion() {
     # input files do NOT need to be sorted
-    if [[ "$#" != 2 ]] ; then echo -e "$ERRTT You need to pass EXACTLY TWO files to the set union!"; return 1; fi
-    if [[ ! -f "$1" ]] ; then echo -e "$ERRTT Could not find the specified input file: $1!"; return 1; fi
-    if [[ ! -f "$2" ]] ; then echo -e "$ERRTT Could not find the specified input file: $2!"; return 1; fi
+    if [[ "$#" != 2 ]] ; then echo -e "$ERRTT You need to pass EXACTLY TWO files to the set union."; return 1; fi
+    if [[ ! -f "$1" ]] ; then echo -e "$ERRTT Could not find the specified input file: $1."; return 1; fi
+    if [[ ! -f "$2" ]] ; then echo -e "$ERRTT Could not find the specified input file: $2."; return 1; fi
     cat "$1" "$2" | sort -u
-}
-
-
-#function checkbackup {
-#    # checks the MOST RECENT file in /it/backup/log, and gives you the last 10 lines from that file
-#    echo -e ""
-#    echo -e "Reporting the last 10 lines of the most recent backup on this machine."
-#    echo -e "If these lines are not from yesterday or today's date, then something is seriously wrong!"
-#    tail -n 10 /it/backup/log/$(ls -1t /it/backup/log/ | head -n 1)
-#    TODAY=$(date +"%Y%m%d")
-#    YESTERDAY=$(date +"%Y%m%d" --date='1 day ago')
-#    LAST_BACKUP_DATE=$(ls -1t /it/backup/log/ | head -n 1 | cut -f 1 -d '-')
-#    [[ ("$LAST_BACKUP_DATE" == "$TODAY") || ("$LAST_BACKUP_DATE" == "$YESTERDAY") ]]; RESULT=$?
-#    if [[ $RESULT -ne 0 ]] ; then echo -e "***\n**\n*\n******************** WARNING --- last backup date was on $LAST_BACKUP_DATE ************\n*\n**\n***";
-#    else echo -e "\nOK: The last backup ($LAST_BACKUP_DATE) was made within the last 2 days.\n"; fi
-#}
-
-
-#function workarchive { # usage: cd /work/projects  then: "workarchive myproj-1234-rna-mouse"  --> will move things to bag_of_holding/work_archive/
-#    D=${1%/}
-#    DARCH=${D}_ARCHIVE
-#    TARGET=/bag_of_holding/work_archive/${D}
-#    agw_cmd_exists "ionice" && AGW_IONICE="ionice -c3" || AGW_IONICE="" # ionice doesn't exist on BSD/Mac, so check for it
-#    echo -e "We would like to move the directory (without a slash) \"${D}\" to the final TAPE DRIVE target \"${TARGET}\"... sound ok to you? Select a NUMERIC option below:"
-#    select yn in "[Cancel]" "Move those files!"; do
-#	case $yn in
-#	    Move*) sudo mv ./${D} ./${DARCH}
-#		 ln -s ${TARGET} ./${D}
-#		 eval sudo ${AGW_IONICE} mv ./${DARCH}  ${TARGET}
-#		 break;;
-#	    *) echo -e "Ok, not doing anything."; break;;
-#	esac
-#    done
-#}
-
-#function truename {
-#    qsub -I  -l ncpus=1  -l mem=4gb  -l walltime=24:00:00 -N "INTERACTIVE_for_$USER" -q Interactive -W group_list="interactive"
-#}
-#
-#function qsud {
-#    if [[ "$#" == "0" ]] ; then echo -e "$ERRTT qq (queue submission) needs at least ONE argument script!"; return 1; fi
-#    PBS_BIO_GGG="Bio"
-#    PBS_BIO_QQQ="bioqueue"
-#    PBS_GEN_GGG="General"
-#    PBS_GEN_QQQ="genqueue"
-#    groupstr=`groups`
-#    case "$groupstr" in 
-#	*bioqueue*)
-#    	    QGRP="$PBS_BIO_GGG"
-#	    QQUE="$PBS_BIO_QQQ"
-#	    ;;
-#	*genqueue*)
-#    	    QGRP="$PBS_GEN_GGG"
-#	    QQUE="$PBS_GEN_QQQ"
-#	    ;;
-#	*)
-#    	    echo -e "$ERRTT your username was not in a relevant group -- it must be in either the 'bioqueue' or 'genqueue' groups. This is MANDATORY if qsud is to work!"
-#	    return 99
-#	    ;;
-#    esac
-#    cmd=( "qsub" "-q" $QGRP "-V" "-l walltime=320:59:59" "-W group_list=\"$QQUE\"" "$@" ) # 14 days is the longest possible
-#    echo -e "About to execute this command. Note that all paths must be FULL PATHS:\n----------\nCOMMAND>      ${cmd[@]}\n----------"
-#    "${cmd[@]}" # <- Actually execute. See http://unix.stackexchange.com/questions/131766/why-does-my-shell-script-choke-on-whitespace-or-other-special-characters
-#}
-
-
-function bsubnow() {
-    if (( "$#" >= 1 )); then
-	PROJNAME=$1;
-    else
-	PROJNAME='YOUR_PROJNAME_GOES_HERE'
-    fi
-    if (( "$#" >= 2 )); then
-	CMD=$2;
-    else
-	CMD='YOUR_COMMAND_GOES_HERE'
-    fi
-    echo bsub -L '/bin/bash' \
-	 -R "'span[hosts=1]'" \
-	 -q "'medium'" \
-	 -R "'rusage[mem=32]'" \
-	 -oo "'LOG-%J.bsub.log.out'" \
-	 -eo "'LOG-%J.bsub.log.err'" \
-	 -n 1 \
-	 -J "'${PROJNAME}'" \
-	 \"${CMD}\"
-}
-
-function bsubtemp() {
-    if (( "$#" < 1 )) ; then echo -e "$ERRTT Please specify a job name! Note that you probably also want to send this output to STDOUT, so e.g. 'bsubtemp MYJOB > job.sub.sh'"; return 1; fi
-    if [[ "$#" == 2 ]] ; then
-	MEM=$2
-    else
-	MEM=4  # gigabytes
-    fi
-    if ! agw_is_numeric "${MEM}"; then
-	echo "$ERRTT Your second argument, if included, MUST be an integer (the amount of RAM to request, in GB)! Your argument was this: ${mem}" >&2;
-	return 1;
-    fi
-    JJJ=${1/ /_} # spaces --> '_'
-    echo -e "#!/bin/bash"
-    echo -e "set -euo pipefail; shopt -s nullglob; shopt -s globstar;"
-    echo -e "#BSUB -L /bin/bash                # Ensure that we are using BASH"
-    echo -e "#BSUB -R 'span[hosts=1]'          # No splitting across hosts"
-    echo -e "#BSUB -q medium                   # short=2 hours, medium=24 hours"
-    echo -e "#BSUB -R 'rusage[mem=${MEM}]'     # In GB"
-    echo -e "#BSUB -n 1                        # N threads"
-    echo -e "#BSUB -J ${JJJ}"
-    echo -e "#BSUB -o ${JJJ}-%J-%I.bsub.log.out   # or '-oo' to OVERWRITE (instead of appending)"
-    echo -e "#BSUB -e ${JJJ}-%J-%I.bsub.log.err   # or '-eo' to OVERWRITE (instead of appending)"
-    echo -e ''
-    echo -e ": \"\${LSB_JOBID:=}\" # a non-defined ID would become blank"
-    echo -e "if [[ -z \"\${LSB_JOBID}\" ]]; then"
-    echo -e "    echo \"$ERRTT ERROR: You should NOT run this as a shell script! Correct way -->   bsub < scriptname.sh      <-- note: the '<' is important! Do not omit it.\"; "
-    echo -e "    exit 1; "
-    echo -e "fi"
-    echo ''
-    # 'bhist' has more info too: # bhist -w -l -a -n 99 769084 | less -S
 }
 
 function agw_is_numeric() {
@@ -1298,59 +1038,8 @@ function agw_is_numeric() {
     fi
 }
 
-
-# Logs you into a fast interactive node
-alias qrush='bsub -q long   -n 4   -R '\''span[hosts=1] rusage[mem=4]'\'' -Is bash' # was previously 'qrsh' 
-
 function windowserver_kill() {
     sudo killall -HUP WindowServer
-}
-
-
-function bbq() { # bsub, be quick!
-    # Usage:   bbq "my command here"
-    # Note:    * Outputs log files to THE CURRENT DIRECTORY!
-    #          * Makes a temp file using 'mktemp'
-    #          * Blocks until the submitted job is complete (with bsub -K).
-    #          * It is NOT OK to cancel out of the submitted job! It will cancel the job!
-    : "${cpre}=\033}" ## <-- Color prefix, if not already set
-    : "${a_end_color}:=${cpre}[m}"
-    : "${a_blue_bold}:=${cpre}[1;34m}"
-    : "${a_green}:=${cpre}[32m}"
-    echo -e "${a_blue_bold}BSS${a_end_color}: ${a_blue_bold}B${a_end_color}sub ${a_blue_bold}B${a_end_color}e ${a_blue_bold}Q${a_end_color}uick!"
-    if [[ "$#" < 1 || "$#" > 2 ]] ; then echo -e "\n$ERRTT BBQ: You must specify EXACTLY ONE command to add to the queue run---put your command in quotes! Example:  bbq \"ls -al\"  "; return;  fi
-    cmd=$1
-    
-    if (( "$#" >= 2 )); then
-	mem=$2
-	if ! agw_is_numeric "${mem}"; then
-	    echo "$ERRTT Your second argument, if included, MUST be an integer (the amount of RAM to request, in GB)! Your argument was this: ${mem}" >&2;
-	    return 1;
-	fi
-    else
-	mem=4 # GB
-    fi
-    ttt=$(mktemp --suffix=".${USER}.bsub.sh")
-    jobname="Q_${USER}_$(date +%s)"
-    echo       -e "(Remember that backslashes in your command may need to be doubled.)"
-    echo       -e "(Remember that DOLLAR SIGNS MUST BE ESCAPED! So use \\$ instead of '$'.)"
-    echo       -e "Submitting this (temporary) script: ${a_blue_bold}${ttt}${a_end_color}"
-    echo       -e "Command to run:"
-    printf "%s\n" "${cmd}"
-    echo       -e ""
-    bsubtemp "${jobname}" ${mem}    >| ${ttt}
-    printf "%s\n" ""                >> ${ttt}
-    printf "%s\n" "${cmd}"          >> ${ttt}
-    printf "%s\n" ""                >> ${ttt}
-    #bsub -K   -q 'short' < ${ttt}
-    echo -e "Running the job here locally... blocking until it finishes!"
-    echo -e "(You probably want to be running this job in SCREEN or TMUX.)"
-    echo -e "You can check the BSUB command with -->  ${a_blue_bold}less -S ${ttt}${a_end_color}"
-    echo -e "${a_green}[WAITING FOR JOB \"${jobname}\"... DO NOT CTRL-C THIS JOB!]${a_end_color}"
-    echo -e "${a_green}[WARNING: IF YOU CTRL-C, THE QUEUE JOB IS ABORTED, EVEN IF IT IS RUNNING!]${a_end_color}"
-    echo -e "${a_green}View the output LIVE with: tail -f PROJECT_ID_HERE.bsub.log.err <-- only works for ONE file at a time${a_end_color}"
-    bsub -K < ${ttt}
-    echo -e "${a_green}[DONE]${a_end_color}"
 }
 
 function convert_webp_to_jpg() {
@@ -1389,16 +1078,16 @@ function mp4_concat() {
 
 export ANDROID_HOME=~/.android
 
-function delete_android_file_transfer_on_mac() {
-    PID=$(ps -fe | grep "[A]ndroid File Transfer Agent" | awk '{print $2}')
-    if [[ -n ${PID} ]]; then kill ${PID}; fi;
-    mv "/Applications/Android File Transfer.app/Contents/Resources/Android File Transfer Agent.app" \
-       "/Applications/Android File Transfer.app/Contents/Resources/Android File Transfer Agent DISABLED.app"
-    mv "${HOME}/Library/Application Support/Google/Android File Transfer/Android File Transfer Agent.app" \
-       "${HOME}/Library/Application Support/Google/Android File Transfer/Android File Transfer Agent DISABLED.app"
-    osascript -e 'tell application "System Events" to delete every login item whose name is "Android File Transfer Agent"'
-    echo "Done disabling it. Note that the files have been RENAMED, and not totally deleted!"
-}
+# function delete_android_file_transfer_on_mac() {
+#     PID=$(ps -fe | grep "[A]ndroid File Transfer Agent" | awk '{print $2}')
+#     if [[ -n ${PID} ]]; then kill ${PID}; fi;
+#     mv "/Applications/Android File Transfer.app/Contents/Resources/Android File Transfer Agent.app" \
+#        "/Applications/Android File Transfer.app/Contents/Resources/Android File Transfer Agent DISABLED.app"
+#     mv "${HOME}/Library/Application Support/Google/Android File Transfer/Android File Transfer Agent.app" \
+#        "${HOME}/Library/Application Support/Google/Android File Transfer/Android File Transfer Agent DISABLED.app"
+#     osascript -e 'tell application "System Events" to delete every login item whose name is "Android File Transfer Agent"'
+#     echo "Done disabling it. Note that the files have been RENAMED, and not totally deleted!"
+# }
 
 function gitstory() {
     if [[ "$#" != 1 ]] ; then
@@ -1872,7 +1561,7 @@ function cheat() {
 >> Rebuild Mac OS X default applications database, AKA LaunchServices database (File type associations) /System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/LaunchServices.framework/Versions/A/Support/lsregister -kill -r -v -all u,s,l
 
 END_OF_HEREDOC
-       ) # This end-paren is important! It matches the one above
+       ) # This end-paren is important: It matches the one above
     echo "$VERBATIM_CHEAT_SHEET"
 }
 
