@@ -70,10 +70,8 @@ def int_percent(x):
         x = int(x)
     except ValueError:
         raise argparse.ArgumentTypeError(f"{x} doesn't seem to be castable to an int!")
-
-    if x >= 1 and x <= 100:
+    if 1 <= x <= 100:
         return x
-    
     raise argparse.ArgumentTypeError(f"{x} is not a valid value for this argument: it must be in the range [1, 100]")
 
 def str_with_digits_from_1_to_9_only(x: str):
@@ -88,9 +86,7 @@ def str_with_digits_from_1_to_9_only(x: str):
 def secret_code_found_in_suffix(secret_code: list[int], entire_knock_sequence: list[int]):
     if not entire_knock_sequence or len(entire_knock_sequence) < len(secret_code):
         return False  # Not long enough!
-    
-    # Check just the suffix
-    return entire_knock_sequence[-len(secret_code):] == secret_code
+    return entire_knock_sequence[-len(secret_code):] == secret_code  # Check just the suffix
 
 
 def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock_code: list[int], pin_obj: gpiozero.OutputDevice):
