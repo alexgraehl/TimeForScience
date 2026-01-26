@@ -12,9 +12,7 @@
 #       B) On a Raspberry Pi (Linux, 2026):  sudo apt install libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 python3-pyaudio
 #                                 and then:  sudo apt install python3-gpiozero
 #    2. Then activate `venv`:  source venv/bin/activate  # Must be in the same directory: note that `venv` is the directory name here
-#    3. ...and then install: pip install pyaudio
-#    4. ...and then install: pip install numpy
-#    5. ...and then install: pip install gpiozero
+#    3. ...and then install: pip install pyaudio numpy gpiozero
 #       (Note that the pip installation only takes effect in that specific directory with the `venv/` subdirectory in it.
 # 3. Then, every time you want to run this script:
 #    source venv/bin/activate   # (To pick up `pyaudio` and `numpy`)
@@ -207,10 +205,11 @@ def unit_tests():
 
 Args:
     gpio_pin_name: E.g. "GPIO4". Note that the GPIO pin name is usually not the same as the (physical) BOARD pin name.
+                   The meaning of `on` and `off` are determined at the pin creation time: note that 'on' may actually represent
+                   toggling the pin to 0 volts (see the `active_is_low` parameter in the initialization of the OutputDevice.)
     press_time_sec: How long to keep the states switched.
-    active_is_low: Whether we should pull the pin LOW first (then back to high) or vice-versa.
 """
-def press_garage_door_button(pin_obj: gpiozero.OutputDevice | None, press_time_sec: int, active_is_low: bool):
+def press_garage_door_button(pin_obj: gpiozero.OutputDevice | None, press_time_sec: int):
     if IS_DRY_RUN:
         print("⭐️⚠️⭐️ DRY RUN: NOT PUSHING THE BUTTON")
         return
@@ -220,14 +219,9 @@ def press_garage_door_button(pin_obj: gpiozero.OutputDevice | None, press_time_s
         return
     
     print("⭐️✅⭐️ ATTEMPTING TO OPEN THE GARAGE DOOR")
-    if active_is_low:
-        pin_obj.off()
-        time.sleep(press_time_sec)
-        pin_obj.on()
-    else:
-        pin_obj.on()
-        time.sleep(press_time_sec)
-        pin_obj.off()
+    pin_obj.on()  # Note that "on" MAY actually be the "low' voltage setting.
+    time.sleep(press_time_sec)
+    pin_obj.ff()
     return
 
 def init_audio_stream():
@@ -267,14 +261,16 @@ def main():
         pass
 
     try:
-        pin_obj = gpiozero.OutputDevice(args.gpio_pin_to_pull_low)  # The real pin
+        # Note: If this is set up wrong, then this initialization may also open the garage door. Which we do not want.
+        # The `initial_value` should always be False even if the pin is active on "high"
+        pin_obj = gpiozero.OutputDevice(args.gpio_pin_to_pull_low, initial_value=False, active_high=(not PULL_PIN_LOW_TO_ACTIVATE))
     except gpiozero.exc.BadPinFactory:
         print("❌ Not able to actually get the real GPIO pin. This is OK if you're testing on a Mac, but it means we CANNOT actually control the garage door.")
         pin_obj = None
 
     if (args.debug_test_button_now):
-        press_garage_door_button(args.gpio_pin_to_pull_low, BUTTON_PRESS_TIME_SEC, active_is_low=PULL_PIN_LOW_TO_ACTIVATE)
-        print("Exiting early because --debug_test_button_now was specified")
+        press_garage_door_button(pin_obj, BUTTON_PRESS_TIME_SEC)
+        print("Exiting early because `--debug_test_button_now` was specified")
         return # Exit early
 
     try:
