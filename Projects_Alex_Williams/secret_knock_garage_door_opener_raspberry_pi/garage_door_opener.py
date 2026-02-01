@@ -34,22 +34,21 @@ class color:
 BUTTON_PRESS_TIME_SEC: int = 1  # How long to press the garage door button
 PULL_PIN_LOW_TO_ACTIVATE: bool = True  # Hard-coded. Right now we hard-code that we set the pin to LOW to activate it. Could be refactored.
 
-FORMAT = pyaudio.paFloat32
-AUDIO_DTYPE = np.float32
-CHANNELS = 1                 # Mono
-RATE = 44100                 # 44.1kHz sampling rate
-SAMPLES_PER_SECOND = 10
-CHUNK = int(RATE / (1+SAMPLES_PER_SECOND))   # Might be slightly off
+FORMAT                    = pyaudio.paFloat32
+AUDIO_DTYPE               = np.float32
+CHANNELS: int             = 1        # (Mono)
+RATE: int                 = 44100    # 44.1kHz sampling rate
+CHECKS_PER_SECOND: int    = 10  # How many times to check for the current audio volume every second. Can be pretty low.
+CHUNK: int                = int(RATE / (1+CHECKS_PER_SECOND))   # Amount of data to read in one "chunk". Might be slightly off (not sure if this division is totally correct)
 MAX_VOLUME_BAR_WIDTH: int = 50     # Max number of characters for the volume bar. If this is larger than the terminal width, then the bar won't overwrite itself (and the terminal will scroll)
 
 
 # These are chosen somewhat empirically and probably should be command line args.
 MIN_KNOCK_LENGTH: float      = 0.05  # Absolute minimum number of seconds to wait before counting another knock. If you set it too HIGH, then two knocks will be counted as one.
 MIN_TIME_BETWEEN_SETS: float = 0.5   # Minimum required gap (in sec.) between sets of knocks. E.g. {X,X,X} (gap) {X,X} would be 3, 2 (and not "5"). If you set it too low, it will be hard to reliably create "sets" of knocks instead of a bunch of single knocks.
-FULL_RESET_TIMEOUT: int       = 5    # Reset the code after this many seconds of silence. Possibly not actually needed.
+FULL_RESET_TIMEOUT: int      = 5     # Reset the code after this many seconds of silence. Possibly not actually needed.
 
 FINAL_SILENCE_REQUIRED: int = 1  # Register a code only after silence at least THIS long
-
 
 IS_DRY_RUN: int = False
 VERBOSE: bool = False
@@ -62,8 +61,8 @@ def color_for_pct(p: int | float):
         return color.y
     return color.r
 
-BUFFER_SIZE: int = 100  # Keep track of the last N percent values
-RECALCULATE_MAX_EVERY: int = 10 # Recalculat the max value every (approximately) this many runs through the loop, just to be every so slightly less wasteful
+BUFFER_SIZE: int = 100  # Keep track of the last N volumes. Only matters when `--verbose` is on.
+RECALCULATE_MAX_EVERY: int = 10 # Recalculate the max voulume every ~N runs through the loop, just to be every so slightly less wasteful. Only matters when `--verbose` is on.
 
 def int_percent(x):
     try:
@@ -141,7 +140,7 @@ def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock
             currently_in_a_knock = False
 
         if current_knock_count > 0:
-            silence_duration = now - last_knock_time
+            silence_duration = now - last_knock_time  # Reset the silence duration so we don't terminate early.
             # Finished a knock set
             if silence_duration > MIN_TIME_BETWEEN_SETS:
                 current_sequence.append(current_knock_count)
@@ -151,7 +150,7 @@ def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock
         if current_sequence and time_since_last_knock > FINAL_SILENCE_REQUIRED:
             if secret_code_found_in_suffix(secret_code=secret_knock_code, entire_knock_sequence=current_sequence):
                 print(f"Found the code ({secret_knock_code}) at the end of this current sequence of knocks ({current_sequence})")
-                press_garage_door_button(pin_obj, press_time_sec=BUTTON_PRESS_TIME_SEC, active_is_low=True)
+                press_garage_door_button(pin_obj, press_time_sec=BUTTON_PRESS_TIME_SEC)
                 current_sequence = [] # Reset for next attempt
             else:
                 if (last_code_we_printed != current_sequence):
@@ -209,15 +208,13 @@ def press_garage_door_button(pin_obj: gpiozero.OutputDevice | None, press_time_s
     if IS_DRY_RUN:
         print("⭐️⚠️⭐️ DRY RUN: NOT PUSHING THE BUTTON")
         return
-
     if pin_obj is None:
         print("⭐️⚠️⭐️ NOT PUSHING THE BUTTON: Could not initialize the GPIO pin. Check the logs.")
         return
-    
     print("⭐️✅⭐️ ATTEMPTING TO OPEN THE GARAGE DOOR")
     pin_obj.on()  # Note that "on" MAY actually be the "low' voltage setting.
     time.sleep(press_time_sec)
-    pin_obj.ff()
+    pin_obj.off()
     return
 
 def init_audio_stream():
