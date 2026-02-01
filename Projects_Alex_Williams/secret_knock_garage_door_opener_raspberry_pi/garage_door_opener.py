@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Example:
-#  python garage_door_opener.py --knock=15 --code=1234 --scale=3 --verbose
+#  python garage_door_opener.py --knock=15 --code=123 --pause_time=0.70 --scale=3 --verbose --log=/tmp/garage_log.txt
 
 # Venv cheat sheet:
 # 1. One time only:
@@ -20,6 +20,7 @@
 import sys
 import time
 import argparse
+import datetime
 
 import gpiozero
 import pyaudio
@@ -27,6 +28,8 @@ import numpy as np
 
 IS_DRY_RUN: int = False
 VERBOSE: bool   = False
+
+LOG_FILE_PATH: str = ""
 
 """Escape sequence for terminal colors."""
 class color:
@@ -48,9 +51,6 @@ MAX_VOLUME_BAR_WIDTH: int = 50     # Max number of characters for the volume bar
 
 # These are chosen somewhat empirically and probably should be command line args.
 MIN_KNOCK_LENGTH: float        = 0.05  # Absolute minimum number of seconds to wait before counting another knock. If you set it too HIGH, then two knocks will be counted as one.
-MIN_TIME_BETWEEN_SETS: float   = 0.75  # Minimum required gap (in sec.) between sets of knocks. E.g. {X,X,X} (gap) {X,X} would be 3, 2 (and not "5"). If you set it too low, it will be hard to reliably create "sets" of knocks instead of a bunch of single knocks.
-FULL_RESET_TIMEOUT: int        = 5     # Reset the code after this many seconds of silence. Possibly not actually needed.
-FINAL_SILENCE_REQUIRED: float  = (MIN_TIME_BETWEEN_SETS + 0.25)  # Register a code only after silence at least THIS long
 
 """Converts a percent (number) into a color. Loud = red, medium = yellow, quiet = green."""
 def color_for_pct(p: int | float):
@@ -84,7 +84,7 @@ def secret_code_found_in_suffix(secret_code: list[int], entire_knock_sequence: l
     return entire_knock_sequence[-len(secret_code):] == secret_code  # Check just the suffix
 
 
-def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock_code: list[int], pin_obj: gpiozero.OutputDevice):
+def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock_code: list[int], pin_obj: gpiozero.OutputDevice, required_pause_time: float):
     assert knock_pct_threshold >= 0 and knock_pct_threshold <= 100, "knock_pct_threshold must be in [0, 100]"
     assert isinstance(secret_knock_code, list) and all(isinstance(x, int) for x in secret_knock_code), "secret_knock_code should be an array of ints"
 
@@ -125,20 +125,21 @@ def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock
                 current_knock_count += 1
                 print(f"KNOCK: {current_knock_count}")
                 last_knock_time = now
+                time_since_last_knock = now - last_knock_time  # Recompute time_since_last_knock for the benefit of the code below. (Probably there's a more elegant way to do this)
 
         # See if the current knock is now "done" being loud (volume < 50% of threshold AND it hasn't been a ludicrously short amount of time) (and prepare us to count the next one)
         if (pct < knock_pct_threshold * 0.5 and time_since_last_knock >= MIN_KNOCK_LENGTH):
             currently_in_a_knock = False
 
         if current_knock_count > 0:
-            silence_duration = now - last_knock_time  # Reset the silence duration so we don't terminate early.
-            # Finished a knock set
-            if silence_duration > MIN_TIME_BETWEEN_SETS:
+            if time_since_last_knock > required_pause_time:  # Finished a set of knocks! In a perfect world, maybe we'd look at AVERAGE time between knocks and actually set this to (average * 2) or something.
                 knock_seq.append(current_knock_count)
-                print(f"{silence_duration=} Added [{current_knock_count}], so now {knock_seq=}")
+                print(f"{time_since_last_knock=} Added [{current_knock_count}], so now {knock_seq=}")
                 current_knock_count = 0
-                    
-        if knock_seq and time_since_last_knock > FINAL_SILENCE_REQUIRED:
+        
+
+        final_silence_required_before_activating_garage = required_pause_time  # Same as the normal pause time
+        if knock_seq and time_since_last_knock > final_silence_required_before_activating_garage:
             if secret_code_found_in_suffix(secret_code=secret_knock_code, entire_knock_sequence=knock_seq):
                 print(f"Found {secret_knock_code=}) at the end of {knock_seq=})")
                 press_garage_door_button(pin_obj, press_time_sec=BUTTON_PRESS_TIME_SEC)
@@ -147,8 +148,9 @@ def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock
                 if (last_code_we_printed != knock_seq):
                     print(f"Rejected this code: {knock_seq}.    We expected this one: {secret_knock_code}\n")
                     last_code_we_printed = knock_seq # Just so we don't spam the logs with "rejected this code..." over and over
-            
-        if knock_seq and ((time_since_last_knock > FULL_RESET_TIMEOUT) or len(knock_seq) > max_knock_sets_to_record_before_resetting):
+        
+        full_reset_timeout: float = required_pause_time * 10   # Reset the code after this many seconds of silence. Possibly not actually needed.
+        if knock_seq and ((time_since_last_knock > full_reset_timeout) or len(knock_seq) > max_knock_sets_to_record_before_resetting):
             knock_seq = []
         
         # ---------------------- PRINT THE VOLUME BAR NICELY ----------------
@@ -166,7 +168,7 @@ def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock
         pass # End of infinite loop
     return
 
-def unit_tests():
+def unit_tests() -> None:
     assert secret_code_found_in_suffix([1,2,3], [1,2,3]), "Exact should match"
     assert secret_code_found_in_suffix([1,2,3], [4, 1,2,3]), "Suffix should match"
     assert not secret_code_found_in_suffix([1,2,3], [1,2,3,4]), "Not a suffix: should not match"
@@ -184,27 +186,49 @@ Args:
     press_time_sec: How long to keep the states switched.
 """
 def press_garage_door_button(pin_obj: gpiozero.OutputDevice | None, press_time_sec: float):
-    if IS_DRY_RUN:
-        print("⭐️⚠️⭐️ DRY RUN: NOT PUSHING THE BUTTON")
-        return
-    if pin_obj is None:
-        print("⭐️⚠️⭐️ NOT PUSHING THE BUTTON: Could not initialize the GPIO pin. Check the logs.")
-        return
-    print("⭐️✅⭐️ ATTEMPTING TO OPEN THE GARAGE DOOR")
-    pin_obj.on()  # Note that "on" MAY actually be the "low' voltage setting.
-    time.sleep(press_time_sec)
-    pin_obj.off()
+    try:
+        if IS_DRY_RUN:
+            print("⭐️⚠️⭐️ DRY RUN: NOT PUSHING THE BUTTON")
+            open_and_write_to_log(LOG_FILE_PATH, "(Dry run, no action performed)")
+        elif pin_obj is None:
+            print("⭐️⚠️⭐️ NOT PUSHING THE BUTTON: Could not initialize the GPIO pin. Check the logs.")
+            open_and_write_to_log(LOG_FILE_PATH, "(NOT PUSHING THE BUTTON: Could not initialize the GPIO pin.)")
+        else:
+            print("⭐️✅⭐️ ATTEMPTING TO OPEN THE GARAGE DOOR")
+            pin_obj.on()  # Note that "on" MAY actually be the "low' voltage setting.
+            time.sleep(press_time_sec)
+            pin_obj.off()
+            open_and_write_to_log(LOG_FILE_PATH, f"Pressed the garage door button.")
+            pass
+    except Exception as e:
+        # Catch all exceptions and write another log line.
+        open_and_write_to_log(LOG_FILE_PATH, f"Failure! Exeption was: {e}")
     return
 
 def init_audio_stream():
     return pyaudio.PyAudio().open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
+
+def open_and_write_to_log(log_file_path: str, message: str) -> None:
+    if not log_file_path:
+        if VERBOSE:
+            print("Not writing to a log file, since none was specified")
+        return
+
+    try:
+        with open(log_file_path, "a") as f:
+            when: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            f.write(f"[{when}] {message}\n")  # E.g. "[1998-01-30] Snakes and cakes"
+    except Exception as e:
+        print(f"Couldn't append a log entry to {log_file_path=}: {e}")
 
 def main():
     parser = argparse.ArgumentParser(description="Audio Handleroo")
     parser.add_argument("--code",                 type=str_with_digits_from_1_to_9_only, default="", help="Required. Secret code in single-digits of knocks. E.g. 123 = {1, 2, 3 knocks}.")
     parser.add_argument("--scale",                type=float,       default="1.0", help="[-Inf, Inf] Rescale the volume by this amount. Useful if the numbers seem 'off'")
     parser.add_argument("--knock",                type=int_percent, default="35", help="[1, 100] Threshold for detecting a 'knock' event, from 1 (percent) to 100 (percent).")
+    parser.add_argument("--pause_time",           type=float,       default="0.70", help="Required pause time between 'sets' of knocks, in seconds. 0.5 is typically too short, and 0.8 is typically too long. Default is 0.70.")
     parser.add_argument("--gpio_pin_to_pull_low", type=str,         default="GPIO4", help=f"The pin to pull LOW for {BUTTON_PRESS_TIME_SEC} second(s) to open/close the garage door.")
+    parser.add_argument("--log",                  type=str,         default="", help="Default: no log. If specified, log garage-door button-press actions to this file. Note that opening/closing cannot be distinguished.")
 
     parser.add_argument("--debug_test_button_now", action='store_true', help="Debug option. Press the button and then exit.")
     parser.add_argument("--run_unit_tests"       , action='store_true', help="Run our rather informal unit tests")
@@ -216,18 +240,28 @@ def main():
     if args.run_unit_tests:
         unit_tests()
 
+    assert args.pause_time >= 0.2 and args.pause_time <= 10, f"Your --pause_time must be some 'normal' number of seconds between 0.2 and 10 seconds, not `{args.pause_time=}`"
+
     global IS_DRY_RUN
     IS_DRY_RUN = args.dry
     global VERBOSE
     VERBOSE = args.verbose
+    global LOG_FILE_PATH
+    LOG_FILE_PATH = args.log
 
     secret_code_as_list: list[int] = [int(x) for x in args.code]
 
     print("Listening for audio!")
-    print(f"""  * Scaling factor is:   {args.scale}""")
-    print(f"""  * Knock threshold is:  {args.knock}%""")
-    print(f"""  * Knock code is:       {secret_code_as_list} ("--code={args.code}")""")
-    print(f"""  * GPIO pin (pull low): {args.gpio_pin_to_pull_low}""")
+    print(f"""  * Scaling factor is:      {args.scale}""")
+    print(f"""  * Knock threshold is:     {args.knock}% (of max volume)""")
+    print(f"""  * Min pause between sets: {args.pause_time} seconds""")
+    print(f"""  * Knock code is:          {secret_code_as_list} ("--code={args.code}")""")
+    print(f"""  * GPIO pin (pull low):    {args.gpio_pin_to_pull_low}""")
+    print(f"""  * Log file path (if any): {args.log}""")
+
+    # Check to see if we can write to the log at all
+    open_and_write_to_log(LOG_FILE_PATH, "<Starting program>")
+
     if IS_DRY_RUN:
         print(f"  * DRY RUN")
         pass
@@ -246,7 +280,7 @@ def main():
         return # Exit early
 
     try:
-        handle_audio(rescale_volume=args.scale, knock_pct_threshold=args.knock, secret_knock_code=secret_code_as_list, pin_obj=pin_obj)
+        handle_audio(rescale_volume=args.scale, knock_pct_threshold=args.knock, secret_knock_code=secret_code_as_list, pin_obj=pin_obj, required_pause_time=args.pause_time)
     except KeyboardInterrupt:
         print("\n\n⚠️ User pressed Ctrl-C, so we're quitting!")
     finally:
