@@ -46,12 +46,11 @@ CHECKS_PER_SECOND: int    = 10  # How many times to check for the current audio 
 CHUNK: int                = int(RATE / (1+CHECKS_PER_SECOND))   # Amount of data to read in one "chunk". Might be slightly off (not sure if this division is totally correct)
 MAX_VOLUME_BAR_WIDTH: int = 50     # Max number of characters for the volume bar. If this is larger than the terminal width, then the bar won't overwrite itself (and the terminal will scroll)
 
-
 # These are chosen somewhat empirically and probably should be command line args.
-MIN_KNOCK_LENGTH: float      = 0.05  # Absolute minimum number of seconds to wait before counting another knock. If you set it too HIGH, then two knocks will be counted as one.
-MIN_TIME_BETWEEN_SETS: float = 0.5   # Minimum required gap (in sec.) between sets of knocks. E.g. {X,X,X} (gap) {X,X} would be 3, 2 (and not "5"). If you set it too low, it will be hard to reliably create "sets" of knocks instead of a bunch of single knocks.
-FULL_RESET_TIMEOUT: int      = 5     # Reset the code after this many seconds of silence. Possibly not actually needed.
-FINAL_SILENCE_REQUIRED: int  = 1  # Register a code only after silence at least THIS long
+MIN_KNOCK_LENGTH: float        = 0.05  # Absolute minimum number of seconds to wait before counting another knock. If you set it too HIGH, then two knocks will be counted as one.
+MIN_TIME_BETWEEN_SETS: float   = 0.75  # Minimum required gap (in sec.) between sets of knocks. E.g. {X,X,X} (gap) {X,X} would be 3, 2 (and not "5"). If you set it too low, it will be hard to reliably create "sets" of knocks instead of a bunch of single knocks.
+FULL_RESET_TIMEOUT: int        = 5     # Reset the code after this many seconds of silence. Possibly not actually needed.
+FINAL_SILENCE_REQUIRED: float  = (MIN_TIME_BETWEEN_SETS + 0.25)  # Register a code only after silence at least THIS long
 
 """Converts a percent (number) into a color. Loud = red, medium = yellow, quiet = green."""
 def color_for_pct(p: int | float):
@@ -60,9 +59,6 @@ def color_for_pct(p: int | float):
     if p <= 20:
         return color.y
     return color.r
-
-BUFFER_SIZE: int = 100  # Keep track of the last N volumes. Only matters when `--verbose` is on.
-RECALCULATE_MAX_EVERY: int = 10 # Recalculate the max voulume every ~N runs through the loop, just to be every so slightly less wasteful. Only matters when `--verbose` is on.
 
 def int_percent(x):
     try:
@@ -92,10 +88,6 @@ def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock
     assert knock_pct_threshold >= 0 and knock_pct_threshold <= 100, "knock_pct_threshold must be in [0, 100]"
     assert isinstance(secret_knock_code, list) and all(isinstance(x, int) for x in secret_knock_code), "secret_knock_code should be an array of ints"
 
-    last_n_volumes         = np.zeros(BUFFER_SIZE, dtype=np.int8)  # Stored as percentages (rounded to integers).
-    buffer_index: int      = 0
-    max_recent_volume: int = 0
-
     currently_in_a_knock: bool  = False
     last_knock_time: float      = 0.0
     current_knock_count: int    = 0
@@ -121,8 +113,7 @@ def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock
         # Volume level is `root mean squared` (rms), NOT just the average of the sound wave. Note that the (naive) mean can be negative.
         audio_data = np.frombuffer(data, dtype=AUDIO_DTYPE) # (Make a numpy array
         rms = np.sqrt(np.mean(audio_data.astype(float)**2)) * rescale_volume  # rms should be in [0, 1]
-        # Convert to percent (clamped at 100%). This is a holdover from when I was doing everything in percent space.
-        pct: float = 100.0 * min(1, rms)
+        pct: float = 100.0 * min(1, rms)  # Convert to percent (clamped at 100%). This is a holdover from when I was doing everything in percent space.
         
         now: float = time.time()
         time_since_last_knock: float = now - last_knock_time
@@ -160,27 +151,15 @@ def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock
         if knock_seq and ((time_since_last_knock > FULL_RESET_TIMEOUT) or len(knock_seq) > max_knock_sets_to_record_before_resetting):
             knock_seq = []
         
-        # ---------------------- PRINT THE PERCANTAGE NICELY ----------------
+        # ---------------------- PRINT THE VOLUME BAR NICELY ----------------
         if VERBOSE:
             audio_color = color_for_pct(pct)
             bar_chars: str = "#" * int(pct / (100 / MAX_VOLUME_BAR_WIDTH))
             blanks: str = " " * (MAX_VOLUME_BAR_WIDTH - len(bar_chars))
-
             right_aligned_rms = f"{rms:>8.6f}"  # The ":>8" should right-justify the result, I think it's (whole number + period + 6 fraction digits)
-
-            # Here we will super inefficiently recalculate the max value every N runs through the loop, instead of on every loop
-            if buffer_index % RECALCULATE_MAX_EVERY == 0:
-                max_recent_volume = int(np.max(last_n_volumes))
-
-            right_aligned_max = f"{max_recent_volume:>3}%"  # The ":>3" right-justifies the result
-            max_color = color_for_pct(max_recent_volume)
-
             # Note the leading '\r\ to overwrite the same line in the terminal. Still makes a newline if the terminal is narrow.
             # ">5" right-aligns the percentage in a 5-digit-wide field.
-            print(f"\rLevel: {audio_color}{pct:>5.1f}% {bar_chars}{blanks}{right_aligned_rms}"
-                + f" {max_color}{right_aligned_max}{color.reset}", flush=True, end="")
-            last_n_volumes[buffer_index] = int(pct)
-            buffer_index = (buffer_index + 1) % BUFFER_SIZE  # Point to the next element...
+            print(f"\rLevel: {audio_color}{pct:>5.1f}% {bar_chars}{blanks}{right_aligned_rms} {color.reset}", flush=True, end="")
             pass
         # -------------------- DONE with printing and printed-related bookkeeping -----
 
