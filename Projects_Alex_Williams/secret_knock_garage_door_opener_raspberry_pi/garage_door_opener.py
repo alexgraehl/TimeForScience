@@ -25,13 +25,17 @@ import gpiozero
 import pyaudio
 import numpy as np
 
+IS_DRY_RUN: int = False
+VERBOSE: bool   = False
+
+"""Escape sequence for terminal colors."""
 class color:
-    g = '\033[92m' # GREEN
-    y = '\033[93m' # YELLOW
-    r = '\033[91m' # RED
+    g     = '\033[92m' # GREEN
+    y     = '\033[93m' # YELLOW
+    r     = '\033[91m' # RED
     reset = '\033[0m'
 
-BUTTON_PRESS_TIME_SEC: int = 1  # How long to press the garage door button
+BUTTON_PRESS_TIME_SEC:   float = 0.5  # How long to press the garage door button
 PULL_PIN_LOW_TO_ACTIVATE: bool = True  # Hard-coded. Right now we hard-code that we set the pin to LOW to activate it. Could be refactored.
 
 FORMAT                    = pyaudio.paFloat32
@@ -47,11 +51,7 @@ MAX_VOLUME_BAR_WIDTH: int = 50     # Max number of characters for the volume bar
 MIN_KNOCK_LENGTH: float      = 0.05  # Absolute minimum number of seconds to wait before counting another knock. If you set it too HIGH, then two knocks will be counted as one.
 MIN_TIME_BETWEEN_SETS: float = 0.5   # Minimum required gap (in sec.) between sets of knocks. E.g. {X,X,X} (gap) {X,X} would be 3, 2 (and not "5"). If you set it too low, it will be hard to reliably create "sets" of knocks instead of a bunch of single knocks.
 FULL_RESET_TIMEOUT: int      = 5     # Reset the code after this many seconds of silence. Possibly not actually needed.
-
-FINAL_SILENCE_REQUIRED: int = 1  # Register a code only after silence at least THIS long
-
-IS_DRY_RUN: int = False
-VERBOSE: bool = False
+FINAL_SILENCE_REQUIRED: int  = 1  # Register a code only after silence at least THIS long
 
 """Converts a percent (number) into a color. Loud = red, medium = yellow, quiet = green."""
 def color_for_pct(p: int | float):
@@ -92,14 +92,14 @@ def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock
     assert knock_pct_threshold >= 0 and knock_pct_threshold <= 100, "knock_pct_threshold must be in [0, 100]"
     assert isinstance(secret_knock_code, list) and all(isinstance(x, int) for x in secret_knock_code), "secret_knock_code should be an array of ints"
 
-    last_n_volumes = np.zeros(BUFFER_SIZE, dtype=np.int8)
-    buffer_index: int = 0
+    last_n_volumes         = np.zeros(BUFFER_SIZE, dtype=np.int8)  # Stored as percentages (rounded to integers).
+    buffer_index: int      = 0
     max_recent_volume: int = 0
 
-    currently_in_a_knock: bool = False
-    last_knock_time = 0
-    current_knock_count = 0
-    current_sequence = []
+    currently_in_a_knock: bool  = False
+    last_knock_time: float      = 0.0
+    current_knock_count: int    = 0
+    knock_seq: list[int] = []
 
     max_knock_sets_to_record_before_resetting: int = len(secret_knock_code) * 20  # Just make sure we don't keep track of knock sets forever if there's a woodpecker or something
 
@@ -143,22 +143,22 @@ def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock
             silence_duration = now - last_knock_time  # Reset the silence duration so we don't terminate early.
             # Finished a knock set
             if silence_duration > MIN_TIME_BETWEEN_SETS:
-                current_sequence.append(current_knock_count)
-                print(f"Added this digit: {current_knock_count}. Knock sequence is now: {current_sequence}")
+                knock_seq.append(current_knock_count)
+                print(f"{silence_duration=} Added [{current_knock_count}], so now {knock_seq=}")
                 current_knock_count = 0
                     
-        if current_sequence and time_since_last_knock > FINAL_SILENCE_REQUIRED:
-            if secret_code_found_in_suffix(secret_code=secret_knock_code, entire_knock_sequence=current_sequence):
-                print(f"Found the code ({secret_knock_code}) at the end of this current sequence of knocks ({current_sequence})")
+        if knock_seq and time_since_last_knock > FINAL_SILENCE_REQUIRED:
+            if secret_code_found_in_suffix(secret_code=secret_knock_code, entire_knock_sequence=knock_seq):
+                print(f"Found {secret_knock_code=}) at the end of {knock_seq=})")
                 press_garage_door_button(pin_obj, press_time_sec=BUTTON_PRESS_TIME_SEC)
-                current_sequence = [] # Reset for next attempt
+                knock_seq = [] # Reset for next attempt
             else:
-                if (last_code_we_printed != current_sequence):
-                    print(f"Rejected this code: {current_sequence}.    We expected this one: {secret_knock_code}\n")
-                    last_code_we_printed = current_sequence # Just so we don't spam the logs with "rejected this code..." over and over
+                if (last_code_we_printed != knock_seq):
+                    print(f"Rejected this code: {knock_seq}.    We expected this one: {secret_knock_code}\n")
+                    last_code_we_printed = knock_seq # Just so we don't spam the logs with "rejected this code..." over and over
             
-        if current_sequence and ((time_since_last_knock > FULL_RESET_TIMEOUT) or len(current_sequence) > max_knock_sets_to_record_before_resetting):
-            current_sequence = []
+        if knock_seq and ((time_since_last_knock > FULL_RESET_TIMEOUT) or len(knock_seq) > max_knock_sets_to_record_before_resetting):
+            knock_seq = []
         
         # ---------------------- PRINT THE PERCANTAGE NICELY ----------------
         if VERBOSE:
@@ -204,7 +204,7 @@ Args:
                    toggling the pin to 0 volts (see the `active_is_low` parameter in the initialization of the OutputDevice.)
     press_time_sec: How long to keep the states switched.
 """
-def press_garage_door_button(pin_obj: gpiozero.OutputDevice | None, press_time_sec: int):
+def press_garage_door_button(pin_obj: gpiozero.OutputDevice | None, press_time_sec: float):
     if IS_DRY_RUN:
         print("⭐️⚠️⭐️ DRY RUN: NOT PUSHING THE BUTTON")
         return
