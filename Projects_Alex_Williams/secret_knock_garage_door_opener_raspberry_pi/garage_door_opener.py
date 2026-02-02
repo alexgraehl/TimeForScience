@@ -17,11 +17,13 @@
 # 3. Then, every time you want to run this script:
 #    source venv/bin/activate   # (To pick up `pyaudio` and `numpy`)
 
+import asyncio
 import sys
 import time
 import argparse
 import datetime
 
+import bleak  # For bluetooth device filtering
 import gpiozero
 import pyaudio
 import numpy as np
@@ -221,6 +223,26 @@ def open_and_write_to_log(log_file_path: str, message: str) -> None:
     except Exception as e:
         print(f"Couldn't append a log entry to {log_file_path=}: {e}")
 
+
+async def print_all_nearby_bluetooth_devices() -> None:
+    BLUETOOTH_SCAN_TIME_SEC: float = 5
+    print(f"Spending {BLUETOOTH_SCAN_TIME_SEC} seconds to scan for nearby BLUETOOTH devices...")
+    try:
+        devices = await bleak.BleakScanner.discover(return_adv=True, timeout=BLUETOOTH_SCAN_TIME_SEC)
+    except bleak.exc.BleakError as e:
+        print(f"BLUETOOTH is unavailable for some reason. Maybe it was turned off? The exception: {e}")
+        raise e
+    
+    if not devices:
+        print("No Bluetooth devices were found in range! This is unusual.")
+        return
+    
+    for address, (device, adv_data) in devices.items():
+        print(f"ID: {address}  |   RSSI_SIGNAL: {adv_data.rssi:>4}  |   NAME: {device.name}")
+        #                                                     ^ (right-aligned text)
+
+    return
+
 def main():
     parser = argparse.ArgumentParser(description="Audio Handleroo")
     parser.add_argument("--code",                 type=str_with_digits_from_1_to_9_only, default="", help="Required. Secret code in single-digits of knocks. E.g. 123 = {1, 2, 3 knocks}.")
@@ -230,6 +252,7 @@ def main():
     parser.add_argument("--gpio_pin_to_pull_low", type=str,         default="GPIO4", help=f"The pin to pull LOW for {BUTTON_PRESS_TIME_SEC} second(s) to open/close the garage door.")
     parser.add_argument("--log",                  type=str,         default="", help="Default: no log. If specified, log garage-door button-press actions to this file. Note that opening/closing cannot be distinguished.")
 
+    parser.add_argument("--run_bluetooth_scan",    action='store_true', help="Option for helping you find the appropriate bluetooth devices to whitelist. If true, runs a scanner ONCE for 5 seconds and then prints the results and exits.")
     parser.add_argument("--debug_test_button_now", action='store_true', help="Debug option. Press the button and then exit.")
     parser.add_argument("--run_unit_tests"       , action='store_true', help="Run our rather informal unit tests")
     parser.add_argument("--dry"                  , action='store_true', help="If true, do NOT actually activate the garage door opener")
@@ -239,6 +262,11 @@ def main():
 
     if args.run_unit_tests:
         unit_tests()
+
+    if args.run_bluetooth_scan:
+        asyncio.run(print_all_nearby_bluetooth_devices())
+        print("DONE listing nearby bluetooth devices. Exiting WITHOUT running anything else.")
+        sys.exit(0)
 
     assert args.pause_time >= 0.2 and args.pause_time <= 10, f"Your --pause_time must be some 'normal' number of seconds between 0.2 and 10 seconds, not `{args.pause_time=}`"
 
@@ -259,7 +287,7 @@ def main():
     print(f"""  * GPIO pin (pull low):    {args.gpio_pin_to_pull_low}""")
     print(f"""  * Log file path (if any): {args.log}""")
 
-    # Check to see if we can write to the log at all
+    # Verify that we can write to the log, so we don't fail the first time we ACTUALLY want to write to the log.
     open_and_write_to_log(LOG_FILE_PATH, "<Starting program>")
 
     if IS_DRY_RUN:
@@ -284,6 +312,7 @@ def main():
     except KeyboardInterrupt:
         print("\n\n⚠️ User pressed Ctrl-C, so we're quitting!")
     finally:
+        open_and_write_to_log(LOG_FILE_PATH, "<Exiting program after running the normal detection loop>")
         pass
 
 if __name__ == "__main__":
