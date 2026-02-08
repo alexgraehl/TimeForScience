@@ -18,26 +18,49 @@
 #    source venv/bin/activate   # (To pick up `pyaudio` and `numpy`)
 
 import asyncio
+import enum
 import re
 import sys
 import time
 import argparse
 import datetime
-from typing import Collection
+from dataclasses import dataclass
+from typing import Collection, Sequence
 
 import bleak  # For bluetooth device filtering
 import gpiozero
 import pyaudio
 import numpy as np
+class BluetoothIdType(enum.StrEnum):
+    NAME = "BT_Name"  # Indicates that this ID is a "common" name for a Bluetooth device, like "Joe's iPhone 17"
+    ADDR = "BT_Addr"  # Indicates that this ID is a Bluetooth address, with a format like "AA9DBB91-1442-ABCD-EF12-AAAABBBE8CCC"
 
-IS_DRY_RUN: int = False
-VERBOSE: bool   = False
+@dataclass
+class BluetoothDeviceInfo:
+    id_type: BluetoothIdType
+    time_last_seen: float
 
-LOG_FILE_PATH: str = ""
+DeviceDictType = dict[str, BluetoothDeviceInfo]
+
+# This will be modified as a GLOBAL variable by the bluetooth scanner task.
+RECENT_BLUETOOTH_DEVICES        : DeviceDictType = {}
+MAX_BT_DEVICES_TO_REMEMBER      : int = 250  # If `RECENT_BLUETOOTH_DEVICES` is larger than this, then we'll prune old entries. Just to keep the device list from accumulating forever.
+DEVICE_PRUNING_THRESHOLD_SEC    : int = 120  # If we exceed the `MAX_BT_DEVICES_TO_REMEMBER`, then prune any entries older than this amount.
+BLUETOOTH_RECENCY_REQUIREMNT_SEC: int = 60   # Must have seen the device in the last N seconds to count it as "recently" enough to open the garage door.
+
+# Time to give up control in the audio 'main' loop. Must be quite LOW in order to reliably pick up knocks.
+# Note that this CAN be zero if you want, which means "do it as fast as possible."
+SLEEP_TIME_IN_AUDIO_LOOP           : float = 0.001  
+SLEEP_TIME_IN_BLUETOOTH_FINDER_LOOP: float = 1  # Check nearby bluetooth devices every this many seconds. A good value is probably like 10-20.
+
+IS_DRY_RUN       : int  = False
+VERBOSE          : bool = False
+VERBOSE_BLUETOOTH: bool = False  # Super verbose logging specifically for Bluetooth
+LOG_FILE_PATH    : str  = ""     # (If this is the empty string, then don't log)
 
 # Characters that we replace with '.' when checking for Bluetooth device names. Anything matching here will be replaced by an `UNSAFE_CHAR_REPLACEMENT` char.
 UNSAFE_CHAR_MATCHER: str = "[^-~A-Za-z0-9_ .]"
-SAFER_REPLACEMENT: str = "."
+SAFER_REPLACEMENT  : str = "."
 
 """Escape sequence for terminal colors."""
 class color:
@@ -64,6 +87,16 @@ MIN_KNOCK_LENGTH: float        = 0.05  # Absolute minimum number of seconds to w
 def verbose_print(*args, **kwargs):
     if VERBOSE:
         print(*args, **kwargs)
+
+"""Prints iff VERBOSE_BLUETOOTH (global variable) is True."""
+def verbose_bluetooth_print(*args, **kwargs):
+    if VERBOSE_BLUETOOTH:
+        print(*args, **kwargs)
+
+
+"""Prunes the RECENT_BLUETOOTH_DEVICES dictionary, in case it gets too large."""
+def pruned_copy_only_entries_after_time(device_dict: DeviceDictType, cutoff_time: float) -> DeviceDictType:
+    return {key:val for key, val in device_dict.items() if val.time_last_seen >= cutoff_time}
 
 """Converts a percent (number) into a color. Loud = red, medium = yellow, quiet = green."""
 def color_for_pct(p: int | float):
@@ -93,24 +126,70 @@ def int_percent(x) -> int:
         return x
     raise argparse.ArgumentTypeError(f"{x} is not a valid value for this argument: it must be in the range [1, 100]")
 
-def str_with_digits_from_1_to_9_only(x: str) -> str:
-    if not x:
-        raise argparse.ArgumentTypeError(f"Hey! You MUST specify a value for this argument: it cannot be `None` or the empty string.")
-    if str(x).isdigit() and ('0' not in str(x)):
-        return x
-    raise argparse.ArgumentTypeError(f"'{x}' must consist ONLY of the digits 1-9 and nothing else.")
+def type_tuple_of_digits_1_to_9_from_str(in_arg: str) -> tuple[int, ...]:  # Get tuple of digits from 1 through 9 (excluding zero!). E.g. input of "123" becomes [1, 2, 3]. CANNOT contain a 0.
+    if not in_arg or (not in_arg.isdigit()) or ('0' in in_arg):
+        raise argparse.ArgumentTypeError(f"This argument requires a string input consisting of the digits 1-9 only (not zero). The INCORRECT argument we got was \"{in_arg}\".")
+    return tuple(int(d) for d in in_arg)  # Return a tuple of ints
 
-# Check to see if secret_code is a suffix of entire_knock_sequence.
-# E.g. if secret_code = [1,2] and entire_knock_sequence = [9,9,1,4,2,1,2], then it's true (ends in '1,2')
-def secret_code_found_in_suffix(secret_code: list[int], entire_knock_sequence: list[int]):
-    if not entire_knock_sequence or len(entire_knock_sequence) < len(secret_code):
+
+"""Check to see if suffix is both non-empty AND is a suffix of `full_seq`.
+
+E.g. if suffix = [1,2] and full_seq = [9,9,1,4,2,1,2], then it's true (ends in '1,2')
+Notably always returns False if the input suffix is zero-length, which may be surprising. (i.e. `[]` is not a valid suffix of `[1,2]`).
+"""
+def suffix_found(suffix: Sequence[int], full_seq: Sequence[int]):
+    if not suffix or len(suffix) > len(full_seq):
         return False  # Not long enough!
-    return entire_knock_sequence[-len(secret_code):] == secret_code  # Check just the suffix
+    return full_seq[-len(suffix):] == suffix  # Check just the suffix
 
 
-def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock_code: list[int], pin_obj: gpiozero.OutputDevice, required_pause_time: float):
+async def infinite_loop_bluetooth_scanner(required_bluetooth_names: Collection[str], sanitize_bt_device_names: bool):
+    """When the scanners sees a particular Bluetooth device, it indicates when it was last seen.
+    Every so often, we'll clear out anything in the RECENT_DEVICES map that hasn't been seen in a while.
+    """
+    def bluetooth_detected_device_callback(device, adv_data):
+        global RECENT_BLUETOOTH_DEVICES  # <-- Required since we may be overwriting RECENT_BLUETOOTH_DEVICES
+        verbose_bluetooth_print(f"Saw this Bluetooth info:      {device.address=}")
+        verbose_bluetooth_print(f"                 ...and:         {device.name=}")
+        verbose_bluetooth_print(f"                 ...and: {adv_data.local_name=}")
+        common_name: str = device.name or adv_data.local_name or ""
+
+        if common_name:
+            if sanitize_bt_device_names:
+                common_name = replace_potentially_unsafe_chars(common_name, unsafe_char_regexp=UNSAFE_CHAR_MATCHER, replacement_char=SAFER_REPLACEMENT)
+                pass
+            now: float = time.time()
+            RECENT_BLUETOOTH_DEVICES[common_name] = BluetoothDeviceInfo(id_type=BluetoothIdType.NAME, time_last_seen=now)
+            is_recent_devices_too_big: bool = (len(RECENT_BLUETOOTH_DEVICES) > MAX_BT_DEVICES_TO_REMEMBER)
+            if is_recent_devices_too_big:  # We 'delete' the old items by just making a new dictionary with only the passing-the-filter items.
+                RECENT_BLUETOOTH_DEVICES = pruned_copy_only_entries_after_time(RECENT_BLUETOOTH_DEVICES, cutoff_time=(now - DEVICE_PRUNING_THRESHOLD_SEC))
+
+            if VERBOSE_BLUETOOTH:
+                print_device_dict(RECENT_BLUETOOTH_DEVICES)
+                # Check to see if any of the devices is in our special whitelist
+                seen_names: Collection[str] = RECENT_BLUETOOTH_DEVICES.keys()
+                matched_device_name: str | None = first_matched_bluetooth_name(allowed_regexes=required_bluetooth_names, actual_device_values=seen_names)
+                if not matched_device_name:
+                    verbose_bluetooth_print("NO MATCHING DEVICES")
+                else:
+                    device_info = RECENT_BLUETOOTH_DEVICES[matched_device_name]
+                    time_since_seen: float = device_info.time_last_seen - now
+                    verbose_bluetooth_print(f"""Found a match: device "{matched_device_name}" was seen at {device_info.time_last_seen:.2f} ({time_since_seen:.2f} seconds ago)""")
+
+        return
+        
+    continuous_bluetooth_scanner = bleak.BleakScanner(detection_callback=bluetooth_detected_device_callback)
+    await continuous_bluetooth_scanner.start()
+    try:
+        while True:
+            await asyncio.sleep(delay=SLEEP_TIME_IN_BLUETOOTH_FINDER_LOOP)
+    finally:
+        verbose_bluetooth_print("\nShutting down the Bluetooth scanner...")
+        await continuous_bluetooth_scanner.stop()  # Prevents segfault on exit
+
+"""Note that 'infinite_loop_audio_listener' is basically the main loop. See the "while True" in it."""
+async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshold: float, secret_knock_code: Sequence[int], pin_obj: gpiozero.OutputDevice, required_pause_time: float):
     assert knock_pct_threshold >= 0 and knock_pct_threshold <= 100, "knock_pct_threshold must be in [0, 100]"
-    assert isinstance(secret_knock_code, list) and all(isinstance(x, int) for x in secret_knock_code), "secret_knock_code should be an array of ints"
 
     currently_in_a_knock: bool  = False
     last_knock_time: float      = 0.0
@@ -118,79 +197,81 @@ def handle_audio(rescale_volume: float, knock_pct_threshold: float, secret_knock
     knock_seq: list[int] = []
 
     max_knock_sets_to_record_before_resetting: int = len(secret_knock_code) * 20  # Just make sure we don't keep track of knock sets forever if there's a woodpecker or something
-
     last_code_we_printed = []  # Just remember the last code we updated the user about, so we don't keep spamming the logs
 
     audio_stream = init_audio_stream()
-    while True:
-        try:
-            data = audio_stream.read(CHUNK, exception_on_overflow=False)
-        except KeyboardInterrupt:
-            raise  # Abort if there's a keyboard interrupt
-        except: # Tolerate anything ELSE...
-            # If it fails due to some kind of technical issue with the audio system, try to re-initialize the stream.
-            # May or may not actually help, but allegedly this can occur intermittently.
-            print("Re-initializing the audio stream...")
-            audio_stream = init_audio_stream()
-            continue  # Back to the top of the loop
-                
-        # Volume level is `root mean squared` (rms), NOT just the average of the sound wave. Note that the (naive) mean can be negative.
-        audio_data = np.frombuffer(data, dtype=AUDIO_DTYPE) # (Make a numpy array
-        rms = np.sqrt(np.mean(audio_data.astype(float)**2)) * rescale_volume  # rms should be in [0, 1]
-        pct: float = 100.0 * min(1, rms)  # Convert to percent (clamped at 100%). This is a holdover from when I was doing everything in percent space.
-        
-        now: float = time.time()
-        time_since_last_knock: float = now - last_knock_time
-        if (pct > knock_pct_threshold) and not currently_in_a_knock:
-            if time_since_last_knock < MIN_KNOCK_LENGTH:
-                pass # We're still in the current knock! Don't double-count it.
-            else:
-                currently_in_a_knock = True
-                current_knock_count += 1
-                print(f"KNOCK: {current_knock_count}")
-                last_knock_time = now
-                time_since_last_knock = now - last_knock_time  # Recompute time_since_last_knock for the benefit of the code below. (Probably there's a more elegant way to do this)
+    try:
+        while True:
+            try:
+                data = audio_stream.read(CHUNK, exception_on_overflow=False)
+            except KeyboardInterrupt:
+                raise  # Abort if there's a keyboard interrupt
+            except: # Tolerate anything ELSE...
+                # If it fails due to some kind of technical issue with the audio system, try to re-initialize the stream.
+                # May or may not actually help, but allegedly this can occur intermittently.
+                print("Re-initializing the audio stream...")
+                audio_stream = init_audio_stream()
+                continue  # Back to the top of the loop
+                    
+            # Volume level is `root mean squared` (rms), NOT just the average of the sound wave. Note that the (naive) mean can be negative.
+            audio_data = np.frombuffer(data, dtype=AUDIO_DTYPE) # (Make a numpy array
+            rms = np.sqrt(np.mean(audio_data.astype(float)**2)) * rescale_volume  # rms should be in [0, 1]
+            pct: float = 100.0 * min(1, rms)  # Convert to percent (clamped at 100%). This is a holdover from when I was doing everything in percent space.
+            
+            now: float = time.time()
+            time_since_last_knock: float = now - last_knock_time
+            if (pct > knock_pct_threshold) and not currently_in_a_knock:
+                if time_since_last_knock < MIN_KNOCK_LENGTH:
+                    pass # We're still in the current knock! Don't double-count it.
+                else:
+                    currently_in_a_knock = True
+                    current_knock_count += 1
+                    print(f"KNOCK: {current_knock_count}")
+                    last_knock_time = now
+                    time_since_last_knock = now - last_knock_time  # Recompute time_since_last_knock for the benefit of the code below. (Probably there's a more elegant way to do this)
 
-        # See if the current knock is now "done" being loud (volume < 50% of threshold AND it hasn't been a ludicrously short amount of time) (and prepare us to count the next one)
-        if (pct < knock_pct_threshold * 0.5 and time_since_last_knock >= MIN_KNOCK_LENGTH):
-            currently_in_a_knock = False
+            # See if the current knock is now "done" being loud (volume < 50% of threshold AND it hasn't been a ludicrously short amount of time) (and prepare us to count the next one)
+            if (pct < knock_pct_threshold * 0.5 and time_since_last_knock >= MIN_KNOCK_LENGTH):
+                currently_in_a_knock = False
 
-        if current_knock_count > 0:
-            if time_since_last_knock > required_pause_time:  # Finished a set of knocks! In a perfect world, maybe we'd look at AVERAGE time between knocks and actually set this to (average * 2) or something.
-                knock_seq.append(current_knock_count)
-                print(f"{time_since_last_knock=} Added [{current_knock_count}], so now {knock_seq=}")
-                current_knock_count = 0
-        
+            if current_knock_count > 0:
+                if time_since_last_knock > required_pause_time:  # Finished a set of knocks! In a perfect world, maybe we'd look at AVERAGE time between knocks and actually set this to (average * 2) or something.
+                    knock_seq.append(current_knock_count)
+                    print(f"{time_since_last_knock=} Added [{current_knock_count}], so now {knock_seq=}")
+                    current_knock_count = 0
+            
+            final_silence_required_before_activating_garage = required_pause_time  # Same as the normal pause time
+            if knock_seq and time_since_last_knock > final_silence_required_before_activating_garage:
+                if suffix_found(suffix=secret_knock_code, full_seq=knock_seq):
+                    print(f"Found {secret_knock_code=}) at the end of {knock_seq=})")
+                    press_garage_door_button(pin_obj, press_time_sec=BUTTON_PRESS_TIME_SEC)
+                    knock_seq = [] # Reset for next attempt
+                else:
+                    if (last_code_we_printed != knock_seq):
+                        print(f"Rejected this code: {knock_seq}.    We expected this one: {secret_knock_code}\n")
+                        last_code_we_printed = knock_seq # Just so we don't spam the logs with "rejected this code..." over and over
+            
+            full_reset_timeout: float = required_pause_time * 10   # Reset the code after this many seconds of silence. Possibly not actually needed.
+            if knock_seq and ((time_since_last_knock > full_reset_timeout) or len(knock_seq) > max_knock_sets_to_record_before_resetting):
+                knock_seq = []
+            
+            # ---------------------- PRINT THE VOLUME BAR NICELY ----------------
+            if VERBOSE:
+                audio_color = color_for_pct(pct)
+                bar_chars: str = "#" * int(pct / (100 / MAX_VOLUME_BAR_WIDTH))
+                blanks: str = " " * (MAX_VOLUME_BAR_WIDTH - len(bar_chars))
+                right_aligned_rms = f"{rms:>8.6f}"  # The ":>8" should right-justify the result, I think it's (whole number + period + 6 fraction digits)
+                # Note the leading '\r\ to overwrite the same line in the terminal. Still makes a newline if the terminal is narrow.
+                # ">5" right-aligns the percentage in a 5-digit-wide field.
+                print(f"\rLevel: {audio_color}{pct:>5.1f}% {bar_chars}{blanks}{right_aligned_rms} {color.reset}", flush=True, end="")
+                pass
+            # -------------------- DONE with printing and printed-related bookkeeping -----
 
-        final_silence_required_before_activating_garage = required_pause_time  # Same as the normal pause time
-        if knock_seq and time_since_last_knock > final_silence_required_before_activating_garage:
-            if secret_code_found_in_suffix(secret_code=secret_knock_code, entire_knock_sequence=knock_seq):
-                print(f"Found {secret_knock_code=}) at the end of {knock_seq=})")
-                press_garage_door_button(pin_obj, press_time_sec=BUTTON_PRESS_TIME_SEC)
-                knock_seq = [] # Reset for next attempt
-            else:
-                if (last_code_we_printed != knock_seq):
-                    print(f"Rejected this code: {knock_seq}.    We expected this one: {secret_knock_code}\n")
-                    last_code_we_printed = knock_seq # Just so we don't spam the logs with "rejected this code..." over and over
-        
-        full_reset_timeout: float = required_pause_time * 10   # Reset the code after this many seconds of silence. Possibly not actually needed.
-        if knock_seq and ((time_since_last_knock > full_reset_timeout) or len(knock_seq) > max_knock_sets_to_record_before_resetting):
-            knock_seq = []
-        
-        # ---------------------- PRINT THE VOLUME BAR NICELY ----------------
-        if VERBOSE:
-            audio_color = color_for_pct(pct)
-            bar_chars: str = "#" * int(pct / (100 / MAX_VOLUME_BAR_WIDTH))
-            blanks: str = " " * (MAX_VOLUME_BAR_WIDTH - len(bar_chars))
-            right_aligned_rms = f"{rms:>8.6f}"  # The ":>8" should right-justify the result, I think it's (whole number + period + 6 fraction digits)
-            # Note the leading '\r\ to overwrite the same line in the terminal. Still makes a newline if the terminal is narrow.
-            # ">5" right-aligns the percentage in a 5-digit-wide field.
-            print(f"\rLevel: {audio_color}{pct:>5.1f}% {bar_chars}{blanks}{right_aligned_rms} {color.reset}", flush=True, end="")
-            pass
-        # -------------------- DONE with printing and printed-related bookkeeping -----
-
-        pass # End of infinite loop
-    return
+            await asyncio.sleep(0.05) # End of infinite loop
+            pass # End of "while True"
+    finally:
+        audio_stream.stop_stream()
+        audio_stream.close()  # Prevents segfault on exit
 
 """Press the button.
 
@@ -284,49 +365,72 @@ async def get_nearby_bluetooth_device_names(sanitize_output: bool=True) -> set[s
 
 """Returns whether or not our 'nearby Bluetooth device name' requirement is met.
 
-required_names: If empty, then this function ALWAYS returns true (always matches). Otherwise, returns whether any regex in 'required_name_regexes' matches any of the actual names.
+required_names: If empty, then this function ALWAYS returns the verbatim text "TRIVIALLY_MATCHES" (always matches).
+                Otherwise, returns THE FIRST actual matched value, if any, or None if there is no match.
 """
-def bluetooth_match_satisfied(required_name_regexes: Collection[str], actual_names: Collection[str]) -> bool:
-    if not required_name_regexes:
-        return True # No requirement, so always return true
-    for pattern in required_name_regexes:
-        for name in actual_names:
+def first_matched_bluetooth_name(allowed_regexes: Collection[str], actual_device_values: Collection[str]) -> str | None:
+    if not allowed_regexes:
+        return "TRIVIALLY_MATCHES" # No requirement, so always return true
+    for pattern in allowed_regexes:
+        for name in actual_device_values:
             if re.fullmatch(pattern, name):
-                verbose_print(f"""The nearby Bluetooth device named '{name}' matched the required regex pattern '{pattern}'""")
-                return True
-    verbose_print(f"""No nearby Bluetooth device matched any of our naming requirements!""")
-    return False
+                verbose_bluetooth_print(f"""🟦✅🟦 The nearby Bluetooth device named '{name}' matched the required regex pattern '{pattern}'""")
+                return name  # Return (verbatim) the first actual matched name.
+    verbose_bluetooth_print(f"""🟦❌🟦 No nearby Bluetooth device matched any of our naming requirements!""")
+    return None # No match
+
+def print_device_dict(d: DeviceDictType):
+    now: float = time.time()
+    for name,v in d.items():
+        print(f"""{v.time_last_seen::>13.1f}  | {(now - v.time_last_seen):>8.1f} sec ago  |  {v.id_type}  |  {name}""")
 
 
 def unit_tests() -> None:
-    assert secret_code_found_in_suffix([1,2,3], [1,2,3]), "Exact should match"
-    assert secret_code_found_in_suffix([1,2,3], [4, 1,2,3]), "Suffix should match"
-    assert not secret_code_found_in_suffix([1,2,3], [1,2,3,4]), "Not a suffix: should not match"
-    assert not secret_code_found_in_suffix([], [1,2,3,4]), "Empty secret code should not match"
-    assert not secret_code_found_in_suffix([], []), "Empty/empty should not match"
+    assert suffix_found([1,2,3], [1,2,3]), "Exact should match"
+    assert suffix_found([1,2,3], [4, 1,2,3]), "Suffix should match"
+    assert not suffix_found([1,2,3], [1,2,3,4]), "Not a suffix: should not match"
+    assert not suffix_found([], [1,2,3,4]), "Empty secret code should not match"
+    assert not suffix_found([], []), "Empty/empty should not match"
     assert type_csv("") == [], "Empty string should make an empty list, not ['']"
     assert type_csv("  11,  22  ,33  ") == ["11","22","33"], "Normal splitting"
     assert type_csv("  aaa a ") == ["aaa a"], "Normal splitting"
-    assert bluetooth_match_satisfied(required_name_regexes=[".*"],     actual_names=[""]), "Dot-star should match the empty string."
-    assert bluetooth_match_satisfied(required_name_regexes=[],         actual_names=[]), "Empty required name regexes should even match an empty list of actual names."
-    assert not bluetooth_match_satisfied(required_name_regexes=[".*"], actual_names=[]), "Empty actual names doesn't match a non-empty required regex."
-    assert bluetooth_match_satisfied(required_name_regexes=["zzz", ".*Cool.*"], actual_names=["ACoolPhone"])
-    assert bluetooth_match_satisfied(required_name_regexes=["zzz", "Cool.*"], actual_names=["CoolPhone"])
-    assert not bluetooth_match_satisfied(required_name_regexes=["zzz", ".*Cool"], actual_names=["CoolPhone"])
-    assert not bluetooth_match_satisfied(required_name_regexes=["a"], actual_names=["aa"]), "'a' is an exact match only"
-    assert not bluetooth_match_satisfied(required_name_regexes=["A"], actual_names=["a"]), "'Case matters"
-    assert not bluetooth_match_satisfied(required_name_regexes=["zzz", ".*q"], actual_names=["CoolPhone", "zzzz", "zz", "z"]), "No match for three 'z's"
-    assert bluetooth_match_satisfied(required_name_regexes=["Z", ".*Cool Phone"], actual_names=["Joe's Cool Phone"]), "Should match"
-    assert bluetooth_match_satisfied(required_name_regexes=["Z", ".*Cool[ ]?Phone"], actual_names=["MyCoolPhone"]), "Should match due to the optional space"
+    assert type_tuple_of_digits_1_to_9_from_str("123")  == tuple((1,2,3))
+    assert type_tuple_of_digits_1_to_9_from_str("4321") == tuple((4,3,2,1))
+    assert type_tuple_of_digits_1_to_9_from_str("3")    == tuple((3,))
+    assert "" == first_matched_bluetooth_name(allowed_regexes=[".*"],     actual_device_values=[""]), "Dot-star should match the empty string."
+    assert True == bool(first_matched_bluetooth_name(allowed_regexes=[],         actual_device_values=[])), "Empty required name regexes should even match an empty list of actual names."
+    assert "ACoolPhone" == first_matched_bluetooth_name(allowed_regexes=["zzz", ".*Cool.*"], actual_device_values=["ACoolPhone"])
+    assert "CoolPhone" == first_matched_bluetooth_name(allowed_regexes=["zzz", "Cool.*"], actual_device_values=["CoolPhone"])
+    assert "Joe's Cool Phone" == first_matched_bluetooth_name(allowed_regexes=["Z", ".*Cool Phone"], actual_device_values=["Joe's Cool Phone", "Jane's Cool Phone"]), "Should match the first device name"
+    assert "MyCoolPhone" == first_matched_bluetooth_name(allowed_regexes=["Z", ".*Cool[ ]?Phone"], actual_device_values=["MyCoolPhone"]), "Should match due to the optional space"
+    assert not first_matched_bluetooth_name(allowed_regexes=[".*"], actual_device_values=[]), "Empty actual names doesn't match a non-empty required regex."
+    assert not first_matched_bluetooth_name(allowed_regexes=["zzz", ".*Cool"], actual_device_values=["CoolPhone"])
+    assert not first_matched_bluetooth_name(allowed_regexes=["a"], actual_device_values=["aa"]), "'a' is an exact match only"
+    assert not first_matched_bluetooth_name(allowed_regexes=["A"], actual_device_values=["a"]), "'Case matters"
+    assert not first_matched_bluetooth_name(allowed_regexes=["zzz", ".*q"], actual_device_values=["CoolPhone", "zzzz", "zz", "z"]), "No match for three 'z's"
     assert replace_potentially_unsafe_chars("Snåkeßß🟨a b c", unsafe_char_regexp="[^a-z ]", replacement_char="#") == "#n#ke###a b c"
     assert replace_potentially_unsafe_chars("", unsafe_char_regexp="[^a-z]", replacement_char="#") == ""
     print("✅✅ Ad-hoc unit tests have passed")
     return
 
 
+async def thread_runner(rescale_volume: float, knock_pct_threshold: int, secret_knock_code: Sequence[int], pin_obj, required_pause_time: float, required_bluetooth_names: Collection[str], sanitize_bt_device_names: bool):
+    bluetooth_scanner_task = asyncio.create_task(infinite_loop_bluetooth_scanner(required_bluetooth_names=required_bluetooth_names, sanitize_bt_device_names=True))  # Effectively runs in parallel
+    try:
+        # Audio handler is treated as the 'main' loop. It normally never returns.
+        await infinite_loop_audio_listener(  
+            rescale_volume=rescale_volume, 
+            knock_pct_threshold=knock_pct_threshold, 
+            secret_knock_code=secret_knock_code, 
+            pin_obj=pin_obj, 
+            required_pause_time=required_pause_time)
+    finally:
+        bluetooth_scanner_task.cancel()  # Stop the bluetooth scanner task if/when the audio "main" loop exits
+
+
 def main():
     parser = argparse.ArgumentParser(description="Audio Handleroo")
-    parser.add_argument("--code",                 type=str_with_digits_from_1_to_9_only, default="", help="Required. Secret code in single-digits of knocks. E.g. 123 = {1, 2, 3 knocks}.")
+    parser.add_argument("--code",                 type=type_tuple_of_digits_1_to_9_from_str, default=(), help="Required. Secret code in single-digits of knocks. E.g. 123 = {1, 2, 3 knocks}.")
     parser.add_argument("--scale",                type=float,       default="1.0",   help="[-Inf, Inf] Rescale the volume by this amount. Useful if the numbers seem 'off'")
     parser.add_argument("--knock",                type=int_percent, default="35",    help="[1, 100] Threshold for detecting a 'knock' event, from 1 (percent) to 100 (percent).")
     parser.add_argument("--pause_time",           type=float,       default="0.70",  help="Required pause time between 'sets' of knocks, in seconds. 0.5 is typically too short, and 0.8 is typically too long. Default is 0.70.")
@@ -334,13 +438,14 @@ def main():
     parser.add_argument("--log",                  type=str,         default="", help="Default: no log. If specified, log garage-door button-press actions to this file. Note that opening/closing cannot be distinguished.")
 
     parser.add_argument("--scan_for_bluetooth",             action='store_true', help="If true, runs a scanner ONCE for 5 seconds and then prints the results and exits. This is for helping you figure out the IDs associated with your specific Bluetooth devices of interest.")
-    parser.add_argument("--required_bluetooth_names",       type=type_csv,     help="One or more FULL MATCH regexes (e.g. '.*Cool.*' matches 'ACoolPhone', but 'Cool' only matches 'Cool' verbatim). If non-empty, require that these device NAMES (not IDs!) be nearby. WARNING: this uses the easily-detected-and-spoofed COMMON names, not the Bluetooth ID. (This is because Apple devices apparently rotate their Bluetooth ID, and I want something that is static.)")
+    parser.add_argument("--required_bluetooth_names",       type=type_csv      , default=[], help="If empty (default), then we don't check Bluetooth device names. One or more case-sensitive comma-separated FULL MATCH regexes (e.g. '.*Cool.*' matches 'ACoolPhone', but 'Cool' only matches 'Cool' verbatim). If non-empty, require that these device NAMES (not IDs!) be nearby. WARNING: this uses the easily-detected-and-spoofed COMMON names, not the Bluetooth ID. (This is because Apple devices apparently rotate their Bluetooth ID, and I want something that is static.). A good example that would match 'Jane's iPhone 12' and 'Joe's iPhone SE 8' would be: 'Jane.s.iPhone.*,Joe.s.iPhone.*'. If you need to see what devices are around, run this script with --scan_for_bluetooth (which will print nearby device details and then exit).")
     parser.add_argument("--allow_nonascii_bluetooth_names", action='store_true', help=f"If true, allow bluetooth names to contain 'surprising' characters. By default, we replace anything that matches '{UNSAFE_CHAR_MATCHER}' with '{SAFER_REPLACEMENT}'.")
 
     parser.add_argument("--debug_test_button_now", action='store_true', help="Debug option. Press the button and then exit.")
     parser.add_argument("--run_unit_tests"       , action='store_true', help="Run our rather informal unit tests")
     parser.add_argument("--dry"                  , action='store_true', help="If true, do NOT actually activate the garage door opener")
     parser.add_argument("--verbose"              , action='store_true', help="If true, print the volume bar. This does A LOT of printing.")
+    parser.add_argument("--verbose_bluetooth"    , action='store_true', help="If true, add ultra-verbose printing for Bluetooth devices detected locally. Does a ton of printing.")
 
     args = parser.parse_args()
 
@@ -358,16 +463,16 @@ def main():
     IS_DRY_RUN = args.dry
     global VERBOSE
     VERBOSE = args.verbose
+    global VERBOSE_BLUETOOTH
+    VERBOSE_BLUETOOTH = args.verbose_bluetooth
     global LOG_FILE_PATH
     LOG_FILE_PATH = args.log
-
-    secret_code_as_list: list[int] = [int(x) for x in args.code]
 
     print("Listening for audio!")
     print(f"""  * Scaling factor is:      {args.scale}""")
     print(f"""  * Knock threshold is:     {args.knock}% (of max volume)""")
     print(f"""  * Min pause between sets: {args.pause_time} seconds""")
-    print(f"""  * Knock code is:          {secret_code_as_list} ("--code={args.code}")""")
+    print(f"""  * Knock code is:          {args.code}""")
     print(f"""  * GPIO pin (pull low):    {args.gpio_pin_to_pull_low}""")
     print(f"""  * Log file path (if any): {args.log}""")
     print(f"""  * Required Bluetooth names: {args.required_bluetooth_names}""")
@@ -377,7 +482,6 @@ def main():
 
     # Verify that we can write to the log, so we don't fail the first time we ACTUALLY want to write to the log.
     open_and_write_to_log(LOG_FILE_PATH, "<Starting program>")
-
 
     try:
         # Note: If this is set up wrong, then this initialization may also open the garage door. Which we do not want.
@@ -393,7 +497,7 @@ def main():
         return # Exit early
 
     try:
-        handle_audio(rescale_volume=args.scale, knock_pct_threshold=args.knock, secret_knock_code=secret_code_as_list, pin_obj=pin_obj, required_pause_time=args.pause_time)
+        asyncio.run(thread_runner(rescale_volume=args.scale, knock_pct_threshold=args.knock, secret_knock_code=args.code, pin_obj=pin_obj, required_pause_time=args.pause_time, required_bluetooth_names=args.required_bluetooth_names, sanitize_bt_device_names=(not args.allow_nonascii_bluetooth_names)))
     except KeyboardInterrupt:
         print("\n\n⚠️ User pressed Ctrl-C, so we're quitting!")
     finally:
