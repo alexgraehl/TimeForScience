@@ -63,8 +63,8 @@ LOG_FILE_PATH    : str  = ""     # (If this is the empty string, then don't log)
 UNSAFE_CHAR_MATCHER: str = "[^-~A-Za-z0-9_ .]"
 SAFER_REPLACEMENT  : str = "."
 
-"""Escape sequence for terminal colors."""
 class color:
+    """Escape sequence for terminal colors."""
     g     = '\033[92m' # GREEN
     y     = '\033[93m' # YELLOW
     r     = '\033[91m' # RED
@@ -84,31 +84,31 @@ MAX_VOLUME_BAR_WIDTH: int = 50     # Max number of characters for the volume bar
 # These are chosen somewhat empirically and probably should be command line args.
 MIN_KNOCK_LENGTH: float        = 0.05  # Absolute minimum number of seconds to wait before counting another knock. If you set it too HIGH, then two knocks will be counted as one.
 
-"""Prints iff VERBOSE (global variable) is True."""
 def verbose_print(*args, **kwargs):
+    """Prints iff VERBOSE (global variable) is True."""
     if VERBOSE:
         print(*args, **kwargs)
 
-"""Prints iff VERBOSE_BLUETOOTH (global variable) is True."""
 def verbose_bluetooth_print(*args, **kwargs):
+    """Prints iff VERBOSE_BLUETOOTH (global variable) is True."""
     if VERBOSE_BLUETOOTH:
         print(*args, **kwargs)
 
 
-"""Prunes the RECENT_BLUETOOTH_DEVICES dictionary, in case it gets too large."""
 def pruned_copy_only_entries_after_time(device_dict: DeviceDictType, cutoff_time: float) -> DeviceDictType:
+    """Prunes the RECENT_BLUETOOTH_DEVICES dictionary, in case it gets too large."""
     return {key:val for key, val in device_dict.items() if val.time_last_seen >= cutoff_time}
 
-"""Converts a percent (number) into a color. Loud = red, medium = yellow, quiet = green."""
 def color_for_pct(p: int | float):
+    """Converts a percent (number) into a color. Loud = red, medium = yellow, quiet = green."""
     if p <= 5:  # Arbitrary cutoffs here
         return color.g
     if p <= 20:
         return color.y
     return color.r
 
-"""Turns "a ,  bb,ccc,d,  e" into ["a", "bb", "ccc", "d", "e"]. Note the stripped whitespace."""
 def type_csv(in_arg) -> list[str]:
+    """Helper for argparse. Turns "a ,  bb,ccc,d,  e" into ["a", "bb", "ccc", "d", "e"]. Note the stripped whitespace."""
     if not in_arg:
         return [] # Empty list (instead of [''])
     items: list[str] = [x.strip() for x in str(in_arg).split(",")]
@@ -117,8 +117,8 @@ def type_csv(in_arg) -> list[str]:
 def replace_potentially_unsafe_chars(s: str, unsafe_char_regexp: str, replacement_char: str) -> str:
     return re.sub(unsafe_char_regexp, replacement_char, s)
 
-
-def int_percent(x) -> int:
+def int_percent_1_to_100(x) -> int:
+    """Helper for argparse. Formats an input value to be an integer between 1 and 100. 0% is not allowed."""
     try:
         x = int(x)
     except ValueError:
@@ -128,17 +128,17 @@ def int_percent(x) -> int:
     raise argparse.ArgumentTypeError(f"{x} is not a valid value for this argument: it must be in the range [1, 100]")
 
 def type_tuple_of_digits_1_to_9_from_str(in_arg: str) -> tuple[int, ...]:  # Get tuple of digits from 1 through 9 (excluding zero!). E.g. input of "123" becomes [1, 2, 3]. CANNOT contain a 0.
+    """Helper for argparse."""
     if not in_arg or (not in_arg.isdigit()) or ('0' in in_arg):
         raise argparse.ArgumentTypeError(f"This argument requires a string input consisting of the digits 1-9 only (not zero). The INCORRECT argument we got was \"{in_arg}\".")
     return tuple(int(d) for d in in_arg)  # Return a tuple of ints
 
-
-"""Check to see if suffix is both non-empty AND is a suffix of `full_seq`.
-
-E.g. if suffix = [1,2] and full_seq = [9,9,1,4,2,1,2], then it's true (ends in '1,2')
-Notably always returns False if the input suffix is zero-length, which may be surprising. (i.e. `[]` is not a valid suffix of `[1,2]`).
-"""
 def suffix_found(suffix: Sequence[int], full_seq: Sequence[int]):
+    """Check to see if suffix is both non-empty AND is a suffix of `full_seq`.
+
+    E.g. if suffix = [1,2] and full_seq = [9,9,1,4,2,1,2], then it's true (ends in '1,2')
+    Notably always returns False if the input suffix is zero-length, which may be surprising. (i.e. `[]` is not a valid suffix of `[1,2]`).
+    """
     if not suffix or len(suffix) > len(full_seq):
         return False  # Not long enough!
     return tuple(full_seq[-len(suffix):]) == tuple(suffix)  # Check just the suffix. Tuple-ify both args to ensure equality works even if one input is a list and the other is a tuple.
@@ -188,8 +188,8 @@ async def infinite_loop_bluetooth_scanner(required_bluetooth_regexps: Collection
         verbose_bluetooth_print("\nShutting down the Bluetooth scanner...")
         await continuous_bluetooth_scanner.stop()  # Prevents segfault on exit
 
-"""Note that 'infinite_loop_audio_listener' is basically the main loop. See the "while True" in it."""
 async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshold: float, secret_knock_code: Sequence[int], pin_obj: gpiozero.OutputDevice, required_pause_time: float, required_bluetooth_regexps: Collection[str]):
+    """Note that 'infinite_loop_audio_listener' is basically the main loop. See the "while True" in it."""
     assert knock_pct_threshold >= 0 and knock_pct_threshold <= 100, "knock_pct_threshold must be in [0, 100]"
 
     currently_in_a_knock: bool  = False
@@ -294,15 +294,16 @@ async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshol
         audio_stream.stop_stream()
         audio_stream.close()  # Prevents segfault on exit
 
-"""Press the button.
 
-Args:
-    gpio_pin_name: E.g. "GPIO4". Note that the GPIO pin name is usually not the same as the (physical) BOARD pin name.
-                   The meaning of `on` and `off` are determined at the pin creation time: note that 'on' may actually represent
-                   toggling the pin to 0 volts (see the `active_is_low` parameter in the initialization of the OutputDevice.)
-    press_time_sec: How long to keep the states switched.
-"""
 def press_garage_door_button(pin_obj: gpiozero.OutputDevice | None, press_time_sec: float):
+    """Press the button.
+
+    Args:
+        gpio_pin_name: E.g. "GPIO4". Note that the GPIO pin name is usually not the same as the (physical) BOARD pin name.
+                    The meaning of `on` and `off` are determined at the pin creation time: note that 'on' may actually represent
+                    toggling the pin to 0 volts (see the `active_is_low` parameter in the initialization of the OutputDevice.)
+        press_time_sec: How long to keep the states switched.
+    """
     try:
         if IS_DRY_RUN:
             print("⭐️⚠️⭐️ DRY RUN: NOT PUSHING THE BUTTON")
@@ -360,8 +361,8 @@ async def print_all_nearby_bluetooth_devices() -> None:
     return
 
 
-"""Gets the 'friendly' user-facing (and user-configurable) IDs for nearby Bluetooth devices."""
 async def get_nearby_bluetooth_device_names(sanitize_output: bool=True) -> set[str]:
+    """Gets the 'friendly' user-facing (and user-configurable) IDs for nearby Bluetooth devices."""
     scan_time_sec: float = 1
     names_found: set[str] = set()
     print(f"Spending {scan_time_sec} seconds to scan for nearby BLUETOOTH devices...")
@@ -386,16 +387,16 @@ async def get_nearby_bluetooth_device_names(sanitize_output: bool=True) -> set[s
     else:
        return names_found
 
-"""Returns the name of first nearby device that matches the name requirements AND the time cutoff requirement (i.e. "recently_seen-ness").
-
-Returns None if no nearby device has a matching name and was also seen 'recently' enough.
-
-Args:
-    d: The dictionary of Bluetooth devices that we've seen semi-recently.
-    allowed_regexps: The devices names that are 'ok'.
-    time_cutoff: Only allow a device to be returned if it was seen at this time or later. Don't return 'stale' devices that were seen hours ago.
-"""
 def first_matched_bt_device(d: DeviceDictType, allowed_regexps: Collection[str], time_cutoff: float) -> str | None:
+    """Returns the name of first nearby device that matches the name requirements AND the time cutoff requirement (i.e. "recently_seen-ness").
+
+    Returns None if no nearby device has a matching name and was also seen 'recently' enough.
+
+    Args:
+        d: The dictionary of Bluetooth devices that we've seen semi-recently.
+        allowed_regexps: The devices names that are 'ok'.
+        time_cutoff: Only allow a device to be returned if it was seen at this time or later. Don't return 'stale' devices that were seen hours ago.
+    """
     for device_name, device_data in d.items():
         if device_data.time_last_seen < time_cutoff:
             verbose_bluetooth_print(f"""Not checking the Bluetooth device '{device_name}', because it wasn't seen recently enough.""")
@@ -407,8 +408,8 @@ def first_matched_bt_device(d: DeviceDictType, allowed_regexps: Collection[str],
     verbose_bluetooth_print(f"""🟦❌🟦 No nearby Bluetooth device matched any of our naming requirements and also {time_cutoff=}!""")
     return None # No match
 
-"""Helper method to print a DeviceDictTable in tabular form to STDOUT."""
 def print_device_dict(d: DeviceDictType):
+    """Helper method to print a DeviceDictTable in tabular form to STDOUT."""
     now: float = time.time()
     for name,v in d.items():
         print(f"""{v.time_last_seen::>13.1f}  | {(now - v.time_last_seen):>8.1f} sec ago  |  {v.id_type}  |  {name}""")
@@ -488,7 +489,7 @@ def main():
     parser = argparse.ArgumentParser(description="Audio Handleroo")
     parser.add_argument("--code",                 type=type_tuple_of_digits_1_to_9_from_str, default=(), help="Required. Secret code in single-digits of knocks. E.g. 123 = {1, 2, 3 knocks}.")
     parser.add_argument("--scale",                type=float,       default="1.0",   help="[-Inf, Inf] Rescale the volume by this amount. Useful if the numbers seem 'off'")
-    parser.add_argument("--knock",                type=int_percent, default="35",    help="[1, 100] Threshold for detecting a 'knock' event, from 1 (percent) to 100 (percent).")
+    parser.add_argument("--knock",                type=int_percent_1_to_100, default="35",    help="[1, 100] Threshold for detecting a 'knock' event, from 1 (percent) to 100 (percent).")
     parser.add_argument("--pause_time",           type=float,       default="0.70",  help="Required pause time between 'sets' of knocks, in seconds. 0.5 is typically too short, and 0.8 is typically too long. Default is 0.70.")
     parser.add_argument("--gpio_pin_to_pull_low", type=str,         default="GPIO4", help=f"The pin to pull LOW for {BUTTON_PRESS_TIME_SEC} second(s) to open/close the garage door.")
     parser.add_argument("--log",                  type=str,         default="", help="Default: no log. If specified, log garage-door button-press actions to this file. Note that opening/closing cannot be distinguished.")
