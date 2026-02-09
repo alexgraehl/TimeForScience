@@ -155,7 +155,6 @@ async def infinite_loop_bluetooth_scanner(required_bluetooth_regexps: Collection
         if common_name:
             if sanitize_bt_device_names:
                 common_name = replace_potentially_unsafe_chars(common_name, unsafe_char_regexp=UNSAFE_CHAR_MATCHER, replacement_char=SAFER_REPLACEMENT)
-                pass
             now: float = time.time()
             RECENT_BLUETOOTH_DEVICES[common_name] = BluetoothDeviceInfo(id_type=BluetoothIdType.NAME, time_last_seen=now)
             is_recent_devices_too_big: bool = (len(RECENT_BLUETOOTH_DEVICES) > MAX_BT_DEVICES_TO_REMEMBER)
@@ -201,7 +200,9 @@ async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshol
     try:
         while True:
             try:
-                data = audio_stream.read(CHUNK, exception_on_overflow=False)
+                # Note that we use `run_in_executor` to avoid blocking the other task (the Bluetooth one).
+                # This is basically a super complicated version of data = audio_stream.read(...)
+                data = await asyncio.get_running_loop().run_in_executor(None, lambda: audio_stream.read(CHUNK, exception_on_overflow=False))
             except KeyboardInterrupt:
                 raise  # Abort if there's a keyboard interrupt
             except: # Tolerate anything ELSE...
@@ -227,21 +228,16 @@ async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshol
                     print(f"KNOCK: {current_knock_count}")
                     last_knock_time = now
                     time_since_last_knock = now - last_knock_time  # Recompute time_since_last_knock for the benefit of the code below. (Probably there's a more elegant way to do this)
-                    pass
-                pass
 
             # See if the current knock is now "done" being loud (volume < 50% of threshold AND it hasn't been a ludicrously short amount of time) (and prepare us to count the next one)
             if (pct < knock_pct_threshold * 0.5 and time_since_last_knock >= MIN_KNOCK_LENGTH):
                 currently_in_a_knock = False
-                pass
 
             if current_knock_count > 0:
                 if time_since_last_knock > required_pause_time:  # Finished a set of knocks! In a perfect world, maybe we'd look at AVERAGE time between knocks and actually set this to (average * 2) or something.
                     knock_seq.append(current_knock_count)
                     print(f"{time_since_last_knock=} Added [{current_knock_count}], so now {knock_seq=} (we will look for {secret_knock_code})")
                     current_knock_count = 0
-                    pass
-                pass
             
             final_silence_required_before_activating_garage = required_pause_time  # Same as the normal pause time
             if knock_seq and time_since_last_knock > final_silence_required_before_activating_garage:
@@ -259,13 +255,12 @@ async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshol
                             msg = "NOT opening the garage door (despite the correct code), because we failed to find a mandatory nearby Bluetooth device."
                         else:
                             msg = f"OK to open the door, because we found this eligible nearby Bluetooth device: {allowed_device}"
-                            pass
                     
                     open_and_write_to_log(LOG_FILE_PATH, msg)
 
                     if (not required_bluetooth_regexps) or allowed_device:
                         # We're good to open the garage door
-                        press_garage_door_button(pin_obj, press_time_sec=BUTTON_PRESS_TIME_SEC)
+                        await press_garage_door_button(pin_obj, press_time_sec=BUTTON_PRESS_TIME_SEC)
                     
                     # Regardless of the Bluetooth device presence above, reset the code for the next attempt.
                     knock_seq = [] # Reset for next attempt
@@ -273,9 +268,6 @@ async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshol
                     if (last_code_we_printed != knock_seq):
                         print(f"Rejected this code: {knock_seq}.    We expected this one: {secret_knock_code}\n")
                         last_code_we_printed = knock_seq # Just so we don't spam the logs with "rejected this code..." over and over
-                        pass
-                    pass
-                pass
             
             full_reset_timeout: float = required_pause_time * 10   # Reset the code after this many seconds of silence. Possibly not actually needed.
             if knock_seq and ((time_since_last_knock > full_reset_timeout) or len(knock_seq) > max_knock_sets_to_record_before_resetting):
@@ -290,17 +282,15 @@ async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshol
                 # Note the leading '\r\ to overwrite the same line in the terminal. Still makes a newline if the terminal is narrow.
                 # ">5" right-aligns the percentage in a 5-digit-wide field.
                 print(f"\rLevel: {audio_color}{pct:>5.1f}% {bar_chars}{blanks}{right_aligned_rms} {color.reset}", flush=True, end="")
-                pass
             # -------------------- DONE with printing and printed-related bookkeeping -----
 
             await asyncio.sleep(0.05) # End of infinite loop
-            pass # End of "while True"
     finally:
         audio_stream.stop_stream()
         audio_stream.close()  # Prevents segfault on exit
 
 
-def press_garage_door_button(pin_obj: gpiozero.OutputDevice | None, press_time_sec: float):
+async def press_garage_door_button(pin_obj: gpiozero.OutputDevice | None, press_time_sec: float):
     """Press the button.
 
     Args:
@@ -319,10 +309,9 @@ def press_garage_door_button(pin_obj: gpiozero.OutputDevice | None, press_time_s
         else:
             print("⭐️✅⭐️ ATTEMPTING TO OPEN THE GARAGE DOOR")
             pin_obj.on()  # Note that "on" MAY actually be the "low' voltage setting.
-            time.sleep(press_time_sec)
+            await asyncio.sleep(press_time_sec)
             pin_obj.off()
             open_and_write_to_log(LOG_FILE_PATH, f"Pressed the garage door button.")
-            pass
     except Exception as e:
         # Catch all exceptions and write another log line.
         open_and_write_to_log(LOG_FILE_PATH, f"Failure! Exeption was: {e}")
@@ -380,8 +369,8 @@ async def get_nearby_bluetooth_device_names(sanitize_output: bool=True) -> set[s
             # FYI: 'address' is in a format like 'AA7AD434-B8DD-19AA-44DC-623E444A718A'
             print(f"ID: {address}  |   RSSI_SIGNAL: {adv_data.rssi:>4}  |   NAME: {device.name}")
             #                                                     ^ (right-aligned text)
-            if device.name():
-                names_found.add(device.name())  # Add non-blank and non-"None" names only. Theoretically might add a name that was just several spaces.
+            if device.name:
+                names_found.add(device.name)  # Add non-blank and non-"None" names only. Theoretically might add a name that was just several spaces.
 
     if sanitize_output:
        return {replace_potentially_unsafe_chars(x, unsafe_char_regexp=UNSAFE_CHAR_MATCHER, replacement_char=SAFER_REPLACEMENT) for x in names_found}
@@ -549,7 +538,7 @@ def main():
         pin_obj = None
 
     if (args.debug_test_button_now):
-        press_garage_door_button(pin_obj, BUTTON_PRESS_TIME_SEC)
+        asyncio.run(press_garage_door_button(pin_obj, BUTTON_PRESS_TIME_SEC))
         print("Exiting early because `--debug_test_button_now` was specified")
         return # Exit early
 
