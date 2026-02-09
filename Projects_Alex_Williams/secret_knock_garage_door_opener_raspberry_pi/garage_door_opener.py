@@ -45,14 +45,13 @@ DeviceDictType = dict[str, BluetoothDeviceInfo]
 
 # This will be modified as a GLOBAL variable by the bluetooth scanner task.
 RECENT_BLUETOOTH_DEVICES      : DeviceDictType = {}
-MAX_BT_DEVICES_TO_REMEMBER    : int = 250  # If `RECENT_BLUETOOTH_DEVICES` is larger than this, then we'll prune old entries. Just to keep the device list from accumulating forever.
-DEVICE_PRUNING_THRESHOLD_SEC  : int = 120  # If we exceed the `MAX_BT_DEVICES_TO_REMEMBER`, then prune any entries older than this amount.
+MAX_BT_DEVICES_TO_REMEMBER    : int = 250  # If `RECENT_BLUETOOTH_DEVICES` is larger than this, then we'll prune anything older than the `BLUETOOTH_REQUIRED_RECENCY_SEC`
 BLUETOOTH_REQUIRED_RECENCY_SEC: int = 60   # Must have seen the device in the last N seconds to count it as "recently" enough to open the garage door.
 
 # Time to give up control in the audio 'main' loop. Must be quite LOW in order to reliably pick up knocks.
 # Note that this CAN be zero if you want, which means "do it as fast as possible."
 SLEEP_TIME_IN_AUDIO_LOOP           : float = 0.001  
-SLEEP_TIME_IN_BLUETOOTH_FINDER_LOOP: float = 1  # Check nearby bluetooth devices every this many seconds. A good value is probably like 10-20.
+SLEEP_TIME_IN_BLUETOOTH_FINDER_LOOP: float = 1.0  # This doesn't quite work the way I expected. Don't trust this variable.
 
 IS_DRY_RUN         : int  = False
 VERBOSE            : bool = False
@@ -152,27 +151,28 @@ async def infinite_loop_bluetooth_scanner(required_bluetooth_regexps: Collection
         verbose_bluetooth_print(f"                 ...and: {adv_data.local_name=}")
         common_name: str = device.name or adv_data.local_name or ""
 
-        if common_name:
-            if sanitize_bt_device_names:
-                common_name = replace_potentially_unsafe_chars(common_name, unsafe_char_regexp=UNSAFE_CHAR_MATCHER, replacement_char=SAFER_REPLACEMENT)
-            now: float = time.time()
-            RECENT_BLUETOOTH_DEVICES[common_name] = BluetoothDeviceInfo(id_type=BluetoothIdType.NAME, time_last_seen=now)
-            is_recent_devices_too_big: bool = (len(RECENT_BLUETOOTH_DEVICES) > MAX_BT_DEVICES_TO_REMEMBER)
-            if is_recent_devices_too_big:  # We 'delete' the old items by just making a new dictionary with only the passing-the-filter items.
-                RECENT_BLUETOOTH_DEVICES = pruned_copy_only_entries_after_time(RECENT_BLUETOOTH_DEVICES, cutoff_time=(now - DEVICE_PRUNING_THRESHOLD_SEC))
+        if not common_name:
+            return # Nothing to do if there's no "human readable" device name to record
+        
+        if sanitize_bt_device_names:
+            common_name = replace_potentially_unsafe_chars(common_name, unsafe_char_regexp=UNSAFE_CHAR_MATCHER, replacement_char=SAFER_REPLACEMENT)
+        now: float = time.time()
+        RECENT_BLUETOOTH_DEVICES[common_name] = BluetoothDeviceInfo(id_type=BluetoothIdType.NAME, time_last_seen=now)
+        is_recent_devices_too_big: bool = (len(RECENT_BLUETOOTH_DEVICES) > MAX_BT_DEVICES_TO_REMEMBER)
+        if is_recent_devices_too_big:  # We 'delete' the old items by just making a new dictionary with only the passing-the-filter items.
+            RECENT_BLUETOOTH_DEVICES = pruned_copy_only_entries_after_time(RECENT_BLUETOOTH_DEVICES, cutoff_time=(now - BLUETOOTH_REQUIRED_RECENCY_SEC))
 
-            if VERBOSE_BLUETOOTH:
-                print_device_dict(RECENT_BLUETOOTH_DEVICES)
-                # Check to see if any of the devices is in our special whitelist
-                recency_cutoff: float = now - BLUETOOTH_REQUIRED_RECENCY_SEC
-                matched_device_name: str | None = first_matched_bt_device(d=RECENT_BLUETOOTH_DEVICES, allowed_regexps=required_bluetooth_regexps, time_cutoff=recency_cutoff)
-                if not matched_device_name:
-                    verbose_bluetooth_print("NO MATCHING DEVICES")
-                else:
-                    device_info = RECENT_BLUETOOTH_DEVICES[matched_device_name]
-                    time_since_seen: float = device_info.time_last_seen - now
-                    verbose_bluetooth_print(f"""Found a match: device "{matched_device_name}" was seen at {device_info.time_last_seen:.2f} ({time_since_seen:.2f} seconds ago)""")
-
+        if VERBOSE_BLUETOOTH:
+            print_device_dict(RECENT_BLUETOOTH_DEVICES)
+            # Check to see if any of the devices is in our special whitelist
+            recency_cutoff: float = now - BLUETOOTH_REQUIRED_RECENCY_SEC
+            matched_device_name: str | None = first_matched_bt_device(d=RECENT_BLUETOOTH_DEVICES, allowed_regexps=required_bluetooth_regexps, time_cutoff=recency_cutoff)
+            if not matched_device_name:
+                verbose_bluetooth_print("NO MATCHING DEVICES")
+            else:
+                device_info = RECENT_BLUETOOTH_DEVICES[matched_device_name]
+                time_since_seen: float = device_info.time_last_seen - now
+                verbose_bluetooth_print(f"""Found a match: device "{matched_device_name}" was seen at {device_info.time_last_seen:.2f} ({time_since_seen:.2f} seconds ago)""")
         return
         
     continuous_bluetooth_scanner = bleak.BleakScanner(detection_callback=bluetooth_detected_device_callback)
@@ -209,7 +209,7 @@ async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshol
                 # If it fails due to some kind of technical issue with the audio system, try to re-initialize the stream.
                 # May or may not actually help, but allegedly this can occur intermittently.
                 print("Re-initializing the audio stream...")
-                audio_stream = init_audio_stream()
+                audio_stream = init_audio_stream()  # TODO: Apparently this re-initialization may have some issues where 'PyAudio' objects may accumulate over time.
                 continue  # Back to the top of the loop
                     
             # Volume level is `root mean squared` (rms), NOT just the average of the sound wave. Note that the (naive) mean can be negative.
@@ -314,7 +314,7 @@ async def press_garage_door_button(pin_obj: gpiozero.OutputDevice | None, press_
             open_and_write_to_log(LOG_FILE_PATH, f"Pressed the garage door button.")
     except Exception as e:
         # Catch all exceptions and write another log line.
-        open_and_write_to_log(LOG_FILE_PATH, f"Failure! Exeption was: {e}")
+        open_and_write_to_log(LOG_FILE_PATH, f"Failure! Exception was: {e}")
     return
 
 def init_audio_stream():
@@ -350,32 +350,6 @@ async def print_all_nearby_bluetooth_devices() -> None:
         print(f"ID: {address}  |   RSSI_SIGNAL: {adv_data.rssi:>4}  |   NAME: {device.name}")
     return
 
-
-async def get_nearby_bluetooth_device_names(sanitize_output: bool=True) -> set[str]:
-    """Gets the 'friendly' user-facing (and user-configurable) IDs for nearby Bluetooth devices."""
-    scan_time_sec: float = 1
-    names_found: set[str] = set()
-    print(f"Spending {scan_time_sec} seconds to scan for nearby BLUETOOTH devices...")
-    try:
-        devices = await bleak.BleakScanner.discover(return_adv=True, timeout=scan_time_sec)
-    except bleak.exc.BleakError as e:
-        print(f"BLUETOOTH is unavailable for some reason. Maybe it was turned off? The exception: {e}")
-        raise e
-    
-    if not devices:
-        print("No Bluetooth devices were found in range! This is unusual, but isn't an error")
-    else:
-        for address, (device, adv_data) in devices.items():
-            # FYI: 'address' is in a format like 'AA7AD434-B8DD-19AA-44DC-623E444A718A'
-            print(f"ID: {address}  |   RSSI_SIGNAL: {adv_data.rssi:>4}  |   NAME: {device.name}")
-            #                                                     ^ (right-aligned text)
-            if device.name:
-                names_found.add(device.name)  # Add non-blank and non-"None" names only. Theoretically might add a name that was just several spaces.
-
-    if sanitize_output:
-       return {replace_potentially_unsafe_chars(x, unsafe_char_regexp=UNSAFE_CHAR_MATCHER, replacement_char=SAFER_REPLACEMENT) for x in names_found}
-    else:
-       return names_found
 
 def first_matched_bt_device(d: DeviceDictType, allowed_regexps: Collection[str], time_cutoff: float) -> str | None:
     """Returns the name of first nearby device that matches the name requirements AND the time cutoff requirement (i.e. "recently_seen-ness").
@@ -524,7 +498,6 @@ def main():
     print(f"""  * Required Bluetooth names: {args.required_bluetooth_names}""")
     if IS_DRY_RUN:
         print(f"  * DRY RUN")
-        pass
 
     # Verify that we can write to the log, so we don't fail the first time we ACTUALLY want to write to the log.
     open_and_write_to_log(LOG_FILE_PATH, "<Starting program>")
@@ -554,3 +527,33 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+#################### APPENDIX / ELEPHANT GRAVEYARD OF CODE ######################################
+
+# Keeping this historical method of querying for Bluetooth devices around for reference:
+# async def get_nearby_bluetooth_device_names(sanitize_output: bool=True) -> set[str]:
+#     """Gets the 'friendly' user-facing (and user-configurable) IDs for nearby Bluetooth devices."""
+#     scan_time_sec: float = 1
+#     names_found: set[str] = set()
+#     print(f"Spending {scan_time_sec} seconds to scan for nearby BLUETOOTH devices...")
+#     try:
+#         devices = await bleak.BleakScanner.discover(return_adv=True, timeout=scan_time_sec)
+#     except bleak.exc.BleakError as e:
+#         print(f"BLUETOOTH is unavailable for some reason. Maybe it was turned off? The exception: {e}")
+#         raise e
+    
+#     if not devices:
+#         print("No Bluetooth devices were found in range! This is unusual, but isn't an error")
+#     else:
+#         for address, (device, adv_data) in devices.items():
+#             # FYI: 'address' is in a format like 'AA7AD434-B8DD-19AA-44DC-623E444A718A'
+#             print(f"ID: {address}  |   RSSI_SIGNAL: {adv_data.rssi:>4}  |   NAME: {device.name}")
+#             #                                                     ^ (right-aligned text)
+#             if device.name:
+#                 names_found.add(device.name)  # Add non-blank and non-"None" names only. Theoretically might add a name that was just several spaces.
+
+#     if sanitize_output:
+#        return {replace_potentially_unsafe_chars(x, unsafe_char_regexp=UNSAFE_CHAR_MATCHER, replacement_char=SAFER_REPLACEMENT) for x in names_found}
+#     else:
+#        return names_found
