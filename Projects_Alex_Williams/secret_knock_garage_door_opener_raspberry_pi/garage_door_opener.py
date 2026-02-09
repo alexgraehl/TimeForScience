@@ -54,14 +54,12 @@ BLUETOOTH_REQUIRED_RECENCY_SEC: int = 60   # Must have seen the device in the la
 SLEEP_TIME_IN_AUDIO_LOOP           : float = 0.001  
 SLEEP_TIME_IN_BLUETOOTH_FINDER_LOOP: float = 1  # Check nearby bluetooth devices every this many seconds. A good value is probably like 10-20.
 
-IS_DRY_RUN       : int  = False
-VERBOSE          : bool = False
-VERBOSE_BLUETOOTH: bool = False  # Super verbose logging specifically for Bluetooth
-LOG_FILE_PATH    : str  = ""     # (If this is the empty string, then don't log)
-
-# Characters that we replace with '.' when checking for Bluetooth device names. Anything matching here will be replaced by an `UNSAFE_CHAR_REPLACEMENT` char.
-UNSAFE_CHAR_MATCHER: str = "[^-~A-Za-z0-9_ .]"
-SAFER_REPLACEMENT  : str = "."
+IS_DRY_RUN         : int  = False
+VERBOSE            : bool = False
+VERBOSE_BLUETOOTH  : bool = False  # Super verbose logging specifically for Bluetooth
+LOG_FILE_PATH      : str  = ""     # (If this is the empty string, then don't log)
+UNSAFE_CHAR_MATCHER: str  = "[^-~A-Za-z0-9_ .]"  # Chars to replace when checking Bluetooth device names.
+SAFER_REPLACEMENT  : str  = "."                  # What the "UNSAFE_CHAR_MATCHER" uses to replace 'unsafe' chars.
 
 class color:
     """Escape sequence for terminal colors."""
@@ -70,16 +68,15 @@ class color:
     r     = '\033[91m' # RED
     reset = '\033[0m'
 
-BUTTON_PRESS_TIME_SEC:   float = 0.5  # How long to press the garage door button
-PULL_PIN_LOW_TO_ACTIVATE: bool = True  # Hard-coded. Right now we hard-code that we set the pin to LOW to activate it. Could be refactored.
-
-FORMAT                    = pyaudio.paFloat32
-AUDIO_DTYPE               = np.float32
-CHANNELS: int             = 1        # (Mono)
-RATE: int                 = 44100    # 44.1kHz sampling rate
-CHECKS_PER_SECOND: int    = 10  # How many times to check for the current audio volume every second. Can be pretty low.
-CHUNK: int                = int(RATE / (1+CHECKS_PER_SECOND))   # Amount of data to read in one "chunk". Might be slightly off (not sure if this division is totally correct)
-MAX_VOLUME_BAR_WIDTH: int = 50     # Max number of characters for the volume bar. If this is larger than the terminal width, then the bar won't overwrite itself (and the terminal will scroll)
+BUTTON_PRESS_TIME_SEC   : float = 0.5  # How long to press the garage door button
+PULL_PIN_LOW_TO_ACTIVATE: bool  = True  # Hard-coded. Right now we hard-code that we set the pin to LOW to activate it. Could be refactored.
+FORMAT                          = pyaudio.paFloat32
+AUDIO_DTYPE                     = np.float32
+CHANNELS                : int   = 1        # (Mono)
+RATE                    : int   = 44100    # 44.1kHz sampling rate
+CHECKS_PER_SECOND       : int   = 10  # How many times to check for the current audio volume every second. Can be pretty low.
+CHUNK                   : int   = int(RATE / (1+CHECKS_PER_SECOND))   # Amount of data to read in one "chunk". Might be slightly off (not sure if this division is totally correct)
+MAX_VOLUME_BAR_WIDTH    : int   = 50     # Max number of characters for the volume bar. If this is larger than the terminal width, then the bar won't overwrite itself (and the terminal will scroll)
 
 # These are chosen somewhat empirically and probably should be command line args.
 MIN_KNOCK_LENGTH: float        = 0.05  # Absolute minimum number of seconds to wait before counting another knock. If you set it too HIGH, then two knocks will be counted as one.
@@ -230,16 +227,21 @@ async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshol
                     print(f"KNOCK: {current_knock_count}")
                     last_knock_time = now
                     time_since_last_knock = now - last_knock_time  # Recompute time_since_last_knock for the benefit of the code below. (Probably there's a more elegant way to do this)
+                    pass
+                pass
 
             # See if the current knock is now "done" being loud (volume < 50% of threshold AND it hasn't been a ludicrously short amount of time) (and prepare us to count the next one)
             if (pct < knock_pct_threshold * 0.5 and time_since_last_knock >= MIN_KNOCK_LENGTH):
                 currently_in_a_knock = False
+                pass
 
             if current_knock_count > 0:
                 if time_since_last_knock > required_pause_time:  # Finished a set of knocks! In a perfect world, maybe we'd look at AVERAGE time between knocks and actually set this to (average * 2) or something.
                     knock_seq.append(current_knock_count)
                     print(f"{time_since_last_knock=} Added [{current_knock_count}], so now {knock_seq=} (we will look for {secret_knock_code})")
                     current_knock_count = 0
+                    pass
+                pass
             
             final_silence_required_before_activating_garage = required_pause_time  # Same as the normal pause time
             if knock_seq and time_since_last_knock > final_silence_required_before_activating_garage:
@@ -271,6 +273,9 @@ async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshol
                     if (last_code_we_printed != knock_seq):
                         print(f"Rejected this code: {knock_seq}.    We expected this one: {secret_knock_code}\n")
                         last_code_we_printed = knock_seq # Just so we don't spam the logs with "rejected this code..." over and over
+                        pass
+                    pass
+                pass
             
             full_reset_timeout: float = required_pause_time * 10   # Reset the code after this many seconds of silence. Possibly not actually needed.
             if knock_seq and ((time_since_last_knock > full_reset_timeout) or len(knock_seq) > max_knock_sets_to_record_before_resetting):
@@ -349,15 +354,11 @@ async def print_all_nearby_bluetooth_devices() -> None:
     except bleak.exc.BleakError as e:
         print(f"BLUETOOTH is unavailable for some reason. Maybe it was turned off? The exception: {e}")
         raise e
-    
     if not devices:
         print("No Bluetooth devices were found in range! This is unusual.")
         return
-    
-    for address, (device, adv_data) in devices.items():
+    for address, (device, adv_data) in devices.items():     # v (right-aligned text)
         print(f"ID: {address}  |   RSSI_SIGNAL: {adv_data.rssi:>4}  |   NAME: {device.name}")
-        #                                                     ^ (right-aligned text)
-
     return
 
 
@@ -421,7 +422,7 @@ def unit_tests() -> None:
     fake_devices: DeviceDictType = {
         "Joe's iPhone 17": BluetoothDeviceInfo(
             id_type=BluetoothIdType.NAME,
-            time_last_seen=(now - 10.1) # Las seen 10.1 seconds ago (recent)
+            time_last_seen=(now - 10.1) # Last seen 10.1 seconds ago (recent)
         ),
         "AA:BB:CC:DD": BluetoothDeviceInfo(
             id_type=BluetoothIdType.ADDR,
@@ -429,7 +430,7 @@ def unit_tests() -> None:
         ),
         "Ghost Pepper": BluetoothDeviceInfo(
             id_type=BluetoothIdType.NAME,
-            time_last_seen=(now - 0.5)  # Last seen 0.5 seconds ago (recnt)
+            time_last_seen=(now - 0.5)  # Last seen 0.5 seconds ago (recent)
         )
     }
 
@@ -448,17 +449,16 @@ def unit_tests() -> None:
     assert type_tuple_of_digits_1_to_9_from_str("3")    == tuple((3,))
     assert bool(first_matched_bt_device(fake_devices, allowed_regexps=[".*"], time_cutoff=now-9999)), "Should find a device (we don't care which one)"
     assert not (first_matched_bt_device(fake_devices, allowed_regexps=[".*"], time_cutoff=now+4444)), "Should NOT find any device, due to the too-strict time cutoff (in the future)"
-    assert "Joe's iPhone 17" == first_matched_bt_device(fake_devices, allowed_regexps=["Joe.s iPhone.*"], time_cutoff=now-100), "Should find a device"
-    assert "AA:BB:CC:DD" == first_matched_bt_device(fake_devices, allowed_regexps=["ZZZ","AA.*"], time_cutoff=now - 9999), "Finds the `AA:BB:CC:DD` device (even though it's the ADDRESS and not the NAME). In practice this won't actually be found since we are not adding the addresses to the device dict currently."
-    assert "Ghost Pepper" == first_matched_bt_device(fake_devices, allowed_regexps=[".*joe.*", ".*Pep.*"], time_cutoff=now - 100), "Finds Ghost Pepper"
+    assert "Joe's iPhone 17" == first_matched_bt_device(fake_devices, allowed_regexps=["Joe.s iPhone.*"],             time_cutoff=now-100), "Should find a device"
+    assert "AA:BB:CC:DD"     == first_matched_bt_device(fake_devices, allowed_regexps=["ZZZ","AA.*"],                 time_cutoff=now - 9999), "Finds the `AA:BB:CC:DD` device (even though it's the ADDRESS and not the NAME). In practice this won't actually be found since we are not adding the addresses to the device dict currently."
+    assert "Ghost Pepper"    == first_matched_bt_device(fake_devices, allowed_regexps=[".*joe.*", ".*Pep.*"],         time_cutoff=now - 100), "Finds Ghost Pepper"
     assert "Joe's iPhone 17" == first_matched_bt_device(fake_devices, allowed_regexps=["qq", "zz", "Joe.s iPhone.*"], time_cutoff=now - 100), "Simple match of a recently-seen device"
-    assert not first_matched_bt_device(fake_devices, allowed_regexps=["Joe.s iPhone.*"], time_cutoff=now), "Disqualified by time cutoff"
+    assert not first_matched_bt_device(fake_devices, allowed_regexps=["Joe.s iPhone.*"],     time_cutoff=now), "Disqualified by time cutoff"
     assert not first_matched_bt_device(fake_devices, allowed_regexps=[".*joe.*", ".*pep.*"], time_cutoff=now - 100), "Case matters, so no match"
-    assert not first_matched_bt_device({},           allowed_regexps=[".*"], time_cutoff=now - 9999), "No devices, so no match"
-    assert not first_matched_bt_device(fake_devices, allowed_regexps=[], time_cutoff=now - 9999), "No allowed regexps, so no match"
-
+    assert not first_matched_bt_device({},           allowed_regexps=[".*"],                 time_cutoff=now - 9999), "No devices, so no match"
+    assert not first_matched_bt_device(fake_devices, allowed_regexps=[],                     time_cutoff=now - 9999), "No allowed regexps, so no match"
     assert replace_potentially_unsafe_chars("Snåkeßß🟨a b c", unsafe_char_regexp="[^a-z ]", replacement_char="#") == "#n#ke###a b c"
-    assert replace_potentially_unsafe_chars("", unsafe_char_regexp="[^a-z]", replacement_char="#") == ""
+    assert replace_potentially_unsafe_chars("",               unsafe_char_regexp="[^a-z]",  replacement_char="#") == ""
     print("✅✅ Ad-hoc unit tests have passed")
     return
 
