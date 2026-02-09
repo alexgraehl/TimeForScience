@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Example:
-#  python garage_door_opener.py --knock=15 --code=123 --pause_time=0.70 --scale=3 --verbose --log=/tmp/garage_log.txt
+#  python garage_door_opener.py --knock=15 --code=123 --pause_time=0.70 --scale=3 --verbose --verbose_bluetooth --required_bluetooth_names=".*CoolPhone.*,.*MyPhone.*" --log=/tmp/garage_log.txt --run_unit_tests
 
 # Venv cheat sheet:
 # 1. One time only:
@@ -44,9 +44,9 @@ class BluetoothDeviceInfo:
 DeviceDictType = dict[str, BluetoothDeviceInfo]
 
 # This will be modified as a GLOBAL variable by the bluetooth scanner task.
-RECENT_BLUETOOTH_DEVICES        : DeviceDictType = {}
-MAX_BT_DEVICES_TO_REMEMBER      : int = 250  # If `RECENT_BLUETOOTH_DEVICES` is larger than this, then we'll prune old entries. Just to keep the device list from accumulating forever.
-DEVICE_PRUNING_THRESHOLD_SEC    : int = 120  # If we exceed the `MAX_BT_DEVICES_TO_REMEMBER`, then prune any entries older than this amount.
+RECENT_BLUETOOTH_DEVICES      : DeviceDictType = {}
+MAX_BT_DEVICES_TO_REMEMBER    : int = 250  # If `RECENT_BLUETOOTH_DEVICES` is larger than this, then we'll prune old entries. Just to keep the device list from accumulating forever.
+DEVICE_PRUNING_THRESHOLD_SEC  : int = 120  # If we exceed the `MAX_BT_DEVICES_TO_REMEMBER`, then prune any entries older than this amount.
 BLUETOOTH_REQUIRED_RECENCY_SEC: int = 60   # Must have seen the device in the last N seconds to count it as "recently" enough to open the garage door.
 
 # Time to give up control in the audio 'main' loop. Must be quite LOW in order to reliably pick up knocks.
@@ -141,10 +141,10 @@ Notably always returns False if the input suffix is zero-length, which may be su
 def suffix_found(suffix: Sequence[int], full_seq: Sequence[int]):
     if not suffix or len(suffix) > len(full_seq):
         return False  # Not long enough!
-    return full_seq[-len(suffix):] == suffix  # Check just the suffix
+    return tuple(full_seq[-len(suffix):]) == tuple(suffix)  # Check just the suffix. Tuple-ify both args to ensure equality works even if one input is a list and the other is a tuple.
 
 
-async def infinite_loop_bluetooth_scanner(required_bluetooth_regexes: Collection[str], sanitize_bt_device_names: bool):
+async def infinite_loop_bluetooth_scanner(required_bluetooth_regexps: Collection[str], sanitize_bt_device_names: bool):
     """When the scanners sees a particular Bluetooth device, it indicates when it was last seen.
     Every so often, we'll clear out anything in the RECENT_DEVICES map that hasn't been seen in a while.
     """
@@ -169,7 +169,7 @@ async def infinite_loop_bluetooth_scanner(required_bluetooth_regexes: Collection
                 print_device_dict(RECENT_BLUETOOTH_DEVICES)
                 # Check to see if any of the devices is in our special whitelist
                 recency_cutoff: float = now - BLUETOOTH_REQUIRED_RECENCY_SEC
-                matched_device_name: str | None = first_matched_bt_device(d=RECENT_BLUETOOTH_DEVICES, allowed_regexes=required_bluetooth_regexes, time_cutoff=recency_cutoff)
+                matched_device_name: str | None = first_matched_bt_device(d=RECENT_BLUETOOTH_DEVICES, allowed_regexps=required_bluetooth_regexps, time_cutoff=recency_cutoff)
                 if not matched_device_name:
                     verbose_bluetooth_print("NO MATCHING DEVICES")
                 else:
@@ -189,7 +189,7 @@ async def infinite_loop_bluetooth_scanner(required_bluetooth_regexes: Collection
         await continuous_bluetooth_scanner.stop()  # Prevents segfault on exit
 
 """Note that 'infinite_loop_audio_listener' is basically the main loop. See the "while True" in it."""
-async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshold: float, secret_knock_code: Sequence[int], pin_obj: gpiozero.OutputDevice, required_pause_time: float):
+async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshold: float, secret_knock_code: Sequence[int], pin_obj: gpiozero.OutputDevice, required_pause_time: float, required_bluetooth_regexps: Collection[str]):
     assert knock_pct_threshold >= 0 and knock_pct_threshold <= 100, "knock_pct_threshold must be in [0, 100]"
 
     currently_in_a_knock: bool  = False
@@ -238,14 +238,34 @@ async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshol
             if current_knock_count > 0:
                 if time_since_last_knock > required_pause_time:  # Finished a set of knocks! In a perfect world, maybe we'd look at AVERAGE time between knocks and actually set this to (average * 2) or something.
                     knock_seq.append(current_knock_count)
-                    print(f"{time_since_last_knock=} Added [{current_knock_count}], so now {knock_seq=}")
+                    print(f"{time_since_last_knock=} Added [{current_knock_count}], so now {knock_seq=} (we will look for {secret_knock_code})")
                     current_knock_count = 0
             
             final_silence_required_before_activating_garage = required_pause_time  # Same as the normal pause time
             if knock_seq and time_since_last_knock > final_silence_required_before_activating_garage:
                 if suffix_found(suffix=secret_knock_code, full_seq=knock_seq):
+                    # Check to see if a nearby bluetooth device is found, if applicable.
                     print(f"Found {secret_knock_code=}) at the end of {knock_seq=})")
-                    press_garage_door_button(pin_obj, press_time_sec=BUTTON_PRESS_TIME_SEC)
+                    
+                    msg: str = ""
+                    allowed_device: str | None = None
+                    if not required_bluetooth_regexps:
+                        msg = "OK to open the door (we are not checking any specific nearby Bluetooth devices)"
+                    else:
+                        allowed_device = first_matched_bt_device(d=RECENT_BLUETOOTH_DEVICES, allowed_regexps=required_bluetooth_regexps, time_cutoff=now - BLUETOOTH_REQUIRED_RECENCY_SEC)                        
+                        if not allowed_device:
+                            msg = "NOT opening the garage door (despite the correct code), because we failed to find a mandatory nearby Bluetooth device."
+                        else:
+                            msg = f"OK to open the door, because we found this eligible nearby Bluetooth device: {allowed_device}"
+                            pass
+                    
+                    open_and_write_to_log(LOG_FILE_PATH, msg)
+
+                    if (not required_bluetooth_regexps) or allowed_device:
+                        # We're good to open the garage door
+                        press_garage_door_button(pin_obj, press_time_sec=BUTTON_PRESS_TIME_SEC)
+                    
+                    # Regardless of the Bluetooth device presence above, reset the code for the next attempt.
                     knock_seq = [] # Reset for next attempt
                 else:
                     if (last_code_we_printed != knock_seq):
@@ -313,7 +333,9 @@ def open_and_write_to_log(log_file_path: str, message: str) -> None:
     try:
         with open(log_file_path, "a") as f:
             when: str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            f.write(f"[{when}] {message}\n")  # E.g. "[1998-01-30] Snakes and cakes"
+            msg: str = f"[{when}] {message}"
+            f.write(msg + "\n")  # E.g. "[1998-01-30] Snakes and cakes"
+            verbose_print(msg)
     except Exception as e:
         print(f"Couldn't append a log entry to {log_file_path=}: {e}")
 
@@ -364,25 +386,21 @@ async def get_nearby_bluetooth_device_names(sanitize_output: bool=True) -> set[s
     else:
        return names_found
 
-"""Returns the first nearby device that matches 'nearby Bluetooth device name' requirements.
+"""Returns the name of first nearby device that matches the name requirements AND the time cutoff requirement (i.e. "recently_seen-ness").
 
-required_names: Returns THE FIRST actual matched value, if any, or None if there is no match.
+Returns None if no nearby device has a matching name and was also seen 'recently' enough.
+
+Args:
+    d: The dictionary of Bluetooth devices that we've seen semi-recently.
+    allowed_regexps: The devices names that are 'ok'.
+    time_cutoff: Only allow a device to be returned if it was seen at this time or later. Don't return 'stale' devices that were seen hours ago.
 """
-def first_matched_bluetooth_name(allowed_regexes: Collection[str], actual_device_values: Collection[str]) -> str | None:
-    for name in actual_device_values:
-        for pattern in allowed_regexes:
-            if re.fullmatch(pattern, name):
-                verbose_bluetooth_print(f"""🟦✅🟦 The nearby Bluetooth device named '{name}' matched the required regex pattern '{pattern}'""")
-                return name
-    verbose_bluetooth_print(f"""🟦❌🟦 No nearby Bluetooth device matched any of our naming requirements!""")
-    return None # No match
-
-def first_matched_bt_device(d: DeviceDictType, allowed_regexes: Collection[str], time_cutoff: float) -> str | None:
+def first_matched_bt_device(d: DeviceDictType, allowed_regexps: Collection[str], time_cutoff: float) -> str | None:
     for device_name, device_data in d.items():
         if device_data.time_last_seen < time_cutoff:
             verbose_bluetooth_print(f"""Not checking the Bluetooth device '{device_name}', because it wasn't seen recently enough.""")
             continue # Next device please!
-        for pattern in allowed_regexes:
+        for pattern in allowed_regexps:
             if re.fullmatch(pattern, device_name):
                 verbose_bluetooth_print(f"""🟦✅🟦 The nearby Bluetooth device named '{device_name}' matched the required regex pattern '{pattern}' (and was seen on/after '{time_cutoff:.1f}')""")
                 return device_name
@@ -397,7 +415,6 @@ def print_device_dict(d: DeviceDictType):
 
 
 def unit_tests() -> None:
-
     # Note that we're dubiously using the current time (time.time()) in the unit tests, thus making them non-hermetic. Woe!
     now = time.time()
     fake_devices: DeviceDictType = {
@@ -416,6 +433,8 @@ def unit_tests() -> None:
     }
 
     assert suffix_found([1,2,3], [1,2,3]), "Exact should match"
+    assert suffix_found(list([2,3]), tuple([1,2,3])), "List and tuple should be interchangeable"
+    assert suffix_found(tuple([2,3]), list([1,2,3])), "List and tuple should be interchangeable"
     assert suffix_found([1,2,3], [4, 1,2,3]), "Suffix should match"
     assert not suffix_found([1,2,3], [1,2,3,4]), "Not a suffix: should not match"
     assert not suffix_found([], [1,2,3,4]), "Empty secret code should not match"
@@ -426,16 +445,16 @@ def unit_tests() -> None:
     assert type_tuple_of_digits_1_to_9_from_str("123")  == tuple((1,2,3))
     assert type_tuple_of_digits_1_to_9_from_str("4321") == tuple((4,3,2,1))
     assert type_tuple_of_digits_1_to_9_from_str("3")    == tuple((3,))
-    assert bool(first_matched_bt_device(fake_devices, allowed_regexes=[".*"], time_cutoff=now-9999)), "Should find a device (we don't care which one)"
-    assert not (first_matched_bt_device(fake_devices, allowed_regexes=[".*"], time_cutoff=now+4444)), "Should NOT find any device, due to the too-strict time cutoff (in the future)"
-    assert "Joe's iPhone 17" == first_matched_bt_device(fake_devices, allowed_regexes=["Joe.s iPhone.*"], time_cutoff=now-100), "Should find a device"
-    assert "AA:BB:CC:DD" == first_matched_bt_device(fake_devices, allowed_regexes=["ZZZ","AA.*"], time_cutoff=now - 9999), "Finds the `AA:BB:CC:DD` device (even though it's the ADDRESS and not the NAME). In practice this won't actually be found since we are not adding the addresses to the device dict currently."
-    assert "Ghost Pepper" == first_matched_bt_device(fake_devices, allowed_regexes=[".*joe.*", ".*Pep.*"], time_cutoff=now - 100), "Finds Ghost Pepper"
-    assert "Joe's iPhone 17" == first_matched_bt_device(fake_devices, allowed_regexes=["qq", "zz", "Joe.s iPhone.*"], time_cutoff=now - 100), "Simple match of a recently-seen device"
-    assert not first_matched_bt_device(fake_devices, allowed_regexes=["Joe.s iPhone.*"], time_cutoff=now), "Disqualified by time cutoff"
-    assert not first_matched_bt_device(fake_devices, allowed_regexes=[".*joe.*", ".*pep.*"], time_cutoff=now - 100), "Case matters, so no match"
-    assert not first_matched_bt_device({},           allowed_regexes=[".*"], time_cutoff=now - 9999), "No devices, so no match"
-    assert not first_matched_bt_device(fake_devices, allowed_regexes=[], time_cutoff=now - 9999), "No allowed regexes, so no match"
+    assert bool(first_matched_bt_device(fake_devices, allowed_regexps=[".*"], time_cutoff=now-9999)), "Should find a device (we don't care which one)"
+    assert not (first_matched_bt_device(fake_devices, allowed_regexps=[".*"], time_cutoff=now+4444)), "Should NOT find any device, due to the too-strict time cutoff (in the future)"
+    assert "Joe's iPhone 17" == first_matched_bt_device(fake_devices, allowed_regexps=["Joe.s iPhone.*"], time_cutoff=now-100), "Should find a device"
+    assert "AA:BB:CC:DD" == first_matched_bt_device(fake_devices, allowed_regexps=["ZZZ","AA.*"], time_cutoff=now - 9999), "Finds the `AA:BB:CC:DD` device (even though it's the ADDRESS and not the NAME). In practice this won't actually be found since we are not adding the addresses to the device dict currently."
+    assert "Ghost Pepper" == first_matched_bt_device(fake_devices, allowed_regexps=[".*joe.*", ".*Pep.*"], time_cutoff=now - 100), "Finds Ghost Pepper"
+    assert "Joe's iPhone 17" == first_matched_bt_device(fake_devices, allowed_regexps=["qq", "zz", "Joe.s iPhone.*"], time_cutoff=now - 100), "Simple match of a recently-seen device"
+    assert not first_matched_bt_device(fake_devices, allowed_regexps=["Joe.s iPhone.*"], time_cutoff=now), "Disqualified by time cutoff"
+    assert not first_matched_bt_device(fake_devices, allowed_regexps=[".*joe.*", ".*pep.*"], time_cutoff=now - 100), "Case matters, so no match"
+    assert not first_matched_bt_device({},           allowed_regexps=[".*"], time_cutoff=now - 9999), "No devices, so no match"
+    assert not first_matched_bt_device(fake_devices, allowed_regexps=[], time_cutoff=now - 9999), "No allowed regexps, so no match"
 
     assert replace_potentially_unsafe_chars("Snåkeßß🟨a b c", unsafe_char_regexp="[^a-z ]", replacement_char="#") == "#n#ke###a b c"
     assert replace_potentially_unsafe_chars("", unsafe_char_regexp="[^a-z]", replacement_char="#") == ""
@@ -443,12 +462,11 @@ def unit_tests() -> None:
     return
 
 
-async def thread_runner(rescale_volume: float, knock_pct_threshold: int, secret_knock_code: Sequence[int], pin_obj, required_pause_time: float, required_bluetooth_regexes: Collection[str], sanitize_bt_device_names: bool):
-
+async def thread_runner(rescale_volume: float, knock_pct_threshold: int, secret_knock_code: Sequence[int], pin_obj, required_pause_time: float, required_bluetooth_regexps: Collection[str], sanitize_bt_device_names: bool):
     bluetooth_scanner_task: asyncio.Task[NoReturn] | None = None
-    if required_bluetooth_regexes:
+    if required_bluetooth_regexps:
         # Only run the scanner if we are actually going to check the nearby bluetooth devices at all
-        bluetooth_scanner_task = asyncio.create_task(infinite_loop_bluetooth_scanner(required_bluetooth_regexes=required_bluetooth_regexes, sanitize_bt_device_names=True))  # Effectively runs in parallel
+        bluetooth_scanner_task = asyncio.create_task(infinite_loop_bluetooth_scanner(required_bluetooth_regexps=required_bluetooth_regexps, sanitize_bt_device_names=sanitize_bt_device_names))  # Effectively runs in parallel
     else:
         print("Note: not running the bluetooth scanner, since no `required_bluetooth_names` were specified.")
     
@@ -459,7 +477,8 @@ async def thread_runner(rescale_volume: float, knock_pct_threshold: int, secret_
             knock_pct_threshold=knock_pct_threshold, 
             secret_knock_code=secret_knock_code, 
             pin_obj=pin_obj, 
-            required_pause_time=required_pause_time)
+            required_pause_time=required_pause_time,
+            required_bluetooth_regexps=required_bluetooth_regexps)
     finally:
         if bluetooth_scanner_task:
             bluetooth_scanner_task.cancel()  # Stop the bluetooth scanner task if/when the audio "main" loop exits
@@ -475,7 +494,7 @@ def main():
     parser.add_argument("--log",                  type=str,         default="", help="Default: no log. If specified, log garage-door button-press actions to this file. Note that opening/closing cannot be distinguished.")
 
     parser.add_argument("--scan_for_bluetooth",             action='store_true', help="If true, runs a scanner ONCE for 5 seconds and then prints the results and exits. This is for helping you figure out the IDs associated with your specific Bluetooth devices of interest.")
-    parser.add_argument("--required_bluetooth_names",       type=type_csv      , default=[], help="If empty (default), then we don't check Bluetooth device names. One or more case-sensitive comma-separated FULL MATCH regexes (e.g. '.*Cool.*' matches 'ACoolPhone', but 'Cool' only matches 'Cool' verbatim). If non-empty, require that these device NAMES (not IDs!) be nearby. WARNING: this uses the easily-detected-and-spoofed COMMON names, not the Bluetooth ID. (This is because Apple devices apparently rotate their Bluetooth ID, and I want something that is static.). A good example that would match 'Jane's iPhone 12' and 'Joe's iPhone SE 8' would be: 'Jane.s.iPhone.*,Joe.s.iPhone.*'. If you need to see what devices are around, run this script with --scan_for_bluetooth (which will print nearby device details and then exit).")
+    parser.add_argument("--required_bluetooth_names",       type=type_csv      , default=[], help="If empty (default), then we don't check Bluetooth device names. One or more case-sensitive comma-separated FULL MATCH regexps (e.g. '.*Cool.*' matches 'ACoolPhone', but 'Cool' only matches 'Cool' verbatim). If non-empty, require that these device NAMES (not IDs!) be nearby. WARNING: this uses the easily-detected-and-spoofed COMMON names, not the Bluetooth ID. (This is because Apple devices apparently rotate their Bluetooth ID, and I want something that is static.). A good example that would match 'Jane's iPhone 12' and 'Joe's iPhone SE 8' would be: 'Jane.s.iPhone.*,Joe.s.iPhone.*'. If you need to see what devices are around, run this script with --scan_for_bluetooth (which will print nearby device details and then exit).")
     parser.add_argument("--allow_nonascii_bluetooth_names", action='store_true', help=f"If true, allow bluetooth names to contain 'surprising' characters. By default, we replace anything that matches '{UNSAFE_CHAR_MATCHER}' with '{SAFER_REPLACEMENT}'.")
 
     parser.add_argument("--debug_test_button_now", action='store_true', help="Debug option. Press the button and then exit.")
@@ -534,11 +553,13 @@ def main():
         return # Exit early
 
     try:
-        asyncio.run(thread_runner(rescale_volume=args.scale, knock_pct_threshold=args.knock, secret_knock_code=args.code, pin_obj=pin_obj, required_pause_time=args.pause_time, required_bluetooth_regexes=args.required_bluetooth_names, sanitize_bt_device_names=(not args.allow_nonascii_bluetooth_names)))
+        asyncio.run(thread_runner(rescale_volume=args.scale, knock_pct_threshold=args.knock, secret_knock_code=args.code, pin_obj=pin_obj, required_pause_time=args.pause_time, required_bluetooth_regexps=args.required_bluetooth_names, sanitize_bt_device_names=(not args.allow_nonascii_bluetooth_names)))
     except KeyboardInterrupt:
         print("\n\n⚠️ User pressed Ctrl-C, so we're quitting!")
     finally:
         open_and_write_to_log(LOG_FILE_PATH, "<Exiting program after running the normal detection loop>")
+        if args.log:
+            print(f"📝 FYI: You may want to check the logs at\n       tail -n 50 {args.log}")
         pass
 
 if __name__ == "__main__":
