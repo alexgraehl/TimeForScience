@@ -205,7 +205,7 @@ async def infinite_loop_audio_listener(rescale_volume: float, knock_pct_threshol
                 data = await asyncio.get_running_loop().run_in_executor(None, lambda: audio_stream.read(CHUNK, exception_on_overflow=False))
             except KeyboardInterrupt:
                 raise  # Abort if there's a keyboard interrupt
-            except: # Tolerate anything ELSE...
+            except Exception: # Tolerate anything ELSE...
                 # If it fails due to some kind of technical issue with the audio system, try to re-initialize the stream.
                 # May or may not actually help, but allegedly this can occur intermittently.
                 print("Re-initializing the audio stream...")
