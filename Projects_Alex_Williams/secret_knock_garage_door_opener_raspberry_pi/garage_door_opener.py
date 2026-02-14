@@ -8,12 +8,12 @@
 #    python3 -m venv venv  # The second 'venv' is the directory name!
 # 2. To install the prereqs:
 #    1. Install the `pyaudio` prerequisites, which can be done with:
-#       A) If you're on a Mac (in 2026):     brew install portaudio  ### Or install `portaudio` some other way
-#       B) On a Raspberry Pi (Linux, 2026):  sudo apt install libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 python3-pyaudio
-#                                 and then:  sudo apt install python3-gpiozero
+#       A) Mac (in 2026):               brew install portaudio  ### Or install `portaudio` some other way
+#       B) Raspberry Pi (Linux, 2026):  sudo apt install libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 python3-pyaudio python3-gpiozero
 #    2. Then activate `venv`:  source venv/bin/activate  # Must be in the same directory: note that `venv` is the directory name here
-#    3. ...and then install: pip install pyaudio numpy gpiozero
-#       (Note that the pip installation only takes effect in that specific directory with the `venv/` subdirectory in it.
+#    3. ...and then pip install:
+#          pip install pyaudio numpy gpiozero bleak
+#         (Note that the pip installation only takes effect in that specific directory with the `venv/` subdirectory in it.
 # 3. Then, every time you want to run this script:
 #    source venv/bin/activate   # (To pick up `pyaudio` and `numpy`)
 
@@ -457,8 +457,8 @@ def main():
     parser.add_argument("--gpio_pin_to_pull_low", type=str,         default="GPIO4", help=f"The pin to pull LOW for {BUTTON_PRESS_TIME_SEC} second(s) to open/close the garage door.")
     parser.add_argument("--log",                  type=str,         default="", help="Default: no log. If specified, log garage-door button-press actions to this file. Note that opening/closing cannot be distinguished.")
 
-    parser.add_argument("--scan_for_bluetooth",             action='store_true', help="If true, runs a scanner ONCE for 5 seconds and then prints the results and exits. This is for helping you figure out the IDs associated with your specific Bluetooth devices of interest.")
-    parser.add_argument("--required_bluetooth_names",       type=type_csv      , default=[], help="If empty (default), then we don't check Bluetooth device names. One or more case-sensitive comma-separated FULL MATCH regexps (e.g. '.*Cool.*' matches 'ACoolPhone', but 'Cool' only matches 'Cool' verbatim). If non-empty, require that these device NAMES (not IDs!) be nearby. WARNING: this uses the easily-detected-and-spoofed COMMON names, not the Bluetooth ID. (This is because Apple devices apparently rotate their Bluetooth ID, and I want something that is static.). A good example that would match 'Jane's iPhone 12' and 'Joe's iPhone SE 8' would be: 'Jane.s.iPhone.*,Joe.s.iPhone.*'. If you need to see what devices are around, run this script with --scan_for_bluetooth (which will print nearby device details and then exit).")
+    parser.add_argument("--scan",                           action='store_true', help="If true, runs the Bluetooth scanner ONCE for a few secnds, then prints the results and exits. This is for helping you figure out the IDs associated with your specific Bluetooth devices of interest.")
+    parser.add_argument("--required_bluetooth_names",       type=type_csv      , default=[], help="If empty (default), then we don't check Bluetooth device names. One or more case-sensitive comma-separated FULL MATCH regexps (e.g. '.*Cool.*' matches 'ACoolPhone', but 'Cool' only matches 'Cool' verbatim). If non-empty, require that these device NAMES (not IDs!) be nearby. WARNING: this uses the easily-detected-and-spoofed COMMON names, not the Bluetooth ID. (This is because Apple devices apparently rotate their Bluetooth ID, and I want something that is static.). A good example that would match 'Jane's iPhone 12' and 'Joe's iPhone SE 8' would be: 'Jane.s.iPhone.*,Joe.s.iPhone.*'. If you need to see what devices are around, run this script with --scan (which will print nearby device details and then exit).")
     parser.add_argument("--allow_nonascii_bluetooth_names", action='store_true', help=f"If true, allow bluetooth names to contain 'surprising' characters. By default, we replace anything that matches '{UNSAFE_CHAR_MATCHER}' with '{SAFER_REPLACEMENT}'.")
 
     parser.add_argument("--debug_test_button_now", action='store_true', help="Debug option. Press the button and then exit.")
@@ -472,7 +472,7 @@ def main():
     if args.run_unit_tests:
         unit_tests()
 
-    if args.scan_for_bluetooth:
+    if args.scan:
         asyncio.run(print_all_nearby_bluetooth_devices())
         print("DONE listing nearby bluetooth devices. Exiting WITHOUT running anything else.")
         sys.exit(0)
