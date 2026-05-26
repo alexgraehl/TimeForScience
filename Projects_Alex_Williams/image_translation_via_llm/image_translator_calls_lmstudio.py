@@ -29,10 +29,10 @@ cd path/to/the/directory/for/image_translation_via_llm
 source venv/bin/activate
 
 # Try this to get a translation into English and NOT write the output text files
-python3 image_translator_calls_lmstudio.py --dry ./images/spanish/example-garfield-crop-spanish.png
+python3 image_translator_calls_lmstudio.py --dry ./example_images/spanish_input_example/example-garfield-crop-spanish.png
 
 # Or, say, to Japanese, for multiple files:
-python3 image_translator_calls_lmstudio.py --recursive --dry --lang=Japanese ./images/spanish/ ./images/chinese/
+python3 image_translator_calls_lmstudio.py --recursive --dry --lang=Japanese ./example_images/spanish_input_example/ ./example_images/chinese_input_example/
 ```
 
 """
