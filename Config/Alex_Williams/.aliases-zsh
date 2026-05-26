@@ -26,6 +26,19 @@ alias version="lsb_release -a" # Tells you which version of Ubuntu you are runni
 alias visible="chflags -h nohidden" #alias visible='chflags nohidden' #$SETFILE_LOCATION -P -a v' ## Mac-only: opposite of "invisible"
 alias wcl='grep -c ""'        # Actually gives you the NUMBER and not the filename
 
+function agw_venv_on() {
+    # This is just an easy way for us to not have to care if the virtual environment
+    # folder is named .venv or venv. Finds a 'bin/activate' file.
+    local venv_path
+    venv_path=$(find . -maxdepth 3 -type f -path "*/bin/activate" | head -n 1)  # Arbitrarily select the first one if there are multiple.
+    if [[ -n "$venv_path" ]]; then
+        source "$venv_path"  # Found a <dir>/bin/activate, so `source` it to activate the virtualenv
+    else
+        echo -e "$ERRTT No 'bin/activate' could be found in any subdirectories."
+        return 1 # Failure
+    fi
+}
+
 if [[ "$OSTYPE" == darwin* ]]; then
   isMac=1
 else
@@ -1327,4 +1340,3 @@ END_OF_HEREDOC
        ) # This end-paren is important: It matches the one above
     echo "$VERBATIM_CHEAT_SHEET"
 }
-
