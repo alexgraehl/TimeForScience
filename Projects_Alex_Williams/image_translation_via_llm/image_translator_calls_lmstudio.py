@@ -32,7 +32,11 @@ source venv/bin/activate
 python3 image_translator_calls_lmstudio.py --dry ./example_images/spanish_input_example/example-garfield-crop-spanish.png
 
 # Or, say, to Japanese, for multiple files:
-python3 image_translator_calls_lmstudio.py --recursive --dry --lang=Japanese ./example_images/spanish_input_example/ ./example_images/chinese_input_example/
+python3 image_translator_calls_lmstudio.py --recursive --dry --lang=Japanese ./intentional_error/spanish_input_example/ ./example_images/chinese_input_example/
+
+# To see what the behavior is on a malformed image, try:
+python3 image_translator_calls_lmstudio.py --dry ./example_images/malformed_input/intentionally_malformed_not_real_image.jpeg
+
 ```
 
 """
@@ -48,7 +52,7 @@ import time
 GLOBAL_FAILURES: list[str] = []
 
 # Store the inference time for each image (image path -> inference time (sec)).
-GLOBAL_TIMINGS: dict[str, float] = {}
+GLOBAL_OK_TIMINGS: dict[str, float] = {}
 
 # All recognized image file extensions. These should be lower-case!
 # (The actual check is case-insensitive.) Note that the vision language model
@@ -142,22 +146,20 @@ def process_images(paths: Sequence[str], recursive: bool, dry_run: bool, overwri
             # This is the slowest single step
             start_time: float = time.perf_counter()
             response = model.respond(chat)
-            duration: float = time.perf_counter() - start_time
+            inference_duration: float = time.perf_counter() - start_time
             translation: str = response.content  # We could postprocess it if we wanted, too
-            GLOBAL_TIMINGS[str(img_path)] = duration
-
-            print(f"[:FYI:] Translation of {img_path.name}:\n{translation}\n")
+            print(f"[:FYI:] Translation of {img_path}:\n{translation}\n")
             if dry_run:
                 print(f"[:FYI:] --dry_run is enabled, so we are not writing `{translated_output_path}`")
-                continue
-            
-            with open(translated_output_path, "w", encoding="utf-8") as f:
-                print(f"[:FYI:] Saving translation to `{translated_output_path}`...")
-                f.write(translation)
-            print(f"[:FYI:] (Saved translation to `{translated_output_path}`)")
-            pass
+            else:            
+                with open(translated_output_path, "w", encoding="utf-8") as f:
+                    print(f"[:FYI:] Saving translation to `{translated_output_path}`...")
+                    f.write(translation)
+                print(f"[:FYI:] (Saved translation to `{translated_output_path}`)")
+
+            GLOBAL_OK_TIMINGS[str(img_path)] = inference_duration  # Add this information at the end (only counts successes)
         except Exception as e:
-            failure_message = f"Failed to translate the file `{img_path.name}`: {e}"
+            failure_message: str = f"Failed to translate the file `{img_path}`: {e}"
             GLOBAL_FAILURES.append(failure_message)
             print(f"[:ERR:] {failure_message}")
 
@@ -178,21 +180,24 @@ if __name__ == "__main__":
     process_images(args.paths, args.recursive, args.dry_run, args.force, args.lang)
     global_duration: float = time.perf_counter() - global_start_time
 
-    total_inference_time: float = sum(GLOBAL_TIMINGS.values())
+    total_inference_time: float = sum(GLOBAL_OK_TIMINGS.values())
     
     if GLOBAL_FAILURES:
         print(f"[:ERR:] These {len(GLOBAL_FAILURES)} image(s) could NOT be properly translated:")
         for failure in GLOBAL_FAILURES:
-            print(f"[:ERR:] * {failure}")
+            # First, collapse one or more runs of "\n" into a single " /// "
+            failure_one_line: str = " /// ".join([x for x in failure.splitlines() if x])  # Collapse newlines for the failure messages only
+            print(f"[:ERR:] * {failure_one_line}")
 
     # {:8.2f} is right-aligning the numbers with an 8-character padding (which should hopefully be plenty)
-    print("[:OK:] Global total time  : {:8.2f}s".format(global_duration))
-    print("[:OK:] Inference-only time: {:8.2f}s".format(total_inference_time))
-    print("[:OK:] Non-inference time : {:8.2f}s".format(global_duration - total_inference_time))
-    if len(GLOBAL_TIMINGS) > 0:
-        durations = list(GLOBAL_TIMINGS.values())
-        print(f"[:OK:] NUM  images handled: {len(durations):5.0f} images")
-        print(f"[:OK:] NUM        problems: {len(GLOBAL_FAILURES):5.0f} problems")
+    print("[:OK:] Global total time  : {:8.2f}s ({:4.1f}hrs)".format(global_duration, global_duration / 3600))
+    print("[:OK:] Inference-only time: {:8.2f}s ({:4.1f}hrs)".format(total_inference_time, total_inference_time / 3600))
+    print("[:OK:] Non-inference time : {:8.2f}s ({:4.1f}hrs)".format(global_duration - total_inference_time, (global_duration - total_inference_time) / 3600))
+    if len(GLOBAL_OK_TIMINGS) > 0:
+        durations = list(GLOBAL_OK_TIMINGS.values())
+        print(f"[:OK:]      Num. successes: {len(durations):5.0f} translated image(s)")
+        okmsg: str = "[:ERR:]" if GLOBAL_FAILURES else "[:OK:] "
+        print(f"{okmsg}      Num. problems: {len(GLOBAL_FAILURES):5.0f} problem(s)")
         print(f"[:OK:] MEAN time per image: {sum(durations) / len(durations):8.2f}s")
         print(f"[:OK:] MAX  time per image: {max(durations):8.2f}s")
         print(f"[:OK:] MIN  time per image: {min(durations):8.2f}s")
