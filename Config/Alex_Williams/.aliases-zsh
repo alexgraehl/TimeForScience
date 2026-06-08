@@ -25,6 +25,11 @@ alias wcl='grep -c ""'        # Actually gives you the NUMBER and not the filena
 alias rr='tmux attach || tmux new' #"screen -xR -U" ## Reconnect to the previous screen, or make a new one if there isn't one already
 # alias rr='screen -xR -U' # This is the 'screen' version of the command above.
 
+function agw_windowserver_fix_if_its_a_bluetooth_crashloop {
+    echo "[:FYI:] You should manually run this command:"
+    echo "[:OK:]  sudo killall coreaudiod audioaccessoryd SystemUIServer"
+    echo "[:FYI:] This might solve the issue if this is showing up in the logs over and over:	coreaudiod	Audio Accessory XPC Connection Error"
+}
 
 function agw_venv_on() {
     # This is just an easy way for us to not have to care if the virtual environment
