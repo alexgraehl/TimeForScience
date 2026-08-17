@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
 ### Test_script.sh: DESCRIPTION SHOULD GO HERE
 ###
 ### Usage:

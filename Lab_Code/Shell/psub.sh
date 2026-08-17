@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 # Initial version from Tev Dincer: https://gist.github.com/udincer/345d4767eda0e2c21849e6746953402b
 
 if [[ "$#" != 1 ]] ; then echo -e "[:ERR:]] Please specify a command filename (e.g. 'yourcommand.bsub.sh')"; exit 99; fi
