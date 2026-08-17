@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# By Alex, last edited in 2026.
+
 ### say_random_voice.sh: Runs the Mac built-in 'say' utility with a randomly-chosen
 ###                      voice (optionally in a specified language/locale). Only works on the Mac.
 ###
