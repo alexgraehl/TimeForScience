@@ -28,6 +28,8 @@
 #     17   *    *    *    *    (command path)
 #     Again, you must use TABS and not spaces.
 
+set -euo pipefail  # Exit on errors / undefined variables / pipe failures
+
 NOW=$(date "+%u-%H-%M") # DAY_OF_WEEK:HOUR24:MINUTE60  (e.g 1:18:22 or 8:18:22)
 # %u: day of week (1..7); 1 represents Monday, 6 is Saturday, 7 is Sunday
 
