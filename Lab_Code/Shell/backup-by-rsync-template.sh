@@ -1,7 +1,13 @@
+#!/usr/bin/env bash
 
-REMOTE_USERNAME=*************
-WHICH_REMOTE_HOST=*****************
-BKDIR=/Backup_Local
+# This is a script that was very specifically set up for RSync-ing bioinformatics files, as you can
+# tell from the file exclusion list.
+
+REMOTE_USERNAME=*************         # (<-- Fill this in)
+WHICH_REMOTE_HOST=*****************   # (<-- Fill this in)
+SRC_BACKUP_PATH=/work/Common/          # <-- Change this. Expeted to end in a slash
+BKDIR=/Backup_Local                   # (<-- Fill this in)
+
 
 echo ''
 echo "About to copy remote code files from ${WHICH_REMOTE_HOST} to this local machine as a backup..."
@@ -27,7 +33,6 @@ else
 		DEL_ARG="--delete-after"
 	fi
 fi
-
 
 echo 'ENTER YOUR PASSWORD WHEN PROMPTED BY RSYNC:'
 
@@ -63,10 +68,8 @@ rsync --verbose --progress --stats --compress --rsh=/usr/bin/ssh   \
 		--exclude "*.bam" \
 		--exclude "binf-core-internal-*"   \
 		--exclude "Data" \
-		--exclude "TimeForScience" \
-		--exclude "notchChIPseq*" --exclude "notch_rnaChIP1*" \
 		${DEL_ARG} \
-		${REMOTE_USERNAME}@${WHICH_REMOTE_HOST}:/work/Common/ ${BKDIR}
+		${REMOTE_USERNAME}@${WHICH_REMOTE_HOST}:${SRC_BACKUP_PATH} ${BKDIR}
 
 echo ''
 echo "Finished copying backups to <${BKDIR}>"
