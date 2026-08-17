@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 
 ## Requires sudo access.
 ## Make sure this file is executable as root by:
