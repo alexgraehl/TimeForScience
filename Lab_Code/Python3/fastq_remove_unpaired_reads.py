@@ -2,7 +2,7 @@
 '''
 This script requires python3. 
 
-WARNING: it reads all the IDs frmo a fastq file into memory, so you need to have at least enough memory to store the read names!
+WARNING: it reads all the IDs from a fastq file into memory, so you need to have at least enough memory to store the read names!
 If the files are huge, then you might need a lot of space! 12 GB was insufficient for two 33 GB (compressed) fastq files.
 
 You can test it like so:
