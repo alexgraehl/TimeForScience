@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+
+# FYI: Run this with either "python -m pytest" or just "make test" if you prefer.
+# By Alex Williams, 2026. Finally adding unit testing, mostly for fun.
+
 import argparse
 import pytest
 import fastq_remove_unpaired_reads as test
