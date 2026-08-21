@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-'''
+"""
 This script requires python3. 
 
 WARNING: it reads all the IDs from a fastq file into memory, so you need to have at least enough memory to store the read names!
 If the files are huge, then you might need a lot of space! 12 GB was insufficient for two 33 GB (compressed) fastq files.
 
 You can test it like so:
-
-# should have all the same reads
    python3 `which fastq_remove_unpaired_reads.py3` --out1=a.fq.gz --out2=b.fq.gz --verbose ~/workspace/DATA_RESCOMP/fastq_test_data/A_human_pair*.5000.fq.gz
+   # (That should have all the same reads)
 
-# should have NONE of the same reads
+Or:
    python3 `which fastq_remove_unpaired_reads.py3` --out1=a.fq.gz --out2=b.fq.gz --verbose ~/workspace/DATA_RESCOMP/fastq_test_data/A_human_pair1.5000.fq.gz ~/workspace/DATA_RESCOMP/fastq_test_data/B_human_pair1.4000.fq.gz
-'''
+   # Which should have NONE of the same reads
+"""
 import os.path
 import sys
 import re
@@ -35,7 +35,7 @@ def open_compressed_agw(filename, mode, verbose=False):
     if re.search(r"[.](bz2|bzip2)$", filename, flags=re.IGNORECASE):
         return bz2.BZ2File(filename=filename, mode=mode)
     else:
-        return open(filename=filename, mode=mode)
+        return open(file=filename, mode=mode)
 
 def argErrorAndExit(msg="(No additional information given)"):
     raise SystemExit("[ERROR] in arguments to this script: " + msg)
@@ -54,9 +54,9 @@ def populate_OrderedDict_with_names(filename, verbose=False):
         for linenum,line in enumerate(fff):
             if (linenum % 4 == 0):
                 xid = scrub_name(line)
-                if not xid.startswith("@"): raise("Invalid FASTQ line!")
+                if not xid.startswith("@"): raise Exception("Invalid FASTQ line!")
                 if xid in sss:
-                    sys.stder.write("[Warning]: DUPLICATED RECORD NAME: the record name <" + str(xid) + "> appeared TWICE, with the second appearance on line number <" + str(linenum) + "> in file <" + filename + ">. Continuing anyway...\n")
+                    sys.stderr.write("[Warning]: DUPLICATED RECORD NAME: the record name <" + str(xid) + "> appeared TWICE, with the second appearance on line number <" + str(linenum) + "> in file <" + filename + ">. Continuing anyway...\n")
                     pass
                 sss[xid] = True
                 pass
