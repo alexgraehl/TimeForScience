@@ -105,11 +105,9 @@ if __name__ == "__main__":
 
         inputFilename = args[0]
         try:
-            theFile = open(
-                inputFilename, "r"
-            )  ## The annotated bed file MUST have the "GTF" gene annotation so we know which reads are associated with which genes.
+            theFile = open(inputFilename, "r")
         except:
-            sys.stderr.write("ERROR: Could not open specified file " + inputFilename)
+            sys.stderr.write("ERROR: Could not open the specified input file: " + inputFilename)
             raise
         pass
 
