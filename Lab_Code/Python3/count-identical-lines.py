@@ -119,11 +119,12 @@ if __name__ == "__main__":
         pass
     theFile.close()
 
+    # Note that we write to 'sys.stdout' here to make it easier to redirect the (non-stderr) output.
     for key, value in ddd.items():
-        sys.stdout.write(
-            str(value) + "\t" + key.rstrip() + "\n"
-        )  # rstrip removes whitespace from right side of the key. This is important!
+        # rstrip removes whitespace from right side of the key. This is important!
+        sys.stdout.write(str(value) + "\t" + key.rstrip() + "\n")  
         pass
 
-    sys.stderr.write("[Done -- Read a total of " + str(lineNum) + " lines.]\n")
+    # These status messages are intentionally written to STDERR.
+    sys.stderr.write(f"[Done -- Read a total of {lineNum} lines.]\n")
     pass
