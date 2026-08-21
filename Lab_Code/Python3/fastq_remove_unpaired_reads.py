@@ -129,7 +129,7 @@ def main():
     else:
         call(["ln", "-s", os.path.realpath(fq1), out1]) # just symlink... don't re-write the file
         call(["ln", "-s", os.path.realpath(fq2), out2]) # just symlink... don't re-write the file
-        sys.stderr.write("fastq_remove_unapired_reads has Generated two ABSOLUTE PATH symlinks: <" + out1 + "> and <" + out2 + ">\n")
+        sys.stderr.write("fastq_remove_unpaired_reads has Generated two ABSOLUTE PATH symlinks: <" + out1 + "> and <" + out2 + ">\n")
         pass
     return # end of 'main'
 
