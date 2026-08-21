@@ -1,17 +1,25 @@
 #!/usr/bin/env python3
 """
-This script requires python3. 
+Removes unpaired reads from two FASTQ files. (The "sanitized" output files will contain only the reads that are present in both input FASTQ files.)
 
-WARNING: it reads all the IDs from a fastq file into memory, so you need to have at least enough memory to store the read names!
-If the files are huge, then you might need a lot of space! 12 GB was insufficient for two 33 GB (compressed) fastq files.
+WARNING: it reads all the IDs from a FASTQ file into memory, so you need to have at least enough memory to store the read names!
 
-You can test it like so:
-   python3 `which fastq_remove_unpaired_reads.py3` --out1=a.fq.gz --out2=b.fq.gz --verbose ~/workspace/DATA_RESCOMP/fastq_test_data/A_human_pair*.5000.fq.gz
-   # (That should have all the same reads)
+If the input files are huge, then you might need a lot of RAM! 12 GB was insufficient for two 33 GB (compressed) fastq files.
+
+You can test it as follows:
+
+```python
+python3 `which fastq_remove_unpaired_reads.py3` --out1=a.fq.gz --out2=b.fq.gz --verbose ~/workspace/DATA_RESCOMP/fastq_test_data/A_human_pair*.5000.fq.gz
+# (That should have all the same reads)
+```
 
 Or:
-   python3 `which fastq_remove_unpaired_reads.py3` --out1=a.fq.gz --out2=b.fq.gz --verbose ~/workspace/DATA_RESCOMP/fastq_test_data/A_human_pair1.5000.fq.gz ~/workspace/DATA_RESCOMP/fastq_test_data/B_human_pair1.4000.fq.gz
-   # Which should have NONE of the same reads
+
+```
+python3 `which fastq_remove_unpaired_reads.py3` --out1=a.fq.gz --out2=b.fq.gz --verbose ~/workspace/DATA_RESCOMP/fastq_test_data/A_human_pair1.5000.fq.gz ~/workspace/DATA_RESCOMP/fastq_test_data/B_human_pair1.4000.fq.gz
+# Which should have NONE of the same reads
+```
+
 """
 import os.path
 import sys
@@ -42,8 +50,8 @@ def argErrorAndExit(msg="(No additional information given)"):
 
 
 def scrub_name(s):
-    s2 = re.sub(r"\s.*", "", s.strip())
-    s3 = re.sub(r"[/][12]", "/_ANY_", s2)
+    s2 = re.sub(r"\s.*", "", s.strip())    # Turns e.g. "   @FASTQ_1234 ABCDE FGHIJ" into just "@FASTQ_1234"
+    s3 = re.sub(r"[/][12]", "/_ANY_", s2)  # Replaces the '/1' or '/2' FASTQ record suffix so that matching reads will have the same name.
     return s3
 
 def populate_OrderedDict_with_names(filename, verbose=False):
@@ -93,8 +101,7 @@ def write_fastqs_in_set(infile, bothset, destname, verbose):
     sys.stderr.write("[fastq_remove_unpaired_reads.py3]: Wrote " + str(n_printed) + " records (and omitted " + str(n_omitted) + ") to --> " + destname + "\n")
     return (n_printed, n_omitted)
 
-
-def main():
+def construct_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="%(prog)s: fastq filterer in python 3. Removes any missing partial pairs, e.g. ReadA in forward pair file only, but ReadB in reverse pair file only---those would be removed.",
                                      epilog='''Example usage: python %(prog)s (examples go here)''',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -103,8 +110,12 @@ def main():
     parser.add_argument("--never-symlink", "--never_symlink", "--no-symlinks", dest="never_symlink", action="store_true", required=False, help="If specified, we do NOT just create a symlink when the files have identical reads. Default is to just symlink the files when all the reads at the same.")
     parser.add_argument("-v", "--verbose", dest="verbose",  action="store_true", help="Print verbose status messages to stderr")
     parser.add_argument("remainder", nargs=argparse.REMAINDER) # get the REMAINING un-parsed arguments (for example, a bunch of filenames)
-    args = parser.parse_args()
+    return parser
+
+def main():
+    args = construct_argument_parser().parse_args()
     (out1,out2) = (args.out1, args.out2)
+    if os.path.basename(out1) == os.path.basename(out2): argErrorAndExit(f"ARGUMENT ERROR: Output filenames (--out1 and --out2) must be DIFFERENT: both cannot be '{os.path.basename(out1)}'.")
     if not re.search("[.](fq|fastq)[.](gz|gzip)$", out1, flags=re.I): argErrorAndExit("ARGUMENT ERROR: Your output filenames must both end in '.fastq.gz' or '.fq.gz'. They MUST be gzipped, we do not support uncompressed files! Offending not-gzipped-fastq name was: " + str(out2))
     if not re.search("[.](fq|fastq)[.](gz|gzip)$", out2, flags=re.I): argErrorAndExit("ARGUMENT ERROR: Your output filenames must both end in '.fastq.gz' or '.fq.gz'. They MUST be gzipped, we do not support uncompressed files! Offending not-gzipped-fastq name was: " + str(out2))
     if not 2 == len(args.remainder): argErrorAndExit("ARGUMENT ERROR: You must specify TWO input FASTQ files to filter out reads from.")
@@ -123,19 +134,16 @@ def main():
     should_write_new_output_files = args.never_symlink or (not files_have_all_matching_reads)
     if should_write_new_output_files:
         keys_in_both = set(dict1.keys()).intersection(set(dict2.keys()))    
-        (ok1, omit1) = write_fastqs_in_set(infile=fq1, bothset=keys_in_both, destname=out1, verbose=args.verbose)
-        (ok2, omit2) = write_fastqs_in_set(infile=fq2, bothset=keys_in_both, destname=out2, verbose=args.verbose)
+        (ok1, _) = write_fastqs_in_set(infile=fq1, bothset=keys_in_both, destname=out1, verbose=args.verbose)
+        (ok2, _) = write_fastqs_in_set(infile=fq2, bothset=keys_in_both, destname=out2, verbose=args.verbose)
         assert ok1 == ok2
     else:
         call(["ln", "-s", os.path.realpath(fq1), out1]) # just symlink... don't re-write the file
         call(["ln", "-s", os.path.realpath(fq2), out2]) # just symlink... don't re-write the file
-        sys.stderr.write("fastq_remove_unpaired_reads has Generated two ABSOLUTE PATH symlinks: <" + out1 + "> and <" + out2 + ">\n")
+        sys.stderr.write("fastq_remove_unpaired_reads has generated two ABSOLUTE PATH symlinks: <" + out1 + "> and <" + out2 + ">\n")
         pass
     return # end of 'main'
 
-# Must come at the VERY END!
 if __name__ == "__main__":
-    #assert sys.version_info >= (3,5), "You need to run this with python3.5 or later."
     main()
     pass
-
