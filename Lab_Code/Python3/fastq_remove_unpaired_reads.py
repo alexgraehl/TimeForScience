@@ -112,30 +112,31 @@ def construct_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument("remainder", nargs=argparse.REMAINDER) # get the REMAINING un-parsed arguments (for example, a bunch of filenames)
     return parser
 
-def main():
-    args = construct_argument_parser().parse_args()
-    (out1,out2) = (args.out1, args.out2)
-    if os.path.basename(out1) == os.path.basename(out2): argErrorAndExit(f"ARGUMENT ERROR: Output filenames (--out1 and --out2) must be DIFFERENT: both cannot be '{os.path.basename(out1)}'.")
-    if not re.search("[.](fq|fastq)[.](gz|gzip)$", out1, flags=re.I): argErrorAndExit("ARGUMENT ERROR: Your output filenames must both end in '.fastq.gz' or '.fq.gz'. They MUST be gzipped, we do not support uncompressed files! Offending not-gzipped-fastq name was: " + str(out2))
-    if not re.search("[.](fq|fastq)[.](gz|gzip)$", out2, flags=re.I): argErrorAndExit("ARGUMENT ERROR: Your output filenames must both end in '.fastq.gz' or '.fq.gz'. They MUST be gzipped, we do not support uncompressed files! Offending not-gzipped-fastq name was: " + str(out2))
-    if not 2 == len(args.remainder): argErrorAndExit("ARGUMENT ERROR: You must specify TWO input FASTQ files to filter out reads from.")
-    (fq1, fq2) = (args.remainder[0], args.remainder[1])
+def validate_args(args) -> bool:
+    # Basic verification of the input args
+    if os.path.basename(args.out1) == os.path.basename(args.out2): argErrorAndExit(f"ARGUMENT ERROR: Output filenames (--out1 and --out2) must be DIFFERENT: both cannot be '{os.path.basename(args.out1)}'.")
+    if not re.search("[.](fq|fastq)[.](gz|gzip)$", args.out1, flags=re.I): argErrorAndExit(f"ARGUMENT ERROR: Your output filenames must both end in '.fastq.gz' or '.fq.gz'. They MUST be gzipped, we do not support uncompressed files! The offending not-gzipped-fastq name was: {args.out1}")
+    if not re.search("[.](fq|fastq)[.](gz|gzip)$", args.out2, flags=re.I): argErrorAndExit(f"ARGUMENT ERROR: Your output filenames must both end in '.fastq.gz' or '.fq.gz'. They MUST be gzipped, we do not support uncompressed files! The offending not-gzipped-fastq name was: {args.out2}")
+    if len(args.remainder) != 2: argErrorAndExit("ARGUMENT ERROR: You must specify exactly two input FASTQ files to filter out reads from.")
+    return True
+
+def main(out1: str, out2: str, fq1: str, fq2: str, never_symlink: bool, verbose: bool) -> None:
     for f in [fq1, fq2]:
-        if not os.path.isfile(f): raise Exception("Failed to find input file <"+f+">")
+        if not os.path.isfile(f): raise Exception(f"Failed to find input file <{f}>. Is it a valid regular file?")
         pass
-    dict1 = populate_OrderedDict_with_names(fq1, verbose=args.verbose)
-    dict2 = populate_OrderedDict_with_names(fq2, verbose=args.verbose)
+    dict1 = populate_OrderedDict_with_names(fq1, verbose)
+    dict2 = populate_OrderedDict_with_names(fq2, verbose)
     if args.verbose: sys.stderr.write("Num records in file 1 (" + str(fq1) + "): " + str(len(dict1)) + "\n")
     if args.verbose: sys.stderr.write("Num records in file 2 (" + str(fq2) + "): " + str(len(dict2)) + "\n")
     files_have_all_matching_reads = (list(dict1.keys()) == list(dict2.keys()))
-    if     files_have_all_matching_reads and args.verbose: sys.stderr.write("Files have matching read names, in the same order! Perfect.\n")
-    if not files_have_all_matching_reads and args.verbose: sys.stderr.write("Files did NOT have all matching reads. Only printing matches.\n")
-    if args.never_symlink:                                 sys.stderr.write("Since we are NOT supposed to symlink, we will be writing the files out again no matter what.\n")
-    should_write_new_output_files = args.never_symlink or (not files_have_all_matching_reads)
+    if     files_have_all_matching_reads and verbose: sys.stderr.write("Files have matching read names, in the same order! Perfect.\n")
+    if not files_have_all_matching_reads and verbose: sys.stderr.write("Files did NOT have all matching reads. Only printing matches.\n")
+    if never_symlink:                                 sys.stderr.write("Since we are NOT supposed to symlink, we will be writing the files out again no matter what.\n")
+    should_write_new_output_files = never_symlink or (not files_have_all_matching_reads)
     if should_write_new_output_files:
         keys_in_both = set(dict1.keys()).intersection(set(dict2.keys()))    
-        (ok1, _) = write_fastqs_in_set(infile=fq1, bothset=keys_in_both, destname=out1, verbose=args.verbose)
-        (ok2, _) = write_fastqs_in_set(infile=fq2, bothset=keys_in_both, destname=out2, verbose=args.verbose)
+        (ok1, _) = write_fastqs_in_set(infile=fq1, bothset=keys_in_both, destname=out1, verbose=verbose)
+        (ok2, _) = write_fastqs_in_set(infile=fq2, bothset=keys_in_both, destname=out2, verbose=verbose)
         assert ok1 == ok2
     else:
         call(["ln", "-s", os.path.realpath(fq1), out1]) # just symlink... don't re-write the file
@@ -145,5 +146,8 @@ def main():
     return # end of 'main'
 
 if __name__ == "__main__":
-    main()
+    args = construct_argument_parser().parse_args()
+    _: bool = validate_args(args)
+    fastq_path_1, fastq_path_2 = (args.remainder[0], args.remainder[1])
+    main(out1=fastq_path_1, out2=fastq_path_2, fq1=args.fq1, fq2=args.fq2, never_symlink=args.never_symlink, verbose=args.verbose)
     pass
