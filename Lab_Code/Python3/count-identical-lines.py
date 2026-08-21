@@ -3,30 +3,56 @@
 import getopt
 import sys
 import textwrap
+from collections import defaultdict
 
 # import pdb; #pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
 
 ALEX_PROGRAM_USAGE_TEXT = """
-Duplicate line counter. For fasta / fastq / csfasta files.
+Duplicate line counter by Alex Williams. Intended For FASTA/FASTQ/CSFASTA files.
 
-Usage from a file: count-identical-lines.py YOURFILE.txt > out.txt
+Provides the number of times a specific line is seen in a file, for example, a file that looks like this:
 
-Usage from STDIN:  cat YOURFILE.txt | count-identical-lines.py > out.txt
+```text
+ZZZZ
+A
+A
+A
+ZZZZ
+BB
+BB
+CCC
+A
+```
+
+Would result in this output, where an additional (leftmost) column now shows the number of times a specific line was seen.
+
+```text
+2  ZZZZ
+4  A
+2  BB
+1  CCC
+```
+
+The original line order is preserved, except that duplicates are removed.
+
+This is a niche utility: in most cases, you'd be better off just running 'sort YOURFILE | uniq -c', unless you
+actually care about preserving the order of the input lines.
+
+For certain large FASTQ files (benchmarked on a 2.2 GB file), this is about 5x faster.
+
+Usage with a file input:
+   count-identical-lines.py YOURFILE.txt > out.txt
+
+Usage when the data is piped from STDIN:
+   cat YOURFILE.txt | count-identical-lines.py > out.txt
+   (Remember to redirect STDOUT to a file (that is, don't forget the '> out.txt' part of the command).)
 
 You may have to use "cut" beforehand if you only want ONE column out of a file.
-
-Note that this is ONLY useful for incredibly large files. Otherwise, just use UNIX sort, like so:
- sort YOURFILE | uniq -c
-
-(It only takes about 5 times longer to use UNIX sort on a 2.2 GB file using "sort THEFILE | uniq -c")
-
-Remember to redirect STDOUT to a file (that is, don't forget the '> out.txt' part of the command).
 """
 
 TERMINAL_WIDTH = 80
 
-
-def usageAndQuit(exitCode, message=None):
+def usageAndQuit(exitCode: int, message: str="") -> None:
     message = textwrap.fill(message, TERMINAL_WIDTH)
     if message is not None:
         print("")
@@ -46,9 +72,7 @@ def usageAndQuit(exitCode, message=None):
         print("*" * TERMINAL_WIDTH)
         print("[Program Terminated]")
         pass
-    sys.exit(exitCode)
-    return
-
+    sys.exit(exitCode)  # No return value
 
 if __name__ == "__main__":
     sys.stderr.write(
@@ -68,7 +92,6 @@ if __name__ == "__main__":
             pass
         print("Unprocessed arguments:", args)
         print("Unprocessed options:", opts)
-
         pass
 
     if len(args) == 0 or args[0] == "-":  # hyphen means 'read from stdin'
@@ -90,15 +113,11 @@ if __name__ == "__main__":
             raise
         pass
 
-    ddd = dict()
+    ddd = defaultdict(int)  # (FYI: 0 is the default for int)
     lineNum = 0
     for line in theFile:
         lineNum += 1
-        if line in ddd:
-            ddd[line] += 1
-        else:
-            ddd[line] = 1
-            pass
+        ddd[line] += 1  # Increment the number of "duplicates" (possibly the first occurrence)
         pass
     theFile.close()
 
@@ -110,6 +129,3 @@ if __name__ == "__main__":
 
     sys.stderr.write("[Done -- Read a total of " + str(lineNum) + " lines.]\n")
     pass
-
-
-##
