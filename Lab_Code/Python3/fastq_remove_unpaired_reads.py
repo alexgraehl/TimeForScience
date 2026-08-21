@@ -95,7 +95,6 @@ def write_fastqs_in_set(infile, bothset, destname, verbose):
 
 
 def main():
-    PAIR_PLACEHOLDER_SYMBOL='@@@'
     parser = argparse.ArgumentParser(description="%(prog)s: fastq filterer in python 3. Removes any missing partial pairs, e.g. ReadA in forward pair file only, but ReadB in reverse pair file only---those would be removed.",
                                      epilog='''Example usage: python %(prog)s (examples go here)''',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
