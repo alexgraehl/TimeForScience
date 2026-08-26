@@ -112,9 +112,7 @@ if __name__ == "__main__":
         pass
 
     ddd = defaultdict(int)  # (FYI: 0 is the default for int)
-    lineNum = 0
-    for line in theFile:
-        lineNum += 1
+    for lineNum, line in enumerate(theFile):
         ddd[line] += 1  # Increment the number of "duplicates" (possibly the first occurrence)
         pass
     theFile.close()
