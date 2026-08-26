@@ -1,32 +1,26 @@
 #!/usr/bin/env perl
 
-if ($ARGV[0] eq "--help")
-{
-  print STDOUT <DATA>;
-  exit(0);
+if ( $ARGV[0] eq "--help" ) {
+    print STDOUT <DATA>;
+    exit(0);
 }
 
-use lib "$ENV{MYPERLDIR}/lib"; use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl"; require "load_args.pl";
+use lib "$ENV{MYPERLDIR}/lib";
+use lib "$ENV{TIME_FOR_SCIENCE_DIR}/Lab_Code/Perl";
+require "load_args.pl";
 
-my %args = load_args(\@ARGV);
-
-my $space_columns = get_arg("space_columns", 0, \%args);
+my %args          = load_args( \@ARGV );
+my $space_columns = get_arg( "space_columns", 0, \%args );
 
 my $id = 0;
-while(<STDIN>)
-{
-  chop;
-
-  print $id . "\t";
-
-  for (my $i = 0; $i < $space_columns; $i++)
-  {
-    print "\t";
-  }
-
-  print $_ . "\n";
-
-  $id++;
+while (<STDIN>) {
+    chop;
+    print $id . "\t";
+    for ( my $i = 0 ; $i < $space_columns ; $i++ ) {
+        print "\t";
+    }
+    print $_ . "\n";
+    $id++;
 }
 
 exit(0);
