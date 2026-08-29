@@ -365,7 +365,7 @@ class AGW_File_Data:
         self.hasColHeader: bool = False
         self.hasRowHeader: bool = False
         self.cursorPos: Point = Point(0, 0)  # what is the selected cell
-        self.__regex: Optional[str] = None
+        self.__regex: str = ""  # Empty string indicates "no search is active"
         self.__compiledRegex: Optional[re.Pattern[str]] = None
         self.regexIsCaseSensitive: bool = False
         self.boolHighlightNumbers: bool = DEFAULT_HIGHLIGHT_NUMBERS_SETTING
@@ -389,23 +389,27 @@ class AGW_File_Data:
         return
 
     def getRegexString(self) -> str:
-        return stringFromAny(self.__regex)
+        return self.__regex
 
     def appendToCurrentSearchTerm(self, newThing: str) -> None:
-        self.changeCurrentSearchTerm(stringFromAny(self.__regex) + newThing)
+        self.changeCurrentSearchTerm(self.__regex + newThing)
         return
 
     # In class AGW_File_Data
-    def changeCurrentSearchTerm(self, argSearchString: Optional[str], argIsCaseSens: Optional[bool] = None) -> None:
+    # Args:
+    #   argSearchString: If non-empty, indicates that we should be highlighgint a particular search term.
+    #   argIsCaseSense: If None, then don't change the current case-sensitivity setting. If True/False, then
+    #                   set the case sensitivity accordingly. (i.e., "None" means "no change)
+    def changeCurrentSearchTerm(self, argSearchString: str, argIsCaseSens: Optional[bool] = None) -> None:
         self.__regex = argSearchString
         # setWarning("just set regex to: " + str(self.__regex))
 
-        if argIsCaseSens is not None:
+        # Note that "None" means "preserve whatever the previous setting is"
+        if argIsCaseSens is not None:  
             self.regexIsCaseSensitive = argIsCaseSens
             pass
 
-        if lenFromAny(self.__regex) <= 0:
-            self.__regex = None
+        if not self.__regex:
             self.__compiledRegex = None
             pass
         else:
@@ -419,12 +423,12 @@ class AGW_File_Data:
         return
 
     def clearCurrentSearchTerm(self) -> None:
-        self.changeCurrentSearchTerm(None, None)
+        self.changeCurrentSearchTerm("", None)
         pass
 
     def trimRegex(self, numChars: int = 1) -> None:
-        """Remove the last <numChars> characters from the end of the search term (i.e., it is like pressing backspace). Clears the search term (which sets it to None) if it is going to be zero-length."""
-        currentRegexLength = lenFromAny(self.__regex)
+        """Remove the last <numChars> characters from the end of the search term (i.e., it is like pressing backspace). Clears the search term (which sets it to "") if it is going to be zero-length."""
+        currentRegexLength = len(self.__regex)
         if currentRegexLength <= 1:
             self.clearCurrentSearchTerm()
         else:
@@ -433,11 +437,11 @@ class AGW_File_Data:
 
     def regexIsActive(self) -> bool:
         """Tells us whether we should be highlighting the search terms or not"""
-        return self.__regex is not None
+        return len(self.__regex) > 0
 
     # In class AGW_File_Data
     def stringDoesMatchRegex(self, stringToCheck: Optional[str]) -> bool:
-        if self.__regex is None or stringToCheck is None:
+        if not self.regexIsActive() or stringToCheck is None:
             return False
 
         if self.__compiledRegex.search(
