@@ -95,9 +95,11 @@ def test_AGW_File_Data_search_becomes_inactive_if_trimmed_to_zero_length():
 def test_AGW_File_Data_clearCurrentSearchTerm_works():
     f = test.AGW_File_Data("somefile.txt")
     f.changeCurrentSearchTerm("searchtime")
+    assert f._compiledRegex is not None
     f.clearCurrentSearchTerm()
     assert not f.regexIsActive()
     assert not f.getRegexString()
+    assert f._compiledRegex is None  # Should have been cleared out as well
 
 def test_AGW_File_Data_search_becomes_inactive_if_empty_string_is_set():
     f = test.AGW_File_Data("somefile.txt")

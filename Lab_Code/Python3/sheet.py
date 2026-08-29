@@ -1,5 +1,21 @@
 #!/usr/bin/env python3
 
+# @COMMENT@ sheet.py is an interactive terminal-based spreadsheet viewer for tab-delimited files. Frequency-of-use rating: 9/10. See also "sheet.pl" if you want a non-interactive version that behaves similarly to the UNIX "column" tool.
+"""
+%prog%: a python3 program for viewing tab-delimited files in spreadsheet-like format. Only a viewer--you cannot edit files with it!
+Uses the "CURSES" terminal interaction library to talk to the terminal. Updated for Python3 in 2022.
+by Alex Williams
+
+Example 1a: Reading a single file:
+             sheet.py  yourFile.tab
+
+Example 1b (cat-ing a file into sheet.py)
+             cat someFile.txt | sheet.py
+
+Example 2 (multiple files: switch between them with < and >):
+             sheet.py -i somefile.tab  otherefile.tab
+"""
+
 from __future__ import annotations
 
 import sys
@@ -11,23 +27,6 @@ import bz2
 import re
 from typing import Any, Optional, Sequence, Sized, Union
 
-# import pdb  # pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
-
-# @COMMENT@ sheet.py is an interactive terminal-based spreadsheet viewer for tab-delimited files. Frequency-of-use rating: 9/10. See also "sheet.pl" if you want a non-interactive version that behaves similarly to the UNIX "column" tool.
-
-# from __future__ import print_function # lets you do print("...") like python 3
-# from __future__ import division # no more "1/2 == 0"
-
-# Instructions for pylint below:
-# pylint: disable=line-too-long, superfluous-parens, bad-whitespace, unused-wildcard-import, trailing-whitespace, unnecessary-pass, missing-docstring, invalid-name, global-statement, multiple-statements, too-many-locals, too-many-statements, too-many-branches, too-few-public-methods, too-many-lines, too-many-instance-attributes, too-many-arguments, wildcard-import
-
-"""
-%prog%: a python3 program for viewing tab-delimited files in spreadsheet-like format. Only a viewer--you cannot edit files with it!
-Uses the "CURSES" terminal interaction library to talk to the terminal. Updated for Python3 in 2022.
-by Alex Williams
-Example 1:   sheet.py  yourFile.tab   or else:    cat someFile | sheet.py
-Example 2: "sheet.py -i ~/T" (tab-delimted file)
-"""
 
 try:
     import numpy as np  # The matrices use this. Probably this dependency should not exist.
@@ -365,8 +364,8 @@ class AGW_File_Data:
         self.hasColHeader: bool = False
         self.hasRowHeader: bool = False
         self.cursorPos: Point = Point(0, 0)  # what is the selected cell
-        self.__regex: str = ""  # Empty string indicates "no search is active"
-        self.__compiledRegex: Optional[re.Pattern[str]] = None
+        self._regex: str = ""  # Empty string indicates "no search is active"
+        self._compiledRegex: Optional[re.Pattern[str]] = None
         self.regexIsCaseSensitive: bool = False
         self.boolHighlightNumbers: bool = DEFAULT_HIGHLIGHT_NUMBERS_SETTING
         pass
@@ -388,38 +387,29 @@ class AGW_File_Data:
         setCommandStr("Toggled highlighting of numeric values.")
         return
 
-    def getRegexString(self) -> str:
-        return self.__regex
-
     def appendToCurrentSearchTerm(self, newThing: str) -> None:
-        self.changeCurrentSearchTerm(self.__regex + newThing)
+        self.changeCurrentSearchTerm(self._regex + newThing)
         return
 
     # In class AGW_File_Data
     # Args:
-    #   argSearchString: If non-empty, indicates that we should be highlighgint a particular search term.
-    #   argIsCaseSense: If None, then don't change the current case-sensitivity setting. If True/False, then
-    #                   set the case sensitivity accordingly. (i.e., "None" means "no change)
-    def changeCurrentSearchTerm(self, argSearchString: str, argIsCaseSens: Optional[bool] = None) -> None:
-        self.__regex = argSearchString
-        # setWarning("just set regex to: " + str(self.__regex))
+    #   search_for: If non-empty, indicates that we should be highlighgint a particular search term.
+    #   change_case_sens: If None, then don't change the current case-sensitivity setting. If True/False, then
+    #                     set the case sensitivity accordingly. (i.e., "None" means "no change)
+    def changeCurrentSearchTerm(self, search_for: str, change_case_sens: Optional[bool] = None) -> None:
+        self._regex = search_for
+        # setWarning("just set regex to: " + str(self._regex))  # For debugging
 
-        # Note that "None" means "preserve whatever the previous setting is"
-        if argIsCaseSens is not None:  
-            self.regexIsCaseSensitive = argIsCaseSens
+        # If `change_case_sens` is non-None, then change it to the True/False input value.
+        if change_case_sens is not None:
+            self.regexIsCaseSensitive = change_case_sens
             pass
 
-        if not self.__regex:
-            self.__compiledRegex = None
-            pass
+        # If the regex string is empty, then also clear out the compiled regex
+        if not self._regex:
+            self._compiledRegex = None
         else:
-            if self.regexIsCaseSensitive:
-                self.__compiledRegex = re.compile(self.__regex)
-                pass
-            else:
-                self.__compiledRegex = re.compile(self.__regex, re.IGNORECASE)
-                pass
-            pass
+            self._compiledRegex = re.compile(pattern=self._regex, flags=(0 if self.regexIsCaseSensitive else re.IGNORECASE))
         return
 
     def clearCurrentSearchTerm(self) -> None:
@@ -428,29 +418,29 @@ class AGW_File_Data:
 
     def trimRegex(self, numChars: int = 1) -> None:
         """Remove the last <numChars> characters from the end of the search term (i.e., it is like pressing backspace). Clears the search term (which sets it to "") if it is going to be zero-length."""
-        currentRegexLength = len(self.__regex)
+        currentRegexLength = len(self._regex)
         if currentRegexLength <= 1:
             self.clearCurrentSearchTerm()
         else:
-            self.changeCurrentSearchTerm(self.__regex[: (currentRegexLength - numChars)])
+            self.changeCurrentSearchTerm(self._regex[: (currentRegexLength - numChars)])
         return
 
     def regexIsActive(self) -> bool:
         """Tells us whether we should be highlighting the search terms or not"""
-        return len(self.__regex) > 0
+        return len(self._regex) > 0
 
     # In class AGW_File_Data
     def stringDoesMatchRegex(self, stringToCheck: Optional[str]) -> bool:
         if not self.regexIsActive() or stringToCheck is None:
             return False
 
-        if self.__compiledRegex.search(
+        if self._compiledRegex.search(
             stringToCheck
         ):  # Note the difference between *search* and *match*(match does not do partial results)
-            # DebugPrint("Got a match with: " + stringToCheck + " from the compiled regex: " + self.__regex)
+            # DebugPrint("Got a match with: " + stringToCheck + " from the compiled regex: " + self._regex)
             return True
         else:
-            # DebugPrint("NO match for: " + stringToCheck + " from the compiled regex: " + self.__regex)
+            # DebugPrint("NO match for: " + stringToCheck + " from the compiled regex: " + self._regex)
             return False
 
 
