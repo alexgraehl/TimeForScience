@@ -5,9 +5,7 @@
 # Only covers the helper functions. I need to add something to actually test
 # the terminal output if this is going to be legitimately useful.
 
-import pytest
 import sheet as test
-
 
 # =================================================================
 # Test padStrToLength()
