@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import annotations
+
 import sys
 import curses  # <-- docs at http://docs.python.org/library/curses.html
 import curses.ascii  # <-- docs at http://docs.python.org/library/curses.ascii.html
@@ -7,6 +9,7 @@ import curses.textpad
 import gzip
 import bz2
 import re
+from typing import Any, Optional, Sequence, Sized, Union
 
 # import pdb  # pdb.set_trace() ## Python Debugger! See: http://aymanh.com/python-debugging-techniques
 
@@ -60,42 +63,42 @@ MAX_COL_WIDTH = 30  # If a column is wider than this, then clip it to this width
 
 # ===============
 class SearchBoard:
-    def __init__(self, nrow, ncol):
+    def __init__(self, nrow: int, ncol: int) -> None:
         self.hit = np.empty((nrow, ncol), dtype=bool)
         self.dirty = np.ones((nrow, ncol), dtype=bool)
         pass
 
-    def clear(self):
+    def clear(self) -> None:
         self.dirty = np.ones((self.numRows(), self.numCols()), dtype=bool)
         pass
 
-    def set(self, row, col, value):
+    def set(self, row: int, col: int, value: bool) -> None:
         self.hit[row][col] = value
         self.cleanify(row, col)  # This cell has been legitimately set...
         pass
 
-    def matches(self, row, col):
+    def matches(self, row: int, col: int) -> bool:
         if self.dirty[row][col]:
             raise  # It's not a "clean" value yet
         else:
             return self.hit[row][col]
         pass
 
-    def isDirty(self, row, col):
+    def isDirty(self, row: int, col: int) -> bool:
         return self.dirty[row][col]
 
-    def dirtify(self, row, col):
+    def dirtify(self, row: int, col: int) -> None:
         self.dirty[row][col] = True
         pass
 
-    def cleanify(self, row, col):
+    def cleanify(self, row: int, col: int) -> None:
         self.dirty[row][col] = False
         pass
 
-    def numRows(self):
+    def numRows(self) -> int:
         return self.hit.shape[0]
 
-    def numCols(self):
+    def numCols(self) -> int:
         return self.hit.shape[1]
 
     pass  # End of SearchBoard class
@@ -282,15 +285,15 @@ _DEBUG = False  # Run the program with "-w" for debugging to be enabled
 _debugFilename = "DEBUG.sheet.py.out.tmp"
 
 
-def DebugPrint(argStr="", nl="\n"):
+def DebugPrint(argStr: str = "", nl: str = "\n") -> None:
     f = open(_debugFilename, "a")
     f.write(str(argStr) + nl)
     f.close()
     print(str(argStr) + nl)
     return
 
-
-def DebugPrintTable(table):
+# Two-dimensional table of strings.
+def DebugPrintTable(table: Sequence[Sequence[Any]]) -> None:
     for entireRow in table:
         for cell in entireRow:
             DebugPrint(stringFromAny(cell) + ", ", nl="")
@@ -301,7 +304,7 @@ def DebugPrintTable(table):
 
 
 class Point:
-    def __init__(self, argX, argY):
+    def __init__(self, argX: Optional[int], argY: Optional[int]) -> None:
         self.x = argX
         self.y = argY
 
@@ -316,11 +319,11 @@ class Point:
 
 
 class Size:
-    def __init__(self, argWidth, argHeight):
+    def __init__(self, argWidth: Optional[int], argHeight: Optional[int]) -> None:
         self.width = argWidth
         self.height = argHeight
 
-    def resizeYX(self, rowColList):
+    def resizeYX(self, rowColList: tuple[int, int]) -> None:
         (self.height, self.width) = rowColList
 
 
@@ -329,23 +332,23 @@ class AGW_File_Data_Collection:
     This object stores all the state about a file. It's a lot like a "window" on a normal GUI. Confusingly, it is NOT the same as an AGW_Win, which is a "CURSES" terminal sub-window. Sorry for the confusion.
     """
 
-    def __init__(self):
-        self.collection = []  # <-- contants: a bunch of AGW_File_Data objects
-        self.currentFileIdx = None  # which one are we currently looking at? probably should be not part of the object, come to think of it.
+    def __init__(self) -> None:
+        self.collection: list[AGW_File_Data] = []  # <-- contants: a bunch of AGW_File_Data objects
+        self.currentFileIdx: Optional[int] = None  # which one are we currently looking at? probably should be not part of the object, come to think of it.
         pass
 
-    def size(self):
+    def size(self) -> int:
         """Basically, how many files did we load."""
         return len(self.collection)
 
-    def getCurrent(self):  # AGW_File_Data_Collection
+    def getCurrent(self) -> AGW_File_Data:  # AGW_File_Data_Collection
         """Get the current data object that backs the spreadsheet we are looking at right this second."""
         return self.getInfoAtIndex(self.currentFileIdx)
 
-    def getInfoAtIndex(self, i):
+    def getInfoAtIndex(self, i: Optional[int]) -> AGW_File_Data:
         return self.collection[i]
 
-    def addFileInfo(self, fileInfoObj):
+    def addFileInfo(self, fileInfoObj: AGW_File_Data) -> None:
         if not isinstance(fileInfoObj, AGW_File_Data):
             print("Uh oh, someone tried to add some random object into the file info collection.")
             raise
@@ -355,45 +358,45 @@ class AGW_File_Data_Collection:
 
 
 class AGW_File_Data:
-    def __init__(self, argFilename):
+    def __init__(self, argFilename: str) -> None:
         self.filename = argFilename
         self.table = AGW_Table()
         self.defaultCellProperty = curses.A_NORMAL  # REVERSE
         self.hasColHeader = False
         self.hasRowHeader = False
         self.cursorPos = Point(0, 0)  # what is the selected cell
-        self.__regex = None
-        self.__compiledRegex = None
+        self.__regex: Optional[str] = None
+        self.__compiledRegex: Optional[re.Pattern[str]] = None
         self.regexIsCaseSensitive = False
         self.boolHighlightNumbers = DEFAULT_HIGHLIGHT_NUMBERS_SETTING
         pass
 
-    def getNumCols(self):
+    def getNumCols(self) -> int:
         return self.table.getNumCols()
 
-    def getNumRows(self):
+    def getNumRows(self) -> int:
         return self.table.getNumRows()
 
-    def getActiveCellX(self):
+    def getActiveCellX(self) -> Optional[int]:
         return self.cursorPos.x
 
-    def getActiveCellY(self):
+    def getActiveCellY(self) -> Optional[int]:
         return self.cursorPos.y
 
-    def toggleNumericHighlighting(self):
+    def toggleNumericHighlighting(self) -> None:
         self.boolHighlightNumbers = not self.boolHighlightNumbers
         setCommandStr("Toggled highlighting of numeric values.")
         return
 
-    def getRegexString(self):
+    def getRegexString(self) -> str:
         return stringFromAny(self.__regex)
 
-    def appendToCurrentSearchTerm(self, newThing):
-        self.changeCurrentSearchTerm(stringFromAny(self.__regex) + stringFromAny(newThing))
+    def appendToCurrentSearchTerm(self, newThing: str) -> None:
+        self.changeCurrentSearchTerm(stringFromAny(self.__regex) + newThing)
         return
 
     # In class AGW_File_Data
-    def changeCurrentSearchTerm(self, argSearchString, argIsCaseSens=None):
+    def changeCurrentSearchTerm(self, argSearchString: Optional[str], argIsCaseSens: Optional[bool] = None) -> None:
         self.__regex = argSearchString
         # setWarning("just set regex to: " + str(self.__regex))
 
@@ -415,11 +418,11 @@ class AGW_File_Data:
             pass
         return
 
-    def clearCurrentSearchTerm(self):
+    def clearCurrentSearchTerm(self) -> None:
         self.changeCurrentSearchTerm(None, None)
         pass
 
-    def trimRegex(self, numChars=1):
+    def trimRegex(self, numChars: int = 1) -> None:
         """Remove the last <numChars> characters from the end of the search term (i.e., it is like pressing backspace). Clears the search term (which sets it to None) if it is going to be zero-length."""
         currentRegexLength = lenFromAny(self.__regex)
         if currentRegexLength <= 1:
@@ -428,12 +431,12 @@ class AGW_File_Data:
             self.changeCurrentSearchTerm(self.__regex[: (currentRegexLength - numChars)])
         return
 
-    def regexIsActive(self):
+    def regexIsActive(self) -> bool:
         """Tells us whether we should be highlighting the search terms or not"""
         return self.__regex is not None
 
     # In class AGW_File_Data
-    def stringDoesMatchRegex(self, stringToCheck):
+    def stringDoesMatchRegex(self, stringToCheck: Optional[str]) -> bool:
         if self.__regex is None or stringToCheck is None:
             return False
 
@@ -457,15 +460,15 @@ class AGW_File_Data:
 # that can be written to separately with their own coordinate systems.
 # =======================================
 class AGW_Win:
-    def __init__(self):
-        self.win = None
+    def __init__(self) -> None:
+        self.win: Optional[curses.window] = None
         self.pos = Point(0, 0)  # where is the top-left of this window?
         self.windowWidth = 0
         self.windowHeight = 0
         pass
 
     # Make a new window with the height, width, and at the location specified
-    def initWindow(self, argHeight, argWidth, atY, atX):
+    def initWindow(self, argHeight: int, argWidth: int, atY: int, atX: int) -> None:
         self.pos = Point(atX, atY)
         self.windowWidth = argWidth
         self.windowHeight = argHeight
@@ -483,7 +486,7 @@ class AGW_Win:
     # safeAddCh: Safely adds a single character to an AGW_Win object
     # It is "safe" because it does not throw an error if it overruns
     # the pad (instead, it just doesn't draw anything at all)
-    def safeAddCh(self, y, x, argChar, attr=0):
+    def safeAddCh(self, y: int, x: int, argChar: Union[str, int], attr: int = 0) -> None:
         if y >= self.windowHeight or x >= self.windowWidth - 1:  # out of bounds!
             return
 
@@ -507,7 +510,7 @@ class AGW_Win:
     # safeAddStr: Safely adds a string to a CURSES "win" object.
     # It is "safe" because it does not throw an error if it overruns
     # Additionally, it does NOT WRAP TEXT. This is different from default addstr.
-    def safeAddStr(self, y, x, string, attr=0):
+    def safeAddStr(self, y: int, x: int, string: Optional[str], attr: int = 0) -> None:
         try:
             if string is None:
                 return
@@ -534,35 +537,35 @@ class AGW_Win:
 
 ## Data window (the main window with the cells in it)
 class AGW_DataWin(AGW_Win):
-    def __init__(self):
+    def __init__(self) -> None:
         AGW_Win.__init__(self)  # parent constructor
-        self.info = None
+        self.info: Optional[AGW_File_Data] = None
         self.defaultCellProperty = curses.A_NORMAL  # REVERSE
         pass
 
-    def getTable(self):
+    def getTable(self) -> AGW_Table:
         return self.info.table
 
-    def setInfo(self, whichInfo):
+    def setInfo(self, whichInfo: AGW_File_Data) -> None:
         if not isinstance(whichInfo, AGW_File_Data):
             print("### Someone passed in a not-an-AGW_File_Data object to AGW_DataWin--->setInfo()\n")
             raise
         self.info = whichInfo
         return
 
-    def getInfo(self):
+    def getInfo(self) -> Optional[AGW_File_Data]:
         return self.info
 
     def drawTable(
         self,
-        whichInfo,
-        topCell,
-        leftCell,
-        nRowsToDraw=None,
-        nColsToDraw=None,
-        boolPrependRowCoordinate=False,
-        boolPrependColCoordinate=False,
-    ):
+        whichInfo: AGW_File_Data,
+        topCell: int,
+        leftCell: int,
+        nRowsToDraw: Optional[int] = None,  # "None" means to draw all rows
+        nColsToDraw: Optional[int] = None,  # "None" means to draw all cols
+        boolPrependRowCoordinate: bool = False,
+        boolPrependColCoordinate: bool = False,
+    ) -> None:
         self.win.erase()  # or clear()
 
         theTable = self.getTable()
@@ -772,19 +775,19 @@ class AGW_DataWin(AGW_Win):
 
 
 class AGW_Table:
-    def __init__(self):
+    def __init__(self) -> None:
         self.clearTable()
         pass
 
-    def clearTable(self):
+    def clearTable(self) -> None:
         self.__nCells = Size(0, 0)  # size in cells
-        self.__cells = []
-        self.colWidth = []  # maximum char length in a col
+        self.__cells: list[list[Optional[str]]] = []
+        self.colWidth: list[int] = []  # maximum char length in a col
         self.isRagged = False  # Does the table have "ragged" ends? (differing col counts). Ragged means "some rows have more cols than others"
-        self.regTab = None  # this will be a table of "None" (not yet checked) "True" or "False", depending on whether the cell currently matches the regex!
+        self.regTab: Optional[SearchBoard] = None  # this will be a table of "None" (not yet checked) "True" or "False", depending on whether the cell currently matches the regex!
         pass
 
-    def getColWidth(self, colIdx):
+    def getColWidth(self, colIdx: int) -> int:
         # Report how wide each column is
         if gIsTransposed:
             return WIDTH_WHEN_TRANSPOSED  # Transposed cells are always the same width. This is kind of a hack, as we just don't compute the cell widths
@@ -803,25 +806,25 @@ class AGW_Table:
             )
             raise  # return 0 #raise #return 0
 
-    def getNumCols(self):
+    def getNumCols(self) -> int:
         if gIsTransposed:
             return self.__nCells.height  # <-- if displaying transposed!
         else:
             return self.__nCells.width  # table width in number of cells
 
-    def getNumRows(self):
+    def getNumRows(self) -> int:
         if gIsTransposed:
             return self.__nCells.width  # <-- if displaying transposed!
         else:
             return self.__nCells.height  # table height in number of cells
 
-    def getHeaderCellForCol(self, colIdx):
+    def getHeaderCellForCol(self, colIdx: int) -> Optional[str]:
         return self.cellValue(0, colIdx)
 
-    def getHeaderCellForRow(self, rowIdx):
+    def getHeaderCellForRow(self, rowIdx: int) -> Optional[str]:
         return self.cellValue(rowIdx, 0)
 
-    def cellValue(self, row, col):
+    def cellValue(self, row: int, col: int) -> Optional[str]:
         try:
             if gIsTransposed:
                 return self.__cells[col][row]  # If it's transposed, then flip the row and column!
@@ -830,11 +833,11 @@ class AGW_Table:
         except:
             return "~~~~~"  # ("R" + str(row) + ", C" + str(col) + " out of bounds")
 
-    def initRegexTable(self):
+    def initRegexTable(self) -> None:
         self.regTab = SearchBoard(nrow=self.getNumRows(), ncol=self.getNumCols())
         return
 
-    def appendRowOfCellContents(self, contents):
+    def appendRowOfCellContents(self, contents: list[Optional[str]]) -> None:
         # Turns a line from a file into a properly-formatted internal
         # representation of row of cells.
 
@@ -878,7 +881,7 @@ class AGW_Table:
             pass
         pass
 
-    def loadNewFile(self, theFilename):
+    def loadNewFile(self, theFilename: str) -> None:
         self.closeCurrentFile()  # Close the old table first, if there is one
         global GlobalCurrentNumLinesLoaded
         global GlobalCurrentFile
@@ -902,7 +905,7 @@ class AGW_Table:
         GlobalCurrentNumLinesLoaded = 0
         pass
 
-    def closeCurrentFile(self):
+    def closeCurrentFile(self) -> None:
         global GlobalCurrentNumLinesLoaded
         global GlobalCurrentFile
         global GlobalCurrentFilename
@@ -921,7 +924,7 @@ class AGW_Table:
         GlobalCurrentNumLinesLoaded = 0
         pass
 
-    def readFromCurrentFile(self):
+    def readFromCurrentFile(self) -> None:
         global GlobalCurrentNumLinesLoaded
         global GlobalCurrentFile
         global GlobalCurrentFilename
@@ -957,28 +960,30 @@ class AGW_Table:
 
         return  # end of function
 
-
-def lenFromAny(argThing):  # returns 0 for None's length. Otherwise you get an exception
+# If the input is None, returns 0.
+# If the input has a length, returns that length.
+# (Otherwise you get an exception)
+def lenFromAny(argThing: Optional[Sized]) -> int:
     if argThing is None:
         return 0
     else:
         return len(argThing)
 
-
-def stringFromAny(argString):  # Returns a string, even if given None as an input
+# Returns a string, even if given None as an input
+def stringFromAny(argString: Any) -> str:
     if argString is None:
         return ""
     else:
         return str(argString)
 
 
-def cursesClearLine(window, lineYPos):
+def cursesClearLine(window: curses.window, lineYPos: int) -> None:
     window.move(lineYPos, 0)
     window.clrtoeol()
     pass
 
 
-def agwEnglishPlural(string, numOf, suffix="s"):
+def agwEnglishPlural(string: str, numOf: int, suffix: str = "s") -> str:
     """You pass in a string like "squid" and a number
     indicating how many squid there are. If the number
     is one, then "squid" is returned, otherwise "squids"
@@ -990,7 +995,7 @@ def agwEnglishPlural(string, numOf, suffix="s"):
     pass
 
 
-def attributeForNumeric(theProspectiveNumber, defaultAttr):
+def attributeForNumeric(theProspectiveNumber: Any, defaultAttr: int) -> int:
     # Give it something that might be a number.
     # if it *is* a numnber, it returns the format for that type of
     # number. If it isn't, it returns "defaultAttr"
@@ -1042,26 +1047,26 @@ gWarningMessage = None  # A message that we can display in the "warning" region 
 gCommandStr = None  # The current command, which we sometimes display in the info pane
 
 
-def setWarning(string):
+def setWarning(string: Optional[str]) -> None:
     global gWarningMessage
     gWarningMessage = string
     return
 
 
-def setCommandStr(string):
+def setCommandStr(string: Optional[str]) -> None:
     global gCommandStr
     gCommandStr = string
 
 
-def clearCommandStr():
+def clearCommandStr() -> None:
     global gCommandStr
     gCommandStr = None
 
 
-def usageAndQuit(exitCode, message=None):
-    fillWidth = 80
-    message = textwrap.fill(message, fillWidth)
-    if message is not None:
+def usageAndQuit(exitCode: int, message: str = "") -> None:
+    fillWidth: int = 80
+    message = textwrap.fill(message, fillWidth)  # Wrap to a "reasonable" screen width
+    if message:
         print("")
         print("sheet.py: ")
         print(message)
@@ -1070,7 +1075,7 @@ def usageAndQuit(exitCode, message=None):
         print("*" * fillWidth)
         pass
     print(ALEX_PROGRAM_USAGE_TEXT)  # at the very bottom of this file
-    if message is not None:
+    if message:
         print("(End of usage information for sheet.py.)")
         print("*" * fillWidth)
         print("*" * fillWidth)
@@ -1081,7 +1086,7 @@ def usageAndQuit(exitCode, message=None):
     return
 
 
-def initializeWindowSettings(aScreen, fileInfoToReadFrom):
+def initializeWindowSettings(aScreen: curses.window, fileInfoToReadFrom: AGW_File_Data) -> None:
     # if (fileInfoToReadFrom is None):
     #    usageAndQuit(1, "Missing a command-line argument: We did not have at least one file passed in as an argument on the command line! Pass in at least one valid file on the command line. Maybe you passed in a file that could not be read for some reason, or passed in a directory name.\n")
     #    raise
@@ -1171,7 +1176,7 @@ def initializeWindowSettings(aScreen, fileInfoToReadFrom):
     pass
 
 
-def guess_delimiter_from_filename(filename):
+def guess_delimiter_from_filename(filename: str) -> str:
     if re.search("[.]csv([.](bz2|bzip|gz|gzip|xz|Z))?", filename, flags=re.IGNORECASE):
         return ","  # comma delimiter
     if re.search("[.](tsv|tab|txt)([.](bz2|bzip|gz|gzip|xz|Z))?", filename, flags=re.IGNORECASE):
@@ -1179,7 +1184,7 @@ def guess_delimiter_from_filename(filename):
     return "\t"  # default delimiter is tab
 
 
-def processCommandLineArgs(argv):
+def processCommandLineArgs(argv: list[str]) -> None:
     try:
         opts, args = getopt.gnu_getopt(
             argv, "hwd:i:", ["help", "warn", "delim=", "input="]
@@ -1268,7 +1273,7 @@ def processCommandLineArgs(argv):
     return  # End of command-line-reading function
 
 
-def drawHelpWin(theScreen):
+def drawHelpWin(theScreen: curses.window) -> None:
     helpWin.win.erase()
     lineAttr = curses.color_pair(HELP_AREA_ID)  # <-- set the border color
     helpWin.safeAddStr(
@@ -1300,7 +1305,7 @@ def drawHelpWin(theScreen):
 # Col 8: <LKJOIJWE>
 # Value: <Value>
 # > Command
-def drawInfoWin(theScreen, theInfo, inTab):
+def drawInfoWin(theScreen: curses.window, theInfo: AGW_File_Data, inTab: AGW_Table) -> None:
     """inTab: the actual table of data that is going to be drawn"""
 
     activeCellPos = theInfo.cursorPos
@@ -1424,7 +1429,7 @@ def drawInfoWin(theScreen, theInfo, inTab):
     return
 
 
-def drawEverything(theScreen):
+def drawEverything(theScreen: curses.window) -> None:
     activeFI = mainInfo.getCurrent()  # get the current meta-info storage thing for the main window
     activeCellPos = activeFI.cursorPos  # Ask where the cursor is...
     theScreen.refresh()  # Refresh it first...
@@ -1447,7 +1452,7 @@ def drawEverything(theScreen):
     return
 
 
-def mainScreenHandlingLoop(theScreen):
+def mainScreenHandlingLoop(theScreen: curses.window) -> None:
     setUpCurses()
     initializeWindowSettings(theScreen, mainInfo.getCurrent())  # load the first file...
     # theScreen.nodelay(True) # <-- makes "getch" non-blocking
@@ -1477,7 +1482,7 @@ def mainScreenHandlingLoop(theScreen):
     return  # end of mainScreenHandlingLoop
 
 
-def setUpCurses():  # initialize the curses environment
+def setUpCurses() -> None:  # initialize the curses environment
     if not curses.has_colors():
         print(
             "UH OH, this terminal does not support color! We might crash. Quitting now anyway until I figure out what to do. Sorry. This might not actually be a problem, but I will need to test it to see what happens in a non-color terminal!"
@@ -1524,7 +1529,7 @@ def setUpCurses():  # initialize the curses environment
     return
 
 
-def truncateLongCell(argString, argMaxlen, argTruncString):
+def truncateLongCell(argString: str, argMaxlen: int, argTruncString: str) -> str:
     if len(argString) > argMaxlen:
         truncateToThisLen = argMaxlen - len(argTruncString)
         return argString[:truncateToThisLen] + argTruncString
@@ -1533,7 +1538,7 @@ def truncateLongCell(argString, argMaxlen, argTruncString):
     pass
 
 
-def padStrToLength(argString, argMaxlen, padChar):
+def padStrToLength(argString: str, argMaxlen: int, padChar: str) -> str:
     # pad out the length with blanks so that the ENTIRE
     # length is taken up. However! curses does not like to
     # draw just plain things unfortunately, so we have to
@@ -1547,7 +1552,7 @@ def padStrToLength(argString, argMaxlen, padChar):
     return
 
 
-def calculateBorderChar(r, c, topRow, leftCol, bottomRow, rightCol):
+def calculateBorderChar(r: int, c: int, topRow: int, leftCol: int, bottomRow: int, rightCol: int) -> int:
     if r == 0:  # TOP R
         if c == 0:
             ch = curses.ACS_ULCORNER
@@ -1576,7 +1581,7 @@ def calculateBorderChar(r, c, topRow, leftCol, bottomRow, rightCol):
     return ch
 
 
-def handleKeysForSearchMode(argCh, currentTable, theScreen):
+def handleKeysForSearchMode(argCh: int, currentTable: AGW_Table, theScreen: curses.window) -> None:
     # If we are in search mode, then when the user types, that text is added to the query.
     finishedSearch = False
     cancelSearch = False
@@ -1613,7 +1618,7 @@ def handleKeysForSearchMode(argCh, currentTable, theScreen):
     else:
         # Append whatever the user typed to the search string...
         try:
-            charToAdd = chr(argCh)
+            charToAdd: str = chr(argCh)
             mainInfo.getCurrent().appendToCurrentSearchTerm(charToAdd)
             currentTable.regTab.clear()
             pass
@@ -1640,7 +1645,7 @@ def handleKeysForSearchMode(argCh, currentTable, theScreen):
     return
 
 
-def handleKeysForNormalMode(argCh, currentTable, theScreen):
+def handleKeysForNormalMode(argCh: int, currentTable: AGW_Table, theScreen: curses.window) -> None:
     # Handle user keyboard input when we are *not* in search mode.
     # This will handle the majority of user interactions.
     theAction = None  # What did the user want to do?
@@ -1755,7 +1760,7 @@ def handleKeysForNormalMode(argCh, currentTable, theScreen):
     return
 
 
-def GLOBAL_exitSearchMode():
+def GLOBAL_exitSearchMode() -> None:
     if gCurrentMode != KEY_MODE_SEARCH_INPUT:
         raise Exception("Uh oh, tried to exit search mode... but we were not even IN search mode!!")
     else:
@@ -1764,7 +1769,7 @@ def GLOBAL_exitSearchMode():
     return
 
 
-def GLOBAL_setUserInteractionMode(argNewMode):
+def GLOBAL_setUserInteractionMode(argNewMode: int) -> None:
     global gCurrentMode
     gCurrentMode = argNewMode
     return
