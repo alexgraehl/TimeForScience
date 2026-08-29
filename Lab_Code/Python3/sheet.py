@@ -359,16 +359,16 @@ class AGW_File_Data_Collection:
 
 class AGW_File_Data:
     def __init__(self, argFilename: str) -> None:
-        self.filename = argFilename
-        self.table = AGW_Table()
-        self.defaultCellProperty = curses.A_NORMAL  # REVERSE
-        self.hasColHeader = False
-        self.hasRowHeader = False
-        self.cursorPos = Point(0, 0)  # what is the selected cell
+        self.filename: str = argFilename
+        self.table: AGW_Table = AGW_Table()
+        self.defaultCellProperty: int = curses.A_NORMAL  # REVERSE
+        self.hasColHeader: bool = False
+        self.hasRowHeader: bool = False
+        self.cursorPos: Point = Point(0, 0)  # what is the selected cell
         self.__regex: Optional[str] = None
         self.__compiledRegex: Optional[re.Pattern[str]] = None
-        self.regexIsCaseSensitive = False
-        self.boolHighlightNumbers = DEFAULT_HIGHLIGHT_NUMBERS_SETTING
+        self.regexIsCaseSensitive: bool = False
+        self.boolHighlightNumbers: bool = DEFAULT_HIGHLIGHT_NUMBERS_SETTING
         pass
 
     def getNumCols(self) -> int:
@@ -621,7 +621,6 @@ class AGW_DataWin(AGW_Win):
                 shouldHighlightCell = cellIsSelected  # or (self.highlightEntireCol and c == selectedPt.x) or (self.highlightEntireRow and r == selectedPt.y)
 
                 cellAttr = self.defaultCellProperty
-
                 if whichInfo.boolHighlightNumbers:
                     cellAttr = attributeForNumeric(cell, self.defaultCellProperty)
 
@@ -1733,17 +1732,17 @@ def handleKeysForNormalMode(argCh: int, currentTable: AGW_Table, theScreen: curs
         possibleNewIndex = mainInfo.currentFileIdx + wantToChangeFileIdx
         if mainInfo.getCurrent().filename is kSTDIN_HYPHEN:
             setWarning(
-                ">>> Cannot change files, because we read input from an STDIN pipe. Multiple files cannot be read when reading from a pipe."
+                "!!! Cannot change files, because we read input from an STDIN pipe. Multiple files cannot be read when reading from a pipe."
             )
             pass
         elif possibleNewIndex < 0:
             setWarning(
-                ">>> Cannot go to the previous file, because we are already at the beginning of the file list."
+                "!!! Cannot go to the previous file, because we are already at the beginning of the file list."
             )
             pass
         elif possibleNewIndex >= mainInfo.size():
             setWarning(
-                ">>> Cannot go to the next file, because we are already at the end of the file list."
+                "!!! Cannot go to the next file, because we are already at the end of the file list."
             )
             pass
         else:
