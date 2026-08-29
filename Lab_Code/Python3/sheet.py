@@ -45,10 +45,9 @@ except ImportError:
 
 GLOB = 1
 
-kNUM_BYTES_TO_READ_AT_A_TIME = (
-    100000  # read 100kb at a time. Hopefully that's enough to populate at least one screen full of data!
-)
+# read 100kb (100_000 bytes) at a time. Hopefully that's enough to populate at least one screen full of data!
 # For debugging, you can set this number very low (say to 100) to see how the loading only happens every time a user moves the cursor.
+kNUM_BYTES_TO_READ_AT_A_TIME = 100000
 
 kWANT_TO_ADJUST_CURSOR = 0
 kWANT_TO_DIRECTLY_MOVE_CURSOR = 1
@@ -57,10 +56,10 @@ kWANT_TO_CHANGE_FILE = 3
 
 ROW_HEADER_MAXIMUM_COLUMN_FRACTION_OF_SCREEN = 0.25  # The row header column (i.e., the leftmost column) cannot be any wider than this fraction of the total screen width. 1.0 means "do not change--it can be the entire screen," 0.25 means "one quarter of the screen is the max, etc. 0.5 was the default before.
 
-WIDTH_WHEN_TRANSPOSED = (
-    25  # This is a hack! Currently colwidth isn't properly computed for transposed matrices
-)
-MAX_COL_WIDTH = 30  # If a column is wider than this, then clip it to this width
+# This is a hack! Currently colwidth isn't properly computed for transposed matrices
+WIDTH_WHEN_TRANSPOSED: int = 25  # Hack.
+
+MAX_COL_WIDTH: int = 30  # If a column is wider than this, then clip it to this width
 
 # ===============
 class SearchBoard:
