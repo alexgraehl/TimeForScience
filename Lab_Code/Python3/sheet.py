@@ -43,16 +43,15 @@ except ImportError:
     sys.exit(1)
     pass
 
-GLOB = 1
-
 # read 100kb (100_000 bytes) at a time. Hopefully that's enough to populate at least one screen full of data!
 # For debugging, you can set this number very low (say to 100) to see how the loading only happens every time a user moves the cursor.
 kNUM_BYTES_TO_READ_AT_A_TIME = 100000
 
-kWANT_TO_ADJUST_CURSOR = 0
-kWANT_TO_DIRECTLY_MOVE_CURSOR = 1
+# These should probably be some enum of possible actions, instead of constants
+# kWANT_TO_ADJUST_CURSOR = 0
+# kWANT_TO_DIRECTLY_MOVE_CURSOR = 1
 kWANT_TO_MOVE_TO_SEARCH_RESULT = 2
-kWANT_TO_CHANGE_FILE = 3
+# kWANT_TO_CHANGE_FILE = 3
 
 ROW_HEADER_MAXIMUM_COLUMN_FRACTION_OF_SCREEN = 0.25  # The row header column (i.e., the leftmost column) cannot be any wider than this fraction of the total screen width. 1.0 means "do not change--it can be the entire screen," 0.25 means "one quarter of the screen is the max, etc. 0.5 was the default before.
 
@@ -273,7 +272,6 @@ COLOR_PROPERTIES = {"NA": {"fg": curses.COLOR_BLUE, "bg": STANDARD_BG_COLOR}}
 # ROW_HEADER_TEXT_COLOR = curses.COLOR_BLACK
 # ROW_HEADER_BG_COLOR = curses.COLOR_GREEN
 
-
 GlobalCurrentFile = None
 GlobalCurrentFilename = None
 GlobalCurrentNumLinesLoaded = 0
@@ -281,9 +279,7 @@ GlobalCurrentNumLinesLoaded = 0
 DEFAULT_HIGHLIGHT_NUMBERS_SETTING = True  # By default, color numbers + as green and - as red. (Based on the settings in NUMERIC_POSITIVE_COLOR_ID and NUMERIC_NEGATIVE_COLOR_ID.)
 
 _DEBUG = False  # Run the program with "-w" for debugging to be enabled
-
 _debugFilename = "DEBUG.sheet.py.out.tmp"
-
 
 def DebugPrint(argStr: str = "", nl: str = "\n") -> None:
     f = open(_debugFilename, "a")
@@ -302,20 +298,10 @@ def DebugPrintTable(table: Sequence[Sequence[Any]]) -> None:
         pass
     return
 
-
 class Point:
     def __init__(self, argX: Optional[int], argY: Optional[int]) -> None:
         self.x = argX
         self.y = argY
-
-
-# class RowCol: # Like a Point, but ROW (Y) comes first, then COL (X)
-#     def __init__(self, argRow, argCol):
-#         self.row = argRow
-#         self.col = argCol
-
-#     def __init__(self, rowColList): # Used to init size from "getmaxyx()" apparently python doesn't like multiple constructors!
-#         (self.row, self.col) = rowColList
 
 
 class Size:
@@ -446,7 +432,6 @@ class AGW_File_Data:
         else:
             # DebugPrint("NO match for: " + stringToCheck + " from the compiled regex: " + self._regex)
             return False
-
 
 # =======================================
 # End of class AGW_File_Data
@@ -648,10 +633,10 @@ class AGW_DataWin(AGW_Win):
 
                 # setWarning(str(self.getColWidth(c)) + " is the length for col " + str(c))
 
-                cell = padStrToLength(
-                    cell, maxLenForThisCell, " "
-                )  # <-- needed so that the cells don't randomly get garbage everywhere when they don't re-draw all the way. Very annoying. If you remove this, then long cells will randomly overwrite text of shorter cells when you move left and right.
-                # cell = truncateLongCell(cell, maxLenForThisCell, truncationSuffix)
+                # Needed so that the cells don't randomly get garbage everywhere when they don't re-draw all the way.
+                # Very annoying. If you remove this, then long cells will randomly overwrite text of shorter cells
+                # when you move left and right.
+                cell = padStrToLength(cell, maxLenForThisCell, " ")  # (Pad with spaces)
 
                 if drawCheckerboard:
                     bgAttr = cellAttr
@@ -1022,11 +1007,8 @@ gCellBorders = Size(1, 0)  # Size(1,1) # Width, Height
 
 gCurrentMode = KEY_MODE_NORMAL_INPUT  # Start in normal input (not search) mode
 
+# Probably should be part of the hypothetical 'action' enum
 gWantToQuit = False  # False, since, by default, the user does not want to immediately quit!
-
-# windowPos = Point(0,0) # Initial position in the table of data: Point(0,0) is the top left
-
-truncationSuffix = "..."  # Suffix for "this cell is too long to fit on screen"
 
 global_delimiter = None  # automatically guess with each file "\t"
 
@@ -1388,8 +1370,6 @@ def drawInfoWin(theScreen: curses.window, theInfo: AGW_File_Data, inTab: AGW_Tab
     commandStr1 = "" + stringFromAny(gCommandStr)
     infoWin.safeAddStr(COMMAND_ROW, 0, commandStr1, curses.A_NORMAL)
 
-    #     #setWarning(str(curses.COLORS)) # <-- number of colors the current terminal can support
-
     if gWarningMessage is not None:
         for i in range(0, 4):
             cursesClearLine(infoWin.win, i)
@@ -1406,7 +1386,6 @@ def drawInfoWin(theScreen: curses.window, theInfo: AGW_File_Data, inTab: AGW_Tab
         pass
 
     infoWin.win.refresh()
-
     return
 
 
@@ -1452,14 +1431,11 @@ def mainScreenHandlingLoop(theScreen: curses.window) -> None:
             elif gCurrentMode == KEY_MODE_NORMAL_INPUT:
                 handleKeysForNormalMode(ch, sheetWin.getTable(), theScreen)
                 pass
-
         except KeyboardInterrupt:
             break  # Exit the program on a Ctrl-C as well. Regular terminal printing is automatically restored by "curses.wrapper"
         except:
             raise  # Something unexpected has happened. Better report it!
-
         pass
-
     return  # end of mainScreenHandlingLoop
 
 
@@ -1498,26 +1474,16 @@ def setUpCurses() -> None:  # initialize the curses environment
         pass
 
     CURSES_INVISIBLE_CURSOR = 0
-    CURSES_VISIBLE_CURSOR = 1
-    CURSES_HIGHLIGHTED_CURSOR = 2
+    # CURSES_VISIBLE_CURSOR = 1  # Possible alternatives for the future
+    # CURSES_HIGHLIGHTED_CURSOR = 2
     try:
         curses.curs_set(CURSES_INVISIBLE_CURSOR)  # Don't show a blinking cursor
     except (curses.error):
         print('Unable to set cursor state to "invisible"')
         pass
 
-    curses.meta(1)  # Allow 8-bit chars
+    curses.meta(True)  # Allow 8-bit chars
     return
-
-
-def truncateLongCell(argString: str, argMaxlen: int, argTruncString: str) -> str:
-    if len(argString) > argMaxlen:
-        truncateToThisLen = argMaxlen - len(argTruncString)
-        return argString[:truncateToThisLen] + argTruncString
-    else:
-        return argString
-    pass
-
 
 def padStrToLength(argString: str, argMaxlen: int, padChar: str) -> str:
     # pad out the length with blanks so that the ENTIRE
@@ -1665,10 +1631,10 @@ def handleKeysForNormalMode(argCh: int, currentTable: AGW_Table, theScreen: curs
         wantToChangeFileIdx = 1
     elif argCh in KEYS_GOTO_NEXT_MATCH:
         theAction = kWANT_TO_MOVE_TO_SEARCH_RESULT
-        theActionParam = -1
+        # theActionParam = 1  # This would mean "go to the NEXT match" (if it were implemented)
     elif argCh in KEYS_GOTO_PREVIOUS_MATCH:
         theAction = kWANT_TO_MOVE_TO_SEARCH_RESULT
-        theActionParam = 1
+        # theActionParam = 1  # This would mean "go to the PREVIOUS match" (if it were implemented)
     elif argCh in KEYS_TRANSPOSE:  # Display the file in transposed format
         global gIsTransposed
         gIsTransposed = ~gIsTransposed
