@@ -382,6 +382,9 @@ class AGW_File_Data:
     def getActiveCellY(self) -> Optional[int]:
         return self.cursorPos.y
 
+    def getRegexString(self) -> str:
+        return self._regex
+
     def toggleNumericHighlighting(self) -> None:
         self.boolHighlightNumbers = not self.boolHighlightNumbers
         setCommandStr("Toggled highlighting of numeric values.")
@@ -469,12 +472,8 @@ class AGW_Win:
         try:
             self.win = curses.newwin(argHeight, argWidth, atY, atX)
             pass
-        except:
-            raise "Cannot allocate a curses window with height " + str(argHeight) + " and width " + str(
-                argWidth
-            ) + " at Y=" + str(atY) + " and X=" + str(
-                atX
-            )  # + ". Error was: " + err.message
+        except Exception as err:
+            raise RuntimeError(f"Cannot allocate a curses window with {argHeight=} and {argWidth=} at {atY=} and {atX=}. Error was: {err}") from err
         pass
 
     # safeAddCh: Safely adds a single character to an AGW_Win object
@@ -542,8 +541,7 @@ class AGW_DataWin(AGW_Win):
 
     def setInfo(self, whichInfo: AGW_File_Data) -> None:
         if not isinstance(whichInfo, AGW_File_Data):
-            print("### Someone passed in a not-an-AGW_File_Data object to AGW_DataWin--->setInfo()\n")
-            raise
+            raise ValueError("### Someone passed in a not-an-AGW_File_Data object to AGW_DataWin--->setInfo()\n")
         self.info = whichInfo
         return
 
