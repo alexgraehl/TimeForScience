@@ -1396,17 +1396,14 @@ def drawEverything(theScreen: curses.window) -> None:
     drawInfoWin(theScreen, activeFI, sheetWin.getTable())  # The "info" pane at the top...
     drawHelpWin(theScreen)  # The "help" window at the bottom...
     sheetWin.drawTable(activeFI, activeCellPos.y, activeCellPos.x)  # The main table...
-    rowHeaderWin.drawTable(
-        activeFI, activeCellPos.y, 0, nColsToDraw=1, boolPrependRowCoordinate=True
-    )  # Row header... (the leftmost, vertically-oriented pane along the left edge of the table)
-    colHeaderWin.drawTable(
-        activeFI, 0, activeCellPos.x, nRowsToDraw=1, boolPrependColCoordinate=True
-    )  # Column header... (the column header along the top of the table)
+    # Row header: the leftmost, vertically-oriented pane along the left edge of the table
+    rowHeaderWin.drawTable(activeFI, activeCellPos.y, 0, nColsToDraw=1, boolPrependRowCoordinate=True)
+    # Column header (along the top of the table)
+    colHeaderWin.drawTable(activeFI, 0, activeCellPos.x, nRowsToDraw=1, boolPrependColCoordinate=True)
     lineAttr = curses.color_pair(BOX_COLOR_ID)  # <-- set the border color
     colHeaderWin.win.attron(lineAttr)  # "start drawing lines"
-    colHeaderWin.win.hline(
-        colHeaderWin.windowHeight - 1, 0, curses.ACS_CKBOARD, colHeaderWin.windowWidth
-    )  # Draw a horizontal line below the column header...
+    # Draw a horizontal line below the column header...
+    colHeaderWin.win.hline(colHeaderWin.windowHeight - 1, 0, curses.ACS_CKBOARD, colHeaderWin.windowWidth)  
     colHeaderWin.win.attroff(lineAttr)  # "stop drawing lines"
     colHeaderWin.win.refresh()
     return
