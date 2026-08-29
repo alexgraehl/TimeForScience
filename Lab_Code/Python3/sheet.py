@@ -13,7 +13,10 @@ Example 1b (cat-ing a file into sheet.py)
              cat someFile.txt | sheet.py
 
 Example 2 (multiple files: switch between them with < and >):
-             sheet.py -i somefile.tab  otherefile.tab
+             sheet.py  somefile.tab  otherefile.tab
+
+Known bug: if you pass in '-i', and multiple files, (e.g. `sheet.py -i somefile.tab  otherefile.tab`), then file switching doesn't work.
+
 """
 
 from __future__ import annotations
@@ -21,7 +24,6 @@ from __future__ import annotations
 import sys
 import curses  # <-- docs at http://docs.python.org/library/curses.html
 import curses.ascii  # <-- docs at http://docs.python.org/library/curses.ascii.html
-import curses.textpad
 import gzip
 import bz2
 import re
@@ -583,9 +585,9 @@ class AGW_DataWin(AGW_Win):
 
         cellTextPos = Point(None, None)
         for r in range(start.y, end.y):  # Go through each row, one at a time, top to bottom
-            cellTextPos.y = gCellBorders.height + (gCellBorders.height + cellHeight) * (
-                r - start.y
-            )  # <-- all cells are the same HEIGHT, so this can be computed in one equation
+
+            # All cells are the same HEIGHT, so this can be computed in one equation
+            cellTextPos.y = gCellBorders.height + (gCellBorders.height + cellHeight) * (r - start.y)  
 
             if cellTextPos.y >= self.windowHeight:
                 break
@@ -624,9 +626,7 @@ class AGW_DataWin(AGW_Win):
                     # This doesn't work for some reason, maybe it's getting overwritten?
                     # Note: this is NOT exactly the same as a cell with no data in it! It's a 'ragged end' situation
                     cell = padStrToLength("", maxLenForThisCell, "~")  #  distinct from an *empty* cell)
-                    cellAttr = curses.color_pair(
-                        WARNING_COLOR_ID
-                    )  # (indicate that there isn't a cell here at all
+                    cellAttr = curses.color_pair(WARNING_COLOR_ID)  # Indicates that there is NO cell here at all
                     pass
 
                 drawCheckerboard = False
@@ -667,13 +667,12 @@ class AGW_DataWin(AGW_Win):
 
                 # whichInfo.changeCurrentSearchTerm("F")
 
-                if (
-                    whichInfo.regexIsActive() and self is sheetWin
-                ):  # <<<<<<< HORRIBLE HACK!!!! FIX LATER!!! should work on all windows!! not just the main one
+                if whichInfo.regexIsActive() and self is sheetWin:
+                    # Above: HORRIBLE HACK!!!! FIX LATER!!! should work on all windows!! not just the main one
+                    #        (Although it can't be THAT horrible since it's been this way for like a decade.)
                     # "self is sheetWin" is a horrible hack! Fix it eventually
                     theTable.initRegexTable()
                     if theTable.regTab.isDirty(r, c):
-                        # calcluate the regex...
                         # DebugPrint("calc: " + str(r) + ", " + str(c))
                         boolRegexMatched = whichInfo.stringDoesMatchRegex(cell)
                         # DebugPrint("  match status is: " + str(boolRegexMatched))
@@ -759,11 +758,10 @@ class AGW_DataWin(AGW_Win):
             pass
 
         self.win.refresh()
-        pass  # end of "drawTable"
         # theWin.attroff(curses.A_REVERSE)
-
-    #             Attributes: A_BLINK, A_BOLD, A_DIM, A_REVERSE, A_STANDOUT, A_UNDERLINEUnderlined
-
+        # Attributes: A_BLINK, A_BOLD, A_DIM, A_REVERSE, A_STANDOUT, A_UNDERLINEUnderlined
+        pass  # end of "drawTable"
+    # End of class definition
 
 class AGW_Table:
     def __init__(self) -> None:
@@ -950,6 +948,7 @@ class AGW_Table:
             raise
 
         return  # end of function
+    # End of class definition
 
 # If the input is None, returns 0.
 # If the input has a length, returns that length.
@@ -1037,22 +1036,18 @@ fastMoveSpeed = Point(10, 10)  # How many cells to scroll when the user is movin
 gWarningMessage = None  # A message that we can display in the "warning" region in the info pane
 gCommandStr = None  # The current command, which we sometimes display in the info pane
 
-
 def setWarning(string: Optional[str]) -> None:
     global gWarningMessage
     gWarningMessage = string
     return
 
-
 def setCommandStr(string: Optional[str]) -> None:
     global gCommandStr
     gCommandStr = string
 
-
 def clearCommandStr() -> None:
     global gCommandStr
     gCommandStr = None
-
 
 def usageAndQuit(exitCode: int, message: str = "") -> None:
     fillWidth: int = 80
@@ -1075,7 +1070,6 @@ def usageAndQuit(exitCode: int, message: str = "") -> None:
         pass
     sys.exit(exitCode)
     return
-
 
 def initializeWindowSettings(aScreen: curses.window, fileInfoToReadFrom: AGW_File_Data) -> None:
     # if (fileInfoToReadFrom is None):
@@ -1124,9 +1118,8 @@ def initializeWindowSettings(aScreen: curses.window, fileInfoToReadFrom: AGW_Fil
     # Done figuring out how wide the row header should be
     # ===============================================
 
-    SHEET_WIN_HEIGHT = (
-        gTermSize.height - INFO_PANEL_HEIGHT - COL_HEADER_HEIGHT - HELP_WIN_HEIGHT
-    )  # How tall is the main data window?
+    # How tall is the main data window?
+    SHEET_WIN_HEIGHT = (gTermSize.height - INFO_PANEL_HEIGHT - COL_HEADER_HEIGHT - HELP_WIN_HEIGHT)  
     sheetWin.initWindow(
         SHEET_WIN_HEIGHT,  # height
         (gTermSize.width - rowHeaderMaxWidth),  # width
@@ -1134,16 +1127,14 @@ def initializeWindowSettings(aScreen: curses.window, fileInfoToReadFrom: AGW_Fil
         rowHeaderMaxWidth,
     )  # location (x)
 
-    infoWin.initWindow(
-        INFO_PANEL_HEIGHT, gTermSize.width, 0, 0  # height  # width  # location--y
-    )  # location--x
+    infoWin.initWindow(INFO_PANEL_HEIGHT, gTermSize.width, atY=0, atX=0)
 
     helpWin.initWindow(
         HELP_WIN_HEIGHT,  # height
         gTermSize.width,  # width
-        (INFO_PANEL_HEIGHT + COL_HEADER_HEIGHT + SHEET_WIN_HEIGHT),  # location (y)
-        0,
-    )  # location (x)
+        atY=(INFO_PANEL_HEIGHT + COL_HEADER_HEIGHT + SHEET_WIN_HEIGHT),
+        atX=0,
+    )
 
     # Goes along the left side!
     ROW_HEADER_HEIGHT = SHEET_WIN_HEIGHT
