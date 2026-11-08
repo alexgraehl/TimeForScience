@@ -806,7 +806,7 @@ defaults write com.google.Chrome.canary PMPrintingExpandedStateForPrint2 -bool t
 ## Extra stuff that Alex found online
 
 # opening and closing Quick Look windows
-defaults write -g QLPanelAnimationDuration -float 0
+defaults write -g QLPanelAnimationDuration -float 0.001
 
 # rubberband scrolling (doesn't affect web views)
 defaults write -g NSScrollViewRubberbanding -bool true
@@ -815,11 +815,14 @@ defaults write -g NSScrollViewRubberbanding -bool true
 # also disabled by NSWindowResizeTime -float 0.001
 defaults write -g NSDocumentRevisionsWindowTransformAnimation -bool false
 
+# Make window and sheet animations faster, hopefully.
+defaults write NSGlobalDomain NSWindowResizeTime -float 0.001
+
 # showing a toolbar or menu bar in full screen
 defaults write -g NSToolbarFullScreenAnimationDuration -float 0.001
 
 # scrolling column views
-defaults write -g NSBrowserColumnAnimationSpeedMultiplier -float 0.0
+defaults write -g NSBrowserColumnAnimationSpeedMultiplier -float 0.001
 
 # DON'T sleep when you push the power button! (Not sure if this works in 10.10+)
 defaults write com.apple.loginwindow PowerButtonSleepsSystem -bool no
